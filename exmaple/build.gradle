@@ -1,0 +1,30 @@
+import org.hidetake.gradle.ssh.Ssh;
+
+buildscript {
+	repositories {
+		mavenCentral()
+		flatDir { dirs '../build/libs' }
+	}
+
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:1.0'
+		classpath 'com.jcraft:jsch:0.1.48'
+	}
+}
+
+apply plugin: 'ssh'
+
+ssh {
+	remote {
+		host = 'localhost'
+		user = System.properties['user.name']
+		identity = "${System.properties['user.home']}/.ssh/id_rsa"
+	}
+}
+
+task SingleChannel(type: Ssh) {
+	config(StrictHostKeyChecking: 'no')
+	channel {
+		command = 'uname -a'
+	}
+}

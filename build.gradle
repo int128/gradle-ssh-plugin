@@ -1,6 +1,16 @@
 apply plugin: 'groovy'
 
+group = 'org.hidetake'
+version = '1.0'
+
+repositories {
+	mavenCentral()
+}
+
 dependencies {
 	compile gradleApi()
 	groovy localGroovy()
+
+	compile 'com.jcraft:jsch:0.1.48'
+	testCompile 'junit:junit:4.10'
 }
