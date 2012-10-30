@@ -22,6 +22,7 @@ class Ssh extends DefaultTask {
 
 	/**
 	 * Configure the remote host.
+	 * This method overrides remote configuration of project convention.
 	 * 
 	 * @param configurationClosure
 	 */

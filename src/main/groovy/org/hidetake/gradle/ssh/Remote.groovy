@@ -1,15 +1,26 @@
 package org.hidetake.gradle.ssh
 
 /**
- * Represents a remote host.
+ * Represents a remote connection.
  * 
  * @author hidetake.org
  *
  */
 class Remote implements Cloneable {
-	def String user
-	def String host
-	def String identity
+	/**
+	 * Remote user.
+	 */
+	String user
+
+	/**
+	 * Remote host.
+	 */
+	String host
+
+	/**
+	 * File path of the identity key file.
+	 */
+	String identity
 
 	@Override
 	Remote clone() {

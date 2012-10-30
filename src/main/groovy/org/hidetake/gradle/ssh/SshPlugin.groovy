@@ -29,6 +29,15 @@ class SshPluginExtension {
 	def Map config = [:]
 
 	/**
+	 * Configure remote.
+	 *
+	 * @param configurationClosure
+	 */
+	void remote(Closure configurationClosure) {
+		remote.with(configurationClosure)
+	}
+
+	/**
 	 * Add configuration for JSch. For example:
 	 * <pre>
 	 * config(StrictHostKeyChecking: 'no')
@@ -38,14 +47,5 @@ class SshPluginExtension {
 	 */
 	void config(Map pairs) {
 		config.putAll(pairs)
-	}
-
-	/**
-	 * Configure the default remote.
-	 * 
-	 * @param configurationClosure
-	 */
-	void remote(Closure configurationClosure) {
-		remote.with(configurationClosure)
 	}
 }
