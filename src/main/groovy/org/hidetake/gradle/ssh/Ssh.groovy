@@ -16,9 +16,9 @@ import com.jcraft.jsch.JSch
  *
  */
 class Ssh extends DefaultTask {
-	private Remote remote = project.extensions.getByType(SshPluginExtension).remote.clone()
-	private Map config = [:]
-	private List<Closure> channels = []
+	Remote remote = project.extensions.getByType(SshPluginExtension).remote.clone()
+	Map config = [:]
+	List<Closure> channels = []
 
 	/**
 	 * Configure the remote host.
