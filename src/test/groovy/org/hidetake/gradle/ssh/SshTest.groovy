@@ -31,9 +31,8 @@ class SshTest {
 		assertThat(project.tasks.testTask.config.isEmpty(), is(true))
 		assertThat(project.tasks.testTask.channels.size(), is(1))
 		assertThat(project.tasks.testTask.channels[0], instanceOf(Closure))
-		def channel = [command: null]
-		channel.with(project.tasks.testTask.channels[0])
-		assertThat(channel.command, is('ls'))
+		def channel0 = applyChannel(project.tasks.testTask.channels[0])
+		assertThat(channel0.command, is('ls'))
 	}
 
 	@Test
@@ -60,9 +59,8 @@ class SshTest {
 		assertThat(project.tasks.testTask.config.isEmpty(), is(true))
 		assertThat(project.tasks.testTask.channels.size(), is(1))
 		assertThat(project.tasks.testTask.channels[0], instanceOf(Closure))
-		def channel = [command: null]
-		channel.with(project.tasks.testTask.channels[0])
-		assertThat(channel.command, is('ls'))
+		def channel0 = applyChannel(project.tasks.testTask.channels[0])
+		assertThat(channel0.command, is('ls'))
 	}
 
 	@Test
@@ -93,9 +91,8 @@ class SshTest {
 		assertThat(project.tasks.testTask.config.isEmpty(), is(true))
 		assertThat(project.tasks.testTask.channels.size(), is(1))
 		assertThat(project.tasks.testTask.channels[0], instanceOf(Closure))
-		def channel = [command: null]
-		channel.with(project.tasks.testTask.channels[0])
-		assertThat(channel.command, is('ls'))
+		def channel0 = applyChannel(project.tasks.testTask.channels[0])
+		assertThat(channel0.command, is('ls'))
 	}
 
 	@Test
@@ -122,9 +119,8 @@ class SshTest {
 		assertThat(project.tasks.testTask.config.StrictHostKeyChecking, is('no'))
 		assertThat(project.tasks.testTask.channels.size(), is(1))
 		assertThat(project.tasks.testTask.channels[0], instanceOf(Closure))
-		def channel = [command: null]
-		channel.with(project.tasks.testTask.channels[0])
-		assertThat(channel.command, is('ls'))
+		def channel0 = applyChannel(project.tasks.testTask.channels[0])
+		assertThat(channel0.command, is('ls'))
 	}
 
 	@Test
@@ -150,8 +146,16 @@ class SshTest {
 		assertThat(project.tasks.testTask.config.isEmpty(), is(true))
 		assertThat(project.tasks.testTask.channels.size(), is(2))
 		assertThat(project.tasks.testTask.channels[0], instanceOf(Closure))
-		def channel = [command: null]
-		channel.with(project.tasks.testTask.channels[0])
-		assertThat(channel.command, is('ls'))
+		def channel0 = applyChannel(project.tasks.testTask.channels[0])
+		assertThat(channel0.command, is('ls'))
+		assertThat(project.tasks.testTask.channels[1], instanceOf(Closure))
+		def channel1 = applyChannel(project.tasks.testTask.channels[1])
+		assertThat(channel1.command, is('uname'))
+	}
+
+	private def applyChannel(Closure configurationClosure) {
+		def channel = [:]
+		channel.with(configurationClosure)
+		channel
 	}
 }
