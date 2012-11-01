@@ -1,8 +1,7 @@
 package org.hidetake.gradle.ssh
 
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*
+import static org.junit.Assert.*
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -10,7 +9,7 @@ import org.junit.Test
 
 class SshTest {
 	@Test
-	public void configuration_minimum() {
+	void configuration_minimum() {
 		Project project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		project.with {
@@ -36,7 +35,7 @@ class SshTest {
 	}
 
 	@Test
-	public void configuration_remote_convention() {
+	void configuration_remote_convention() {
 		Project project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		project.with {
@@ -64,7 +63,7 @@ class SshTest {
 	}
 
 	@Test
-	public void configuration_remote_override() {
+	void configuration_remote_override() {
 		Project project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		project.with {
@@ -96,7 +95,7 @@ class SshTest {
 	}
 
 	@Test
-	public void configuration_jschConfig() {
+	void configuration_jschConfig() {
 		Project project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		project.with {
@@ -124,7 +123,7 @@ class SshTest {
 	}
 
 	@Test
-	public void configuration_multiChannels() {
+	void configuration_multiChannels() {
 		Project project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		project.with {

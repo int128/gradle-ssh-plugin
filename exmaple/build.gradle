@@ -1,4 +1,16 @@
-import org.hidetake.gradle.ssh.Ssh;
+/*
+ * Examples.
+ * 
+ * Prepare following to execute tasks in this example.
+ * - start sshd
+ * - generate key pair (use ssh-keygen)
+ * - add your pubic key to authorized_keys
+ * - make sure that you can log in without any password
+ * 
+ * Or, rewrite host or user as you like.
+ * 
+ */
+import org.hidetake.gradle.ssh.Ssh
 
 buildscript {
 	repositories {
@@ -20,10 +32,11 @@ ssh {
 		user = System.properties['user.name']
 		identity = "${System.properties['user.home']}/.ssh/id_rsa"
 	}
+	config(StrictHostKeyChecking: 'no')
 }
 
-task SingleChannel(type: Ssh) {
-	config(StrictHostKeyChecking: 'no')
+task uname(type: Ssh) {
+	description 'execute uname command on remote host'
 	channel {
 		command = 'uname -a'
 	}
