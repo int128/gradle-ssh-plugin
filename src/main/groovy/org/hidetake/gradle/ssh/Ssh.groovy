@@ -79,7 +79,7 @@ class Ssh extends DefaultTask {
 		while (channels.grep { !(it.closed) }.size() > 0) {
 			Thread.sleep(100)
 		}
-		channels.grep { it.exitStatus > 0 }.each {
+		channels.grep { it.exitStatus != 0 }.each {
 			logger.error "SSH exec returned status ${it.exitStatus} on channel #${it.id}"
 		}.each {
 			throw new RuntimeException('SSH exec returned error status')

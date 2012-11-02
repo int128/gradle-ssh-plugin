@@ -41,3 +41,10 @@ task uname(type: Ssh) {
 		command = 'uname -a'
 	}
 }
+
+task concurrent(type: Ssh) {
+	description 'execute uname command on remote host'
+	(1..5).each { i ->
+		channel { command = "echo ${i} && sleep ${i} && echo ${i}" }
+	}
+}

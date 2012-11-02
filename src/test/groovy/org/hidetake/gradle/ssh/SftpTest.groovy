@@ -151,4 +151,30 @@ class SftpTest {
 		assertThat(project.tasks.testTask.transfers[1].from, is('example.md'))
 		assertThat(project.tasks.testTask.transfers[1].to, is('data'))
 	}
+
+	@Test
+	void get_configuration_minimum() {
+		Project project = ProjectBuilder.builder().build()
+		project.apply plugin: 'ssh'
+		project.with {
+			task(type: Sftp, 'testTask') {
+				remote {
+					host = 'localhost'
+					user = 'hoge'
+					identity = 'id_rsa'
+				}
+				transfer(new GetTransfer(from: 'sample.txt', to: '.'))
+			}
+		}
+
+		assertThat(project.tasks.testTask, instanceOf(Sftp))
+		assertThat(project.tasks.testTask.remote.host, is('localhost'))
+		assertThat(project.tasks.testTask.remote.user, is('hoge'))
+		assertThat(project.tasks.testTask.remote.identity, is('id_rsa'))
+		assertThat(project.tasks.testTask.config.isEmpty(), is(true))
+		assertThat(project.tasks.testTask.transfers.size(), is(1))
+		assertThat(project.tasks.testTask.transfers[0], instanceOf(GetTransfer))
+		assertThat(project.tasks.testTask.transfers[0].from, is('sample.txt'))
+		assertThat(project.tasks.testTask.transfers[0].to, is('.'))
+	}
 }
