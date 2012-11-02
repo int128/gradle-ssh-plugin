@@ -24,10 +24,10 @@ class Ssh extends DefaultTask {
 	 * Configure the remote host.
 	 * This method overrides remote configuration of project convention.
 	 * 
-	 * @param configurationClosure
+	 * @param remoteConfiguration
 	 */
-	void remote(Closure configurationClosure) {
-		remote.with(configurationClosure)
+	void remote(Closure remoteConfiguration) {
+		remote.with(remoteConfiguration)
 	}
 
 	/**
@@ -47,8 +47,8 @@ class Ssh extends DefaultTask {
 	 * 
 	 * @param closure
 	 */
-	void channel(Closure closure) {
-		channels += closure
+	void channel(Closure channelConfiguration) {
+		channels += channelConfiguration
 	}
 
 	@TaskAction
@@ -60,13 +60,13 @@ class Ssh extends DefaultTask {
 		def session = jsch.getSession(remote.user, remote.host)
 		try {
 			session.connect()
-			waitUntilClosed(channels.collect { closure ->
+			waitUntilClosed(channels.collect { channelConfiguration ->
 				ChannelExec channel = session.openChannel('exec')
 				channel.command = null
 				channel.inputStream = null
 				channel.outputStream = System.out
 				channel.errStream = System.err
-				channel.with(closure)
+				channel.with(channelConfiguration)
 				channel.connect()
 				channel
 			})

@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'project-report'
 
 group = 'org.hidetake'
 version = '1.0'
