@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException;
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
@@ -45,7 +46,7 @@ class Ssh extends DefaultTask {
 	/**
 	 * Add a SSH channel.
 	 * 
-	 * @param closure
+	 * @param channelConfiguration configuration closure for {@link ChannelExec}
 	 */
 	void channel(Closure channelConfiguration) {
 		channels += channelConfiguration
@@ -60,29 +61,30 @@ class Ssh extends DefaultTask {
 		def session = jsch.getSession(remote.user, remote.host)
 		try {
 			session.connect()
-			waitUntilClosed(channels.collect { channelConfiguration ->
+			def runningChannels = channels.collect { channelConfiguration ->
 				ChannelExec channel = session.openChannel('exec')
 				channel.command = null
 				channel.inputStream = null
-				channel.outputStream = System.out
-				channel.errStream = System.err
+				channel.setOutputStream(System.out, true)
+				channel.setErrStream(System.err, true)
 				channel.with(channelConfiguration)
 				channel.connect()
 				channel
-			})
+			}
+			waitForChannels(runningChannels)
 		} finally {
 			session.disconnect()
 		}
 	}
 
-	private def waitUntilClosed(List<Channel> channels) {
-		while (channels.grep { !(it.closed) }.size() > 0) {
-			Thread.sleep(100)
+	private def waitForChannels(List<Channel> channels) {
+		while (channels.find { !(it.closed) }) {
+			Thread.sleep(500L)
 		}
-		channels.grep { it.exitStatus != 0 }.each {
+		channels.findAll { it.exitStatus != 0 }.each {
 			logger.error "SSH exec returned status ${it.exitStatus} on channel #${it.id}"
 		}.each {
-			throw new RuntimeException('SSH exec returned error status')
+			throw new GradleException('SSH exec returned error status')
 		}
 	}
 }

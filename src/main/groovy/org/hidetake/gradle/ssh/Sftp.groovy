@@ -21,7 +21,7 @@ class Sftp extends DefaultTask {
 	 * Configure the remote host.
 	 * This method overrides remote configuration of project convention.
 	 * 
-	 * @param remoteConfiguration
+	 * @param remoteConfiguration configuration closure for {@link Remote}
 	 */
 	void remote(Closure remoteConfiguration) {
 		remote.with(remoteConfiguration)
