@@ -35,15 +35,31 @@ ssh {
 	config(StrictHostKeyChecking: 'no')
 }
 
-task uname(type: Ssh) {
-	description 'execute uname command on remote host'
+remotes {
+	someServer {
+		host = 'localhost' // TODO: change to your host name
+		user = System.properties['user.name']
+		identity = "${System.properties['user.home']}/.ssh/id_rsa"
+	}
+}
+
+task defaultRemote(type: Ssh) {
+	description 'execute a command on default remote'
 	channel {
-		command = 'uname -a'
+		command = 'env'
+	}
+}
+
+task specifiedRemote(type: Ssh) {
+	description 'execute a command on specified remote'
+	remote = project.remotes.someServer
+	channel {
+		command = 'env'
 	}
 }
 
 task concurrent(type: Ssh) {
-	description 'execute uname command on remote host'
+	description 'execute commands concurrently on the remote'
 	(1..5).each { i ->
 		channel { command = "echo ${i} && sleep ${i} && echo ${i}" }
 	}

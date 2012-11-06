@@ -15,6 +15,9 @@ class SshPlugin implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
 		project.extensions.create('ssh', SshPluginExtension)
+		project.extensions.remotes = project.container(Remote) { String name ->
+			new Remote(name: name)
+		}
 	}
 }
 

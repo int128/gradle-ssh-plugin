@@ -8,6 +8,11 @@ package org.hidetake.gradle.ssh
  */
 class Remote implements Cloneable {
 	/**
+	 * Name of this instance.
+	 */
+	String name
+
+	/**
 	 * Remote user.
 	 */
 	String user
@@ -24,6 +29,6 @@ class Remote implements Cloneable {
 
 	@Override
 	Remote clone() {
-		new Remote(user: user, host: host, identity: identity)
+		new Remote(name: name, user: user, host: host, identity: identity)
 	}
 }
