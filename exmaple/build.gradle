@@ -10,7 +10,7 @@
  * Or, rewrite host or user as you like.
  * 
  */
-import org.hidetake.gradle.ssh.Ssh
+import org.hidetake.gradle.ssh.*
 
 buildscript {
 	repositories {
@@ -41,6 +41,13 @@ remotes {
 		user = System.properties['user.name']
 		identity = "${System.properties['user.home']}/.ssh/id_rsa"
 	}
+	(1..5).each { serverId ->
+		"myServer_${serverId}" {
+			host = 'localhost' // TODO: change to your host name
+			user = System.properties['user.name']
+			identity = "${System.properties['user.home']}/.ssh/id_rsa"
+		}
+	}
 }
 
 task defaultRemote(type: Ssh) {
@@ -62,5 +69,18 @@ task concurrent(type: Ssh) {
 	description 'execute commands concurrently on the remote'
 	(1..5).each { i ->
 		channel { command = "echo ${i} && sleep ${i} && echo ${i}" }
+	}
+}
+
+task uname {
+	description 'execute uname on all remotes'
+	dependsOn remotes.collect { Remote remote ->
+		task "uname_${remote.name}" (type: Ssh) {
+			description "execute uname on ${remote.name}"
+			remote = remote
+			channel {
+				command = 'uname'
+			}
+		}
 	}
 }
