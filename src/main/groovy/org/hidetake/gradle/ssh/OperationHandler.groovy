@@ -6,7 +6,7 @@ import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 
 /**
- * Default session handler.
+ * This class handles SSH operations described in the closure.
  * 
  * @author hidetake.org
  *

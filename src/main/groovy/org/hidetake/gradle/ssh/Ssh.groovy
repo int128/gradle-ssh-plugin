@@ -11,7 +11,7 @@ import org.gradle.api.tasks.TaskAction
  *
  */
 class Ssh extends DefaultTask implements SshSpec {
-	List<SshSpec.SessionSpec> sessionSpecs = []
+	List<SessionSpec> sessionSpecs = []
 
 	/**
 	 * JSch configuration.
@@ -39,7 +39,7 @@ class Ssh extends DefaultTask implements SshSpec {
 
 	@Override
 	void session(Remote aRemote, Closure aOperationClosure) {
-		sessionSpecs.add(new SshSpec.SessionSpec() {
+		sessionSpecs.add(new SessionSpec() {
 			final Remote remote = aRemote
 			final Closure operationClosure = aOperationClosure
 		})
@@ -58,13 +58,15 @@ class Ssh extends DefaultTask implements SshSpec {
 		def executor = new OperationSpec() {
 			@Override
 			void execute(String command) {
-				logger.warn ""
+				// TODO: logger.warn()
 			}
 			@Override
 			void get(String remote, String local) {
+				// TODO: logger.warn()
 			}
 			@Override
 			void put(String local, String remote) {
+				// TODO: logger.warn()
 			}
 		}
 		sessionSpecs.each {

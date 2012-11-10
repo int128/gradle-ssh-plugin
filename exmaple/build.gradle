@@ -52,6 +52,13 @@ task simpleTask(type: Ssh) {
 	}
 }
 
+task errorCase(type: Ssh) {
+	description 'execute bad command for explaining error cases'
+	session(remotes.someServer) {
+		execute 'touch /root/test'
+	}
+}
+
 task concurrentExecution(type: Ssh) {
 	description 'execute commands concurrently on the remote'
 	session(remotes.someServer) {

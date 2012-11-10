@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh
 
 /**
- * Specification of SSH task.
+ * Specification of a SSH task.
  * 
  * @author hidetake.org
  *
@@ -21,7 +21,7 @@ interface SshSpec {
 	 * Adds a session.
 	 * 
 	 * @param remote the remote
-	 * @param closure closure for {@link OperationSpec}
+	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
 	void session(Remote remote, Closure operationClosure)
 
@@ -38,25 +38,4 @@ interface SshSpec {
 	 * @return
 	 */
 	List<SessionSpec> getSessionSpecs()
-
-	/**
-	 * 
-	 * @author hidetake.org
-	 *
-	 */
-	interface SessionSpec {
-		/**
-		 * Returns the remote.
-		 * 
-		 * @return
-		 */
-		Remote getRemote()
-
-		/**
-		 * Returns closure for {@link OperationSpec}.
-		 * 
-		 * @return
-		 */
-		Closure getOperationClosure()
-	}
 }

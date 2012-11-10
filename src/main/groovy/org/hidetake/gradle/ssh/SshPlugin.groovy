@@ -1,9 +1,7 @@
 package org.hidetake.gradle.ssh
 
-import java.util.Map;
-
 import org.gradle.api.Plugin
-import org.gradle.api.Project;
+import org.gradle.api.Project
 
 /**
  * Gradle SSH plugin.
@@ -22,14 +20,14 @@ class SshPlugin implements Plugin<Project> {
 }
 
 /**
- * Global configuration.
+ * Global settings.
  * 
  * @author hidetake.org
  *
  */
 class SshPluginExtension {
 	/**
-	 * Global configurations for JSch.
+	 * JSch configuration.
 	 */
 	final Map config = [:]
 
@@ -41,7 +39,7 @@ class SshPluginExtension {
 	boolean dryRun = false
 
 	/**
-	 * Adds global configurations for JSch. For example:
+	 * Adds configuration. For example:
 	 * <pre>
 	 * config(StrictHostKeyChecking: 'no')
 	 * </pre>

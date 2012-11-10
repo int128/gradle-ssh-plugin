@@ -6,7 +6,7 @@ package org.hidetake.gradle.ssh
  * @author hidetake.org
  *
  */
-class Remote implements Cloneable {
+class Remote {
 	/**
 	 * Name of this instance.
 	 */
@@ -26,9 +26,4 @@ class Remote implements Cloneable {
 	 * Identity key file.
 	 */
 	File identity
-
-	@Override
-	Remote clone() {
-		new Remote(name: name, user: user, host: host, identity: identity)
-	}
 }

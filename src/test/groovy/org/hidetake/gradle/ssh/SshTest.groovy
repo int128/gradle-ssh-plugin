@@ -31,7 +31,7 @@ class SshTest {
 		Ssh testTask = project.tasks.testTask
 		assertThat(testTask.config.isEmpty(), is(true))
 		assertThat(testTask.sessionSpecs.size(), is(1))
-		assertThat(testTask.sessionSpecs[0], instanceOf(SshSpec.SessionSpec))
+		assertThat(testTask.sessionSpecs[0], instanceOf(SessionSpec))
 		assertThat(testTask.sessionSpecs[0].remote, instanceOf(Remote))
 		assertThat(testTask.sessionSpecs[0].remote.name, is('webServer'))
 		assertThat(testTask.sessionSpecs[0].remote.host, is('web'))
@@ -68,7 +68,7 @@ class SshTest {
 		Ssh testTask = project.tasks.testTask
 		assertThat(testTask.config.isEmpty(), is(true))
 		assertThat(testTask.sessionSpecs.size(), is(1))
-		assertThat(testTask.sessionSpecs[0], instanceOf(SshSpec.SessionSpec))
+		assertThat(testTask.sessionSpecs[0], instanceOf(SessionSpec))
 		assertThat(testTask.sessionSpecs[0].remote, instanceOf(Remote))
 		assertThat(testTask.sessionSpecs[0].remote.name, is('appServer'))
 		assertThat(testTask.sessionSpecs[0].remote.host, is('app'))

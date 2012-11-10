@@ -5,7 +5,7 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 
 /**
- * Session manager.
+ * This class executes the SSH task.
  * 
  * @author hidetake.org
  *
