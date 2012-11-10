@@ -1,90 +1,84 @@
 package org.hidetake.gradle.ssh
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException;
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Optional
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
-import com.jcraft.jsch.Channel
-import com.jcraft.jsch.ChannelExec
-import com.jcraft.jsch.JSch
-
 /**
- * Task for executing commands via SSH session.
+ * Task to perform SSH operations.
  * 
  * @author hidetake.org
  *
  */
-class Ssh extends DefaultTask {
-	Remote remote = project.extensions.getByType(SshPluginExtension).remote.clone()
-	Map config = [:]
-	List<Closure> channels = []
+class Ssh extends DefaultTask implements SshSpec {
+	List<SshSpec.SessionSpec> sessionSpecs = []
 
 	/**
-	 * Configure the remote host.
-	 * This method overrides remote configuration of project convention.
-	 * 
-	 * @param remoteConfiguration
+	 * JSch configuration.
 	 */
-	void remote(Closure remoteConfiguration) {
-		remote.with(remoteConfiguration)
+	Map config = [:]
+
+	/**
+	 * Dry-run flag.
+	 * If <code>true</code>, establishes connection but performs no command or transfer.
+	 */
+	boolean dryRun
+
+	/**
+	 * Initializes properties by global settings.
+	 */
+	{
+		dryRun = project.extensions.getByType(SshPluginExtension).dryRun
+		config.putAll(project.extensions.getByType(SshPluginExtension).config)
 	}
 
-	/**
-	 * Add configuration for JSch. For example:
-	 * <pre>
-	 * config(StrictHostKeyChecking: 'no')
-	 * </pre>
-	 * 
-	 * @param pairs key value pairs of configuration
-	 */
+	@Override
 	void config(Map pairs) {
 		config.putAll(pairs)
 	}
 
-	/**
-	 * Add a SSH channel.
-	 * 
-	 * @param channelConfiguration configuration closure for {@link ChannelExec}
-	 */
-	void channel(Closure channelConfiguration) {
-		channels += channelConfiguration
+	@Override
+	void session(Remote aRemote, Closure aOperationClosure) {
+		sessionSpecs.add(new SshSpec.SessionSpec() {
+			final Remote remote = aRemote
+			final Closure operationClosure = aOperationClosure
+		})
 	}
 
 	@TaskAction
-	def ssh() {
-		def jsch = new JSch()
-		jsch.config.putAll(project.extensions.getByType(SshPluginExtension).config)
-		jsch.config.putAll(config)
-		jsch.addIdentity(remote.identity)
-		def session = jsch.getSession(remote.user, remote.host)
-		try {
-			session.connect()
-			def runningChannels = channels.collect { channelConfiguration ->
-				ChannelExec channel = session.openChannel('exec')
-				channel.command = null
-				channel.inputStream = null
-				channel.setOutputStream(System.out, true)
-				channel.setErrStream(System.err, true)
-				channel.with(channelConfiguration)
-				channel.connect()
-				channel
-			}
-			waitForChannels(runningChannels)
-		} finally {
-			session.disconnect()
+	void perform() {
+		if (dryRun) {
+			dryRun()
+		} else {
+			run()
 		}
 	}
 
-	private def waitForChannels(List<Channel> channels) {
-		while (channels.find { !(it.closed) }) {
-			Thread.sleep(500L)
+	protected void dryRun() {
+		def executor = new OperationSpec() {
+			@Override
+			void execute(String command) {
+				logger.warn ""
+			}
+			@Override
+			void get(String remote, String local) {
+			}
+			@Override
+			void put(String local, String remote) {
+			}
 		}
-		channels.findAll { it.exitStatus != 0 }.each {
-			logger.error "SSH exec returned status ${it.exitStatus} on channel #${it.id}"
+		sessionSpecs.each {
+			executor.with(it.operationClosure)
+		}
+	}
+
+	protected void run() {
+		def executor = new Executor()
+		executor.execute(this)
+		executor.errorChannels.each {
+			logger.error "Remote host returned status ${it.exitStatus} on channel #${it.id}"
 		}.each {
-			throw new GradleException('SSH exec returned error status')
+			throw new GradleException('Remote host returned error status')
 		}
 	}
 }

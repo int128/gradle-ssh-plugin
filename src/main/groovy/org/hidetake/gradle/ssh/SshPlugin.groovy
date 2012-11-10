@@ -28,20 +28,20 @@ class SshPlugin implements Plugin<Project> {
  *
  */
 class SshPluginExtension {
-	def Remote remote = new Remote()
-	def Map config = [:]
-
 	/**
-	 * Configure default remote.
-	 *
-	 * @param configurationClosure
+	 * Global configurations for JSch.
 	 */
-	void remote(Closure configurationClosure) {
-		remote.with(configurationClosure)
-	}
+	final Map config = [:]
 
 	/**
-	 * Add default configuration for JSch. For example:
+	 * Dry-run flag.
+	 * If <code>true</code>, establishes connection but performs no command or transfer.
+	 * Default is <code>false</code>.
+	 */
+	boolean dryRun = false
+
+	/**
+	 * Adds global configurations for JSch. For example:
 	 * <pre>
 	 * config(StrictHostKeyChecking: 'no')
 	 * </pre>

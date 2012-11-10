@@ -3,6 +3,7 @@ package org.hidetake.gradle.ssh
 import static org.hamcrest.CoreMatchers.*
 import static org.junit.Assert.*
 
+import org.gradle.api.NamedDomainObjectCollection;
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
@@ -13,77 +14,87 @@ class SshPluginTest {
 		def project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
 		assertThat(project.ssh, instanceOf(SshPluginExtension))
-		assertThat(project.ssh.remote, instanceOf(Remote))
 		assertThat(project.ssh.config, instanceOf(Map))
 		assertThat(project.ssh.config.isEmpty(), is(true))
 	}
 
 	@Test
-	void remote_once() {
+	void global_config() {
 		def project = ProjectBuilder.builder().build()
-		project.apply plugin: 'ssh'
 		project.with {
+			apply plugin: 'ssh'
 			ssh {
-				remote {
-					host = 'hoge'
-					user = 'fuga'
-					identity = 'id_rsa'
-				}
+				config(someOption: true)
+				config(path: 'hoge')
 			}
 		}
-		assertThat(project.ssh.remote, instanceOf(Remote))
-		assertThat(project.ssh.remote.host, is('hoge'))
-		assertThat(project.ssh.remote.user, is('fuga'))
-		assertThat(project.ssh.remote.identity, is('id_rsa'))
-	}
-	
-	@Test
-	void remote_override() {
-		def project = ProjectBuilder.builder().build()
-		project.apply plugin: 'ssh'
-		project.with {
-			ssh {
-				remote {
-					host = 'hoge'
-					user = 'fuga'
-					identity = 'id_rsa'
-				}
-				remote {
-					host = 'localhost'
-				}
-			}
-		}
-		assertThat(project.ssh.remote, instanceOf(Remote))
-		assertThat(project.ssh.remote.host, is('localhost'))
-		assertThat(project.ssh.remote.user, is('fuga'))
-		assertThat(project.ssh.remote.identity, is('id_rsa'))
+
+		assertThat(project.ssh, instanceOf(SshPluginExtension))
+		assertThat(project.ssh.config, instanceOf(Map))
+		assertThat(project.ssh.config.size(), is(2))
+		assertThat(project.ssh.config.someOption, is(true))
+		assertThat(project.ssh.config.path, is('hoge'))
 	}
 
 	@Test
-	void config_once() {
-		def project = ProjectBuilder.builder().build()
-		project.apply plugin: 'ssh'
+	void global_remotes_1() {
+		Project project = ProjectBuilder.builder().build()
 		project.with {
-			ssh {
-				config(hoge: true)
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					identity = file('id_rsa')
+				}
 			}
 		}
-		assertThat(project.ssh.config, instanceOf(Map))
-		assertThat(project.ssh.config.hoge, is(true))
+
+		assertThat(project.remotes, instanceOf(NamedDomainObjectCollection))
+		assertThat(project.remotes.size(), is(1))
+		assertThat(project.remotes.webServer, instanceOf(Remote))
+		Remote webServer = project.remotes.webServer
+		assertThat(webServer.name, is('webServer'))
+		assertThat(webServer.host, is('web'))
+		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.identity, instanceOf(File))
+		assertThat(webServer.identity.name, is('id_rsa'))
 	}
 
 	@Test
-	void config_override() {
-		def project = ProjectBuilder.builder().build()
-		project.apply plugin: 'ssh'
+	void global_remotes_2() {
+		Project project = ProjectBuilder.builder().build()
 		project.with {
-			ssh {
-				config(hoge: true)
-				config(someOption: 0)
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					identity = file('id_rsa')
+				}
+				appServer {
+					host = 'app'
+					user = 'appuser'
+					identity = file('id_rsa')
+				}
 			}
 		}
-		assertThat(project.ssh.config, instanceOf(Map))
-		assertThat(project.ssh.config.hoge, is(true))
-		assertThat(project.ssh.config.someOption, is(0))
+
+		assertThat(project.remotes, instanceOf(NamedDomainObjectCollection))
+		assertThat(project.remotes.size(), is(2))
+		assertThat(project.remotes.webServer, instanceOf(Remote))
+		Remote webServer = project.remotes.webServer
+		assertThat(webServer.name, is('webServer'))
+		assertThat(webServer.host, is('web'))
+		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.identity, instanceOf(File))
+		assertThat(webServer.identity.name, is('id_rsa'))
+		assertThat(project.remotes.appServer, instanceOf(Remote))
+		Remote appServer = project.remotes.appServer
+		assertThat(appServer.name, is('appServer'))
+		assertThat(appServer.host, is('app'))
+		assertThat(appServer.user, is('appuser'))
+		assertThat(appServer.identity, instanceOf(File))
+		assertThat(appServer.identity.name, is('id_rsa'))
 	}
 }

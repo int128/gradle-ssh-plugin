@@ -27,11 +27,6 @@ buildscript {
 apply plugin: 'ssh'
 
 ssh {
-	remote {
-		host = 'localhost'
-		user = System.properties['user.name']
-		identity = "${System.properties['user.home']}/.ssh/id_rsa"
-	}
 	config(StrictHostKeyChecking: 'no')
 }
 
@@ -39,36 +34,30 @@ remotes {
 	someServer {
 		host = 'localhost' // TODO: change to your host name
 		user = System.properties['user.name']
-		identity = "${System.properties['user.home']}/.ssh/id_rsa"
+		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 	}
-	(1..5).each { serverId ->
+	(1..3).each { serverId ->
 		"myServer_${serverId}" {
 			host = 'localhost' // TODO: change to your host name
 			user = System.properties['user.name']
-			identity = "${System.properties['user.home']}/.ssh/id_rsa"
+			identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 		}
 	}
 }
 
-task defaultRemote(type: Ssh) {
+task simpleTask(type: Ssh) {
 	description 'execute a command on default remote'
-	channel {
-		command = 'env'
+	session(remotes.someServer) {
+		execute 'env'
 	}
 }
 
-task specifiedRemote(type: Ssh) {
-	description 'execute a command on specified remote'
-	remote = project.remotes.someServer
-	channel {
-		command = 'env'
-	}
-}
-
-task concurrent(type: Ssh) {
+task concurrentExecution(type: Ssh) {
 	description 'execute commands concurrently on the remote'
-	(1..5).each { i ->
-		channel { command = "echo ${i} && sleep ${i} && echo ${i}" }
+	session(remotes.someServer) {
+		(1..5).each { i ->
+			execute "echo ${i} && sleep ${i} && echo ${i}"
+		}
 	}
 }
 
@@ -77,9 +66,8 @@ task uname {
 	dependsOn remotes.collect { Remote remote ->
 		task "uname_${remote.name}" (type: Ssh) {
 			description "execute uname on ${remote.name}"
-			remote = remote
-			channel {
-				command = 'uname'
+			session(remote) {
+				execute 'uname -a'
 			}
 		}
 	}
