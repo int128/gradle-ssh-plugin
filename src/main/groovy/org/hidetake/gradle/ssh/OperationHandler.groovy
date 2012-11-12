@@ -1,66 +1,43 @@
 package org.hidetake.gradle.ssh
 
-import com.jcraft.jsch.Channel
-import com.jcraft.jsch.ChannelExec
-import com.jcraft.jsch.ChannelSftp
-import com.jcraft.jsch.Session
-
 /**
- * This class handles SSH operations described in the closure.
+ * Handler of session operations.
  * 
  * @author hidetake.org
  *
  */
-class OperationHandler implements OperationSpec {
+interface OperationHandler {
 	/**
-	 * SSH session
+	 * Perform an execution operation.
+	 * This method blocks until channel is closed.
+	 *
+	 * @param command
 	 */
-	protected final Session session
-
-	/**
-	 * channels generated in this context
-	 */
-	protected final List<Channel> channels = []
+	void execute(String command)
 
 	/**
-	 * Constructor.
-	 * 
-	 * @param session
+	 * Perform an execution operation.
+	 * This method returns immediately and executes the command concurrently.
+	 *
+	 * @param command
 	 */
-	OperationHandler(Session session) {
-		this.session = session
-	}
+	void executeBackground(String command)
 
-	@Override
-	void execute(String command) {
-		ChannelExec channel = session.openChannel('exec')
-		channels.add(channel)
-		channel.command = command
-		channel.inputStream = null
-		channel.setOutputStream(System.out, true)
-		channel.setErrStream(System.err, true)
-		channel.connect()
-	}
+	/**
+	 * Perform a GET operation.
+	 * This method blocks until channel is closed.
+	 *
+	 * @param remote
+	 * @param local
+	 */
+	void get(String remote, String local)
 
-	@Override
-	void get(String remote, String local) {
-		ChannelSftp channel = session.openChannel('sftp')
-		channels.add(channel)
-		try {
-			channel.get(remote, local)
-		} finally {
-			channel.close()
-		}
-	}
-
-	@Override
-	void put(String local, String remote) {
-		ChannelSftp channel = session.openChannel('sftp')
-		channels.add(channel)
-		try {
-			channel.put(local, remote, ChannelSftp.OVERWRITE)
-		} finally {
-			channel.close()
-		}
-	}
+	/**
+	 * Perform a PUT operation.
+	 * This method blocks until channel is closed.
+	 *
+	 * @param local
+	 * @param remote
+	 */
+	void put(String local, String remote)
 }

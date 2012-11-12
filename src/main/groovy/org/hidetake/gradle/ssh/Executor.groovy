@@ -1,75 +1,50 @@
 package org.hidetake.gradle.ssh
 
-import com.jcraft.jsch.Channel
+import java.util.Map;
+
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 
 /**
- * This class executes the SSH task.
+ * Executes a SSH task.
  * 
  * @author hidetake.org
  *
  */
+@Singleton
 class Executor {
-	final List<Session> sessions = []
-	final List<Channel> channels = []
+	protected Closure<JSch> createJSchInstance = { new JSch() }
 
 	/**
-	 * Open a session and perform operations.
+	 * Opens sessions and performs each operations.
 	 *
-	 * @param spec
+	 * @param sshSpec
 	 */
-	void execute(SshSpec spec) {
-		def jsch = new JSch()
-		jsch.config.putAll(spec.config)
+	void execute(SshSpec sshSpec) {
+		JSch jsch = createJSchInstance()
+		jsch.config.putAll(sshSpec.config)
+
+		Map<SessionSpec, Session> sessions = [:]
 		try {
-			spec.sessionSpecs.each { sessionSpec ->
-				def session = jsch.getSession(sessionSpec.remote.user, sessionSpec.remote.host)
-				sessions.add(session)
-				session.identityRepository.add(sessionSpec.remote.identity.bytes)
+			sshSpec.sessionSpecs.each { spec ->
+				def session = jsch.getSession(spec.remote.user, spec.remote.host)
+				session.identityRepository.add(spec.remote.identity.bytes)
 				session.connect()
-
-				def handler = new OperationHandler(session)
-				handler.with(sessionSpec.operationClosure)
-				channels.addAll(handler.channels)
+				sessions.put(spec, session)
 			}
-			waitForAll()
+
+			def unmanagedChannels = new UnmanagedChannels()
+			sessions.each { spec, session ->
+				def evaluator = new OperationClosureEvaluator(spec, session)
+				evaluator.listeners.add(unmanagedChannels)
+				evaluator.with(spec.operationClosure)
+			}
+
+			while (unmanagedChannels.pending) {
+				Thread.sleep(500L)
+			}
 		} finally {
-			dispose()
+			sessions.each { spec, session -> session.disconnect() }
 		}
-	}
-
-	/**
-	 * Wait for all channels until closed.
-	 */
-	void waitForAll() {
-		while (!allClosed) {
-			Thread.sleep(500L)
-		}
-	}
-
-	/**
-	 * Returns true if all channels are closed.
-	 * 
-	 * @return
-	 */
-	boolean isAllClosed() {
-		channels.find { !it.closed } == null
-	}
-
-	/**
-	 * Returns channels which returned error status.
-	 * 
-	 * @return
-	 */
-	List<Channel> getErrorChannels() {
-		channels.findAll { !(it.exitStatus == 0 || it.exitStatus == -1) }
-	}
-
-	/**
-	 * Disposes sessions.
-	 */
-	void dispose() {
-		sessions.each { it.disconnect() }
 	}
 }

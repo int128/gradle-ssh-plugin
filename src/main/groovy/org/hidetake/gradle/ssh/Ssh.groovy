@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -50,14 +49,18 @@ class Ssh extends DefaultTask implements SshSpec {
 		if (dryRun) {
 			dryRun()
 		} else {
-			run()
+			Executor.instance.execute(this)
 		}
 	}
 
 	protected void dryRun() {
-		def executor = new OperationSpec() {
+		def executor = new OperationHandler() {
 			@Override
 			void execute(String command) {
+				// TODO: logger.warn()
+			}
+			@Override
+			void executeBackground(String command) {
 				// TODO: logger.warn()
 			}
 			@Override
@@ -71,16 +74,6 @@ class Ssh extends DefaultTask implements SshSpec {
 		}
 		sessionSpecs.each {
 			executor.with(it.operationClosure)
-		}
-	}
-
-	protected void run() {
-		def executor = new Executor()
-		executor.execute(this)
-		executor.errorChannels.each {
-			logger.error "Remote host returned status ${it.exitStatus} on channel #${it.id}"
-		}.each {
-			throw new GradleException('Remote host returned error status')
 		}
 	}
 }
