@@ -1,4 +1,8 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.internal
+
+import org.hidetake.gradle.ssh.OperationEventListener
+import org.hidetake.gradle.ssh.OperationHandler
+import org.hidetake.gradle.ssh.SessionSpec
 
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
@@ -10,7 +14,7 @@ import com.jcraft.jsch.Session
  * @author hidetake.org
  *
  */
-class OperationClosureEvaluator implements OperationHandler {
+class DefaultOperationHandler implements OperationHandler {
 	protected final SessionSpec spec
 	protected final Session session
 
@@ -24,7 +28,7 @@ class OperationClosureEvaluator implements OperationHandler {
 	 * 
 	 * @param session
 	 */
-	OperationClosureEvaluator(SessionSpec spec, Session session) {
+	DefaultOperationHandler(SessionSpec spec, Session session) {
 		this.spec = spec
 		this.session = session
 	}

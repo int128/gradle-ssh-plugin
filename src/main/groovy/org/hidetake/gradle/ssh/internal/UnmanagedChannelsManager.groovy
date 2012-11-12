@@ -1,8 +1,11 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.internal
 
-import com.jcraft.jsch.Channel;
+import org.hidetake.gradle.ssh.OperationEventListener
+import org.hidetake.gradle.ssh.SessionSpec
 
-class UnmanagedChannels implements OperationEventListener {
+import com.jcraft.jsch.Channel
+
+class UnmanagedChannelsManager implements OperationEventListener {
 	final List<Channel> channels = []
 
 	/**
@@ -13,6 +16,13 @@ class UnmanagedChannels implements OperationEventListener {
 	 */
 	boolean isPending() {
 		channels.find { !it.closed } != null
+	}
+
+	/**
+	 * Disconnect all channels.
+	 */
+	void disconnect() {
+		channels.each { it.disconnect() }
 	}
 
 	@Override

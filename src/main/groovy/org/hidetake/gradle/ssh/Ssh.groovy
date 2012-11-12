@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.hidetake.gradle.ssh.internal.Executor
 
 /**
  * Task to perform SSH operations.

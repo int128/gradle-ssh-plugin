@@ -19,7 +19,7 @@ interface OperationEventListener {
 	void unmanagedChannelConnected(Channel channel, SessionSpec spec)
 
 	/**
-	 * Notifies that an managed channel has been connected.
+	 * Notifies that a managed channel has been connected.
 	 * 
 	 * @param channel
 	 * @param spec
@@ -27,7 +27,7 @@ interface OperationEventListener {
 	void managedChannelConnected(Channel channel, SessionSpec spec)
 
 	/**
-	 * Notifies that an unmanaged channel has been closed.
+	 * Notifies that a managed channel has been closed.
 	 * You can get exit status of the channel.
 	 * 
 	 * @param channel

@@ -1,6 +1,7 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.internal
 
-import java.util.Map;
+import org.hidetake.gradle.ssh.SessionSpec
+import org.hidetake.gradle.ssh.SshSpec
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -33,15 +34,19 @@ class Executor {
 				sessions.put(spec, session)
 			}
 
-			def unmanagedChannels = new UnmanagedChannels()
-			sessions.each { spec, session ->
-				def evaluator = new OperationClosureEvaluator(spec, session)
-				evaluator.listeners.add(unmanagedChannels)
-				evaluator.with(spec.operationClosure)
-			}
+			def unmanagedChannelsManager = new UnmanagedChannelsManager()
+			try {
+				sessions.each { spec, session ->
+					def evaluator = new DefaultOperationHandler(spec, session)
+					evaluator.listeners.add(unmanagedChannelsManager)
+					evaluator.with(spec.operationClosure)
+				}
 
-			while (unmanagedChannels.pending) {
-				Thread.sleep(500L)
+				while (unmanagedChannelsManager.pending) {
+					Thread.sleep(500L)
+				}
+			} finally {
+				unmanagedChannelsManager.disconnect()
 			}
 		} finally {
 			sessions.each { spec, session -> session.disconnect() }
