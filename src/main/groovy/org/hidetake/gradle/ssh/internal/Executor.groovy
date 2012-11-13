@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import org.gradle.api.GradleException
 import org.hidetake.gradle.ssh.SessionSpec
 import org.hidetake.gradle.ssh.SshSpec
 
@@ -41,9 +42,13 @@ class Executor {
 					evaluator.listeners.add(unmanagedChannelsManager)
 					evaluator.with(spec.operationClosure)
 				}
-
 				while (unmanagedChannelsManager.pending) {
 					Thread.sleep(500L)
+				}
+				def errorChannels = unmanagedChannelsManager.errorChannels
+				if (errorChannels.size() > 0) {
+					throw new GradleException(errorChannels.collect {
+						"Channel #${it.id} returned status ${it.exitStatus}"}.join('\n'))
 				}
 			} finally {
 				unmanagedChannelsManager.disconnect()

@@ -19,6 +19,15 @@ class UnmanagedChannelsManager implements OperationEventListener {
 	}
 
 	/**
+	 * Returns channels which returned error status.
+	 * 
+	 * @return
+	 */
+	Collection<Channel> getErrorChannels() {
+		channels.findAll { it.exitStatus > 0 }
+	}
+
+	/**
 	 * Disconnect all channels.
 	 */
 	void disconnect() {
