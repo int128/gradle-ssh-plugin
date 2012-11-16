@@ -1,29 +1,17 @@
 package org.hidetake.gradle.ssh
 
 /**
- * Specification of a SSH task.
+ * Specification of SSH operations.
  * 
  * @author hidetake.org
  *
  */
 interface SshSpec {
 	/**
-	 * Adds configuration. For example:
-	 * <pre>
-	 * config(StrictHostKeyChecking: 'no')
-	 * </pre>
-	 * 
-	 * @param pairs key value pairs of configuration
+	 * Dry-run flag.
+	 * If <code>true</code>, establishes connection but performs no action.
 	 */
-	void config(Map pairs)
-
-	/**
-	 * Adds a session.
-	 * 
-	 * @param remote the remote
-	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
-	 */
-	void session(Remote remote, Closure operationClosure)
+	boolean isDryRun()
 
 	/**
 	 * Returns configuration.

@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.GradleException
+import org.hidetake.gradle.ssh.OperationHandler
 import org.hidetake.gradle.ssh.SessionSpec
 import org.hidetake.gradle.ssh.SshSpec
 
@@ -18,11 +19,24 @@ class Executor {
 	protected Closure<JSch> createJSchInstance = { new JSch() }
 
 	/**
+	 * Executes SSH.
+	 * 
+	 * @param sshSpec
+	 */
+	void execute(SshSpec sshSpec) {
+		if (sshSpec.dryRun) {
+			dryRun(sshSpec)
+		} else {
+			run(sshSpec)
+		}
+	}
+
+	/**
 	 * Opens sessions and performs each operations.
 	 *
 	 * @param sshSpec
 	 */
-	void execute(SshSpec sshSpec) {
+	void run(SshSpec sshSpec) {
 		JSch jsch = createJSchInstance()
 		jsch.config.putAll(sshSpec.config)
 
@@ -38,9 +52,9 @@ class Executor {
 			def unmanagedChannelsManager = new UnmanagedChannelsManager()
 			try {
 				sessions.each { spec, session ->
-					def evaluator = new DefaultOperationHandler(spec, session)
-					evaluator.listeners.add(unmanagedChannelsManager)
-					evaluator.with(spec.operationClosure)
+					def handler = new DefaultOperationHandler(spec, session)
+					handler.listeners.add(unmanagedChannelsManager)
+					handler.with(spec.operationClosure)
 				}
 				while (unmanagedChannelsManager.pending) {
 					Thread.sleep(500L)
@@ -55,6 +69,35 @@ class Executor {
 			}
 		} finally {
 			sessions.each { spec, session -> session.disconnect() }
+		}
+	}
+
+	/**
+	 * Opens sessions but performs no operation.
+	 * 
+	 * @param sshSpec
+	 */
+	void dryRun(SshSpec sshSpec) {
+		def handler = new OperationHandler() {
+			@Override
+			void execute(String command) {
+				// TODO: logger.warn()
+			}
+			@Override
+			void executeBackground(String command) {
+				// TODO: logger.warn()
+			}
+			@Override
+			void get(String remote, String local) {
+				// TODO: logger.warn()
+			}
+			@Override
+			void put(String local, String remote) {
+				// TODO: logger.warn()
+			}
+		}
+		sshSpec.sessionSpecs.each { spec ->
+			handler.with(spec.operationClosure)
 		}
 	}
 }

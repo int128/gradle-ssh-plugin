@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh
 
 /**
- * Handler of session operations.
+ * Handler for the session closure.
  * 
  * @author hidetake.org
  *

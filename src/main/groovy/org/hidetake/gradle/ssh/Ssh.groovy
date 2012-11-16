@@ -10,26 +10,15 @@ import org.hidetake.gradle.ssh.internal.Executor
  * @author hidetake.org
  *
  */
-class Ssh extends DefaultTask implements SshSpec {
-	List<SessionSpec> sessionSpecs = []
+class Ssh extends DefaultTask implements SshHandler {
+	protected final List<SessionSpec> sessionSpecs = []
+	protected final Map config = [:]
 
-	/**
-	 * JSch configuration.
-	 */
-	Map config = [:]
+	Boolean dryRun = null
 
-	/**
-	 * Dry-run flag.
-	 * If <code>true</code>, establishes connection but performs no command or transfer.
-	 */
-	boolean dryRun
-
-	/**
-	 * Initializes properties by global settings.
-	 */
-	{
-		dryRun = project.extensions.getByType(SshPluginExtension).dryRun
-		config.putAll(project.extensions.getByType(SshPluginExtension).config)
+	@Override
+	public void setDryRun(boolean dryRun) {
+		this.dryRun = dryRun
 	}
 
 	@Override
@@ -47,34 +36,23 @@ class Ssh extends DefaultTask implements SshSpec {
 
 	@TaskAction
 	void perform() {
-		if (dryRun) {
-			dryRun()
-		} else {
-			Executor.instance.execute(this)
+		Executor.instance.execute(computeSpec())
+	}
+
+	protected SshSpec computeSpec() {
+		SshPluginExtension global = project.extensions.getByType(SshPluginExtension)
+		Ssh local = this
+		new SshSpec() {
+			final boolean dryRun = (local.dryRun == null) ? global.dryRun : local.dryRun
+			final Map config = merge(global.config, local.config)
+			final List<SessionSpec> sessionSpecs = local.sessionSpecs
 		}
 	}
 
-	protected void dryRun() {
-		def executor = new OperationHandler() {
-			@Override
-			void execute(String command) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void executeBackground(String command) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void get(String remote, String local) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void put(String local, String remote) {
-				// TODO: logger.warn()
-			}
-		}
-		sessionSpecs.each {
-			executor.with(it.operationClosure)
+	protected static Map merge(Map... maps) {
+		maps.inject([:]) { x, y ->
+			x.putAll(y)
+			x
 		}
 	}
 }

@@ -29,15 +29,18 @@ class SshTest {
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh testTask = project.tasks.testTask
-		assertThat(testTask.config.isEmpty(), is(true))
-		assertThat(testTask.sessionSpecs.size(), is(1))
-		assertThat(testTask.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(testTask.sessionSpecs[0].remote, instanceOf(Remote))
-		assertThat(testTask.sessionSpecs[0].remote.name, is('webServer'))
-		assertThat(testTask.sessionSpecs[0].remote.host, is('web'))
-		assertThat(testTask.sessionSpecs[0].remote.user, is('webuser'))
-		assertThat(testTask.sessionSpecs[0].remote.identity, instanceOf(File))
-		assertThat(testTask.sessionSpecs[0].remote.identity.name, is('id_rsa'))
+		SshSpec spec = testTask.computeSpec()
+		assertThat(spec.config, instanceOf(Map))
+		assertThat(spec.config.isEmpty(), is(true))
+		assertThat(spec.sessionSpecs, instanceOf(Collection))
+		assertThat(spec.sessionSpecs.size(), is(1))
+		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(spec.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(spec.sessionSpecs[0].remote.name, is('webServer'))
+		assertThat(spec.sessionSpecs[0].remote.host, is('web'))
+		assertThat(spec.sessionSpecs[0].remote.user, is('webuser'))
+		assertThat(spec.sessionSpecs[0].remote.identity, instanceOf(File))
+		assertThat(spec.sessionSpecs[0].remote.identity.name, is('id_rsa'))
 	}
 
 	@Test
@@ -66,15 +69,18 @@ class SshTest {
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh testTask = project.tasks.testTask
-		assertThat(testTask.config.isEmpty(), is(true))
-		assertThat(testTask.sessionSpecs.size(), is(1))
-		assertThat(testTask.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(testTask.sessionSpecs[0].remote, instanceOf(Remote))
-		assertThat(testTask.sessionSpecs[0].remote.name, is('appServer'))
-		assertThat(testTask.sessionSpecs[0].remote.host, is('app'))
-		assertThat(testTask.sessionSpecs[0].remote.user, is('appuser'))
-		assertThat(testTask.sessionSpecs[0].remote.identity, instanceOf(File))
-		assertThat(testTask.sessionSpecs[0].remote.identity.name, is('id_rsa'))
+		SshSpec spec = testTask.computeSpec()
+		assertThat(spec.config, instanceOf(Map))
+		assertThat(spec.config.isEmpty(), is(true))
+		assertThat(spec.sessionSpecs, instanceOf(Collection))
+		assertThat(spec.sessionSpecs.size(), is(1))
+		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(spec.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(spec.sessionSpecs[0].remote.name, is('appServer'))
+		assertThat(spec.sessionSpecs[0].remote.host, is('app'))
+		assertThat(spec.sessionSpecs[0].remote.user, is('appuser'))
+		assertThat(spec.sessionSpecs[0].remote.identity, instanceOf(File))
+		assertThat(spec.sessionSpecs[0].remote.identity.name, is('id_rsa'))
 	}
 
 	@Test
@@ -101,8 +107,11 @@ class SshTest {
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh testTask = project.tasks.testTask
-		assertThat(testTask.config.size(), is(1))
-		assertThat(testTask.config.StrictHostKeyChecking, is('no'))
-		assertThat(testTask.sessionSpecs.size(), is(1))
+		SshSpec spec = testTask.computeSpec()
+		assertThat(spec.config, instanceOf(Map))
+		assertThat(spec.config.size(), is(1))
+		assertThat(spec.config.StrictHostKeyChecking, is('no'))
+		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(spec.sessionSpecs.size(), is(1))
 	}
 }
