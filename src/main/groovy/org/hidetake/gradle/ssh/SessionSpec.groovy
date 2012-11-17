@@ -3,22 +3,17 @@ package org.hidetake.gradle.ssh
 /**
  * Specification of a session.
  *
- *
  * @author hidetake.org
  *
  */
-interface SessionSpec {
+class SessionSpec {
 	/**
-	 * Returns the remote.
-	 *
-	 * @return
+	 * Remote.
 	 */
-	Remote getRemote()
+	Remote remote
 
 	/**
-	 * Returns closure for {@link OperationSpec}.
-	 *
-	 * @return
+	 * Closure for {@link OperationHandler}.
 	 */
-	Closure getOperationClosure()
+	Closure operationClosure
 }

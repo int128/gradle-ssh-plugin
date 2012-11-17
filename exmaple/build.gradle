@@ -80,3 +80,11 @@ task uname {
 		}
 	}
 }
+
+task taskIncludingSsh << {
+	sshexec {
+		session(remotes.someServer) {
+			execute 'env'
+		}
+	}
+}

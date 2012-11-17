@@ -13,9 +13,9 @@ class SshPluginTest {
 	void applyPlugin() {
 		def project = ProjectBuilder.builder().build()
 		project.apply plugin: 'ssh'
-		assertThat(project.ssh, instanceOf(SshPluginExtension))
-		assertThat(project.ssh.config, instanceOf(Map))
-		assertThat(project.ssh.config.isEmpty(), is(true))
+		SshPluginConvention actual = project.convention.getPlugin(SshPluginConvention)
+		assertThat(actual.sshSpec.config, instanceOf(Map))
+		assertThat(actual.sshSpec.config.isEmpty(), is(true))
 	}
 
 	@Test
@@ -29,11 +29,11 @@ class SshPluginTest {
 			}
 		}
 
-		assertThat(project.ssh, instanceOf(SshPluginExtension))
-		assertThat(project.ssh.config, instanceOf(Map))
-		assertThat(project.ssh.config.size(), is(2))
-		assertThat(project.ssh.config.someOption, is(true))
-		assertThat(project.ssh.config.path, is('hoge'))
+		SshPluginConvention actual = project.convention.getPlugin(SshPluginConvention)
+		assertThat(actual.sshSpec.config, instanceOf(Map))
+		assertThat(actual.sshSpec.config.size(), is(2))
+		assertThat(actual.sshSpec.config.someOption, is(true))
+		assertThat(actual.sshSpec.config.path, is('hoge'))
 	}
 
 	@Test

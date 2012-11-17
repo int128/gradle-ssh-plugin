@@ -10,7 +10,7 @@ class Remote {
 	/**
 	 * Name of this instance.
 	 */
-	String name
+	final String name
 
 	/**
 	 * Remote user.
@@ -26,4 +26,8 @@ class Remote {
 	 * Identity key file.
 	 */
 	File identity
+
+	Remote(String name) {
+		this.name = name
+	}
 }

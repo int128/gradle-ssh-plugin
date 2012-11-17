@@ -5,6 +5,7 @@ import static org.junit.Assert.*
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.gradle.ssh.internal.Executor
 import org.junit.Test
 
 class SshTest {
@@ -28,19 +29,21 @@ class SshTest {
 		}
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh testTask = project.tasks.testTask
-		SshSpec spec = testTask.computeSpec()
-		assertThat(spec.config, instanceOf(Map))
-		assertThat(spec.config.isEmpty(), is(true))
-		assertThat(spec.sessionSpecs, instanceOf(Collection))
-		assertThat(spec.sessionSpecs.size(), is(1))
-		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(spec.sessionSpecs[0].remote, instanceOf(Remote))
-		assertThat(spec.sessionSpecs[0].remote.name, is('webServer'))
-		assertThat(spec.sessionSpecs[0].remote.host, is('web'))
-		assertThat(spec.sessionSpecs[0].remote.user, is('webuser'))
-		assertThat(spec.sessionSpecs[0].remote.identity, instanceOf(File))
-		assertThat(spec.sessionSpecs[0].remote.identity.name, is('id_rsa'))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as Executor
+		target.execute()
+		assertThat(actual.config, instanceOf(Map))
+		assertThat(actual.config.isEmpty(), is(true))
+		assertThat(actual.sessionSpecs, instanceOf(Collection))
+		assertThat(actual.sessionSpecs.size(), is(1))
+		assertThat(actual.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(actual.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(actual.sessionSpecs[0].remote.name, is('webServer'))
+		assertThat(actual.sessionSpecs[0].remote.host, is('web'))
+		assertThat(actual.sessionSpecs[0].remote.user, is('webuser'))
+		assertThat(actual.sessionSpecs[0].remote.identity, instanceOf(File))
+		assertThat(actual.sessionSpecs[0].remote.identity.name, is('id_rsa'))
 	}
 
 	@Test
@@ -68,19 +71,21 @@ class SshTest {
 		}
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh testTask = project.tasks.testTask
-		SshSpec spec = testTask.computeSpec()
-		assertThat(spec.config, instanceOf(Map))
-		assertThat(spec.config.isEmpty(), is(true))
-		assertThat(spec.sessionSpecs, instanceOf(Collection))
-		assertThat(spec.sessionSpecs.size(), is(1))
-		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(spec.sessionSpecs[0].remote, instanceOf(Remote))
-		assertThat(spec.sessionSpecs[0].remote.name, is('appServer'))
-		assertThat(spec.sessionSpecs[0].remote.host, is('app'))
-		assertThat(spec.sessionSpecs[0].remote.user, is('appuser'))
-		assertThat(spec.sessionSpecs[0].remote.identity, instanceOf(File))
-		assertThat(spec.sessionSpecs[0].remote.identity.name, is('id_rsa'))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as Executor
+		target.execute()
+		assertThat(actual.config, instanceOf(Map))
+		assertThat(actual.config.isEmpty(), is(true))
+		assertThat(actual.sessionSpecs, instanceOf(Collection))
+		assertThat(actual.sessionSpecs.size(), is(1))
+		assertThat(actual.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(actual.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(actual.sessionSpecs[0].remote.name, is('appServer'))
+		assertThat(actual.sessionSpecs[0].remote.host, is('app'))
+		assertThat(actual.sessionSpecs[0].remote.user, is('appuser'))
+		assertThat(actual.sessionSpecs[0].remote.identity, instanceOf(File))
+		assertThat(actual.sessionSpecs[0].remote.identity.name, is('id_rsa'))
 	}
 
 	@Test
@@ -106,12 +111,14 @@ class SshTest {
 		}
 
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh testTask = project.tasks.testTask
-		SshSpec spec = testTask.computeSpec()
-		assertThat(spec.config, instanceOf(Map))
-		assertThat(spec.config.size(), is(1))
-		assertThat(spec.config.StrictHostKeyChecking, is('no'))
-		assertThat(spec.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(spec.sessionSpecs.size(), is(1))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as Executor
+		target.execute()
+		assertThat(actual.config, instanceOf(Map))
+		assertThat(actual.config.size(), is(1))
+		assertThat(actual.config.StrictHostKeyChecking, is('no'))
+		assertThat(actual.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(actual.sessionSpecs.size(), is(1))
 	}
 }

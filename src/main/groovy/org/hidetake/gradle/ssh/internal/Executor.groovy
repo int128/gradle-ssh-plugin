@@ -14,7 +14,6 @@ import com.jcraft.jsch.Session
  * @author hidetake.org
  *
  */
-@Singleton
 class Executor {
 	protected Closure<JSch> createJSchInstance = { new JSch() }
 
