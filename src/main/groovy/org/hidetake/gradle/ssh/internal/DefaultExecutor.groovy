@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.GradleException
+import org.hidetake.gradle.ssh.Executor
 import org.hidetake.gradle.ssh.OperationHandler
 import org.hidetake.gradle.ssh.SessionSpec
 import org.hidetake.gradle.ssh.SshSpec
@@ -14,14 +15,11 @@ import com.jcraft.jsch.Session
  * @author hidetake.org
  *
  */
-class Executor {
+@Singleton
+class DefaultExecutor implements Executor {
 	protected Closure<JSch> createJSchInstance = { new JSch() }
 
-	/**
-	 * Executes SSH.
-	 * 
-	 * @param sshSpec
-	 */
+	@Override
 	void execute(SshSpec sshSpec) {
 		if (sshSpec.dryRun) {
 			dryRun(sshSpec)

@@ -5,12 +5,11 @@ import static org.junit.Assert.*
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.Executor
 import org.junit.Test
 
 class SshTest {
 	@Test
-	void global_remotes_1() {
+	void conventionTest_1remote() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
@@ -47,7 +46,7 @@ class SshTest {
 	}
 
 	@Test
-	void global_remotes_2() {
+	void conventionTest_2remotes() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
@@ -89,7 +88,7 @@ class SshTest {
 	}
 
 	@Test
-	void global_config() {
+	void conventionTest_config() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'

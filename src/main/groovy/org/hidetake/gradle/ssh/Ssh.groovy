@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.hidetake.gradle.ssh.internal.Executor
+import org.hidetake.gradle.ssh.internal.DefaultExecutor
 
 /**
  * Task to perform SSH operations.
@@ -11,7 +11,7 @@ import org.hidetake.gradle.ssh.internal.Executor
  *
  */
 class Ssh extends DefaultTask {
-	protected Executor service = new Executor()
+	protected Executor service = DefaultExecutor.instance
 
 	@Delegate
 	final SshSpec sshSpec = new SshSpec()
