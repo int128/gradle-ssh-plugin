@@ -71,7 +71,7 @@ task concurrentExecution(type: Ssh) {
 
 task uname {
 	description 'execute uname on all remotes'
-	dependsOn remotes.collect { Remote remote ->
+	dependsOn remotes.collect { remote ->
 		task "uname_${remote.name}" (type: Ssh) {
 			description "execute uname on ${remote.name}"
 			session(remote) {

@@ -1,10 +1,16 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.OperationEventListener
-import org.hidetake.gradle.ssh.SessionSpec
+import org.hidetake.gradle.ssh.api.OperationEventListener
+import org.hidetake.gradle.ssh.api.SessionSpec
 
 import com.jcraft.jsch.Channel
 
+/**
+ * Event listener for lifecycle management of unmanaged channels.
+ * 
+ * @author hidetake.org
+ *
+ */
 class UnmanagedChannelsManager implements OperationEventListener {
 	final List<Channel> channels = []
 

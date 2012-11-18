@@ -6,6 +6,7 @@ import static org.junit.Assert.*
 import org.gradle.api.NamedDomainObjectCollection;
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.gradle.ssh.api.Remote;
 import org.junit.Test
 
 class SshPluginTest {

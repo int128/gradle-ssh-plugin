@@ -1,14 +1,14 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.api
 
 /**
- * Handler for the session closure.
+ * Handler for a operation closure.
  * 
  * @author hidetake.org
  *
  */
 interface OperationHandler {
 	/**
-	 * Perform an execution operation.
+	 * Performs an execution operation.
 	 * This method blocks until channel is closed.
 	 *
 	 * @param command
@@ -16,7 +16,7 @@ interface OperationHandler {
 	void execute(String command)
 
 	/**
-	 * Perform an execution operation.
+	 * Performs an execution operation.
 	 * This method returns immediately and executes the command concurrently.
 	 *
 	 * @param command
@@ -24,7 +24,7 @@ interface OperationHandler {
 	void executeBackground(String command)
 
 	/**
-	 * Perform a GET operation.
+	 * Performs a GET operation.
 	 * This method blocks until channel is closed.
 	 *
 	 * @param remote
@@ -33,7 +33,7 @@ interface OperationHandler {
 	void get(String remote, String local)
 
 	/**
-	 * Perform a PUT operation.
+	 * Performs a PUT operation.
 	 * This method blocks until channel is closed.
 	 *
 	 * @param local

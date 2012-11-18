@@ -2,10 +2,13 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.hidetake.gradle.ssh.api.Remote
 
 /**
  * Gradle SSH plugin.
+ * This class adds project extension and convention properties.
  * 
+ * @see SshPluginConvention
  * @author hidetake.org
  *
  */

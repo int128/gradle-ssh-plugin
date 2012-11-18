@@ -1,15 +1,15 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.OperationEventListener
-import org.hidetake.gradle.ssh.OperationHandler
-import org.hidetake.gradle.ssh.SessionSpec
+import org.hidetake.gradle.ssh.api.OperationEventListener
+import org.hidetake.gradle.ssh.api.OperationHandler
+import org.hidetake.gradle.ssh.api.SessionSpec
 
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 
 /**
- * This class handles SSH operations described in the closure.
+ * Default implementation of {@link OperationHandler}.
  * 
  * @author hidetake.org
  *

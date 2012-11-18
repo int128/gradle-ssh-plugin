@@ -1,9 +1,9 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.api
 
 import com.jcraft.jsch.Channel
 
 /**
- * Event listener for operation closure.
+ * Event listener for a operation closure.
  * 
  * @author hidetake.org
  *
@@ -11,7 +11,7 @@ import com.jcraft.jsch.Channel
 interface OperationEventListener {
 	/**
 	 * Notifies that an unmanaged channel has been connected.
-	 * You should disconnect the channel finally.
+	 * You should disconnect the channel later (typically do it in <code>finally</code> block).
 	 * 
 	 * @param channel
 	 * @param spec

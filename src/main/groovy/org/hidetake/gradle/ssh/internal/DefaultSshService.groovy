@@ -1,22 +1,22 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.GradleException
-import org.hidetake.gradle.ssh.Executor
-import org.hidetake.gradle.ssh.OperationHandler
-import org.hidetake.gradle.ssh.SessionSpec
-import org.hidetake.gradle.ssh.SshSpec
+import org.hidetake.gradle.ssh.api.OperationHandler
+import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.SshService
+import org.hidetake.gradle.ssh.api.SshSpec
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 
 /**
- * Executes a SSH task.
+ * Default implementation of {@link SshService}.
  * 
  * @author hidetake.org
  *
  */
 @Singleton
-class DefaultExecutor implements Executor {
+class DefaultSshService implements SshService {
 	protected Closure<JSch> createJSchInstance = { new JSch() }
 
 	@Override
@@ -70,7 +70,7 @@ class DefaultExecutor implements Executor {
 	}
 
 	/**
-	 * Opens sessions but performs no operation.
+	 * Performs no action.
 	 * 
 	 * @param sshSpec
 	 */

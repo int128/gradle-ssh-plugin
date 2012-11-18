@@ -1,7 +1,7 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.api
 
 /**
- * Specification of SSH operations.
+ * Specification of a SSH task.
  * 
  * @author hidetake.org
  *
@@ -46,11 +46,11 @@ class SshSpec {
 	}
 
 	/**
-	 * Computes merged specification.
+	 * Computes merged settings.
 	 * 
-	 * @param conventionSpec
-	 * @param taskSpecificSpec
-	 * @return merged
+	 * @param conventionSpec global settings
+	 * @param taskSpecificSpec task specific settings
+	 * @return merged one
 	 */
 	static SshSpec computeMerged(SshSpec conventionSpec, SshSpec taskSpecificSpec) {
 		def merged = new SshSpec()

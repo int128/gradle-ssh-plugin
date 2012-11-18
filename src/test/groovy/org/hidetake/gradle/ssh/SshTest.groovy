@@ -6,6 +6,10 @@ import static org.junit.Assert.*
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.gradle.ssh.api.Remote;
+import org.hidetake.gradle.ssh.api.SessionSpec;
+import org.hidetake.gradle.ssh.api.SshService;
+import org.hidetake.gradle.ssh.api.SshSpec;
 import org.junit.Test
 
 class SshTest {
@@ -30,7 +34,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.sessionSpecs, instanceOf(Collection))
 		assertThat(actual.sessionSpecs.size(), is(1))
@@ -69,7 +73,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.sessionSpecs, instanceOf(Collection))
 		assertThat(actual.sessionSpecs.size(), is(1))
@@ -96,7 +100,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.config, instanceOf(Map))
 		assertThat(actual.config.size(), is(1))
@@ -115,7 +119,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.config, instanceOf(Map))
 		assertThat(actual.config.size(), is(1))
@@ -137,7 +141,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.config, instanceOf(Map))
 		assertThat(actual.config.size(), is(1))
@@ -155,7 +159,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(false))
 	}
@@ -174,7 +178,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(false))
 	}
@@ -193,7 +197,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(true))
 	}
@@ -210,7 +214,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(false))
 	}
@@ -227,7 +231,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(true))
 	}
@@ -260,7 +264,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.dryRun, is(expected))
 	}
@@ -289,7 +293,7 @@ class SshTest {
 		assertThat(project.tasks.testTask, instanceOf(Ssh))
 		Ssh target = project.tasks.testTask
 		SshSpec actual
-		target.service = [execute: { actual = it }] as Executor
+		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 	}
 }

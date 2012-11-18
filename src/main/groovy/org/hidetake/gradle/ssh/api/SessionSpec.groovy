@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.api
 
 /**
  * Specification of a session.
