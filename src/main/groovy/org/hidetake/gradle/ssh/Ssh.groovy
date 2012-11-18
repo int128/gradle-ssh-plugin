@@ -7,6 +7,8 @@ import org.hidetake.gradle.ssh.internal.DefaultExecutor
 /**
  * Task to perform SSH operations.
  * 
+ * Global settings can be override by this task.
+ * 
  * @author hidetake.org
  *
  */
@@ -18,7 +20,7 @@ class Ssh extends DefaultTask {
 
 	@TaskAction
 	void perform() {
-		// TODO: merge global settings
-		service.execute(sshSpec)
+		SshPluginConvention convention = project.convention.getPlugin(SshPluginConvention)
+		service.execute(SshSpec.computeMerged(convention.sshSpec, sshSpec))
 	}
 }

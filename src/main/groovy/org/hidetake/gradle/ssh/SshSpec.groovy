@@ -9,9 +9,9 @@ package org.hidetake.gradle.ssh
 class SshSpec {
 	/**
 	 * Dry-run flag.
-	 * If <code>true</code>, establishes connection but performs no action.
+	 * If <code>true</code>, performs no action.
 	 */
-	boolean dryRun = false
+	Boolean dryRun = null
 
 	/**
 	 * JSch configuration.
@@ -43,5 +43,34 @@ class SshSpec {
 	 */
 	void session(Remote remote, Closure operationClosure) {
 		sessionSpecs.add(new SessionSpec(remote: remote, operationClosure: operationClosure))
+	}
+
+	/**
+	 * Computes merged specification.
+	 * 
+	 * @param conventionSpec
+	 * @param taskSpecificSpec
+	 * @return merged
+	 */
+	static SshSpec computeMerged(SshSpec conventionSpec, SshSpec taskSpecificSpec) {
+		def merged = new SshSpec()
+		merged.config.putAll(conventionSpec.config)
+		merged.config.putAll(taskSpecificSpec.config)
+		if (conventionSpec.sessionSpecs.size() > 0) {
+			throw new IllegalArgumentException('Do not declare any session in the ssh convention.')
+		}
+		merged.sessionSpecs.addAll(taskSpecificSpec.sessionSpecs)
+		merged.dryRun = {
+			if (taskSpecificSpec.dryRun == null) {
+				if (conventionSpec.dryRun == null) {
+					false
+				} else {
+					conventionSpec.dryRun
+				}
+			} else {
+				taskSpecificSpec.dryRun
+			}
+		}()
+		merged
 	}
 }
