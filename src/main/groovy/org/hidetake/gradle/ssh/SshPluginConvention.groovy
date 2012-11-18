@@ -27,6 +27,9 @@ class SshPluginConvention {
 	 */
 	void ssh(Closure configure) {
 		ConfigureUtil.configure(configure, sshSpec)
+		if (sshSpec.sessionSpecs.size() > 0) {
+			throw new IllegalStateException('Do not declare any session in convention')
+		}
 	}
 
 	/**
@@ -37,6 +40,6 @@ class SshPluginConvention {
 	void sshexec(Closure configure) {
 		SshSpec localSpec = new SshSpec()
 		ConfigureUtil.configure(configure, localSpec)
-		service.execute(SshSpec.computeMerged(sshSpec, localSpec))
+		service.execute(SshSpec.computeMerged(localSpec, sshSpec))
 	}
 }

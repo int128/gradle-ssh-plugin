@@ -55,36 +55,17 @@ class SshSpec {
 	/**
 	 * Computes merged settings.
 	 * 
-	 * @param conventionSpec global settings
-	 * @param taskSpecificSpec task specific settings
+	 * @param specs list of {@link SshSpec}s in priority order (first item is highest priority)
 	 * @return merged one
 	 */
-	static SshSpec computeMerged(SshSpec conventionSpec, SshSpec taskSpecificSpec) {
+	static SshSpec computeMerged(SshSpec... specs) {
 		def merged = new SshSpec()
-		merged.config.putAll(conventionSpec.config)
-		merged.config.putAll(taskSpecificSpec.config)
-		if (conventionSpec.sessionSpecs.size() > 0) {
-			throw new IllegalArgumentException('Do not declare any session in the ssh convention.')
+		specs.reverse().each { spec ->
+			merged.config.putAll(spec.config)
+			merged.sessionSpecs.addAll(spec.sessionSpecs)
 		}
-		merged.sessionSpecs.addAll(taskSpecificSpec.sessionSpecs)
-		merged.dryRun = {
-			if (taskSpecificSpec.dryRun != null) {
-				taskSpecificSpec.dryRun
-			} else if (conventionSpec.dryRun != null) {
-				conventionSpec.dryRun
-			} else {
-				false
-			}
-		}()
-		merged.logger = {
-			if (taskSpecificSpec.logger != null) {
-				taskSpecificSpec.logger
-			} else if (conventionSpec.logger != null) {
-				conventionSpec.logger
-			} else {
-				throw new IllegalStateException('property logger in convention is null')
-			}
-		}()
+		merged.dryRun = specs.collect { it.dryRun }.findResult(false) { it }
+		merged.logger = specs.collect { it.logger }.find()
 		merged
 	}
 }

@@ -26,6 +26,6 @@ class Ssh extends DefaultTask {
 	@TaskAction
 	void perform() {
 		SshPluginConvention convention = project.convention.getPlugin(SshPluginConvention)
-		service.execute(SshSpec.computeMerged(convention.sshSpec, sshSpec))
+		service.execute(SshSpec.computeMerged(sshSpec, convention.sshSpec))
 	}
 }

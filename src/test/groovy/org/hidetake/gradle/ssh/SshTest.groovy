@@ -6,7 +6,6 @@ import static org.junit.Assert.*
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
@@ -271,7 +270,7 @@ class SshTest {
 		assertThat(actual.dryRun, is(expected))
 	}
 
-	@Test(expected = TaskExecutionException)
+	@Test(expected = IllegalStateException)
 	void conventionTest_conventionSessions() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
