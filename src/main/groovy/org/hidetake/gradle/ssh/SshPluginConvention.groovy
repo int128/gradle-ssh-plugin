@@ -30,6 +30,9 @@ class SshPluginConvention {
 		if (sshSpec.sessionSpecs.size() > 0) {
 			throw new IllegalStateException('Do not declare any session in convention')
 		}
+		if (sshSpec.logger == null) {
+			throw new IllegalStateException('Do not set logger to null in convention')
+		}
 	}
 
 	/**
