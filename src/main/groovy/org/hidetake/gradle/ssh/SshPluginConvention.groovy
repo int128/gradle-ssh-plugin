@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
+import org.hidetake.gradle.ssh.internal.DefaultExecutor
 
 /**
  * Convention of this plugin.
@@ -10,15 +11,11 @@ import org.gradle.util.ConfigureUtil
  *
  */
 class SshPluginConvention {
-	protected final Project project
 	protected final SshSpec sshSpec = new SshSpec()
-
-	SshPluginConvention(Project project) {
-		this.project = project
-	}
+	protected Executor service = DefaultExecutor.instance
 
 	/**
-	 * Configure global settings.
+	 * Configures global settings.
 	 * 
 	 * @param configure closure for {@link SshSpec}
 	 */
@@ -26,7 +23,14 @@ class SshPluginConvention {
 		ConfigureUtil.configure(configure, sshSpec)
 	}
 
+	/**
+	 * Executes SSH.
+	 * 
+	 * @param configure configuration closure for {@link SshSpec}
+	 */
 	void sshexec(Closure configure) {
-		// TODO
+		SshSpec localSpec = new SshSpec()
+		ConfigureUtil.configure(configure, localSpec)
+		service.execute(SshSpec.computeMerged(sshSpec, localSpec))
 	}
 }

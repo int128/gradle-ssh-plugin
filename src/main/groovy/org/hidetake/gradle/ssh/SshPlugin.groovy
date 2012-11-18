@@ -13,6 +13,6 @@ class SshPlugin implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
 		project.extensions.remotes = project.container(Remote)
-		project.convention.plugins.put('ssh', new SshPluginConvention(project))
+		project.convention.plugins.put('ssh', new SshPluginConvention())
 	}
 }
