@@ -26,6 +26,7 @@ class DefaultOperationHandler implements OperationHandler {
 	/**
 	 * Constructor.
 	 * 
+	 * @param spec
 	 * @param session
 	 */
 	DefaultOperationHandler(SessionSpec spec, Session session) {
@@ -35,6 +36,7 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void execute(String command) {
+		listeners*.beginOperation('execute', command)
 		ChannelExec channel = session.openChannel('exec')
 		channel.command = command
 		channel.inputStream = null
@@ -54,6 +56,7 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void executeBackground(String command) {
+		listeners*.beginOperation('executeBackground', command)
 		ChannelExec channel = session.openChannel('exec')
 		channel.command = command
 		channel.inputStream = null
@@ -65,6 +68,7 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void get(String remote, String local) {
+		listeners*.beginOperation('get', remote, local)
 		ChannelSftp channel = session.openChannel('sftp')
 		try {
 			channel.connect()
@@ -78,6 +82,7 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void put(String local, String remote) {
+		listeners*.beginOperation('put', remote, local)
 		ChannelSftp channel = session.openChannel('sftp')
 		try {
 			channel.connect()

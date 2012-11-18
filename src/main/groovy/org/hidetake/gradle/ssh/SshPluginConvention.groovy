@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh
 
+import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
@@ -14,6 +15,10 @@ import org.hidetake.gradle.ssh.internal.DefaultSshService
 class SshPluginConvention {
 	protected final SshSpec sshSpec = new SshSpec()
 	protected SshService service = DefaultSshService.instance
+
+	SshPluginConvention(Project project) {
+		sshSpec.logger = project.logger
+	}
 
 	/**
 	 * Configures global settings.

@@ -4,12 +4,14 @@ import static org.hamcrest.CoreMatchers.*
 import static org.junit.Assert.*
 
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.Remote;
-import org.hidetake.gradle.ssh.api.SessionSpec;
-import org.hidetake.gradle.ssh.api.SshService;
-import org.hidetake.gradle.ssh.api.SshSpec;
+import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.SshService
+import org.hidetake.gradle.ssh.api.SshSpec
 import org.junit.Test
 
 class SshTest {
@@ -218,7 +220,7 @@ class SshTest {
 		target.execute()
 		assertThat(actual.dryRun, is(false))
 	}
-	
+
 	@Test
 	void conventionTest_taskSpecificDryRunIsTrue() {
 		Project project = ProjectBuilder.builder().build()
@@ -295,5 +297,39 @@ class SshTest {
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
+	}
+
+	@Test
+	void conventionTest_defaultLogger() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			task(type: Ssh, 'testTask') {
+			}
+		}
+		assertThat(project.tasks.testTask, instanceOf(Ssh))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as SshService
+		target.execute()
+		assertThat(actual.logger, is(project.logger))
+	}
+
+	@Test
+	void conventionTest_taskSpecificLogger() {
+		Logger originalLogger = Logging.getLogger('conventionTest_taskSpecificLogger')
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			task(type: Ssh, 'testTask') {
+				logger = originalLogger
+			}
+		}
+		assertThat(project.tasks.testTask, instanceOf(Ssh))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as SshService
+		target.execute()
+		assertThat(actual.logger, is(originalLogger))
 	}
 }

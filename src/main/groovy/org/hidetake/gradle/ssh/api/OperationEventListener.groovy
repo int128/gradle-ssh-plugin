@@ -10,6 +10,13 @@ import com.jcraft.jsch.Channel
  */
 interface OperationEventListener {
 	/**
+	 * Notifies that operation has been started.
+	 * 
+	 * @param operation
+	 */
+	void beginOperation(String operation, Object... args)
+
+	/**
 	 * Notifies that an unmanaged channel has been connected.
 	 * You should disconnect the channel later (typically do it in <code>finally</code> block).
 	 * 

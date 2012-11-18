@@ -46,6 +46,10 @@ class UnmanagedChannelsManager implements OperationEventListener {
 	}
 
 	@Override
+	void beginOperation(String operation, Object... args) {
+	}
+
+	@Override
 	void managedChannelConnected(Channel channel, SessionSpec spec) {
 	}
 

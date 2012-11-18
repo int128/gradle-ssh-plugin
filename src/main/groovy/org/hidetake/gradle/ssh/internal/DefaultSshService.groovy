@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.GradleException
-import org.hidetake.gradle.ssh.api.OperationHandler
+import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
@@ -17,14 +17,14 @@ import com.jcraft.jsch.Session
  */
 @Singleton
 class DefaultSshService implements SshService {
-	protected Closure<JSch> createJSchInstance = { new JSch() }
+	protected Closure<JSch> jschFactory = { new JSch() }
 
 	@Override
 	void execute(SshSpec sshSpec) {
 		if (sshSpec.dryRun) {
 			dryRun(sshSpec)
 		} else {
-			run(sshSpec)
+			wetRun(sshSpec)
 		}
 	}
 
@@ -33,8 +33,8 @@ class DefaultSshService implements SshService {
 	 *
 	 * @param sshSpec
 	 */
-	void run(SshSpec sshSpec) {
-		JSch jsch = createJSchInstance()
+	void wetRun(SshSpec sshSpec) {
+		JSch jsch = jschFactory()
 		jsch.config.putAll(sshSpec.config)
 
 		Map<SessionSpec, Session> sessions = [:]
@@ -48,9 +48,11 @@ class DefaultSshService implements SshService {
 
 			def unmanagedChannelsManager = new UnmanagedChannelsManager()
 			try {
+				def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.INFO)
 				sessions.each { spec, session ->
 					def handler = new DefaultOperationHandler(spec, session)
 					handler.listeners.add(unmanagedChannelsManager)
+					handler.listeners.add(operationEventLogger)
 					handler.with(spec.operationClosure)
 				}
 				while (unmanagedChannelsManager.pending) {
@@ -75,25 +77,10 @@ class DefaultSshService implements SshService {
 	 * @param sshSpec
 	 */
 	void dryRun(SshSpec sshSpec) {
-		def handler = new OperationHandler() {
-			@Override
-			void execute(String command) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void executeBackground(String command) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void get(String remote, String local) {
-				// TODO: logger.warn()
-			}
-			@Override
-			void put(String local, String remote) {
-				// TODO: logger.warn()
-			}
-		}
+		def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.WARN)
 		sshSpec.sessionSpecs.each { spec ->
+			def handler = new DryRunOperationHandler()
+			handler.listeners.add(operationEventLogger)
 			handler.with(spec.operationClosure)
 		}
 	}

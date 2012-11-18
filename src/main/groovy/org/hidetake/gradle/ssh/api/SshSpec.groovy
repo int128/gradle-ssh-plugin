@@ -1,5 +1,7 @@
 package org.hidetake.gradle.ssh.api
 
+import org.gradle.api.logging.Logger
+
 /**
  * Specification of a SSH task.
  * 
@@ -12,6 +14,11 @@ class SshSpec {
 	 * If <code>true</code>, performs no action.
 	 */
 	Boolean dryRun = null
+
+	/**
+	 * Logger.
+	 */
+	Logger logger = null
 
 	/**
 	 * JSch configuration.
@@ -61,14 +68,21 @@ class SshSpec {
 		}
 		merged.sessionSpecs.addAll(taskSpecificSpec.sessionSpecs)
 		merged.dryRun = {
-			if (taskSpecificSpec.dryRun == null) {
-				if (conventionSpec.dryRun == null) {
-					false
-				} else {
-					conventionSpec.dryRun
-				}
-			} else {
+			if (taskSpecificSpec.dryRun != null) {
 				taskSpecificSpec.dryRun
+			} else if (conventionSpec.dryRun != null) {
+				conventionSpec.dryRun
+			} else {
+				false
+			}
+		}()
+		merged.logger = {
+			if (taskSpecificSpec.logger != null) {
+				taskSpecificSpec.logger
+			} else if (conventionSpec.logger != null) {
+				conventionSpec.logger
+			} else {
+				throw new IllegalStateException('property logger in convention is null')
 			}
 		}()
 		merged
