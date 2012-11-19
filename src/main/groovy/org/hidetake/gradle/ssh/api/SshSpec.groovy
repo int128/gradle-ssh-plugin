@@ -53,6 +53,16 @@ class SshSpec {
 	}
 
 	/**
+	 * Adds sessions.
+	 *
+	 * @param remotes list of {@link Remote}s
+	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
+	 */
+	void session(List<Remote> remotes, Closure operationClosure) {
+		remotes.each { session(it, operationClosure) }
+	}
+
+	/**
 	 * Computes merged settings.
 	 * 
 	 * @param specs list of {@link SshSpec}s in priority order (first item is highest priority)

@@ -88,6 +88,58 @@ class SshTest {
 	}
 
 	@Test
+	void conventionTest_remoteGroup() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					identity = file('id_rsa')
+				}
+				appServer {
+					host = 'app'
+					user = 'appuser'
+					identity = file('id_rsa')
+				}
+			}
+			remoteGroups {
+				myServers {
+					add project.remotes.appServer
+					add project.remotes.webServer
+				}
+			}
+			task(type: Ssh, 'testTask') {
+				session(remoteGroups.myServers) {
+					execute 'ls'
+				}
+			}
+		}
+		assertThat(project.tasks.testTask, instanceOf(Ssh))
+		Ssh target = project.tasks.testTask
+		SshSpec actual
+		target.service = [execute: { actual = it }] as SshService
+		target.execute()
+		assertThat(actual.sessionSpecs, instanceOf(Collection))
+		assertThat(actual.sessionSpecs.size(), is(2))
+		assertThat(actual.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(actual.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(actual.sessionSpecs[0].remote.name, is('appServer'))
+		assertThat(actual.sessionSpecs[0].remote.host, is('app'))
+		assertThat(actual.sessionSpecs[0].remote.user, is('appuser'))
+		assertThat(actual.sessionSpecs[0].remote.identity, instanceOf(File))
+		assertThat(actual.sessionSpecs[0].remote.identity.name, is('id_rsa'))
+		assertThat(actual.sessionSpecs[1], instanceOf(SessionSpec))
+		assertThat(actual.sessionSpecs[1].remote, instanceOf(Remote))
+		assertThat(actual.sessionSpecs[1].remote.name, is('webServer'))
+		assertThat(actual.sessionSpecs[1].remote.host, is('web'))
+		assertThat(actual.sessionSpecs[1].remote.user, is('webuser'))
+		assertThat(actual.sessionSpecs[1].remote.identity, instanceOf(File))
+		assertThat(actual.sessionSpecs[1].remote.identity.name, is('id_rsa'))
+	}
+
+	@Test
 	void conventionTest_conventionConfig() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
