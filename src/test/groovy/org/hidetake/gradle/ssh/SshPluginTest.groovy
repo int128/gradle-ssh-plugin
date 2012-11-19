@@ -3,10 +3,11 @@ package org.hidetake.gradle.ssh
 import static org.hamcrest.CoreMatchers.*
 import static org.junit.Assert.*
 
-import org.gradle.api.NamedDomainObjectCollection;
+import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.Remote;
+import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.RemoteGroup
 import org.junit.Test
 
 class SshPluginTest {
@@ -97,5 +98,54 @@ class SshPluginTest {
 		assertThat(appServer.user, is('appuser'))
 		assertThat(appServer.identity, instanceOf(File))
 		assertThat(appServer.identity.name, is('id_rsa'))
+	}
+
+	@Test
+	void global_remoteGroups() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					identity = file('id_rsa')
+				}
+				appServer {
+					host = 'app'
+					user = 'appuser'
+					identity = file('id_rsa')
+				}
+				managementServer {
+					host = 'mng'
+					user = 'mnguser'
+					identity = file('id_rsa')
+				}
+			}
+			remoteGroups {
+				myServers {
+					add(project.remotes.webServer)
+					add(project.remotes.managementServer)
+				}
+			}
+		}
+
+		assertThat(project.remoteGroups, instanceOf(NamedDomainObjectCollection))
+		assertThat(project.remoteGroups.size(), is(1))
+		assertThat(project.remoteGroups.myServers, instanceOf(RemoteGroup))
+		assertThat(project.remoteGroups.myServers, instanceOf(List))
+		assertThat(project.remoteGroups.myServers.size(), is(2))
+		assertThat(project.remoteGroups.myServers[0], instanceOf(Remote))
+		assertThat(project.remoteGroups.myServers[0].name, is('webServer'))
+		assertThat(project.remoteGroups.myServers[0].host, is('web'))
+		assertThat(project.remoteGroups.myServers[0].user, is('webuser'))
+		assertThat(project.remoteGroups.myServers[0].identity, instanceOf(File))
+		assertThat(project.remoteGroups.myServers[0].identity.name, is('id_rsa'))
+		assertThat(project.remoteGroups.myServers[1], instanceOf(Remote))
+		assertThat(project.remoteGroups.myServers[1].name, is('managementServer'))
+		assertThat(project.remoteGroups.myServers[1].host, is('mng'))
+		assertThat(project.remoteGroups.myServers[1].user, is('mnguser'))
+		assertThat(project.remoteGroups.myServers[1].identity, instanceOf(File))
+		assertThat(project.remoteGroups.myServers[1].identity.name, is('id_rsa'))
 	}
 }
