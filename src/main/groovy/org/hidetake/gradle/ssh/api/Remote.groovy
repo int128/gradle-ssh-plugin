@@ -18,12 +18,24 @@ class Remote {
 	String user
 
 	/**
+	 * Port.
+	 */
+	int port = 22
+
+	/**
 	 * Remote host.
 	 */
 	String host
 
 	/**
+	 * Password.
+	 * Leave as null if public key authentication.
+	 */
+	String password
+
+	/**
 	 * Identity key file.
+	 * Leave as null if password authentication.
 	 */
 	File identity
 

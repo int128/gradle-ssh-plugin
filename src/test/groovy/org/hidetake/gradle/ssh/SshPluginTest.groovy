@@ -58,7 +58,9 @@ class SshPluginTest {
 		Remote webServer = project.remotes.webServer
 		assertThat(webServer.name, is('webServer'))
 		assertThat(webServer.host, is('web'))
+		assertThat(webServer.port, is(22))
 		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.password, is(nullValue()))
 		assertThat(webServer.identity, instanceOf(File))
 		assertThat(webServer.identity.name, is('id_rsa'))
 	}
@@ -88,16 +90,73 @@ class SshPluginTest {
 		Remote webServer = project.remotes.webServer
 		assertThat(webServer.name, is('webServer'))
 		assertThat(webServer.host, is('web'))
+		assertThat(webServer.port, is(22))
 		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.password, is(nullValue()))
 		assertThat(webServer.identity, instanceOf(File))
 		assertThat(webServer.identity.name, is('id_rsa'))
 		assertThat(project.remotes.appServer, instanceOf(Remote))
 		Remote appServer = project.remotes.appServer
 		assertThat(appServer.name, is('appServer'))
 		assertThat(appServer.host, is('app'))
+		assertThat(appServer.port, is(22))
 		assertThat(appServer.user, is('appuser'))
+		assertThat(appServer.password, is(nullValue()))
 		assertThat(appServer.identity, instanceOf(File))
 		assertThat(appServer.identity.name, is('id_rsa'))
+	}
+
+	@Test
+	void global_remotes_password() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					password = 'hogehoge'
+				}
+			}
+		}
+
+		assertThat(project.remotes, instanceOf(NamedDomainObjectCollection))
+		assertThat(project.remotes.size(), is(1))
+		assertThat(project.remotes.webServer, instanceOf(Remote))
+		Remote webServer = project.remotes.webServer
+		assertThat(webServer.name, is('webServer'))
+		assertThat(webServer.host, is('web'))
+		assertThat(webServer.port, is(22))
+		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.password, is('hogehoge'))
+		assertThat(webServer.identity, is(nullValue()))
+	}
+
+	@Test
+	void global_remotes_port() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					port = 10022
+					user = 'webuser'
+					password = 'hogehoge'
+				}
+			}
+		}
+
+		assertThat(project.remotes, instanceOf(NamedDomainObjectCollection))
+		assertThat(project.remotes.size(), is(1))
+		assertThat(project.remotes.webServer, instanceOf(Remote))
+		Remote webServer = project.remotes.webServer
+		assertThat(webServer.name, is('webServer'))
+		assertThat(webServer.host, is('web'))
+		assertThat(webServer.port, is(10022))
+		assertThat(webServer.user, is('webuser'))
+		assertThat(webServer.password, is('hogehoge'))
+		assertThat(webServer.identity, is(nullValue()))
 	}
 
 	@Test
@@ -119,7 +178,7 @@ class SshPluginTest {
 				managementServer {
 					host = 'mng'
 					user = 'mnguser'
-					identity = file('id_rsa')
+					password = 'hoge'
 				}
 			}
 			remoteGroups {
@@ -138,14 +197,17 @@ class SshPluginTest {
 		assertThat(project.remoteGroups.myServers[0], instanceOf(Remote))
 		assertThat(project.remoteGroups.myServers[0].name, is('webServer'))
 		assertThat(project.remoteGroups.myServers[0].host, is('web'))
+		assertThat(project.remoteGroups.myServers[0].port, is(22))
 		assertThat(project.remoteGroups.myServers[0].user, is('webuser'))
+		assertThat(project.remoteGroups.myServers[0].password, is(nullValue()))
 		assertThat(project.remoteGroups.myServers[0].identity, instanceOf(File))
 		assertThat(project.remoteGroups.myServers[0].identity.name, is('id_rsa'))
 		assertThat(project.remoteGroups.myServers[1], instanceOf(Remote))
 		assertThat(project.remoteGroups.myServers[1].name, is('managementServer'))
 		assertThat(project.remoteGroups.myServers[1].host, is('mng'))
+		assertThat(project.remoteGroups.myServers[1].port, is(22))
 		assertThat(project.remoteGroups.myServers[1].user, is('mnguser'))
-		assertThat(project.remoteGroups.myServers[1].identity, instanceOf(File))
-		assertThat(project.remoteGroups.myServers[1].identity.name, is('id_rsa'))
+		assertThat(project.remoteGroups.myServers[1].password, is('hoge'))
+		assertThat(project.remoteGroups.myServers[1].identity, is(nullValue()))
 	}
 }

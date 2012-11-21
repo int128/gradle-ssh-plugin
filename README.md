@@ -41,8 +41,10 @@ remotes {
 A remote instance has following properties:
 
   * `host` - Hostname or IP address
-  * `user` - User name for authentication
-  * `identity` - Private key for authentication
+  * `port` - (Optional) Port. Default is 22.
+  * `user` - User name.
+  * `password` - (Optional) Password for password authentication. 
+  * `identity` - (Optional) Private key for public-key authentication.
 
 Also you can define remote groups:
 
