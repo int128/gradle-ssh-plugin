@@ -10,8 +10,6 @@
  * Or, rewrite host or user as you like.
  * 
  */
-import org.hidetake.gradle.ssh.*
-
 buildscript {
 	repositories {
 		mavenCentral()
@@ -45,14 +43,14 @@ remotes {
 	}
 }
 
-task simpleTask(type: Ssh) {
+task showEnvironment(type: SshTask) {
 	description 'execute a command on default remote'
 	session(remotes.someServer) {
 		execute 'env'
 	}
 }
 
-task errorCase(type: Ssh) {
+task errorCase(type: SshTask) {
 	description 'execute bad command for explaining error cases'
 	session(remotes.someServer) {
 		execute 'touch /root/test'
@@ -60,7 +58,7 @@ task errorCase(type: Ssh) {
 	}
 }
 
-task concurrentExecution(type: Ssh) {
+task concurrentExecution(type: SshTask) {
 	description 'execute commands concurrently on the remote'
 	session(remotes.someServer) {
 		(1..5).each { i ->
@@ -72,7 +70,7 @@ task concurrentExecution(type: Ssh) {
 task uname {
 	description 'execute uname on all remotes'
 	dependsOn remotes.collect { remote ->
-		task "uname_${remote.name}" (type: Ssh) {
+		task "uname_${remote.name}" (type: SshTask) {
 			description "execute uname on ${remote.name}"
 			session(remote) {
 				executeBackground 'uname -a'

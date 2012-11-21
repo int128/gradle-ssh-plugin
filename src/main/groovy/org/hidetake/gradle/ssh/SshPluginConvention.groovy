@@ -16,6 +16,11 @@ class SshPluginConvention {
 	protected final SshSpec sshSpec = new SshSpec()
 	protected SshService service = DefaultSshService.instance
 
+	/**
+	 * Alias to omit import in the build script.
+	 */
+	final Class SshTask = org.hidetake.gradle.ssh.SshTask
+
 	SshPluginConvention(Project project) {
 		sshSpec.logger = project.logger
 	}

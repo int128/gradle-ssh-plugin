@@ -57,9 +57,7 @@ Create a SSH task
 To define a SSH task, write like below:
 
 ```groovy
-import import org.hidetake.gradle.ssh.Ssh
-
-task reloadWebServers(type: Ssh) {
+task reloadWebServers(type: SshTask) {
   dryRun = true
   session(remoteGroups.webServers) {
     execute 'sudo service httpd reload'
@@ -67,7 +65,7 @@ task reloadWebServers(type: Ssh) {
 }
 ```
 
-Within `Ssh` task closure, following properties and methods are available:
+Within `SshTask` task closure, following properties and methods are available:
   * `session()` - Adds an session. Pass a remote or remote group as first argument.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.

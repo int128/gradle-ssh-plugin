@@ -13,7 +13,7 @@ import org.hidetake.gradle.ssh.internal.DefaultSshService
  * @author hidetake.org
  *
  */
-class Ssh extends DefaultTask {
+class SshTask extends DefaultTask {
 	protected SshService service = DefaultSshService.instance
 
 	/**

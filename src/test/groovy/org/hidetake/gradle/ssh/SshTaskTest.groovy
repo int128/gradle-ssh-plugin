@@ -13,7 +13,7 @@ import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.junit.Test
 
-class SshTest {
+class SshTaskTest {
 	@Test
 	void conventionTest_1remote() {
 		Project project = ProjectBuilder.builder().build()
@@ -26,14 +26,14 @@ class SshTest {
 					identity = file('id_rsa')
 				}
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				session(remotes.webServer) {
 					execute 'ls'
 				}
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -65,14 +65,14 @@ class SshTest {
 					identity = file('id_rsa')
 				}
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				session(remotes.appServer) {
 					execute 'ls'
 				}
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -110,14 +110,14 @@ class SshTest {
 					add project.remotes.webServer
 				}
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				session(remoteGroups.myServers) {
 					execute 'ls'
 				}
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -147,11 +147,11 @@ class SshTest {
 			ssh {
 				config(StrictHostKeyChecking: 'no')
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -165,12 +165,12 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				config(StrictHostKeyChecking: 'no')
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -187,12 +187,12 @@ class SshTest {
 			ssh {
 				config(StrictHostKeyChecking: 'no')
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				config(StrictHostKeyChecking: 'yes')
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -206,11 +206,11 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -225,11 +225,11 @@ class SshTest {
 			ssh {
 				dryRun = false
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -244,11 +244,11 @@ class SshTest {
 			ssh {
 				dryRun = true
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -260,12 +260,12 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				dryRun = false
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -277,12 +277,12 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				dryRun = true
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -310,12 +310,12 @@ class SshTest {
 			ssh {
 				dryRun = globalDryRun
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				dryRun = taskSpecificDryRun
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -340,11 +340,11 @@ class SshTest {
 					execute 'ls'
 				}
 			}
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -355,11 +355,11 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
@@ -372,12 +372,12 @@ class SshTest {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
-			task(type: Ssh, 'testTask') {
+			task(type: SshTask, 'testTask') {
 				logger = originalLogger
 			}
 		}
-		assertThat(project.tasks.testTask, instanceOf(Ssh))
-		Ssh target = project.tasks.testTask
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
 		SshSpec actual
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
