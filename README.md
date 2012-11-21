@@ -7,7 +7,7 @@ This plugin provides SSH execution and SFTP transfer.
 How to use
 ----------
 
-To use this plugin, add a dependency and apply it in your build.gradle:
+To use the plugin, add a dependency and apply it in your build.gradle:
 
 ```groovy
 buildscript {
@@ -38,6 +38,12 @@ remotes {
 }
 ```
 
+A remote instance has following properties:
+
+  * `host` - Hostname or IP address
+  * `user` - User name for authentication
+  * `identity` - Private key for authentication
+
 Also you can define remote groups:
 
 ```groovy
@@ -50,11 +56,14 @@ remoteGroups {
 }
 ```
 
+Remote group is just a `List<Remote>`.
+Use `add()` to add a remote, and `addAll()` to add remotes.
+
 
 Create a SSH task
 -----------------
 
-To define a SSH task, write like below:
+To define a SSH task, use `task(type: SshTask)` like:
 
 ```groovy
 task reloadWebServers(type: SshTask) {
@@ -65,7 +74,7 @@ task reloadWebServers(type: SshTask) {
 }
 ```
 
-Within `SshTask` task closure, following properties and methods are available:
+Within `SshTask` closure, following properties and methods are available:
   * `session()` - Adds an session. Pass a remote or remote group as first argument.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
@@ -78,11 +87,10 @@ Within `session` closure, following methods are available:
   * `put(local, remote)` - Sends a file or directory to remote host.
 
 
-Call the method in a task
--------------------------
+Use in the task
+---------------
 
-The plugin injects `sshexec()` method into `project` properties.
-To execute in a task, call `sshexec()` method and give a closure:
+To execute SSH in the task, call `sshexec()` method and give a closure:
 
 ```groovy
 task prepareEnvironment {
@@ -103,7 +111,7 @@ task prepareEnvironment {
 Convention properties
 ---------------------
 
-Define global settings in `ssh` closure:
+To define global settings, describe in `ssh` closure:
 
 ```groovy
 ssh {
@@ -117,6 +125,12 @@ Following properties and methods are available:
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `logger` - Default is `project.logger`
+
+
+Examples
+--------
+
+See exmaple/build.gradle
 
 
 Future works
