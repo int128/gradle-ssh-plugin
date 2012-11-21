@@ -11,14 +11,27 @@
  * 
  */
 buildscript {
-	repositories {
-		mavenCentral()
-		flatDir { dirs '../build/libs' }
-	}
-
-	dependencies {
-		classpath 'org.hidetake:gradle-ssh-plugin:1.0'
-		classpath 'com.jcraft:jsch:0.1.48'
+	if (System.properties.useGitHubRelease) {
+		repositories {
+			mavenCentral()
+			add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+				name = 'GitHub'
+				addArtifactPattern 'http://cloud.github.com/downloads/int128/[module]/[module]-[revision].[ext]'
+			}
+		}
+		dependencies {
+			classpath 'org.hidetake:gradle-ssh-plugin:0.1.0'
+			classpath 'com.jcraft:jsch:0.1.48'
+		}
+	} else {
+		repositories {
+			mavenCentral()
+			flatDir { dirs '../build/libs' }
+		}
+		dependencies {
+			classpath 'org.hidetake:gradle-ssh-plugin:latest.integration'
+			classpath 'com.jcraft:jsch:0.1.48'
+		}
 	}
 }
 

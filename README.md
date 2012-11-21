@@ -12,10 +12,15 @@ To use the plugin, add a dependency and apply it in your build.gradle:
 ```groovy
 buildscript {
   repositories {
-    /* FIXME */
+    mavenCentral()
+    add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+      name = 'GitHub'
+      addArtifactPattern 'http://cloud.github.com/downloads/int128/[module]/[module]-[revision].[ext]'
+    }
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:1.0'
+    classpath 'org.hidetake:gradle-ssh-plugin:0.1.0'
+    classpath 'com.jcraft:jsch:0.1.48'
   }
 }
 

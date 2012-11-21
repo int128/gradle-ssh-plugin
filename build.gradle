@@ -2,7 +2,7 @@ apply plugin: 'groovy'
 apply plugin: 'project-report'
 
 group = 'org.hidetake'
-version = '1.0'
+version = '0.1.0'
 
 repositories {
 	mavenCentral()
@@ -14,4 +14,8 @@ dependencies {
 
 	compile 'com.jcraft:jsch:0.1.48'
 	testCompile 'junit:junit:4.10'
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '1.2'
 }
