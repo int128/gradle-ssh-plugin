@@ -41,10 +41,10 @@ remotes {
 A remote instance has following properties:
 
   * `host` - Hostname or IP address
-  * `port` - (Optional) Port. Default is 22.
+  * `port` - Port. Default is 22. (Optional)
   * `user` - User name.
-  * `password` - (Optional) Password for password authentication. 
-  * `identity` - (Optional) Private key for public-key authentication.
+  * `password` - Password for password authentication. (Optional)
+  * `identity` - Private key for public-key authentication. (Optional)
 
 Also you can define remote groups:
 
@@ -59,7 +59,7 @@ remoteGroups {
 ```
 
 Remote group is just a `List<Remote>`.
-Use `add()` to add a remote, and `addAll()` to add remotes.
+Use `add()` for a remote and `addAll()` for remotes.
 
 
 Create a SSH task
@@ -77,9 +77,10 @@ task reloadWebServers(type: SshTask) {
 ```
 
 Within `SshTask` closure, following properties and methods are available:
-  * `session()` - Adds an session. Pass a remote or remote group as first argument.
+  * `session(remote)` - Adds a session to the remote.
+  * `session(remoteGroup)` - Adds sessions to remotes in the remote group. This is equivalent to `remoteGroup.each{ session(it) }`.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
-  * `dryRun` - Dry run flag. If true, performs no action. Default is false.
+  * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
 
 Within `session` closure, following methods are available:
@@ -89,16 +90,15 @@ Within `session` closure, following methods are available:
   * `put(local, remote)` - Sends a file or directory to remote host.
 
 
-Use in the task
----------------
+Use SSH in the task
+-------------------
 
-To execute SSH in the task, call `sshexec()` method and give a closure:
+To execute SSH in the task, call `sshexec()` method with a closure:
 
 ```groovy
 task prepareEnvironment {
   doLast {
     def operation = 'reload'
-    // do something...
     sshexec {
       dryRun = true
       session(remoteGroups.webServers) {
@@ -135,8 +135,8 @@ Examples
 See exmaple/build.gradle
 
 
-Future works
-------------
+Future work
+-----------
 
 Currently, some features are not implemented yet:
 

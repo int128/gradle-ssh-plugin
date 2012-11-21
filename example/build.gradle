@@ -67,7 +67,7 @@ task concurrentExecution(type: SshTask) {
 	}
 }
 
-task uname {
+task showEnvironmentForEach {
 	description 'execute uname on all remotes'
 	dependsOn remotes.collect { remote ->
 		task "uname_${remote.name}" (type: SshTask) {
@@ -81,8 +81,10 @@ task uname {
 
 task taskIncludingSsh << {
 	sshexec {
+		def command = "env"
+		println command
 		session(remotes.someServer) {
-			execute 'env'
+			execute command
 		}
 	}
 }
