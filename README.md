@@ -137,7 +137,7 @@ Following properties and methods are available:
 Examples
 --------
 
-See exmaple/build.gradle
+See example/build.gradle
 
 
 Future work

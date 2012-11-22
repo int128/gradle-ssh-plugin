@@ -42,61 +42,65 @@ ssh {
 }
 
 remotes {
-	someServer {
-		host = 'localhost' // TODO: change to your host name
+	localhost {
+		host = 'localhost'
 		user = System.properties['user.name']
 		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 	}
-	(1..3).each { serverId ->
-		"myServer_${serverId}" {
-			host = 'localhost' // TODO: change to your host name
-			user = System.properties['user.name']
-			identity = file("${System.properties['user.home']}/.ssh/id_rsa")
-		}
+	myhost {
+		host = '127.0.0.1'
+		user = System.properties['user.name']
+		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 	}
 }
 
-task showEnvironment(type: SshTask) {
-	description 'execute a command on default remote'
-	session(remotes.someServer) {
+remoteGroups {
+	myservers {
+		add remotes.localhost
+		add remotes.myhost
+	}
+}
+
+task showEnvironmentSingle(type: SshTask) {
+	description 'execute command on a remote'
+	session(remotes.localhost) {
 		execute 'env'
 	}
 }
 
-task errorCase(type: SshTask) {
-	description 'execute bad command for explaining error cases'
-	session(remotes.someServer) {
-		execute 'touch /root/test'
-		execute 'uname -a'
+task showEnvironmentAll(type: SshTask) {
+	description 'execute command on remotes'
+	session(remoteGroups.myservers) {
+		execute 'env'
 	}
 }
 
 task concurrentExecution(type: SshTask) {
-	description 'execute commands concurrently on the remote'
-	session(remotes.someServer) {
+	description 'describes how to execute SSH concurrently'
+	session(remotes.localhost) {
 		(1..5).each { i ->
-			executeBackground "echo ${i} && sleep ${i} && echo ${i}"
+			executeBackground "sleep ${i} && echo -n ${i}- && date"
 		}
+	}
+	session(remotes.myhost) {
+		executeBackground 'sar 1 5'
 	}
 }
 
-task showEnvironmentForEach {
-	description 'execute uname on all remotes'
-	dependsOn remotes.collect { remote ->
-		task "uname_${remote.name}" (type: SshTask) {
-			description "execute uname on ${remote.name}"
-			session(remote) {
-				executeBackground 'uname -a'
-			}
-		}
+task executionFailed(type: SshTask) {
+	description 'describes error handling'
+	session(remotes.localhost) {
+		// may be failed
+		execute 'touch /root/test'
 	}
 }
 
-task taskIncludingSsh << {
+task sshInTask << {
+	description 'describes how to execute SSH in the task'
+	def command = "env"
+	println command
 	sshexec {
-		def command = "env"
-		println command
-		session(remotes.someServer) {
+		session(remotes.localhost) {
 			execute command
 		}
 	}
