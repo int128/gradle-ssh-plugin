@@ -1,7 +1,7 @@
 Gradle SSH Plugin
 =================
 
-This plugin provides SSH execution and SFTP transfer.
+This plugin provides SSH execution and SFTP transfer capabilities.
 
 
 How to use
@@ -146,10 +146,10 @@ Following properties and methods are available:
   * `logger` - Default is `project.logger`
 
 
-Examples
---------
+Complete example
+----------------
 
-See example/build.gradle
+See [/example/build.gradle](blob/master/example/build.gradle)
 
 
 Future work
@@ -157,7 +157,6 @@ Future work
 
 Currently, some features are not implemented yet:
 
-  * Password authentication.
   * Concurrent files transfer.
 
 
