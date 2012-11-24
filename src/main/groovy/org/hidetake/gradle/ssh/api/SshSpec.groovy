@@ -55,11 +55,11 @@ class SshSpec {
 	/**
 	 * Adds sessions.
 	 *
-	 * @param remotes list of {@link Remote}s
+	 * @param remotes collection of {@link Remote}s
 	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
-	void session(List<Remote> remotes, Closure operationClosure) {
-		remotes.each { session(it, operationClosure) }
+	void session(Collection<Remote> remotes, Closure operationClosure) {
+		remotes.each { Remote remote -> session(remote, operationClosure) }
 	}
 
 	/**

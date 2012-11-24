@@ -7,7 +7,6 @@ import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.RemoteGroup
 import org.junit.Test
 
 class SshPluginTest {
@@ -160,12 +159,13 @@ class SshPluginTest {
 	}
 
 	@Test
-	void global_remoteGroups() {
+	void global_remotes_roles() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
 			remotes {
 				webServer {
+					role 'servers'
 					host = 'web'
 					user = 'webuser'
 					identity = file('id_rsa')
@@ -176,38 +176,33 @@ class SshPluginTest {
 					identity = file('id_rsa')
 				}
 				managementServer {
+					role 'servers'
 					host = 'mng'
 					user = 'mnguser'
 					password = 'hoge'
 				}
 			}
-			remoteGroups {
-				myServers {
-					add(project.remotes.webServer)
-					add(project.remotes.managementServer)
-				}
-			}
 		}
 
-		assertThat(project.remoteGroups, instanceOf(NamedDomainObjectCollection))
-		assertThat(project.remoteGroups.size(), is(1))
-		assertThat(project.remoteGroups.myServers, instanceOf(RemoteGroup))
-		assertThat(project.remoteGroups.myServers, instanceOf(List))
-		assertThat(project.remoteGroups.myServers.size(), is(2))
-		assertThat(project.remoteGroups.myServers[0], instanceOf(Remote))
-		assertThat(project.remoteGroups.myServers[0].name, is('webServer'))
-		assertThat(project.remoteGroups.myServers[0].host, is('web'))
-		assertThat(project.remoteGroups.myServers[0].port, is(22))
-		assertThat(project.remoteGroups.myServers[0].user, is('webuser'))
-		assertThat(project.remoteGroups.myServers[0].password, is(nullValue()))
-		assertThat(project.remoteGroups.myServers[0].identity, instanceOf(File))
-		assertThat(project.remoteGroups.myServers[0].identity.name, is('id_rsa'))
-		assertThat(project.remoteGroups.myServers[1], instanceOf(Remote))
-		assertThat(project.remoteGroups.myServers[1].name, is('managementServer'))
-		assertThat(project.remoteGroups.myServers[1].host, is('mng'))
-		assertThat(project.remoteGroups.myServers[1].port, is(22))
-		assertThat(project.remoteGroups.myServers[1].user, is('mnguser'))
-		assertThat(project.remoteGroups.myServers[1].password, is('hoge'))
-		assertThat(project.remoteGroups.myServers[1].identity, is(nullValue()))
+		Collection<Remote> servers = project.remotes.role('servers')
+		assertThat(servers, instanceOf(Collection))
+		assertThat(servers.size(), is(2))
+		def servers_webServer = servers.find { it.name == 'webServer' }
+		assertThat(servers_webServer, instanceOf(Remote))
+		assertThat(servers_webServer.name, is('webServer'))
+		assertThat(servers_webServer.host, is('web'))
+		assertThat(servers_webServer.port, is(22))
+		assertThat(servers_webServer.user, is('webuser'))
+		assertThat(servers_webServer.password, is(nullValue()))
+		assertThat(servers_webServer.identity, instanceOf(File))
+		assertThat(servers_webServer.identity.name, is('id_rsa'))
+		def servers_managementServer = servers.find { it.name == 'managementServer' }
+		assertThat(servers_managementServer, instanceOf(Remote))
+		assertThat(servers_managementServer.name, is('managementServer'))
+		assertThat(servers_managementServer.host, is('mng'))
+		assertThat(servers_managementServer.port, is(22))
+		assertThat(servers_managementServer.user, is('mnguser'))
+		assertThat(servers_managementServer.password, is('hoge'))
+		assertThat(servers_managementServer.identity, is(nullValue()))
 	}
 }
