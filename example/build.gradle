@@ -43,21 +43,16 @@ ssh {
 
 remotes {
 	localhost {
+		role 'webServers'
 		host = 'localhost'
 		user = System.properties['user.name']
 		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 	}
 	myhost {
+		role 'webServers'
 		host = '127.0.0.1'
 		user = System.properties['user.name']
 		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
-	}
-}
-
-remoteGroups {
-	myservers {
-		add remotes.localhost
-		add remotes.myhost
 	}
 }
 
@@ -70,7 +65,7 @@ task showEnvironmentSingle(type: SshTask) {
 
 task showEnvironmentAll(type: SshTask) {
 	description 'execute command on remotes'
-	session(remoteGroups.myservers) {
+	session(remotes.role('webServers')) {
 		execute 'env'
 	}
 }

@@ -51,20 +51,27 @@ A remote instance has following properties:
   * `password` - Password for password authentication. (Optional)
   * `identity` - Private key for public-key authentication. (Optional)
 
-Also you can define remote groups:
+Also remote hosts may be associated with roles, using `role(name)` like:
 
 ```groovy
-remoteGroups {
-  webServers {
-    add web01
-    add web02
-    add web03
+remotes {
+  web01 {
+    role('webServers')
+    host = '192.168.1.101'
+    //...
+  }
+  web02 {
+    role('webServers')
+    host = '192.168.1.102'
+    //...
+  }
+  web03 {
+    role('webServers')
+    host = '192.168.1.103'
+    //...
   }
 }
 ```
-
-Remote group is just a `List<Remote>`.
-Use `add()` for a remote and `addAll()` for remotes.
 
 
 Create a SSH task
@@ -73,17 +80,22 @@ Create a SSH task
 To define a SSH task, use `task(type: SshTask)` like:
 
 ```groovy
-task reloadWebServers(type: SshTask) {
-  dryRun = true
-  session(remoteGroups.webServers) {
+task reloadMasterServer(type: SshTask) {
+  session(remotes.web01) {
     execute 'sudo service httpd reload'
+  }
+}
+
+task reloadWebServers(type: SshTask) {
+  session(remotes.role('webServers')) {
+    executeBackground 'sudo service httpd reload'
   }
 }
 ```
 
 Within `SshTask` closure, following properties and methods are available:
-  * `session(remote)` - Adds a session to the remote.
-  * `session(remoteGroup)` - Adds sessions to remotes in the remote group. This is equivalent to `remoteGroup.each{ session(it) }`.
+  * `session(remote)` - Adds a session to the remote host.
+  * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
@@ -106,7 +118,7 @@ task prepareEnvironment {
     def operation = 'reload'
     sshexec {
       dryRun = true
-      session(remoteGroups.webServers) {
+      session(remotes.role('webServers')) {
         execute "sudo service httpd ${operation}"
       }
     }

@@ -1,9 +1,9 @@
 package org.hidetake.gradle.ssh
 
+import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.RemoteGroup
 
 /**
  * Gradle SSH plugin.
@@ -16,8 +16,15 @@ import org.hidetake.gradle.ssh.api.RemoteGroup
 class SshPlugin implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
-		project.extensions.remotes = project.container(Remote)
-		project.extensions.remoteGroups = project.container(RemoteGroup)
+		project.extensions.remotes = createRemotes(project)
 		project.convention.plugins.put('ssh', new SshPluginConvention(project))
+	}
+
+	protected NamedDomainObjectCollection<Remote> createRemotes(Project project) {
+		def remotes = project.container(Remote)
+		remotes.extensions.role = (Closure<Collection<Remote>>) { String role ->
+			remotes.findAll { Remote remote -> remote.roles.contains(role) }
+		}
+		remotes
 	}
 }

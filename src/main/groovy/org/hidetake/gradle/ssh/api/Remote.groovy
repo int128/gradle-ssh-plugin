@@ -34,6 +34,11 @@ class Remote {
 	String password
 
 	/**
+	 * Roles.
+	 */
+	final List<String> roles = []
+
+	/**
 	 * Identity key file.
 	 * Leave as null if password authentication.
 	 */
@@ -41,5 +46,14 @@ class Remote {
 
 	Remote(String name) {
 		this.name = name
+	}
+
+	/**
+	 * Add a role to this remote.
+	 * 
+	 * @param role
+	 */
+	void role(String role) {
+		roles.add(role)
 	}
 }

@@ -88,30 +88,26 @@ class SshTaskTest {
 	}
 
 	@Test
-	void conventionTest_remoteGroup() {
+	void conventionTest_remotes_roles() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
 			remotes {
 				webServer {
+					role 'servers'
 					host = 'web'
 					user = 'webuser'
 					identity = file('id_rsa')
 				}
 				appServer {
+					role 'servers'
 					host = 'app'
 					user = 'appuser'
 					identity = file('id_rsa')
 				}
 			}
-			remoteGroups {
-				myServers {
-					add project.remotes.appServer
-					add project.remotes.webServer
-				}
-			}
 			task(type: SshTask, 'testTask') {
-				session(remoteGroups.myServers) {
+				session(remotes.role('servers')) {
 					execute 'ls'
 				}
 			}
