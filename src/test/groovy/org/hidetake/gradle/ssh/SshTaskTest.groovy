@@ -198,6 +198,39 @@ class SshTaskTest {
 	}
 
 	@Test
+	void conventionTest_configIsolation() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			ssh {
+			}
+			task(type: SshTask, 'testTask1') {
+				config(StrictHostKeyChecking: 'yes')
+			}
+			task(type: SshTask, 'testTask2') {
+			}
+		}
+
+		assertThat(project.tasks.testTask1, instanceOf(SshTask))
+		SshTask target1 = project.tasks.testTask1
+		SshSpec actual1
+		target1.service = [execute: { actual1 = it }] as SshService
+		target1.execute()
+		assertThat(actual1.config, instanceOf(Map))
+		assertThat(actual1.config.size(), is(1))
+		assertThat(actual1.config.StrictHostKeyChecking, is('yes'))
+
+		assertThat(project.tasks.testTask2, instanceOf(SshTask))
+		SshTask target2 = project.tasks.testTask2
+		SshSpec actual2
+		target2.service = [execute: { actual2 = it }] as SshService
+		target2.execute()
+		assertThat(actual2.config, instanceOf(Map))
+		assertThat(actual2.config.size(), is(0))
+		assertThat(actual2.config.containsKey('StrictHostKeyChecking'), is(false))
+	}
+
+	@Test
 	void conventionTest_conventionDryRunOmitted() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
