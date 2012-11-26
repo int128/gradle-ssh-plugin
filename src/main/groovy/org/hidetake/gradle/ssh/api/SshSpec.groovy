@@ -49,6 +49,15 @@ class SshSpec {
 	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
 	void session(Remote remote, Closure operationClosure) {
+		if (remote.user == null) {
+			throw new IllegalArgumentException("user name of remote ${remote.name} is null")
+		}
+		if (remote.host == null) {
+			throw new IllegalArgumentException("host name of remote ${remote.name} is null")
+		}
+		if (operationClosure == null) {
+			throw new IllegalArgumentException('operation closure is null')
+		}
 		sessionSpecs.add(new SessionSpec(remote: remote, operationClosure: operationClosure))
 	}
 
