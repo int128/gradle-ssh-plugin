@@ -10,10 +10,21 @@ class SessionSpec {
 	/**
 	 * Remote.
 	 */
-	Remote remote
+	final Remote remote
 
 	/**
 	 * Closure for {@link OperationHandler}.
 	 */
-	Closure operationClosure
+	final Closure operationClosure
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param remote
+	 * @param operationClosure
+	 */
+	SessionSpec(Remote remote, Closure operationClosure) {
+		this.remote = remote
+		this.operationClosure = operationClosure
+	}
 }

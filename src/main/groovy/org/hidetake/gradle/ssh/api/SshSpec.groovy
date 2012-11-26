@@ -58,7 +58,7 @@ class SshSpec {
 		if (operationClosure == null) {
 			throw new IllegalArgumentException('operation closure is null')
 		}
-		sessionSpecs.add(new SessionSpec(remote: remote, operationClosure: operationClosure))
+		sessionSpecs.add(new SessionSpec(remote, operationClosure))
 	}
 
 	/**
