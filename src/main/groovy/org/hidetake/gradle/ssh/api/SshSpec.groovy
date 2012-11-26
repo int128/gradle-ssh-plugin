@@ -39,6 +39,7 @@ class SshSpec {
 	 * @param pairs key value pairs of configuration
 	 */
 	void config(Map pairs) {
+		assert pairs != null, 'config map should not be null'
 		config.putAll(pairs)
 	}
 
@@ -49,15 +50,10 @@ class SshSpec {
 	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
 	void session(Remote remote, Closure operationClosure) {
-		if (remote.user == null) {
-			throw new IllegalArgumentException("user name of remote ${remote.name} is null")
-		}
-		if (remote.host == null) {
-			throw new IllegalArgumentException("host name of remote ${remote.name} is null")
-		}
-		if (operationClosure == null) {
-			throw new IllegalArgumentException('operation closure is null')
-		}
+		assert remote != null, 'remote should not be null'
+		assert remote.user != null, "user name of remote ${remote.name} should not be null"
+		assert remote.host != null, "host name of remote ${remote.name} should not be null"
+		assert operationClosure != null, 'operation closure should not be null'
 		sessionSpecs.add(new SessionSpec(remote, operationClosure))
 	}
 
@@ -68,6 +64,8 @@ class SshSpec {
 	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
 	void session(Collection<Remote> remotes, Closure operationClosure) {
+		assert remotes != null, 'remote should not be null'
+		assert operationClosure != null, 'operation closure should not be null'
 		remotes.each { Remote remote -> session(remote, operationClosure) }
 	}
 
@@ -77,7 +75,7 @@ class SshSpec {
 	 * @param specs list of {@link SshSpec}s in priority order (first item is highest priority)
 	 * @return merged one
 	 */
-	static SshSpec computeMerged(SshSpec... specs) {
+	protected static SshSpec computeMerged(SshSpec... specs) {
 		def merged = new SshSpec()
 		specs.reverse().each { spec ->
 			merged.config.putAll(spec.config)

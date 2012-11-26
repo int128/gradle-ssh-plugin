@@ -54,6 +54,7 @@ class Remote {
 	 * @param role
 	 */
 	void role(String role) {
+		assert role != null, 'role name should not be null'
 		roles.add(role)
 	}
 }

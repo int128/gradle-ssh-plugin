@@ -31,6 +31,7 @@ class SshPluginConvention {
 	 * @param configure closure for {@link SshSpec}
 	 */
 	void ssh(Closure configure) {
+		assert configure != null, 'configure closure should not be null'
 		ConfigureUtil.configure(configure, sshSpec)
 		if (sshSpec.sessionSpecs.size() > 0) {
 			throw new IllegalStateException('Do not declare any session in convention')
@@ -46,6 +47,7 @@ class SshPluginConvention {
 	 * @param configure configuration closure for {@link SshSpec}
 	 */
 	void sshexec(Closure configure) {
+		assert configure != null, 'configure closure should not be null'
 		SshSpec localSpec = new SshSpec()
 		ConfigureUtil.configure(configure, localSpec)
 		service.execute(SshSpec.computeMerged(localSpec, sshSpec))
