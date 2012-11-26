@@ -149,7 +149,7 @@ Following properties and methods are available:
 Complete example
 ----------------
 
-See [/example/build.gradle](blob/master/example/build.gradle)
+See [/example/build.gradle](gradle-ssh-plugin/blob/master/example/build.gradle)
 
 
 Future work
