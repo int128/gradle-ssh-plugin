@@ -42,7 +42,9 @@ class DefaultSshService implements SshService {
 			sshSpec.sessionSpecs.each { spec ->
 				def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
 				session.password = spec.remote.password
-				session.identityRepository.add(spec.remote.identity.bytes)
+				if (spec.remote.identity) {
+					session.identityRepository.add(spec.remote.identity.bytes)
+				}
 				session.connect()
 				sessions.put(spec, session)
 			}
