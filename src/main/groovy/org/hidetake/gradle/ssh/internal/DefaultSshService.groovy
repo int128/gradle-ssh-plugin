@@ -52,10 +52,12 @@ class DefaultSshService implements SshService {
 			def unmanagedChannelsManager = new UnmanagedChannelsManager()
 			try {
 				def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.INFO)
+				def exitStatusValidator = new ExitStatusValidator()
 				sessions.each { spec, session ->
 					def handler = new DefaultOperationHandler(spec, session)
 					handler.listeners.add(unmanagedChannelsManager)
 					handler.listeners.add(operationEventLogger)
+					handler.listeners.add(exitStatusValidator)
 					handler.with(spec.operationClosure)
 				}
 				while (unmanagedChannelsManager.pending) {
