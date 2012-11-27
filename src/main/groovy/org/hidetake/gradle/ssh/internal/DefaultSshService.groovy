@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.gradle.api.GradleException
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
@@ -49,27 +48,20 @@ class DefaultSshService implements SshService {
 				sessions.put(spec, session)
 			}
 
-			def unmanagedChannelsManager = new UnmanagedChannelsManager()
+			def channelsLifecycleManager = new ChannelsLifecycleManager()
 			try {
 				def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.INFO)
 				def exitStatusValidator = new ExitStatusValidator()
 				sessions.each { spec, session ->
 					def handler = new DefaultOperationHandler(spec, session)
-					handler.listeners.add(unmanagedChannelsManager)
+					handler.listeners.add(channelsLifecycleManager)
 					handler.listeners.add(operationEventLogger)
 					handler.listeners.add(exitStatusValidator)
 					handler.with(spec.operationClosure)
 				}
-				while (unmanagedChannelsManager.pending) {
-					Thread.sleep(500L)
-				}
-				def errorChannels = unmanagedChannelsManager.errorChannels
-				if (errorChannels.size() > 0) {
-					throw new GradleException(errorChannels.collect {
-						"Channel #${it.id} returned status ${it.exitStatus}"}.join('\n'))
-				}
+				channelsLifecycleManager.waitForPending(exitStatusValidator)
 			} finally {
-				unmanagedChannelsManager.disconnect()
+				channelsLifecycleManager.disconnect()
 			}
 		} finally {
 			sessions.each { spec, session -> session.disconnect() }
