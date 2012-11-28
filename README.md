@@ -19,7 +19,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:0.1.0'
+    classpath 'org.hidetake:gradle-ssh-plugin:0.1.1'
     classpath 'com.jcraft:jsch:0.1.48'
   }
 }
