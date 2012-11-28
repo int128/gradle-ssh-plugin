@@ -1,5 +1,0 @@
-apply plugin: 'project-report'
-apply plugin: 'ssh'
-
-println project.parent.extensions.findByName('remotes')
-println project.remotes

@@ -1,1 +1,2 @@
-include 'multiproject-example'
+include 'multiproject-example1'
+include 'multiproject-example2'
