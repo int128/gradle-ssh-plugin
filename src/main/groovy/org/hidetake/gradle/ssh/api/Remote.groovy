@@ -56,4 +56,12 @@ class Remote {
 	void role(String role) {
 		roles.add(role)
 	}
+
+	/**
+	 * Returns a string representation of this remote host.
+	 */
+	@Override
+	String toString() {
+		"remote '${name}'"
+	}
 }

@@ -100,3 +100,8 @@ task sshInTask << {
 		}
 	}
 }
+
+void showRemotes(Project baseProject) {
+	logger.info('({}) rootProject.remotes = {}', baseProject, baseProject.parent.remotes)
+	logger.info('({}) project.remotes = {}', baseProject, baseProject.remotes)
+}
