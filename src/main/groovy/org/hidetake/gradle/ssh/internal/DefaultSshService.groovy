@@ -20,6 +20,8 @@ class DefaultSshService implements SshService {
 
 	@Override
 	void execute(SshSpec sshSpec) {
+		assert sshSpec.dryRun != null, 'default of dryRun should be set by convention'
+		assert sshSpec.logger != null, 'default of logger should be set by convention'
 		if (sshSpec.dryRun) {
 			dryRun(sshSpec)
 		} else {
@@ -40,7 +42,9 @@ class DefaultSshService implements SshService {
 		try {
 			sshSpec.sessionSpecs.each { spec ->
 				def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
-				session.password = spec.remote.password
+				if (spec.remote.password) {
+					session.password = spec.remote.password
+				}
 				if (spec.remote.identity) {
 					session.identityRepository.add(spec.remote.identity.bytes)
 				}
