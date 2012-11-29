@@ -82,6 +82,13 @@ task concurrentExecution(type: SshTask) {
 	}
 }
 
+task executeSudo(type: SshTask) {
+	description 'execute command on a remote'
+	session(remotes.localhost) {
+		execute('sudo env', pty: true)
+	}
+}
+
 task executionFailed(type: SshTask) {
 	description 'describes error handling'
 	session(remotes.localhost) {

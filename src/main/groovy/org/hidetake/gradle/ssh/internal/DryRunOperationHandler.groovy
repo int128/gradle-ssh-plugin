@@ -34,4 +34,24 @@ class DryRunOperationHandler implements OperationHandler {
 	void put(String local, String remote) {
 		listeners*.beginOperation('put', remote, local)
 	}
+
+	@Override
+	void execute(Map options, String command) {
+		listeners*.beginOperation('execute', options, command)
+	}
+
+	@Override
+	void executeBackground(Map options, String command) {
+		listeners*.beginOperation('executeBackground', options, command)
+	}
+
+	@Override
+	void get(Map options, String remote, String local) {
+		listeners*.beginOperation('get', options, remote, local)
+	}
+
+	@Override
+	void put(Map options, String local, String remote) {
+		listeners*.beginOperation('put', options, remote, local)
+	}
 }
