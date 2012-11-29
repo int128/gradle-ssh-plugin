@@ -82,13 +82,13 @@ To define a SSH task, use `task(type: SshTask)` like:
 ```groovy
 task reloadMasterServer(type: SshTask) {
   session(remotes.web01) {
-    execute 'sudo service httpd reload'
+    execute('sudo service httpd reload', pty: true)
   }
 }
 
 task reloadWebServers(type: SshTask) {
   session(remotes.role('webServers')) {
-    executeBackground 'sudo service httpd reload'
+    executeBackground('sudo service httpd reload', pty: true)
   }
 }
 ```
@@ -100,11 +100,14 @@ Within `SshTask` closure, following properties and methods are available:
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
 
-Within `session` closure, following methods are available:
+Within `session` closure, following operations are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
+
+These operations also accepts option arguments.
+For instance, adding `pty: true` makes the channel to request PTY allocation (popular way to execute sudo).
 
 
 Use SSH in the task
@@ -119,7 +122,7 @@ task prepareEnvironment {
     sshexec {
       dryRun = true
       session(remotes.role('webServers')) {
-        execute "sudo service httpd ${operation}"
+        execute("sudo service httpd ${operation}", pty: true)
       }
     }
   }
