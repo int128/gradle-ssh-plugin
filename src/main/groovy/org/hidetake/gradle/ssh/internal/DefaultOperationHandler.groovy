@@ -36,12 +36,18 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void execute(String command) {
-		listeners*.beginOperation('execute', command)
+		execute([:], command)
+	}
+
+	@Override
+	void execute(Map options, String command) {
+		listeners*.beginOperation('execute', options, command)
 		ChannelExec channel = session.openChannel('exec')
 		channel.command = command
 		channel.inputStream = null
 		channel.setOutputStream(System.out, true)
 		channel.setErrStream(System.err, true)
+		options.each { k, v -> channel[k] = v }
 		try {
 			channel.connect()
 			listeners*.managedChannelConnected(channel, spec)
@@ -56,20 +62,32 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void executeBackground(String command) {
+		executeBackground([:], command)
+	}
+
+	@Override
+	void executeBackground(Map options, String command) {
 		listeners*.beginOperation('executeBackground', command)
 		ChannelExec channel = session.openChannel('exec')
 		channel.command = command
 		channel.inputStream = null
 		channel.setOutputStream(System.out, true)
 		channel.setErrStream(System.err, true)
+		options.each { k, v -> channel[k] = v }
 		channel.connect()
 		listeners*.unmanagedChannelConnected(channel, spec)
 	}
 
 	@Override
 	void get(String remote, String local) {
+		get([:], remote, local)
+	}
+
+	@Override
+	void get(Map options, String remote, String local) {
 		listeners*.beginOperation('get', remote, local)
 		ChannelSftp channel = session.openChannel('sftp')
+		options.each { k, v -> channel[k] = v }
 		try {
 			channel.connect()
 			listeners*.managedChannelConnected(channel, spec)
@@ -82,8 +100,14 @@ class DefaultOperationHandler implements OperationHandler {
 
 	@Override
 	void put(String local, String remote) {
+		put([:], local, remote)
+	}
+
+	@Override
+	void put(Map options, String local, String remote) {
 		listeners*.beginOperation('put', remote, local)
 		ChannelSftp channel = session.openChannel('sftp')
+		options.each { k, v -> channel[k] = v }
 		try {
 			channel.connect()
 			listeners*.managedChannelConnected(channel, spec)
