@@ -8,6 +8,13 @@ package org.hidetake.gradle.ssh.api
  */
 interface OperationHandler {
 	/**
+	 * Returns remote host for current operation.
+	 * 
+	 * @return the remote host
+	 */
+	Remote getRemote()
+
+	/**
 	 * Performs an execution operation.
 	 * This method blocks until channel is closed.
 	 *
