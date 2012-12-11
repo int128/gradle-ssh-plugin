@@ -7,6 +7,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
@@ -411,5 +412,49 @@ class SshTaskTest {
 		target.service = [execute: { actual = it }] as SshService
 		target.execute()
 		assertThat(actual.logger, is(originalLogger))
+	}
+
+	@Test
+	void remoteNameInSessionClosure() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					host = 'web'
+					user = 'webuser'
+					identity = file('id_rsa')
+				}
+				appServer {
+					host = 'app'
+					user = 'appuser'
+					identity = file('id_rsa')
+				}
+			}
+			task(type: SshTask, 'testTask') {
+				session(remotes.appServer) {
+					execute "echo ${remote.name} ${remote.user}@${remote.host}:${remote.port}"
+				}
+			}
+		}
+		assertThat(project.tasks.testTask, instanceOf(SshTask))
+		SshTask target = project.tasks.testTask
+		SshSpec actualSpec
+		target.service = [execute: { actualSpec = it }] as SshService
+		target.execute()
+		assertThat(actualSpec.sessionSpecs, instanceOf(Collection))
+		assertThat(actualSpec.sessionSpecs.size(), is(1))
+		assertThat(actualSpec.sessionSpecs[0], instanceOf(SessionSpec))
+		assertThat(actualSpec.sessionSpecs[0].remote, instanceOf(Remote))
+		assertThat(actualSpec.sessionSpecs[0].remote.name, is('appServer'))
+		assertThat(actualSpec.sessionSpecs[0].remote.host, is('app'))
+
+		String actualCommand
+		OperationHandler operationHandler = [
+			execute: { actualCommand = it },
+			getRemote: { actualSpec.sessionSpecs[0].remote }
+		] as OperationHandler
+		operationHandler.with(actualSpec.sessionSpecs[0].operationClosure)
+		assertThat(actualCommand, is('echo appServer appuser@app:22'))
 	}
 }

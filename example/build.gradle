@@ -59,6 +59,7 @@ remotes {
 task showEnvironmentSingle(type: SshTask) {
 	description 'execute command on a remote'
 	session(remotes.localhost) {
+		execute "echo ${remote.user}@${remote.host}:${remote.port}"
 		execute 'env'
 	}
 }

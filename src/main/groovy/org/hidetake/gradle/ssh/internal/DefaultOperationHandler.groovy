@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.internal
 
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.OperationHandler
+import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
 
 import com.jcraft.jsch.ChannelExec
@@ -32,6 +33,11 @@ class DefaultOperationHandler implements OperationHandler {
 	DefaultOperationHandler(SessionSpec spec, Session session) {
 		this.spec = spec
 		this.session = session
+	}
+
+	@Override
+	Remote getRemote() {
+		spec.remote
 	}
 
 	@Override

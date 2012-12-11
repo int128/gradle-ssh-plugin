@@ -2,6 +2,8 @@ package org.hidetake.gradle.ssh.internal
 
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.OperationHandler
+import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.SessionSpec
 
 /**
  * Null implementation of {@link OperationHandler} for dry-run.
@@ -10,10 +12,21 @@ import org.hidetake.gradle.ssh.api.OperationHandler
  *
  */
 class DryRunOperationHandler implements OperationHandler {
+	protected final SessionSpec spec
+
 	/**
 	 * Event listeners.
 	 */
 	final List<OperationEventListener> listeners = []
+
+	DryRunOperationHandler(SessionSpec spec) {
+		this.spec = spec
+	}
+
+	@Override
+	Remote getRemote() {
+		spec.remote
+	}
 
 	@Override
 	void execute(String command) {
