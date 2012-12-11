@@ -1,7 +1,7 @@
 Gradle SSH Plugin
 =================
 
-This plugin provides SSH execution and SFTP transfer capabilities.
+This plugin provides remote command execution and file transfer capabilities via SSH sessions.
 
 
 How to use
@@ -74,7 +74,7 @@ remotes {
 ```
 
 
-Create a SSH task
+Define a SSH task
 -----------------
 
 To define a SSH task, use `task(type: SshTask)` like:
@@ -106,8 +106,8 @@ Within `session` closure, following operations are available:
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
 
-These operations also accepts option arguments.
-For instance, adding `pty: true` makes the channel to request PTY allocation (popular way to execute sudo).
+Above operations accepts option arguments.
+For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
 
 
 Use SSH in the task
@@ -120,7 +120,6 @@ task prepareEnvironment {
   doLast {
     def operation = 'reload'
     sshexec {
-      dryRun = true
       session(remotes.role('webServers')) {
         execute("sudo service httpd ${operation}", pty: true)
       }
