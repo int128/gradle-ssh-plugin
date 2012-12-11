@@ -433,7 +433,7 @@ class SshTaskTest {
 			}
 			task(type: SshTask, 'testTask') {
 				session(remotes.appServer) {
-					execute "echo ${remote.host}"
+					execute "echo ${remote.name} ${remote.user}@${remote.host}:${remote.port}"
 				}
 			}
 		}
@@ -455,6 +455,6 @@ class SshTaskTest {
 			getRemote: { actualSpec.sessionSpecs[0].remote }
 		] as OperationHandler
 		operationHandler.with(actualSpec.sessionSpecs[0].operationClosure)
-		assertThat(actualCommand, is('echo app'))
+		assertThat(actualCommand, is('echo appServer appuser@app:22'))
 	}
 }
