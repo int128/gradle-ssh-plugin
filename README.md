@@ -93,18 +93,19 @@ task reloadWebServers(type: SshTask) {
 }
 ```
 
-Within `SshTask` closure, following properties and methods are available:
+Within `SshTask` closure, following methods and properties are available:
   * `session(remote)` - Adds a session to the remote host.
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
 
-Within `session` closure, following operations are available:
+Within `session` closure, following methods and properties are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
+  * `remote` - Remote host of current session. (Read only)
 
 Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
