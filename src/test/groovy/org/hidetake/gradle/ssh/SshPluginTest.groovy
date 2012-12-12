@@ -159,50 +159,165 @@ class SshPluginTest {
 	}
 
 	@Test
-	void global_remotes_roles() {
+	void global_remotes_role_empty() {
 		Project project = ProjectBuilder.builder().build()
 		project.with {
 			apply plugin: 'ssh'
 			remotes {
-				webServer {
-					role 'servers'
-					host = 'web'
+			}
+		}
+
+		Collection<Remote> servers = project.remotes.role('servers')
+		assertThat(servers, instanceOf(Collection))
+		assertThat(servers.size(), is(0))
+	}
+
+	@Test
+	void global_remotes_role_noMatch() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer1 {
+					role 'primaryServers'
+					host = 'web1'
 					user = 'webuser'
-					identity = file('id_rsa')
 				}
-				appServer {
-					host = 'app'
-					user = 'appuser'
-					identity = file('id_rsa')
+				webServer2 {
+					host = 'web2'
+					user = 'webuser'
 				}
 				managementServer {
-					role 'servers'
+					role 'primaryServers'
 					host = 'mng'
 					user = 'mnguser'
-					password = 'hoge'
 				}
 			}
 		}
 
 		Collection<Remote> servers = project.remotes.role('servers')
 		assertThat(servers, instanceOf(Collection))
+		assertThat(servers.size(), is(0))
+	}
+
+	@Test
+	void global_remotes_role_someMatch() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer1 {
+					role 'primaryServers'
+					host = 'web1'
+					user = 'webuser'
+				}
+				webServer2 {
+					host = 'web2'
+					user = 'webuser'
+				}
+				managementServer {
+					role 'primaryServers'
+					host = 'mng'
+					user = 'mnguser'
+				}
+			}
+		}
+
+		Collection<Remote> servers = project.remotes.role('primaryServers')
+		assertThat(servers, instanceOf(Collection))
 		assertThat(servers.size(), is(2))
-		def servers_webServer = servers.find { it.name == 'webServer' }
+		def servers_webServer = servers.find { it.name == 'webServer1' }
 		assertThat(servers_webServer, instanceOf(Remote))
-		assertThat(servers_webServer.name, is('webServer'))
-		assertThat(servers_webServer.host, is('web'))
-		assertThat(servers_webServer.port, is(22))
+		assertThat(servers_webServer.name, is('webServer1'))
+		assertThat(servers_webServer.host, is('web1'))
 		assertThat(servers_webServer.user, is('webuser'))
-		assertThat(servers_webServer.password, is(nullValue()))
-		assertThat(servers_webServer.identity, instanceOf(File))
-		assertThat(servers_webServer.identity.name, is('id_rsa'))
 		def servers_managementServer = servers.find { it.name == 'managementServer' }
 		assertThat(servers_managementServer, instanceOf(Remote))
 		assertThat(servers_managementServer.name, is('managementServer'))
 		assertThat(servers_managementServer.host, is('mng'))
-		assertThat(servers_managementServer.port, is(22))
 		assertThat(servers_managementServer.user, is('mnguser'))
-		assertThat(servers_managementServer.password, is('hoge'))
-		assertThat(servers_managementServer.identity, is(nullValue()))
+	}
+
+	@Test
+	void global_remotes_role_exactlyMatch() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer1 {
+					role 'primaryServers'
+					host = 'web1'
+					user = 'webuser'
+				}
+				managementServer {
+					role 'primaryServers'
+					host = 'mng'
+					user = 'mnguser'
+				}
+			}
+		}
+
+		Collection<Remote> servers = project.remotes.role('primaryServers')
+		assertThat(servers, instanceOf(Collection))
+		assertThat(servers.size(), is(2))
+		def servers_webServer = servers.find { it.name == 'webServer1' }
+		assertThat(servers_webServer, instanceOf(Remote))
+		assertThat(servers_webServer.name, is('webServer1'))
+		assertThat(servers_webServer.host, is('web1'))
+		assertThat(servers_webServer.user, is('webuser'))
+		def servers_managementServer = servers.find { it.name == 'managementServer' }
+		assertThat(servers_managementServer, instanceOf(Remote))
+		assertThat(servers_managementServer.name, is('managementServer'))
+		assertThat(servers_managementServer.host, is('mng'))
+		assertThat(servers_managementServer.user, is('mnguser'))
+	}
+
+	@Test
+	void global_remotes_role_complex() {
+		Project project = ProjectBuilder.builder().build()
+		project.with {
+			apply plugin: 'ssh'
+			remotes {
+				webServer {
+					role 'serversA'
+					host = 'web'
+					user = 'webuser'
+				}
+				appServer {
+					role 'serversB'
+					host = 'app'
+					user = 'appuser'
+				}
+				dbServer {
+					host = 'db'
+					user = 'dbuser'
+				}
+				managementServer {
+					role 'serversA'
+					role 'serversB'
+					host = 'mng'
+					user = 'mnguser'
+				}
+			}
+		}
+
+		Collection<Remote> servers = project.remotes.role('serversA', 'serversB')
+		assertThat(servers, instanceOf(Collection))
+		assertThat(servers.size(), is(3))
+		def servers_webServer = servers.find { it.name == 'webServer' }
+		assertThat(servers_webServer, instanceOf(Remote))
+		assertThat(servers_webServer.name, is('webServer'))
+		assertThat(servers_webServer.host, is('web'))
+		assertThat(servers_webServer.user, is('webuser'))
+		def servers_appServer = servers.find { it.name == 'appServer' }
+		assertThat(servers_appServer, instanceOf(Remote))
+		assertThat(servers_appServer.name, is('appServer'))
+		assertThat(servers_appServer.host, is('app'))
+		assertThat(servers_appServer.user, is('appuser'))
+		def servers_managementServer = servers.find { it.name == 'managementServer' }
+		assertThat(servers_managementServer, instanceOf(Remote))
+		assertThat(servers_managementServer.name, is('managementServer'))
+		assertThat(servers_managementServer.host, is('mng'))
+		assertThat(servers_managementServer.user, is('mnguser'))
 	}
 }

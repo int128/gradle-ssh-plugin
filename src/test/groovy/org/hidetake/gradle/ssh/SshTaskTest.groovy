@@ -98,13 +98,11 @@ class SshTaskTest {
 					role 'servers'
 					host = 'web'
 					user = 'webuser'
-					identity = file('id_rsa')
 				}
 				appServer {
 					role 'servers'
 					host = 'app'
 					user = 'appuser'
-					identity = file('id_rsa')
 				}
 			}
 			task(type: SshTask, 'testTask') {
@@ -120,20 +118,18 @@ class SshTaskTest {
 		target.execute()
 		assertThat(actual.sessionSpecs, instanceOf(Collection))
 		assertThat(actual.sessionSpecs.size(), is(2))
-		assertThat(actual.sessionSpecs[0], instanceOf(SessionSpec))
-		assertThat(actual.sessionSpecs[0].remote, instanceOf(Remote))
-		assertThat(actual.sessionSpecs[0].remote.name, is('appServer'))
-		assertThat(actual.sessionSpecs[0].remote.host, is('app'))
-		assertThat(actual.sessionSpecs[0].remote.user, is('appuser'))
-		assertThat(actual.sessionSpecs[0].remote.identity, instanceOf(File))
-		assertThat(actual.sessionSpecs[0].remote.identity.name, is('id_rsa'))
-		assertThat(actual.sessionSpecs[1], instanceOf(SessionSpec))
-		assertThat(actual.sessionSpecs[1].remote, instanceOf(Remote))
-		assertThat(actual.sessionSpecs[1].remote.name, is('webServer'))
-		assertThat(actual.sessionSpecs[1].remote.host, is('web'))
-		assertThat(actual.sessionSpecs[1].remote.user, is('webuser'))
-		assertThat(actual.sessionSpecs[1].remote.identity, instanceOf(File))
-		assertThat(actual.sessionSpecs[1].remote.identity.name, is('id_rsa'))
+		def spec_appServer = actual.sessionSpecs.find { it.remote.name == 'appServer' }
+		assertThat(spec_appServer, instanceOf(SessionSpec))
+		assertThat(spec_appServer.remote, instanceOf(Remote))
+		assertThat(spec_appServer.remote.name, is('appServer'))
+		assertThat(spec_appServer.remote.host, is('app'))
+		assertThat(spec_appServer.remote.user, is('appuser'))
+		def spec_webServer = actual.sessionSpecs.find { it.remote.name == 'webServer' }
+		assertThat(spec_webServer, instanceOf(SessionSpec))
+		assertThat(spec_webServer.remote, instanceOf(Remote))
+		assertThat(spec_webServer.remote.name, is('webServer'))
+		assertThat(spec_webServer.remote.host, is('web'))
+		assertThat(spec_webServer.remote.user, is('webuser'))
 	}
 
 	@Test
