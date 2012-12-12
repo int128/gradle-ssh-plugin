@@ -2,7 +2,7 @@ apply plugin: 'groovy'
 apply plugin: 'project-report'
 
 group = 'org.hidetake'
-version = '0.1.2'
+version = '0.1.3'
 
 repositories {
 	mavenCentral()
