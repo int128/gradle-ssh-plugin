@@ -168,18 +168,15 @@ class SshPluginTest {
 					role 'servers'
 					host = 'web'
 					user = 'webuser'
-					identity = file('id_rsa')
 				}
 				appServer {
 					host = 'app'
 					user = 'appuser'
-					identity = file('id_rsa')
 				}
 				managementServer {
 					role 'servers'
 					host = 'mng'
 					user = 'mnguser'
-					password = 'hoge'
 				}
 			}
 		}
@@ -191,19 +188,12 @@ class SshPluginTest {
 		assertThat(servers_webServer, instanceOf(Remote))
 		assertThat(servers_webServer.name, is('webServer'))
 		assertThat(servers_webServer.host, is('web'))
-		assertThat(servers_webServer.port, is(22))
 		assertThat(servers_webServer.user, is('webuser'))
-		assertThat(servers_webServer.password, is(nullValue()))
-		assertThat(servers_webServer.identity, instanceOf(File))
-		assertThat(servers_webServer.identity.name, is('id_rsa'))
 		def servers_managementServer = servers.find { it.name == 'managementServer' }
 		assertThat(servers_managementServer, instanceOf(Remote))
 		assertThat(servers_managementServer.name, is('managementServer'))
 		assertThat(servers_managementServer.host, is('mng'))
-		assertThat(servers_managementServer.port, is(22))
 		assertThat(servers_managementServer.user, is('mnguser'))
-		assertThat(servers_managementServer.password, is('hoge'))
-		assertThat(servers_managementServer.identity, is(nullValue()))
 	}
 
 	@Test
@@ -216,20 +206,17 @@ class SshPluginTest {
 					role 'servers1'
 					host = 'web'
 					user = 'webuser'
-					identity = file('id_rsa')
 				}
 				appServer {
 					role 'servers2'
 					host = 'app'
 					user = 'appuser'
-					identity = file('id_rsa')
 				}
 				managementServer {
 					role 'servers1'
 					role 'servers2'
 					host = 'mng'
 					user = 'mnguser'
-					password = 'hoge'
 				}
 			}
 		}
@@ -241,27 +228,16 @@ class SshPluginTest {
 		assertThat(servers_webServer, instanceOf(Remote))
 		assertThat(servers_webServer.name, is('webServer'))
 		assertThat(servers_webServer.host, is('web'))
-		assertThat(servers_webServer.port, is(22))
 		assertThat(servers_webServer.user, is('webuser'))
-		assertThat(servers_webServer.password, is(nullValue()))
-		assertThat(servers_webServer.identity, instanceOf(File))
-		assertThat(servers_webServer.identity.name, is('id_rsa'))
 		def servers_appServer = servers.find { it.name == 'appServer' }
 		assertThat(servers_appServer, instanceOf(Remote))
 		assertThat(servers_appServer.name, is('appServer'))
 		assertThat(servers_appServer.host, is('app'))
-		assertThat(servers_appServer.port, is(22))
 		assertThat(servers_appServer.user, is('appuser'))
-		assertThat(servers_appServer.password, is(nullValue()))
-		assertThat(servers_appServer.identity, instanceOf(File))
-		assertThat(servers_appServer.identity.name, is('id_rsa'))
 		def servers_managementServer = servers.find { it.name == 'managementServer' }
 		assertThat(servers_managementServer, instanceOf(Remote))
 		assertThat(servers_managementServer.name, is('managementServer'))
 		assertThat(servers_managementServer.host, is('mng'))
-		assertThat(servers_managementServer.port, is(22))
 		assertThat(servers_managementServer.user, is('mnguser'))
-		assertThat(servers_managementServer.password, is('hoge'))
-		assertThat(servers_managementServer.identity, is(nullValue()))
 	}
 }
