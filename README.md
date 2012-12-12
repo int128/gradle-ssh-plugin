@@ -27,6 +27,10 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
+(Note) Recently cloud.github.com has been deprecated.
+I am looking for alternative way.
+Please use version 0.1.2 instead now.
+
 
 Define remote hosts
 -------------------
