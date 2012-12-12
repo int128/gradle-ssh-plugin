@@ -17,8 +17,10 @@ class SshPlugin implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
 		NamedDomainObjectContainer<Remote> remotes = project.container(Remote)
-		remotes.extensions.add('role', (Closure<Collection<Remote>>) { String role ->
-			remotes.findAll { Remote remote -> remote.roles.contains(role) }
+		remotes.extensions.add('role', (Closure<Collection<Remote>>) { String... roles ->
+			roles.collect { String role ->
+				remotes.findAll { Remote remote -> remote.roles.contains(role) }
+			}.flatten().toSet()
 		})
 		project.extensions.add('remotes', remotes)
 		if (project.parent) {
