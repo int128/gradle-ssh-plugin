@@ -73,6 +73,9 @@ remotes {
 }
 ```
 
+To acquire remote hosts associated with particular role,
+use `remotes.role()` with one or more name.
+
 
 Define a SSH task
 -----------------
@@ -86,8 +89,8 @@ task reloadMasterServer(type: SshTask) {
   }
 }
 
-task reloadWebServers(type: SshTask) {
-  session(remotes.role('webServers')) {
+task reloadServers(type: SshTask) {
+  session(remotes.role('webServers', 'dbServers')) {
     executeBackground('sudo service httpd reload', pty: true)
   }
 }
