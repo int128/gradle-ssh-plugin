@@ -160,13 +160,3 @@ Complete example
 ----------------
 
 See [/example/build.gradle](gradle-ssh-plugin/blob/master/example/build.gradle)
-
-
-Future work
------------
-
-Currently, some features are not implemented yet:
-
-  * Concurrent files transfer.
-
-
