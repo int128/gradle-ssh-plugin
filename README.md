@@ -110,9 +110,10 @@ Within `SshTask` closure, following methods and properties are available:
   * `logger` - Default is `project.logger`
 
 Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+Note that the closure will be called in **evaluation** phase on Gradle.
 
 
-### Session configuration
+### Session operation
 
 Within `session` closure, following methods and properties are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed.
@@ -122,6 +123,7 @@ Within `session` closure, following methods and properties are available:
   * `remote` - Remote host of current session. (Read only)
 
 Specification of the closure is defined in [interface OperationHandler](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
+Note that the closure will be called in **execution** phase on Gradle.
 
 Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
