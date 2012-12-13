@@ -77,8 +77,7 @@ remotes {
 }
 ```
 
-To acquire remote hosts associated with particular role,
-use `remotes.role()` with one or more name.
+To acquire remote hosts associated with particular role, use `remotes.role()` with one or more name.
 
 
 Define a SSH task
@@ -100,6 +99,9 @@ task reloadServers(type: SshTask) {
 }
 ```
 
+
+### Task configuration
+
 Within `SshTask` closure, following methods and properties are available:
   * `session(remote)` - Adds a session to the remote host.
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
@@ -107,12 +109,19 @@ Within `SshTask` closure, following methods and properties are available:
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
 
+Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+
+
+### Session configuration
+
 Within `session` closure, following methods and properties are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
   * `remote` - Remote host of current session. (Read only)
+
+Specification of the closure is defined in [interface OperationHandler](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
 
 Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
@@ -154,6 +163,8 @@ Following properties and methods are available:
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `logger` - Default is `project.logger`
+
+Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 
 
 Complete example
