@@ -85,4 +85,23 @@ class DefaultSshService implements SshService {
 			handler.with(spec.operationClosure)
 		}
 	}
+
+	/**
+	 * Execute the closure with retrying.
+	 * 
+	 * @param retryCount
+	 * @param closure
+	 */
+	protected void retry(int retryCount, Closure closure) {
+		assert closure != null, 'closure should not be null'
+		if (retryCount > 0) {
+			try {
+				closure()
+			} catch(Exception e) {
+				retry(retryCount - 1, closure)
+			}
+		} else {
+			closure()
+		}
+	}
 }
