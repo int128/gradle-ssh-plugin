@@ -16,6 +16,11 @@ class SshSpec {
 	Boolean dryRun = null
 
 	/**
+	 * Retry count for connecting to a host. 
+	 */
+	Integer retryCount = null
+
+	/**
 	 * Logger.
 	 */
 	Logger logger = null
