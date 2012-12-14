@@ -4,6 +4,7 @@ import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
+import org.slf4j.Logger
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -48,7 +49,7 @@ class DefaultSshService implements SshService {
 				if (spec.remote.identity) {
 					session.identityRepository.add(spec.remote.identity.bytes)
 				}
-				retry(sshSpec.retryCount) {
+				retry(sshSpec.retryCount, sshSpec.logger) {
 					session.connect()
 				}
 				sessions.put(spec, session)
@@ -92,15 +93,17 @@ class DefaultSshService implements SshService {
 	 * Execute the closure with retrying.
 	 * 
 	 * @param retryCount
+	 * @param logger logger (this is SLF4J logger, not Gradle logger)
 	 * @param closure
 	 */
-	protected void retry(int retryCount, Closure closure) {
+	protected void retry(int retryCount, Logger logger, Closure closure) {
 		assert closure != null, 'closure should not be null'
 		if (retryCount > 0) {
 			try {
 				closure()
 			} catch(Exception e) {
-				retry(retryCount - 1, closure)
+				logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
+				retry(retryCount - 1, logger, closure)
 			}
 		} else {
 			closure()
