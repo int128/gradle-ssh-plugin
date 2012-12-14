@@ -48,7 +48,9 @@ class DefaultSshService implements SshService {
 				if (spec.remote.identity) {
 					session.identityRepository.add(spec.remote.identity.bytes)
 				}
-				session.connect()
+				retry(sshSpec.retryCount) {
+					session.connect()
+				}
 				sessions.put(spec, session)
 			}
 

@@ -87,6 +87,7 @@ class SshSpec {
 			merged.sessionSpecs.addAll(spec.sessionSpecs)
 		}
 		merged.dryRun = specs.collect { it.dryRun }.findResult(false) { it }
+		merged.retryCount = specs.collect { it.retryCount }.findResult(0) { it }
 		merged.logger = specs.collect { it.logger }.find()
 		merged
 	}
