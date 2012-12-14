@@ -164,6 +164,7 @@ Following properties and methods are available:
 
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
+  * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
   * `logger` - Default is `project.logger`
 
 Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
