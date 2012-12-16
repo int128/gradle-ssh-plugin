@@ -1,0 +1,67 @@
+/**
+ * Build script for publishing JARs into the Maven central repository.
+ * Some properties must be provided in gradle.properties.
+ * (see validation below)
+ * 
+ * To publish, just invoke:
+ * <code>
+ * gradle uploadArchives
+ * </code>
+ * 
+ * @author hidetake.org
+ */
+apply plugin: 'signing'
+apply plugin: 'maven'
+
+boolean validProperty(propertyName) {
+	try { project.property(propertyName) != null }
+	catch (MissingPropertyException) { false }
+}
+assert validProperty('signing.keyId'),             'properties for signing must be provided'
+assert validProperty('signing.secretKeyRingFile'), 'properties for signing must be provided'
+assert validProperty('sonatypeUsername'),          'properties for publish must be provided'
+assert validProperty('sonatypeFullname'),          'properties for publish must be provided'
+
+ext.'signing.password' = System.console().readPassword("Enter password for PGP key ${property('signing.keyId')}: ")
+ext.'sonatypePassword' = System.console().readPassword("Enter password for ${sonatypeUsername}@oss.sonatype.org: ")
+
+signing {
+	sign configurations.archives
+}
+
+uploadArchives {
+	repositories.mavenDeployer {
+		repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+			authentication(userName: sonatypeUsername, password: sonatypePassword)
+		}
+		beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+		pom.project {
+			name 'Gradle SSH Plugin'
+			packaging 'jar'
+			description project.description
+			url 'https://github.com/int128/gradle-ssh-plugin'
+			scm {
+				url 'https://github.com/int128/gradle-ssh-plugin'
+				connection 'scm:git@github.com:int128/gradle-ssh-plugin.git'
+				developerConnection 'scm:git@github.com:int128/gradle-ssh-plugin.git'
+			}
+			issueManagement {
+				system 'github'
+				url 'https://github.com/int128/gradle-ssh-plugin/issues'
+			}
+			licenses {
+				license {
+					name 'The Apache Software License, Version 2.0'
+					url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					distribution 'repo'
+				}
+			}
+			developers {
+				developer {
+					id sonatypeUsername
+					name sonatypeFullname
+				}
+			}
+		}
+	}
+}

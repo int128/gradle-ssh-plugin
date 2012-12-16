@@ -1,6 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'project-report'
 
+description = 'Gradle SSH Plugin provides remote execution and file transfer capabilities'
 group = 'org.hidetake'
 version = '0.1.2'
 
@@ -14,6 +15,26 @@ dependencies {
 
 	compile 'com.jcraft:jsch:0.1.48'
 	testCompile 'junit:junit:4.10'
+}
+
+task javadocJar(type: Jar, dependsOn: groovydoc) {
+	classifier = 'javadoc'
+	from "${buildDir}/javadoc"
+}
+
+task sourcesJar(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+}
+
+artifacts {
+	archives jar
+	archives javadocJar
+	archives sourcesJar
+}
+
+if (gradle.startParameter.taskNames.contains('uploadArchives')) {
+	apply from: 'build.publish.gradle'
 }
 
 task wrapper(type: Wrapper) {
