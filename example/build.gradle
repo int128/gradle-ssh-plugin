@@ -1,36 +1,32 @@
-/*
+/**
  * Examples.
  * 
- * Prepare following to execute tasks in this example.
+ * To execute these, prepare your localhost.
  * - start sshd
- * - generate key pair (use ssh-keygen)
+ * - generate key pair (ssh-keygen -t rsa)
  * - add your pubic key to authorized_keys
- * - make sure that you can log in without any password
+ * - make sure that you can log in without password
  * 
- * Or, rewrite host or user as you like.
+ * If gradle is invoked with <code>-DuseRelease</code>,
+ * released JAR in the Maven central repository will be used.
  * 
  */
 buildscript {
-	if (System.properties.useGitHubRelease) {
-		repositories {
-			mavenCentral()
-		}
-		dependencies {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		if (System.properties.useRelease) {
 			classpath 'org.hidetake:gradle-ssh-plugin:0.1.3'
-		}
-	} else {
-		repositories {
-			mavenCentral()
-			flatDir { dirs '../build/libs' }
-		}
-		dependencies {
-			classpath 'org.hidetake:gradle-ssh-plugin:latest.integration'
+		} else {
+			classpath files('../build/libs/gradle-ssh-plugin-0.1.3.jar')
 			classpath 'com.jcraft:jsch:0.1.48'
 		}
 	}
 }
 
 apply plugin: 'ssh'
+apply plugin: 'project-report'
 
 ssh {
 	config(StrictHostKeyChecking: 'no')
