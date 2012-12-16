@@ -14,13 +14,9 @@ buildscript {
 	if (System.properties.useGitHubRelease) {
 		repositories {
 			mavenCentral()
-			add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-				name = 'GitHub'
-				addArtifactPattern 'http://cloud.github.com/downloads/int128/[module]/[module]-[revision].[ext]'
-			}
 		}
 		dependencies {
-			classpath 'org.hidetake:gradle-ssh-plugin:0.1.2'
+			classpath 'org.hidetake:gradle-ssh-plugin:0.1.3'
 			classpath 'com.jcraft:jsch:0.1.48'
 		}
 	} else {

@@ -13,23 +13,15 @@ To use the plugin, add a dependency and apply it in your build.gradle:
 buildscript {
   repositories {
     mavenCentral()
-    add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-      name = 'GitHub'
-      addArtifactPattern 'http://cloud.github.com/downloads/int128/[module]/[module]-[revision].[ext]'
-    }
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:0.1.2'
+    classpath 'org.hidetake:gradle-ssh-plugin:0.1.3'
     classpath 'com.jcraft:jsch:0.1.48'
   }
 }
 
 apply plugin: 'ssh'
 ```
-
-(Note) Recently cloud.github.com has been deprecated.
-I am looking for alternative way.
-Please use version 0.1.2 instead now.
 
 
 Define remote hosts
