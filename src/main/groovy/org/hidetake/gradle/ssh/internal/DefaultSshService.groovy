@@ -7,6 +7,7 @@ import org.hidetake.gradle.ssh.api.SshSpec
 import org.slf4j.Logger
 
 import com.jcraft.jsch.JSch
+import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 
 /**
@@ -42,17 +43,17 @@ class DefaultSshService implements SshService {
 		Map<SessionSpec, Session> sessions = [:]
 		try {
 			sshSpec.sessionSpecs.each { spec ->
-				def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
-				if (spec.remote.password) {
-					session.password = spec.remote.password
-				}
-				if (spec.remote.identity) {
-					session.identityRepository.add(spec.remote.identity.bytes)
-				}
 				retry(sshSpec.retryCount, sshSpec.retryWaitSec, sshSpec.logger) {
+					def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
+					if (spec.remote.password) {
+						session.password = spec.remote.password
+					}
+					if (spec.remote.identity) {
+						session.identityRepository.add(spec.remote.identity.bytes)
+					}
 					session.connect()
+					sessions.put(spec, session)
 				}
-				sessions.put(spec, session)
 			}
 
 			def channelsLifecycleManager = new ChannelsLifecycleManager()
@@ -91,6 +92,7 @@ class DefaultSshService implements SshService {
 
 	/**
 	 * Execute the closure with retrying.
+	 * This method catches only {@link JSchException}s.
 	 * 
 	 * @param retryCount
 	 * @param retryWaitSec
@@ -102,7 +104,7 @@ class DefaultSshService implements SshService {
 		if (retryCount > 0) {
 			try {
 				closure()
-			} catch(Exception e) {
+			} catch(JSchException e) {
 				logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
 				Thread.sleep(retryWaitSec * 1000L)
 				retry(retryCount - 1, retryWaitSec, logger, closure)

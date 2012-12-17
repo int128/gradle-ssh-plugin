@@ -4,6 +4,8 @@ import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import com.jcraft.jsch.JSchException
+
 /**
  * Test cases for {@link DefaultSshService}.
  * 
@@ -23,12 +25,12 @@ class DefaultSshServiceTest {
 		assert called == 1
 	}
 
-	@Test(expected = Exception)
+	@Test(expected = JSchException)
 	void retry_0_exception() {
 		int called = 0
 		DefaultSshService.instance.retry(0, 0, logger) {
 			assert called == 0
-			throw new Exception()
+			throw new JSchException()
 		}
 	}
 
@@ -48,24 +50,24 @@ class DefaultSshServiceTest {
 		DefaultSshService.instance.retry(1, 0, logger) {
 			called++
 			if (called == 1) {
-				throw new Exception('this should be handled by retry() method')
+				throw new JSchException('this should be handled by retry() method')
 			}
 			assert called == 2
 		}
 		assert called == 2
 	}
 
-	@Test(expected = Exception)
+	@Test(expected = JSchException)
 	void retry_1_exception2times() {
 		int called = 0
 		DefaultSshService.instance.retry(1, 0, logger) {
 			called++
 			assert (1..2).contains(called)
 			if (called == 1) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 			if (called == 2) {
-				throw new Exception()
+				throw new JSchException()
 			}
 		}
 	}
@@ -84,7 +86,7 @@ class DefaultSshServiceTest {
 			called++
 			assert (1..2).contains(called)
 			if (called == 1) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 		}
 		assert called == 2
@@ -97,29 +99,29 @@ class DefaultSshServiceTest {
 			called++
 			assert (1..3).contains(called)
 			if (called == 1) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 			if (called == 2) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 		}
 		assert called == 3
 	}
 
-	@Test(expected = Exception)
+	@Test(expected = JSchException)
 	void retry_2_exception3times() {
 		int called = 0
 		DefaultSshService.instance.retry(2, 0, logger) {
 			called++
 			assert (1..3).contains(called)
 			if (called == 1) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 			if (called == 2) {
-				throw new Exception('this exception should be handled by retry() method')
+				throw new JSchException('this exception should be handled by retry() method')
 			}
 			if (called == 3) {
-				throw new Exception()
+				throw new JSchException()
 			}
 		}
 	}
