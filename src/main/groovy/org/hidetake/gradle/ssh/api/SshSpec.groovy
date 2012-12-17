@@ -21,6 +21,11 @@ class SshSpec {
 	Integer retryCount = null
 
 	/**
+	 * Interval time in seconds between retries.
+	 */
+	Integer retryWaitSec = null
+
+	/**
 	 * Logger.
 	 */
 	Logger logger = null
@@ -88,6 +93,7 @@ class SshSpec {
 		}
 		merged.dryRun = specs.collect { it.dryRun }.findResult(false) { it }
 		merged.retryCount = specs.collect { it.retryCount }.findResult(0) { it }
+		merged.retryWaitSec = specs.collect { it.retryWaitSec }.findResult(0) { it }
 		merged.logger = specs.collect { it.logger }.find()
 		merged
 	}

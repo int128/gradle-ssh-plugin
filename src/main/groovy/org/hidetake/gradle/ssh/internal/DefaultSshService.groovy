@@ -49,7 +49,7 @@ class DefaultSshService implements SshService {
 				if (spec.remote.identity) {
 					session.identityRepository.add(spec.remote.identity.bytes)
 				}
-				retry(sshSpec.retryCount, sshSpec.logger) {
+				retry(sshSpec.retryCount, sshSpec.retryWaitSec, sshSpec.logger) {
 					session.connect()
 				}
 				sessions.put(spec, session)
@@ -93,17 +93,19 @@ class DefaultSshService implements SshService {
 	 * Execute the closure with retrying.
 	 * 
 	 * @param retryCount
+	 * @param retryWaitSec
 	 * @param logger logger (this is SLF4J logger, not Gradle logger)
 	 * @param closure
 	 */
-	protected void retry(int retryCount, Logger logger, Closure closure) {
+	protected void retry(int retryCount, int retryWaitSec, Logger logger, Closure closure) {
 		assert closure != null, 'closure should not be null'
 		if (retryCount > 0) {
 			try {
 				closure()
 			} catch(Exception e) {
 				logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
-				retry(retryCount - 1, logger, closure)
+				Thread.sleep(retryWaitSec * 1000L)
+				retry(retryCount - 1, retryWaitSec, logger, closure)
 			}
 		} else {
 			closure()

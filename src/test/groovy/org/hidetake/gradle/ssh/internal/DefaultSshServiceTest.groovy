@@ -16,7 +16,7 @@ class DefaultSshServiceTest {
 	@Test
 	void retry_0_success() {
 		int called = 0
-		DefaultSshService.instance.retry(0, logger) {
+		DefaultSshService.instance.retry(0, 0, logger) {
 			called++
 			assert called == 1
 		}
@@ -26,7 +26,7 @@ class DefaultSshServiceTest {
 	@Test(expected = Exception)
 	void retry_0_exception() {
 		int called = 0
-		DefaultSshService.instance.retry(0, logger) {
+		DefaultSshService.instance.retry(0, 0, logger) {
 			assert called == 0
 			throw new Exception()
 		}
@@ -35,7 +35,7 @@ class DefaultSshServiceTest {
 	@Test
 	void retry_1_success() {
 		int called = 0
-		DefaultSshService.instance.retry(1, logger) {
+		DefaultSshService.instance.retry(1, 0, logger) {
 			called++
 			assert called == 1
 		}
@@ -45,7 +45,7 @@ class DefaultSshServiceTest {
 	@Test
 	void retry_1_exceptionOnce() {
 		int called = 0
-		DefaultSshService.instance.retry(1, logger) {
+		DefaultSshService.instance.retry(1, 0, logger) {
 			called++
 			if (called == 1) {
 				throw new Exception('this should be handled by retry() method')
@@ -58,7 +58,7 @@ class DefaultSshServiceTest {
 	@Test(expected = Exception)
 	void retry_1_exception2times() {
 		int called = 0
-		DefaultSshService.instance.retry(1, logger) {
+		DefaultSshService.instance.retry(1, 0, logger) {
 			called++
 			assert (1..2).contains(called)
 			if (called == 1) {
@@ -73,14 +73,14 @@ class DefaultSshServiceTest {
 	@Test
 	void retry_2_success() {
 		int called = 0
-		DefaultSshService.instance.retry(2, logger) { called++ }
+		DefaultSshService.instance.retry(2, 0, logger) { called++ }
 		assert called == 1
 	}
 
 	@Test
 	void retry_2_exceptionOnce() {
 		int called = 0
-		DefaultSshService.instance.retry(2, logger) {
+		DefaultSshService.instance.retry(2, 0, logger) {
 			called++
 			assert (1..2).contains(called)
 			if (called == 1) {
@@ -93,7 +93,7 @@ class DefaultSshServiceTest {
 	@Test
 	void retry_2_exception2times() {
 		int called = 0
-		DefaultSshService.instance.retry(2, logger) {
+		DefaultSshService.instance.retry(2, 0, logger) {
 			called++
 			assert (1..3).contains(called)
 			if (called == 1) {
@@ -109,7 +109,7 @@ class DefaultSshServiceTest {
 	@Test(expected = Exception)
 	void retry_2_exception3times() {
 		int called = 0
-		DefaultSshService.instance.retry(2, logger) {
+		DefaultSshService.instance.retry(2, 0, logger) {
 			called++
 			assert (1..3).contains(called)
 			if (called == 1) {
