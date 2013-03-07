@@ -31,6 +31,23 @@ interface OperationHandler {
 	 */
 	void execute(Map options, String command)
 
+    /**
+     * Performs a sudo operation, explicitly providing password for the sudo user.
+     * This method blocks until channel is closed
+     *
+     * @param command
+     */
+    void executeSudo(String command)
+
+    /**
+     * Performs a sudo operation, explicitly providing password for the sudo user.
+     * This method blocks until channel is closed
+     *
+     * @param options properties to configure the channel
+     * @param command
+     */
+    void executeSudo(Map options, String command)
+
 	/**
 	 * Performs an execution operation.
 	 * This method returns immediately and executes the command concurrently.

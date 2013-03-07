@@ -108,6 +108,7 @@ Note that the closure will be called in **evaluation** phase on Gradle.
 
 Within `session` closure, following methods and properties are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed.
+  * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
@@ -159,10 +160,10 @@ Following properties and methods are available:
   * `retryWaitSec` - Time in seconds until next retrying. Default is 0 (immediately).
   * `logger` - Default is `project.logger`
 
-Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy)
 
 
 Complete example
 ----------------
 
-See [/example/build.gradle](gradle-ssh-plugin/blob/master/example/build.gradle)
+[See](example/build.gradle)
