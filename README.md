@@ -160,11 +160,10 @@ Following properties and methods are available:
   * `retryWaitSec` - Time in seconds until next retrying. Default is 0 (immediately).
   * `logger` - Default is `project.logger`
 
-Specification of the closure is defined in <a href="gradle-ssh-plugin/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy">SshSpec/</a>.
-
+Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy)
 
 
 Complete example
 ----------------
 
-See <a href="gradle-ssh-plugin/example/build.gradle](gradle-ssh-plugin/blob/master/example/build.gradle">example</a>
+[See](example/build.gradle)
