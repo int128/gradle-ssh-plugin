@@ -22,8 +22,11 @@ assert validProperty('signing.secretKeyRingFile'), 'properties for signing must 
 assert validProperty('sonatypeUsername'),          'properties for publish must be provided'
 assert validProperty('sonatypeFullname'),          'properties for publish must be provided'
 
-ext.'signing.password' = System.console().readPassword("Enter password for PGP key ${property('signing.keyId')}: ")
-ext.'sonatypePassword' = System.console().readPassword("Enter password for ${sonatypeUsername}@oss.sonatype.org: ")
+String askPassword(prompt) {
+	"${System.console().readPassword(prompt)}"
+}
+ext.'signing.password' = askPassword("Enter password for PGP key ${property('signing.keyId')}: ")
+ext.'sonatypePassword' = askPassword("Enter password for ${sonatypeUsername}@oss.sonatype.org: ")
 
 signing {
 	sign configurations.archives
