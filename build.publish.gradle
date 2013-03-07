@@ -41,13 +41,9 @@ uploadArchives {
 			description project.description
 			url 'https://github.com/int128/gradle-ssh-plugin'
 			scm {
-				url 'https://github.com/int128/gradle-ssh-plugin'
-				connection 'scm:git@github.com:int128/gradle-ssh-plugin.git'
-				developerConnection 'scm:git@github.com:int128/gradle-ssh-plugin.git'
-			}
-			issueManagement {
-				system 'github'
-				url 'https://github.com/int128/gradle-ssh-plugin/issues'
+				url 'git@github.com:int128/gradle-ssh-plugin.git'
+				connection 'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
+				developerConnection 'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
 			}
 			licenses {
 				license {
