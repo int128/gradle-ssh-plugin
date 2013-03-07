@@ -74,12 +74,26 @@ task concurrentExecution(type: SshTask) {
 	}
 }
 
-task executeSudo(type: SshTask) {
+task executeSudoNoPwd(type: SshTask) {
 	description 'execute command on a remote'
 	session(remotes.localhost) {
 		execute('sudo env', pty: true)
 	}
 }
+
+task executeSudoWithPwd(type: SshTask) {
+    description 'execute command as sudo on a remote supporting the provision of a password for the sudo command'
+    doFirst {
+        assert project.hasProperty('sudoPwd'), "You must provide password for sudo command: -PsudoPwd=..."
+        // of course you could just set the password in the remotes configuration, probably reading the password as a property from ~/.gradle/gradle.properties
+        remotes.myhost.password = project.sudoPwd
+    }
+
+    session(remotes.myhost) {
+        executeSudo('env', pty: true)
+    }
+}
+
 
 task executionFailed(type: SshTask) {
 	description 'describes error handling'
