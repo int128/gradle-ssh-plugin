@@ -17,9 +17,9 @@ buildscript {
 	}
 	dependencies {
 		if (System.properties.useRelease) {
-			classpath 'org.hidetake:gradle-ssh-plugin:0.1.4'
+			classpath 'org.hidetake:gradle-ssh-plugin:0.1.5'
 		} else {
-			classpath files('../build/libs/gradle-ssh-plugin-0.1.4.jar')
+			classpath files('../build/libs/gradle-ssh-plugin-0.1.5.jar')
 			classpath 'com.jcraft:jsch:0.1.48'
 		}
 	}
