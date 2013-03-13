@@ -84,9 +84,9 @@ class DefaultSshService implements SshService {
 	void dryRun(SshSpec sshSpec) {
 		def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.WARN)
 		sshSpec.sessionSpecs.each { spec ->
-			def handler = new DryRunOperationHandler(spec)
-			handler.listeners.add(operationEventLogger)
-			handler.with(spec.operationClosure)
+			def handler = new DryRunOperationHandler(spec, [operationEventLogger])
+			println handler
+            handler.with(spec.operationClosure)
 		}
 	}
 
