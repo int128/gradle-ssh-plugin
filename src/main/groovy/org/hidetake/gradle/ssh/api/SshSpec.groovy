@@ -74,7 +74,7 @@ class SshSpec {
 	 * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
 	 */
 	void session(Collection<Remote> remotes, Closure operationClosure) {
-		assert remotes != null, 'remote should not be null'
+		assert remotes, 'remotes should be set and contain atleast one remote'
 		assert operationClosure != null, 'operation closure should not be null'
 		remotes.each { Remote remote -> session(remote, operationClosure) }
 	}
@@ -85,7 +85,7 @@ class SshSpec {
 	 * @param specs list of {@link SshSpec}s in priority order (first item is highest priority)
 	 * @return merged one
 	 */
-	protected static SshSpec computeMerged(SshSpec... specs) {
+	static SshSpec computeMerged(SshSpec... specs) {
 		def merged = new SshSpec()
 		specs.reverse().each { spec ->
 			merged.config.putAll(spec.config)

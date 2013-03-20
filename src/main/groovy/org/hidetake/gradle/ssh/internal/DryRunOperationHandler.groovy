@@ -19,8 +19,9 @@ class DryRunOperationHandler implements OperationHandler {
 	 */
 	final List<OperationEventListener> listeners = []
 
-	DryRunOperationHandler(SessionSpec spec) {
+	DryRunOperationHandler(SessionSpec spec, List<OperationEventListener> listeners) {
 		this.spec = spec
+        this.listeners = listeners
 	}
 
 	@Override
