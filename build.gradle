@@ -36,3 +36,8 @@ artifacts {
 if (gradle.startParameter.taskNames.contains('uploadArchives')) {
 	apply from: 'build.publish.gradle'
 }
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
+}
