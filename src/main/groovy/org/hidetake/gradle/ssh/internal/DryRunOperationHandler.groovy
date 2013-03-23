@@ -30,7 +30,7 @@ class DryRunOperationHandler implements OperationHandler {
 	}
 
 	@Override
-	void execute(String command) {
+	String execute(String command) {
 		listeners*.beginOperation('execute', command)
 	}
 
@@ -50,7 +50,7 @@ class DryRunOperationHandler implements OperationHandler {
 	}
 
 	@Override
-	void execute(Map options, String command) {
+	String execute(Map options, String command) {
 		listeners*.beginOperation('execute', options, command)
 	}
 

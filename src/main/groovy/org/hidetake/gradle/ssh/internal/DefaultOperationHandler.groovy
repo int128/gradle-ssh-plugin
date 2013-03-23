@@ -41,31 +41,38 @@ class DefaultOperationHandler implements OperationHandler {
 	}
 
 	@Override
-	void execute(String command) {
+	String execute(String command) {
 		execute([:], command)
 	}
 
 	@Override
-	void execute(Map options, String command) {
+	String execute(Map options, String command) {
 		listeners*.beginOperation('execute', options, command)
+
 		ChannelExec channel = session.openChannel('exec')
 		channel.command = command
-		channel.inputStream = null
-		channel.setOutputStream(System.out, true)
 		channel.setErrStream(System.err, true)
 		options.each { k, v -> channel[k] = v }
+
+		def result = new StringBuilder()
 		try {
 			channel.connect()
 			listeners*.managedChannelConnected(channel, spec)
-			while (!channel.closed) {
-				Thread.sleep(500L)
-			}
+            def input = channel.getInputStream()
+            while (true) {
+                result << readCommandResult(input)
+                if (channel.closed) {
+                    break
+                }
+                Thread.sleep(500L)
+            }
+            print(result)
 			listeners*.managedChannelClosed(channel, spec)
 		} finally {
 			channel.disconnect()
 		}
+		result.toString()
 	}
-
 
     @Override
     void executeSudo(String command) {
