@@ -58,14 +58,16 @@ class DefaultOperationHandler implements OperationHandler {
 		try {
 			channel.connect()
 			listeners*.managedChannelConnected(channel, spec)
+
             def input = channel.getInputStream()
             while (true) {
                 result << readCommandResult(input)
                 if (channel.closed) {
                     break
                 }
-                Thread.sleep(500L)
+                Thread.sleep(500)
             }
+
             print(result)
 			listeners*.managedChannelClosed(channel, spec)
 		} finally {
@@ -88,30 +90,29 @@ class DefaultOperationHandler implements OperationHandler {
         channel.setErrStream(System.err, true)
         options.each { k, v -> channel[k] = v }
 
-        InputStream input = channel.getInputStream();
-        OutputStream out = channel.getOutputStream();
-
         def result = new StringBuilder()
         try {
             channel.connect()
             listeners*.managedChannelConnected(channel, spec)
+
+            def input = channel.getInputStream()
+            def out = channel.getOutputStream()
 
             def sudoPwd = spec.remote.password
             provideSudoPwd(out, sudoPwd)
 
             while(true) {
                 result << filterPassword(readCommandResult(input), sudoPwd)
-
                 if (result.contains("try again")) {
                     throw new RuntimeException("Unable to execute sudo command. Wrong username/password")
                 }
-                if(channel.closed) { break }
-
+                if (channel.closed) {
+                    break
+                }
                 Thread.sleep(500)
             }
 
             print(result)
-
             listeners*.managedChannelClosed(channel, spec)
         } finally {
             channel.disconnect()
@@ -124,22 +125,22 @@ class DefaultOperationHandler implements OperationHandler {
         out.flush()
     }
 
-    private String readCommandResult(input) {
-        String str = ""
-        byte[] tmp = new byte[1024];
-        while(input.available() > 0){
-            int i=input.read(tmp, 0, 1024)
-            if(i < 0) throw new RuntimeException("Unexepected end of stream when reading command result")
-            str += new String(tmp, 0, i)
+    private String readCommandResult(InputStream input) {
+        def str = new StringBuilder()
+        def buf = new byte[1024]
+        while (input.available() > 0){
+            def readBytes = input.read(buf, 0, 1024)
+            if (readBytes < 0) {
+                throw new RuntimeException("Unexpected end of stream when reading command result")
+            }
+            str << new String(buf, 0, readBytes)
         }
-        str
+        str.toString()
     }
 
     private String filterPassword(str, pwd) {
         str ? str.readLines().findAll{!it.contains(pwd)}.join("\n").trim() : ""
     }
-
-
 
 
 	@Override
