@@ -70,12 +70,12 @@ class DryRunOperationHandler implements OperationHandler {
 	}
 
     @Override
-    void executeSudo(String command) {
+    String executeSudo(String command) {
         listeners*.beginOperation('executeSudo', command)
     }
 
     @Override
-    void executeSudo(Map options, String command) {
+    String executeSudo(Map options, String command) {
         listeners*.beginOperation('executeSudo', options, command)
     }
 }

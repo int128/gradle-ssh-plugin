@@ -75,12 +75,12 @@ class DefaultOperationHandler implements OperationHandler {
 	}
 
     @Override
-    void executeSudo(String command) {
+    String executeSudo(String command) {
         executeSudo([:], command)
     }
 
     @Override
-    void executeSudo(Map options, String command) {
+    String executeSudo(Map options, String command) {
         listeners*.beginOperation('executeSudo', command, options)
 
         ChannelExec channel = session.openChannel('exec') as ChannelExec
@@ -91,6 +91,7 @@ class DefaultOperationHandler implements OperationHandler {
         InputStream input = channel.getInputStream();
         OutputStream out = channel.getOutputStream();
 
+        def result = new StringBuilder()
         try {
             channel.connect()
             listeners*.managedChannelConnected(channel, spec)
@@ -98,12 +99,10 @@ class DefaultOperationHandler implements OperationHandler {
             def sudoPwd = spec.remote.password
             provideSudoPwd(out, sudoPwd)
 
-            String commandResult = ""
-
             while(true) {
-                commandResult += filterPassword(readCommandResult(input), sudoPwd)
+                result << filterPassword(readCommandResult(input), sudoPwd)
 
-                if (commandResult.contains("try again")) {
+                if (result.contains("try again")) {
                     throw new RuntimeException("Unable to execute sudo command. Wrong username/password")
                 }
                 if(channel.closed) { break }
@@ -111,13 +110,13 @@ class DefaultOperationHandler implements OperationHandler {
                 Thread.sleep(500)
             }
 
-            // TODO: provide easy access through dsl to the command result
-            println (commandResult?: 'No output')
+            print(result)
 
             listeners*.managedChannelClosed(channel, spec)
         } finally {
             channel.disconnect()
         }
+        result.toString()
     }
 
     private void provideSudoPwd(out, sudoPwd) {

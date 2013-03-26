@@ -39,7 +39,7 @@ interface OperationHandler {
      *
      * @param command
      */
-    void executeSudo(String command)
+    String executeSudo(String command)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -48,7 +48,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    void executeSudo(Map options, String command)
+    String executeSudo(Map options, String command)
 
 	/**
 	 * Performs an execution operation.
