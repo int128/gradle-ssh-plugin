@@ -49,7 +49,8 @@ class DefaultSshService implements SshService {
 						session.password = spec.remote.password
 					}
 					if (spec.remote.identity) {
-						session.identityRepository.add(spec.remote.identity.bytes)
+                        // TODO: below impacts on global, but should be session-specific
+						jsch.addIdentity(spec.remote.identity.path)
 					}
 					session.connect()
 					sessions.put(spec, session)
