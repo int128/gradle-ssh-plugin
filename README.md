@@ -1,6 +1,8 @@
 Gradle SSH Plugin
 =================
 
+[![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.png?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
+
 This plugin provides remote command execution and file transfer capabilities via SSH sessions.
 
 
