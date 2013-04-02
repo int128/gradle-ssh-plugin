@@ -19,8 +19,9 @@ interface OperationHandler {
 	 * This method blocks until channel is closed.
 	 *
 	 * @param command
+	 * @return output value of the command
 	 */
-	void execute(String command)
+	String execute(String command)
 
 	/**
 	 * Performs an execution operation.
@@ -28,8 +29,9 @@ interface OperationHandler {
 	 *
 	 * @param options properties to configure the channel
 	 * @param command
+	 * @return output value of the command
 	 */
-	void execute(Map options, String command)
+	String execute(Map options, String command)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -37,7 +39,7 @@ interface OperationHandler {
      *
      * @param command
      */
-    void executeSudo(String command)
+    String executeSudo(String command)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -46,7 +48,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    void executeSudo(Map options, String command)
+    String executeSudo(Map options, String command)
 
 	/**
 	 * Performs an execution operation.

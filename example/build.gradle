@@ -62,6 +62,13 @@ task showEnvironmentAll(type: SshTask) {
 	}
 }
 
+task obtainValue(type: SshTask) {
+	session(remotes.localhost) {
+		def targetArchitecture = execute('uname -sm').trim()
+		println "target architecture is ${targetArchitecture}."
+	}
+}
+
 task concurrentExecution(type: SshTask) {
 	description 'describes how to execute SSH concurrently'
 	session(remotes.localhost) {
