@@ -79,9 +79,10 @@ Define a SSH task
 To define a SSH task, use `task(type: SshTask)` like:
 
 ```groovy
-task reloadMasterServer(type: SshTask) {
+task checkWebServer(type: SshTask) {
   session(remotes.web01) {
-    execute('sudo service httpd reload', pty: true)
+    def pids = execute('pidof nginx').trim().split(/ /)
+    assert pids.length > 1
   }
 }
 
@@ -109,8 +110,8 @@ Note that the closure will be called in **evaluation** phase on Gradle.
 ### Session operation
 
 Within `session` closure, following methods and properties are available:
-  * `execute(command)` - Executes a command. This method blocks until the command is completed.
-  * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed.
+  * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
+  * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
