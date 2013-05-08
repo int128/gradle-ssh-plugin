@@ -45,7 +45,7 @@ A remote instance has following properties:
   * `host` - Hostname or IP address
   * `port` - Port. Default is 22. (Optional)
   * `user` - User name.
-  * `password` - Password for password authentication. (Optional)
+  * `password` - Password for password authentication or as passphrase for a private key. (Optional)
   * `identity` - Private key for public-key authentication. (Optional)
 
 Also remote hosts may be associated with roles, using `role(name)` like:
