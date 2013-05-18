@@ -66,7 +66,7 @@ class IntegrationTestHelper {
     void enablePublickeyAuthentication(Closure assertion) {
         server.publickeyAuthenticator = [authenticate: { String username, PublicKey key, ServerSession s ->
             assertion(username, key, s)
-            authenticatedByPassword = true
+            authenticatedByPublickey = true
             true
         }] as PublickeyAuthenticator
     }

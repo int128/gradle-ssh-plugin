@@ -76,7 +76,42 @@ class AuthenticationTest {
             }
             project.tasks.testTask.execute()
         }
-        assert helper.authenticatedByPassword
+        assert helper.authenticatedByPublickey
         assert helper.requestedCommands.contains('ls')
     }
+
+    @Test
+    void publickeyAuthenticationWithPassphrase() {
+        def identityFile = new File(AuthenticationTest.getResource('/id_rsa_pass').file)
+        assert identityFile != null, 'could not load test fixture'
+        def helper = new IntegrationTestHelper()
+        helper.enablePublickeyAuthentication { String username, PublicKey key, ServerSession s ->
+            assert username == 'someuser'
+            assert key.algorithm == 'RSA'
+        }
+        helper.enableCommand()
+        helper.execute {
+            def project = ProjectBuilder.builder().build()
+            project.with {
+                apply plugin: 'ssh'
+                ssh { config(StrictHostKeyChecking: 'no') }
+                remotes {
+                    webServer {
+                        host = helper.server.host
+                        port = helper.server.port
+                        user = 'someuser'
+                        identity = identityFile
+                        passphrase = "gradle"
+                    }
+                }
+                task(type: SshTask, 'testTask') {
+                    session(remotes.webServer) { execute 'ls' }
+                }
+            }
+            project.tasks.testTask.execute()
+        }
+        assert helper.authenticatedByPublickey
+        assert helper.requestedCommands.contains('ls')
+    }
+
 }

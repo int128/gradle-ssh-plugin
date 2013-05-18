@@ -47,6 +47,7 @@ A remote instance has following properties:
   * `user` - User name.
   * `password` - Password for password authentication. (Optional)
   * `identity` - Private key for public-key authentication. (Optional)
+  * `passphrase` - Passphrase for private key when using public-key authentication. (Optional)
 
 Also remote hosts may be associated with roles, using `role(name)` like:
 
