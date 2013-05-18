@@ -44,6 +44,12 @@ class Remote {
 	 */
 	File identity
 
+    /**
+     * Passphrase for private key
+     * Leave as null if password authentication
+     */
+    String passphrase
+
 	Remote(String name) {
 		this.name = name
 	}
