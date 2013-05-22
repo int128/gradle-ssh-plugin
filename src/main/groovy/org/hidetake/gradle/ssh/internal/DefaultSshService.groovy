@@ -50,7 +50,12 @@ class DefaultSshService implements SshService {
 					}
 					if (spec.remote.identity) {
                         // TODO: below impacts on global, but should be session-specific
-						jsch.addIdentity(spec.remote.identity.path)
+
+                        if(spec.remote.passphrase) {
+                            jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase)
+                        } else {
+                            jsch.addIdentity(spec.remote.identity.path)
+                        }
 					}
 					session.connect()
 					sessions.put(spec, session)
