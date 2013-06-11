@@ -3,7 +3,7 @@ Gradle SSH Plugin
 
 [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.png?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
 
-This plugin provides remote command execution and file transfer capabilities via SSH sessions.
+This plugin provides remote command execution and file transfer capabilities.
 
 
 How to use
@@ -71,7 +71,7 @@ remotes {
 }
 ```
 
-To acquire remote hosts associated with particular role, use `remotes.role()` with one or more name.
+To acquire remote hosts associated with particular role, use `remotes.role()` with their name.
 
 
 Define a SSH task
@@ -104,7 +104,7 @@ Within `SshTask` closure, following methods and properties are available:
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `logger` - Default is `project.logger`
 
-Specification of the closure is defined in [class SshSpec](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+Specification of the closure is defined in [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 Note that the closure will be called in **evaluation** phase on Gradle.
 
 
@@ -118,7 +118,7 @@ Within `session` closure, following methods and properties are available:
   * `put(local, remote)` - Sends a file or directory to remote host.
   * `remote` - Remote host of current session. (Read only)
 
-Specification of the closure is defined in [interface OperationHandler](gradle-ssh-plugin/blob/master/src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
+Specification of the closure is defined in [interface OperationHandler](src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
 Note that the closure will be called in **execution** phase on Gradle.
 
 Above operations accepts option arguments.
@@ -158,16 +158,24 @@ ssh {
 
 Following properties and methods are available:
 
-  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch.
+  * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
-  * `retryWaitSec` - Time in seconds until next retrying. Default is 0 (immediately).
+  * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
   * `logger` - Default is `project.logger`
 
 Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy)
 
 
-Complete example
-----------------
+Examples
+--------
 
-[See](example/build.gradle)
+See examples in [example/build.gradle](example/build.gradle).
+
+
+Contributions
+-------------
+
+Thanks for contributions. I welcome your issue reports or pull requests.
+
+[Change Log](wiki/ChangeLog).
