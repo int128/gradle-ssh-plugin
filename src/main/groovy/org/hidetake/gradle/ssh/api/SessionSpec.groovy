@@ -7,24 +7,24 @@ package org.hidetake.gradle.ssh.api
  *
  */
 class SessionSpec {
-	/**
-	 * Remote.
-	 */
-	final Remote remote
+    /**
+     * Remote.
+     */
+    final Remote remote
 
-	/**
-	 * Closure for {@link OperationHandler}.
-	 */
-	final Closure operationClosure
+    /**
+     * Closure for {@link OperationHandler}.
+     */
+    final Closure operationClosure
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param remote
-	 * @param operationClosure
-	 */
-	SessionSpec(Remote remote, Closure operationClosure) {
-		this.remote = remote
-		this.operationClosure = operationClosure
-	}
+    /**
+     * Constructor.
+     *
+     * @param remote
+     * @param operationClosure
+     */
+    SessionSpec(Remote remote, Closure operationClosure) {
+        this.remote = remote
+        this.operationClosure = operationClosure
+    }
 }

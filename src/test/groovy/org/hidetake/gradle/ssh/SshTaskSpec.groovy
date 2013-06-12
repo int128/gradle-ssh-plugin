@@ -60,7 +60,7 @@ class SshTaskSpec extends Specification {
                 }
             }
             task(type: SshTask, 'testTask') {
-                config(myConf : 'MyConfValue')
+                config(myConf: 'MyConfValue')
                 session(remotes.webServer) {
                     execute 'ls'
                 }

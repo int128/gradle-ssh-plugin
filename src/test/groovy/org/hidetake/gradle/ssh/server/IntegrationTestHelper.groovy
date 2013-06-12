@@ -1,7 +1,9 @@
 package org.hidetake.gradle.ssh.server
 
-import static org.hamcrest.CoreMatchers.*
-import static org.junit.Assert.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import static org.hamcrest.CoreMatchers.is
 
 import java.security.PublicKey
 
@@ -11,8 +13,8 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.PublickeyAuthenticator
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider
 import org.apache.sshd.server.session.ServerSession
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+import static org.junit.Assert.assertThat
 
 /**
  * A helper class for server-based integration test.

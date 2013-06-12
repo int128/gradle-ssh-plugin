@@ -7,11 +7,11 @@ import org.hidetake.gradle.ssh.api.SshSpec
 
 class TestDataHelper {
     static SshSpec createSpec() {
-        new SshSpec().with{
-            sessionSpecs.addAll([new SessionSpec(createRemote(), {-> println "whatever"})])
+        new SshSpec().with {
+            sessionSpecs.addAll([new SessionSpec(createRemote(), {-> println "whatever" })])
             dryRun = false
             retryCount = 1
-            retryWaitSec =  1
+            retryWaitSec = 1
             logger = [:] as Logger
             config([myConf: 'myConf'])
 

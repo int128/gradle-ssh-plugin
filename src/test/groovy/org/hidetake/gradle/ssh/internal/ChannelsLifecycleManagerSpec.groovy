@@ -10,7 +10,7 @@ class ChannelsLifecycleManagerSpec extends Specification {
 
 
     def setupSpec() {
-        ChannelsLifecycleManager.metaClass.static.sleep = {long ms ->
+        ChannelsLifecycleManager.metaClass.static.sleep = { long ms ->
             println "sleep mock"
         }
     }

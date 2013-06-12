@@ -4,10 +4,10 @@ apply plugin: 'ssh'
 showRemotes(project)
 
 remotes {
-	additionalServer1 {
-		host = 'localhost'
-		user = 'someone'
-	}
+    additionalServer1 {
+        host = 'localhost'
+        user = 'someone'
+    }
 }
 
 showRemotes(project)

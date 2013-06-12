@@ -1,91 +1,91 @@
 /**
  * Examples.
- * 
+ *
  * To execute these, prepare your localhost.
  * - start sshd
  * - generate key pair (ssh-keygen -t rsa)
  * - add your pubic key to authorized_keys
  * - make sure that you can log in without password
- * 
+ *
  * If gradle is invoked with <code>-DuseRelease</code>,
  * released JAR in the Maven central repository will be used.
- * 
+ *
  */
 buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		if (System.properties.useRelease) {
-			classpath 'org.hidetake:gradle-ssh-plugin:0.1.7'
-		} else {
-			classpath files('../build/libs/gradle-ssh-plugin-0.1.7.jar')
-			classpath 'com.jcraft:jsch:0.1.48'
-		}
-	}
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        if (System.properties.useRelease) {
+            classpath 'org.hidetake:gradle-ssh-plugin:0.1.7'
+        } else {
+            classpath files('../build/libs/gradle-ssh-plugin-0.1.7.jar')
+            classpath 'com.jcraft:jsch:0.1.48'
+        }
+    }
 }
 
 apply plugin: 'ssh'
 apply plugin: 'project-report'
 
 ssh {
-	config(StrictHostKeyChecking: 'no')
+    config(StrictHostKeyChecking: 'no')
 }
 
 remotes {
-	localhost {
-		role 'webServers'
-		host = 'localhost'
-		user = System.properties['user.name']
-		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
-	}
-	myhost {
-		role 'webServers'
-		host = '127.0.0.1'
-		user = System.properties['user.name']
-		identity = file("${System.properties['user.home']}/.ssh/id_rsa")
-	}
+    localhost {
+        role 'webServers'
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+    myhost {
+        role 'webServers'
+        host = '127.0.0.1'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
 }
 
 task showEnvironmentSingle(type: SshTask) {
-	description 'execute command on a remote'
-	session(remotes.localhost) {
-		execute "echo ${remote.user}@${remote.host}:${remote.port}"
-		execute 'env'
-	}
+    description 'execute command on a remote'
+    session(remotes.localhost) {
+        execute "echo ${remote.user}@${remote.host}:${remote.port}"
+        execute 'env'
+    }
 }
 
 task showEnvironmentAll(type: SshTask) {
-	description 'execute command on remotes'
-	session(remotes.role('webServers')) {
-		execute 'env'
-	}
+    description 'execute command on remotes'
+    session(remotes.role('webServers')) {
+        execute 'env'
+    }
 }
 
 task obtainValue(type: SshTask) {
-	session(remotes.localhost) {
-		def targetArchitecture = execute('uname -sm').trim()
-		println "target architecture is ${targetArchitecture}."
-	}
+    session(remotes.localhost) {
+        def targetArchitecture = execute('uname -sm').trim()
+        println "target architecture is ${targetArchitecture}."
+    }
 }
 
 task concurrentExecution(type: SshTask) {
-	description 'describes how to execute SSH concurrently'
-	session(remotes.localhost) {
-		(1..5).each { i ->
-			executeBackground "sleep ${i} && echo -n ${i}- && date"
-		}
-	}
-	session(remotes.myhost) {
-		executeBackground 'sar 1 5'
-	}
+    description 'describes how to execute SSH concurrently'
+    session(remotes.localhost) {
+        (1..5).each { i ->
+            executeBackground "sleep ${i} && echo -n ${i}- && date"
+        }
+    }
+    session(remotes.myhost) {
+        executeBackground 'sar 1 5'
+    }
 }
 
 task executeSudoNoPwd(type: SshTask) {
-	description 'execute command on a remote'
-	session(remotes.localhost) {
-		execute('sudo env', pty: true)
-	}
+    description 'execute command on a remote'
+    session(remotes.localhost) {
+        execute('sudo env', pty: true)
+    }
 }
 
 task executeSudoWithPwd(type: SshTask) {
@@ -103,25 +103,25 @@ task executeSudoWithPwd(type: SshTask) {
 
 
 task executionFailed(type: SshTask) {
-	description 'describes error handling'
-	session(remotes.localhost) {
-		// may be failed
-		execute 'touch /root/test'
-	}
+    description 'describes error handling'
+    session(remotes.localhost) {
+        // may be failed
+        execute 'touch /root/test'
+    }
 }
 
 task sshInTask << {
-	description 'describes how to execute SSH in the task'
-	def command = "env"
-	println command
-	sshexec {
-		session(remotes.localhost) {
-			execute command
-		}
-	}
+    description 'describes how to execute SSH in the task'
+    def command = "env"
+    println command
+    sshexec {
+        session(remotes.localhost) {
+            execute command
+        }
+    }
 }
 
 void showRemotes(Project baseProject) {
-	logger.info('({}) rootProject.remotes = {}', baseProject, baseProject.parent.remotes)
-	logger.info('({}) project.remotes = {}', baseProject, baseProject.remotes)
+    logger.info('({}) rootProject.remotes = {}', baseProject, baseProject.parent.remotes)
+    logger.info('({}) project.remotes = {}', baseProject, baseProject.remotes)
 }

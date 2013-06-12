@@ -3,10 +3,8 @@ package org.hidetake.gradle.ssh
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSpec
 import spock.lang.Specification
 import spock.lang.Unroll
-
 
 class SshPluginSpec extends Specification {
 

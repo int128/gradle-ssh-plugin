@@ -2,47 +2,47 @@ package org.hidetake.gradle.ssh.api
 
 /**
  * Represents a remote host.
- * 
+ *
  * @author hidetake.org
  *
  */
 class Remote {
-	/**
-	 * Name of this instance.
-	 */
-	final String name
+    /**
+     * Name of this instance.
+     */
+    final String name
 
-	/**
-	 * Remote user.
-	 */
-	String user
+    /**
+     * Remote user.
+     */
+    String user
 
-	/**
-	 * Port.
-	 */
-	int port = 22
+    /**
+     * Port.
+     */
+    int port = 22
 
-	/**
-	 * Remote host.
-	 */
-	String host
+    /**
+     * Remote host.
+     */
+    String host
 
-	/**
-	 * Password.
-	 * Leave as null if public key authentication.
-	 */
-	String password
+    /**
+     * Password.
+     * Leave as null if public key authentication.
+     */
+    String password
 
-	/**
-	 * Roles.
-	 */
-	final List<String> roles = []
+    /**
+     * Roles.
+     */
+    final List<String> roles = []
 
-	/**
-	 * Identity key file.
-	 * Leave as null if password authentication.
-	 */
-	File identity
+    /**
+     * Identity key file.
+     * Leave as null if password authentication.
+     */
+    File identity
 
     /**
      * Passphrase for private key
@@ -50,25 +50,25 @@ class Remote {
      */
     String passphrase
 
-	Remote(String name) {
-		this.name = name
-	}
+    Remote(String name) {
+        this.name = name
+    }
 
-	/**
-	 * Add a role to this remote.
-	 * 
-	 * @param role
-	 */
-	void role(String role) {
-		assert role != null, 'role name should not be null'
-		roles.add(role)
-	}
+    /**
+     * Add a role to this remote.
+     *
+     * @param role
+     */
+    void role(String role) {
+        assert role != null, 'role name should not be null'
+        roles.add(role)
+    }
 
-	/**
-	 * Returns a string representation of this remote host.
-	 */
-	@Override
-	String toString() {
-		"remote '${name}'"
-	}
+    /**
+     * Returns a string representation of this remote host.
+     */
+    @Override
+    String toString() {
+        "remote '${name}'"
+    }
 }

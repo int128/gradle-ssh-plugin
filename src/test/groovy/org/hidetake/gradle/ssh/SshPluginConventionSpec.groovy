@@ -30,7 +30,7 @@ class SshPluginConventionSpec extends Specification {
             retryCount = 1
             retryWaitSec = 1
             logger = [:] as Logger
-            config(myConfig : 'myConfigValue')
+            config(myConfig: 'myConfigValue')
 
         }
 
@@ -71,7 +71,7 @@ class SshPluginConventionSpec extends Specification {
     def "configure ssh does not allow specifying sessions"() {
         when:
         convention.ssh({
-            session(createRemote()) {execute "ls -l"}
+            session(createRemote()) { execute "ls -l" }
         })
         then:
         IllegalStateException ex = thrown()
@@ -80,7 +80,7 @@ class SshPluginConventionSpec extends Specification {
 
     def "configure ssh does not allow setting logger to null"() {
         when:
-        convention.ssh({logger = null})
+        convention.ssh({ logger = null })
         then:
         IllegalStateException ex = thrown()
         ex.message.contains("logger")
@@ -97,7 +97,7 @@ class SshPluginConventionSpec extends Specification {
         1 * SshSpec.computeMerged(_, _) >> mergedSpecMock
 
         when:
-        convention.sshexec ({})
+        convention.sshexec({})
 
         then:
         1 * serviceMock.execute(mergedSpecMock)
@@ -105,7 +105,7 @@ class SshPluginConventionSpec extends Specification {
 
     def "sshexec must specify closure"() {
         when:
-        convention.sshexec (null)
+        convention.sshexec(null)
         then:
         AssertionError err = thrown()
         err.message.contains("configure")

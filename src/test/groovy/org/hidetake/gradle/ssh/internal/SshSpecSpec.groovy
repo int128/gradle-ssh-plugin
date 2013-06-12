@@ -79,9 +79,9 @@ class SshSpecSpec extends Specification {
 
     def "add session for multiple remotes"() {
         given:
-        def remote1 = createRemote([name:"remote1"])
-        def remote2 = createRemote([name:"remote2"])
-        def closure = {-> println "whatever"}
+        def remote1 = createRemote([name: "remote1"])
+        def remote2 = createRemote([name: "remote2"])
+        def closure = {-> println "whatever" }
 
         when:
         spec.session([remote1, remote2], closure)
@@ -96,7 +96,7 @@ class SshSpecSpec extends Specification {
         def remote = createRemote()
 
         when:
-        spec.session([], {->println "whatever"})
+        spec.session([], {-> println "whatever" })
 
         then:
         AssertionError ex = thrown()
@@ -127,11 +127,11 @@ class SshSpecSpec extends Specification {
     def "compute merged adheres to priority order"() {
         given:
         def spec1 = createSpec()
-        def spec2 = new SshSpec().with{
-            sessionSpecs.addAll([new SessionSpec(Mock(Remote), {-> println "whatever"})])
+        def spec2 = new SshSpec().with {
+            sessionSpecs.addAll([new SessionSpec(Mock(Remote), {-> println "whatever" })])
             dryRun = true
             retryCount = 2
-            retryWaitSec =  2
+            retryWaitSec = 2
             logger = Mock(Logger)
             config([myConf: 'myConf2'])
 
@@ -142,13 +142,12 @@ class SshSpecSpec extends Specification {
         def merged = SshSpec.computeMerged(spec2, spec1)
 
         then:
-        merged.config       == spec1.config + spec2.config
+        merged.config == spec1.config + spec2.config
         merged.sessionSpecs == spec1.sessionSpecs + spec2.sessionSpecs
-        merged.dryRun       == spec2.dryRun
-        merged.retryCount   == spec2.retryCount
+        merged.dryRun == spec2.dryRun
+        merged.retryCount == spec2.retryCount
         merged.retryWaitSec == spec2.retryWaitSec
-        merged.logger       == spec2.logger
-
+        merged.logger == spec2.logger
 
 
     }
