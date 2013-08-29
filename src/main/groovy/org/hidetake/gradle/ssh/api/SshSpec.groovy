@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.api
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 
 /**
@@ -29,6 +30,16 @@ class SshSpec {
      * Logger.
      */
     Logger logger = null
+
+    /**
+     * Log level for standard output of commands.
+     */
+    LogLevel outputLogLevel = null
+
+    /**
+     * Log level for standard error of commands.
+     */
+    LogLevel errorLogLevel = null
 
     /**
      * JSch configuration.
@@ -95,6 +106,8 @@ class SshSpec {
         merged.retryCount = specs.collect { it.retryCount }.findResult(0) { it }
         merged.retryWaitSec = specs.collect { it.retryWaitSec }.findResult(0) { it }
         merged.logger = specs.collect { it.logger }.find()
+        merged.outputLogLevel = specs.collect { it.outputLogLevel }.findResult(LogLevel.QUIET) { it }
+        merged.errorLogLevel = specs.collect { it.errorLogLevel }.findResult(LogLevel.ERROR) { it }
         merged
     }
 }

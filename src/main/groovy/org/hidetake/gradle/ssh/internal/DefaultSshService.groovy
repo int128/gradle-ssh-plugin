@@ -65,12 +65,12 @@ class DefaultSshService implements SshService {
             try {
                 def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.INFO)
                 def exitStatusValidator = new ExitStatusValidator()
-                sessions.each { spec, session ->
-                    def handler = new DefaultOperationHandler(spec, session)
+                sessions.each { sessionSpec, session ->
+                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session)
                     handler.listeners.add(channelsLifecycleManager)
                     handler.listeners.add(operationEventLogger)
                     handler.listeners.add(exitStatusValidator)
-                    handler.with(spec.operationClosure)
+                    handler.with(sessionSpec.operationClosure)
                 }
                 channelsLifecycleManager.waitForPending(exitStatusValidator)
             } finally {
