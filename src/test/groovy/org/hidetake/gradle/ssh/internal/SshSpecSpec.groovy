@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
@@ -133,6 +134,8 @@ class SshSpecSpec extends Specification {
             retryCount = 2
             retryWaitSec = 2
             logger = Mock(Logger)
+            outputLogLevel = LogLevel.DEBUG
+            errorLogLevel = LogLevel.INFO
             config([myConf: 'myConf2'])
 
             it
@@ -148,8 +151,8 @@ class SshSpecSpec extends Specification {
         merged.retryCount == spec2.retryCount
         merged.retryWaitSec == spec2.retryWaitSec
         merged.logger == spec2.logger
-
-
+        merged.outputLogLevel == spec2.outputLogLevel
+        merged.errorLogLevel == spec2.errorLogLevel
     }
 
     private def assertEquals(SshSpec expected, SshSpec actual) {
@@ -159,6 +162,8 @@ class SshSpecSpec extends Specification {
         assert expected.retryWaitSec == actual.retryWaitSec
         assert expected.sessionSpecs == actual.sessionSpecs
         assert expected.logger == actual.logger
+        assert expected.outputLogLevel == actual.outputLogLevel
+        assert expected.errorLogLevel == actual.errorLogLevel
 
         true
     }
