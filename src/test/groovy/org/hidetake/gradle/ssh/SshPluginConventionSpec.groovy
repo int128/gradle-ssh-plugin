@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh
 
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.SshService
@@ -31,7 +32,8 @@ class SshPluginConventionSpec extends Specification {
             retryWaitSec = 1
             logger = [:] as Logger
             config(myConfig: 'myConfigValue')
-
+            outputLogLevel = LogLevel.DEBUG
+            errorLogLevel = LogLevel.INFO
         }
 
         when:
@@ -43,6 +45,8 @@ class SshPluginConventionSpec extends Specification {
             retryCount == 1
             retryWaitSec == 1
             config.myConfig == 'myConfigValue'
+            outputLogLevel == LogLevel.DEBUG
+            errorLogLevel == LogLevel.INFO
         }
     }
 

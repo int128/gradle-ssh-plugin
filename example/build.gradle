@@ -63,6 +63,8 @@ task showEnvironmentAll(type: SshTask) {
 }
 
 task obtainValue(type: SshTask) {
+    description 'obtaining value from remote command (silent)'
+    outputLogLevel = LogLevel.DEBUG
     session(remotes.localhost) {
         def targetArchitecture = execute('uname -sm').trim()
         println "target architecture is ${targetArchitecture}."

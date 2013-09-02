@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.test
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
@@ -14,6 +15,8 @@ class TestDataHelper {
             retryWaitSec = 1
             logger = [:] as Logger
             config([myConf: 'myConf'])
+            outputLogLevel = LogLevel.LIFECYCLE
+            errorLogLevel = LogLevel.LIFECYCLE
 
             it
         }

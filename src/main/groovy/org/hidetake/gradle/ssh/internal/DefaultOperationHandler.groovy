@@ -3,10 +3,13 @@ package org.hidetake.gradle.ssh.internal
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
+import groovy.transform.TupleConstructor
+import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.SshSpec
 
 /**
  * Default implementation of {@link OperationHandler}.
@@ -14,29 +17,20 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  * @author hidetake.org
  *
  */
+@TupleConstructor
 class DefaultOperationHandler implements OperationHandler {
-    protected final SessionSpec spec
-    protected final Session session
+    final SshSpec sshSpec
+    final SessionSpec sessionSpec
+    final Session session
 
     /**
      * Event listeners.
      */
     final List<OperationEventListener> listeners = []
 
-    /**
-     * Constructor.
-     *
-     * @param spec
-     * @param session
-     */
-    DefaultOperationHandler(SessionSpec spec, Session session) {
-        this.spec = spec
-        this.session = session
-    }
-
     @Override
     Remote getRemote() {
-        spec.remote
+        sessionSpec.remote
     }
 
     @Override
@@ -50,29 +44,27 @@ class DefaultOperationHandler implements OperationHandler {
 
         ChannelExec channel = session.openChannel('exec')
         channel.command = command
-        channel.setErrStream(System.err, true)
         options.each { k, v -> channel[k] = v }
 
-        def result = new StringBuilder()
+        def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
+        def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
+        channel.outputStream = outputLogger
+        channel.errStream = errorLogger
+
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, spec)
-
-            def input = channel.getInputStream()
-            while (true) {
-                result << readCommandResult(input)
-                if (channel.closed) {
-                    break
-                }
+            listeners*.managedChannelConnected(channel, sessionSpec)
+            while (!channel.closed) {
                 Thread.sleep(500)
             }
-
-            print(result)
-            listeners*.managedChannelClosed(channel, spec)
+            listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
             channel.disconnect()
+            outputLogger.close()
+            errorLogger.close()
         }
-        result.toString()
+
+        outputLogger.lines.join(Utilities.eol())
     }
 
     @Override
@@ -86,61 +78,34 @@ class DefaultOperationHandler implements OperationHandler {
 
         ChannelExec channel = session.openChannel('exec') as ChannelExec
         channel.command = "sudo -S -p '' $command"
-        channel.setErrStream(System.err, true)
         options.each { k, v -> channel[k] = v }
 
-        def result = new StringBuilder()
+        def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
+        def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
+        channel.outputStream = outputLogger
+        channel.errStream = errorLogger
+
+        // TODO: check "try again"
+        outputLogger.filter = { String line -> !line.contains(sessionSpec.remote.password) }
+
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, spec)
-
-            def input = channel.getInputStream()
-            def out = channel.getOutputStream()
-
-            def sudoPwd = spec.remote.password
-            provideSudoPwd(out, sudoPwd)
-
-            while (true) {
-                result << filterPassword(readCommandResult(input), sudoPwd)
-                if (result.contains("try again")) {
-                    throw new RuntimeException("Unable to execute sudo command. Wrong username/password")
-                }
-                if (channel.closed) {
-                    break
-                }
+            listeners*.managedChannelConnected(channel, sessionSpec)
+            channel.outputStream.withWriter {
+                it.write(sessionSpec.remote.password + '\n')
+            }
+            while (!channel.closed) {
                 Thread.sleep(500)
             }
-
-            print(result)
-            listeners*.managedChannelClosed(channel, spec)
+            listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
             channel.disconnect()
+            outputLogger.close()
+            errorLogger.close()
         }
-        result.toString()
-    }
 
-    private void provideSudoPwd(out, sudoPwd) {
-        out.write(("$sudoPwd\n").getBytes());
-        out.flush()
+        outputLogger.lines.join(Utilities.eol())
     }
-
-    private String readCommandResult(InputStream input) {
-        def str = new StringBuilder()
-        def buf = new byte[1024]
-        while (input.available() > 0) {
-            def readBytes = input.read(buf, 0, 1024)
-            if (readBytes < 0) {
-                throw new RuntimeException("Unexpected end of stream when reading command result")
-            }
-            str << new String(buf, 0, readBytes)
-        }
-        str.toString()
-    }
-
-    private String filterPassword(str, pwd) {
-        str ? str.readLines().findAll { !it.contains(pwd) }.join("\n").trim() : ""
-    }
-
 
     @Override
     void executeBackground(String command) {
@@ -150,14 +115,15 @@ class DefaultOperationHandler implements OperationHandler {
     @Override
     void executeBackground(Map options, String command) {
         listeners*.beginOperation('executeBackground', command)
+
         ChannelExec channel = session.openChannel('exec')
         channel.command = command
-        channel.inputStream = null
-        channel.setOutputStream(System.out, true)
-        channel.setErrStream(System.err, true)
+        channel.outputStream = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
+        channel.errStream = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
         options.each { k, v -> channel[k] = v }
+
         channel.connect()
-        listeners*.unmanagedChannelConnected(channel, spec)
+        listeners*.unmanagedChannelConnected(channel, sessionSpec)
     }
 
     @Override
@@ -172,9 +138,9 @@ class DefaultOperationHandler implements OperationHandler {
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, spec)
+            listeners*.managedChannelConnected(channel, sessionSpec)
             channel.get(remote, local)
-            listeners*.managedChannelClosed(channel, spec)
+            listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
             channel.disconnect()
         }
@@ -192,9 +158,9 @@ class DefaultOperationHandler implements OperationHandler {
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, spec)
+            listeners*.managedChannelConnected(channel, sessionSpec)
             channel.put(local, remote, ChannelSftp.OVERWRITE)
-            listeners*.managedChannelClosed(channel, spec)
+            listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
             channel.disconnect()
         }
