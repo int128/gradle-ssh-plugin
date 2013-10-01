@@ -167,6 +167,23 @@ class LoggingOutputStreamSpec extends Specification {
         stream.lines == ['line3', 'line4']
     }
 
+    def "with writer"() {
+        given:
+        def logger = createLoggerMock(LogLevel.QUIET)
+        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
+
+        when:
+        stream.withWriter {
+            it.append 'line3\nline4\nline5'
+        }
+
+        then:
+        1 * logger.log(LogLevel.QUIET, 'line3')
+        1 * logger.log(LogLevel.QUIET, 'line4')
+        1 * logger.log(LogLevel.QUIET, 'line5')
+        stream.lines == ['line3', 'line4', 'line5']
+    }
+
     def "apply filter"() {
         given:
         def logger = createLoggerMock(LogLevel.QUIET)

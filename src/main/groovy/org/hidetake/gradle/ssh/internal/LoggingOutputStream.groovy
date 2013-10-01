@@ -19,10 +19,10 @@ class LoggingOutputStream extends OutputStream {
     private lastBlock = ''
 
     /**
-     * Line string filter.
+     * A line filter for the stream.
      * Default is pass-through.
      */
-    Closure<Boolean> filter = { String line -> true }
+    Closure<Boolean> filter = { true }
 
     /**
      * List of output lines.
@@ -46,21 +46,23 @@ class LoggingOutputStream extends OutputStream {
         def blockLines = LINE_SEPARATOR.split(block, Integer.MIN_VALUE).toList()
         if (!blockLines.empty) {
             lastBlock = blockLines.pop()
-            blockLines.findAll(filter).each { writeLine it }
+            blockLines.each { writeLine it }
         }
     }
 
     void close() {
         flush()
-        if (!lastBlock.empty && filter(lastBlock)) {
+        if (!lastBlock.empty) {
             writeLine lastBlock
         }
     }
 
     protected void writeLine(String line) {
-        if (logger.isEnabled(logLevel)) {
-            logger.log(logLevel, line)
+        if (filter(line)) {
+            if (logger.isEnabled(logLevel)) {
+                logger.log(logLevel, line)
+            }
+            lines << line
         }
-        lines << line
     }
 }

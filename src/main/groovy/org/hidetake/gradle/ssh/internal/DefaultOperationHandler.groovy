@@ -5,11 +5,7 @@ import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.OperationEventListener
-import org.hidetake.gradle.ssh.api.OperationHandler
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SessionSpec
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.*
 
 /**
  * Default implementation of {@link OperationHandler}.
@@ -85,8 +81,21 @@ class DefaultOperationHandler implements OperationHandler {
         channel.outputStream = outputLogger
         channel.errStream = errorLogger
 
-        // TODO: check "try again"
-        outputLogger.filter = { String line -> !line.contains(sessionSpec.remote.password) }
+        // filter password and check authentication failure.
+        boolean authenticationFailed = false
+        int lineNumber = 0
+        outputLogger.filter = { String line ->
+            // usually password or messages appear within a few lines.
+            if (++lineNumber < 5) {
+                if (line.contains('try again')) {
+                    // this closure runs in I/O thread, so needs to notify failure to main thread.
+                    authenticationFailed = true
+                }
+                !line.contains(sessionSpec.remote.password)
+            } else {
+                true
+            }
+        }
 
         try {
             channel.connect()
@@ -95,6 +104,9 @@ class DefaultOperationHandler implements OperationHandler {
                 it.write(sessionSpec.remote.password + '\n')
             }
             while (!channel.closed) {
+                if (authenticationFailed) {
+                    throw new RuntimeException('Unable to execute sudo command. Wrong username/password')
+                }
                 Thread.sleep(500)
             }
             listeners*.managedChannelClosed(channel, sessionSpec)
