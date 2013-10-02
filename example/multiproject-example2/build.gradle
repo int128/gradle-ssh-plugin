@@ -1,13 +1,11 @@
-apply plugin: 'project-report'
 apply plugin: 'ssh'
 
-showRemotes(project)
-
 remotes {
-    additionalServer2 {
+    server2 {
         host = 'localhost'
         user = 'someone'
     }
 }
 
+// server2 should be shown in this project
 showRemotes(project)

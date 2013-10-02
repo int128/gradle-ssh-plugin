@@ -1,20 +1,23 @@
 /**
- * Examples.
+ * Examples of the Gradle SSH plugin.
  *
- * To execute these, prepare your localhost.
- * - start sshd
- * - generate key pair (ssh-keygen -t rsa)
- * - add your pubic key to authorized_keys
- * - make sure that you can log in without password
+ * Preconditions:
+ * - SSH service is running.
+ * - Public key authentication is enabled.
+ * - Your public key is placed at ~/.ssh/id_rsa and needs no pass-phrase.
+ *
  */
+
 buildscript {
     def productProperties = new Properties()
     file('../gradle.properties').withReader { Reader reader -> productProperties.load reader }
+
     repositories {
         mavenCentral()
     }
+
     dependencies {
-        // using local build if exists
+        // using local build if possible
         classpath files("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
         // using Maven Central if local build does not exist
         classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
@@ -22,96 +25,109 @@ buildscript {
     }
 }
 
+// Applies the plugin.
 apply plugin: 'ssh'
-apply plugin: 'project-report'
 
 ssh {
+    // Disables known hosts checking.
     config(StrictHostKeyChecking: 'no')
 }
 
+// Defines remote hosts and roles.
 remotes {
     localhost {
-        role 'webServers'
+        role 'testServers'
         host = 'localhost'
         user = System.properties['user.name']
         identity = file("${System.properties['user.home']}/.ssh/id_rsa")
     }
-    myhost {
-        role 'webServers'
-        host = '127.0.0.1'
-        user = System.properties['user.name']
-        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    yourhost {
+        role 'testServers'
+        // Change here to your real host!
+        host = '192.168.1.1'
+        user = 'someone'
+        password = 'change'
     }
 }
 
-task showEnvironmentSingle(type: SshTask) {
-    description 'execute command on a remote'
+task executeCommand(type: SshTask) {
+    description 'Executes a command on a host'
     session(remotes.localhost) {
-        execute "echo ${remote.user}@${remote.host}:${remote.port}"
+        println description
         execute 'env'
     }
 }
 
-task showEnvironmentAll(type: SshTask) {
-    description 'execute command on remotes'
-    session(remotes.role('webServers')) {
+task byRole(type: SshTask) {
+    description 'Executes a command on multiple hosts by the role'
+    session(remotes.role('testServers')) {
+        println description
         execute 'env'
     }
 }
 
 task obtainValue(type: SshTask) {
-    description 'obtaining value from remote command (silent)'
+    description 'Obtains a value from the command'
+    // suppress command output
     outputLogLevel = LogLevel.DEBUG
     session(remotes.localhost) {
-        def targetArchitecture = execute('uname -sm').trim()
-        println "target architecture is ${targetArchitecture}."
+        println description
+        def targetArchitecture = execute('uname -sm')
+        println "Target architecture is ${targetArchitecture}."
     }
 }
 
-task concurrentExecution(type: SshTask) {
-    description 'describes how to execute SSH concurrently'
+task executeConcurrently(type: SshTask) {
+    description 'Executes multiple commands concurrently'
+    doFirst {
+        println description
+    }
     session(remotes.localhost) {
-        (1..5).each { i ->
-            executeBackground "sleep ${i} && echo -n ${i}- && date"
+        [0, 2, 4].each { i ->
+            executeBackground "sleep ${i} && echo -n ${i}-\${SSH_CONNECTION}- && date"
         }
     }
-    session(remotes.myhost) {
-        executeBackground 'sar 1 5'
+    session(remotes.localhost) {
+        [1, 3, 5].each { i ->
+            executeBackground "sleep ${i} && echo -n ${i}-\${SSH_CONNECTION}- && date"
+        }
     }
 }
 
 task executeSudoNoPwd(type: SshTask) {
-    description 'execute command on a remote'
+    description 'Executes a command as sudo'
     session(remotes.localhost) {
+        println description
         execute('sudo env', pty: true)
     }
 }
 
 task executeSudoWithPwd(type: SshTask) {
-    description 'execute command as sudo on a remote supporting the provision of a password for the sudo command'
+    description 'Executes a command as sudo supporting the provision of a password for the sudo command'
     doFirst {
         assert project.hasProperty('sudoPwd'), "You must provide password for sudo command: -PsudoPwd=..."
-        // of course you could just set the password in the remotes configuration, probably reading the password as a property from ~/.gradle/gradle.properties
-        remotes.myhost.password = project.sudoPwd
+        // of course you could just set the password in the remotes configuration,
+        // probably reading the password as a property from ~/.gradle/gradle.properties
+        remotes.localhost.password = project.sudoPwd
     }
-
-    session(remotes.myhost) {
+    session(remotes.localhost) {
+        println description
         executeSudo('env', pty: true)
     }
 }
 
-
-task executionFailed(type: SshTask) {
-    description 'describes error handling'
+task executeBadCommand(type: SshTask) {
+    description 'Executes a bad command'
     session(remotes.localhost) {
+        println description
         // may be failed
         execute 'touch /root/test'
     }
 }
 
-task sshInTask << {
-    description 'describes how to execute SSH in the task'
-    def command = "env"
+task executeSshInTask << {
+    description 'Executes a command in the task'
+    def command = "date"
     println command
     sshexec {
         session(remotes.localhost) {
@@ -120,7 +136,11 @@ task sshInTask << {
     }
 }
 
+//
+// Above remote hosts are still valid in child projects.
+// Run Gradle with -i flag to see remote hosts in each projects.
+//
 void showRemotes(Project baseProject) {
     logger.info('({}) rootProject.remotes = {}', baseProject, baseProject.parent.remotes)
-    logger.info('({}) project.remotes = {}', baseProject, baseProject.remotes)
+    logger.info('({}) project.remotes     = {}', baseProject, baseProject.remotes)
 }
