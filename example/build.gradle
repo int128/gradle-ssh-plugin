@@ -6,10 +6,6 @@
  * - generate key pair (ssh-keygen -t rsa)
  * - add your pubic key to authorized_keys
  * - make sure that you can log in without password
- *
- * If gradle is invoked with <code>-DuseRelease</code>,
- * released JAR in the Maven central repository will be used.
- *
  */
 buildscript {
     def productProperties = new Properties()
@@ -18,12 +14,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        if (System.properties.useRelease) {
-            classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
-        } else {
-            classpath files("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
-            classpath 'com.jcraft:jsch:0.1.48'
-        }
+        // using local build if exists
+        classpath files("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
+        // using Maven Central if local build does not exist
+        classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
+        classpath 'com.jcraft:jsch:0.1.48'
     }
 }
 
