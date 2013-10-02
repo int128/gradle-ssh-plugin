@@ -12,14 +12,16 @@
  *
  */
 buildscript {
+    def productProperties = new Properties()
+    file('../gradle.properties').withReader { Reader reader -> productProperties.load reader }
     repositories {
         mavenCentral()
     }
     dependencies {
         if (System.properties.useRelease) {
-            classpath 'org.hidetake:gradle-ssh-plugin:0.1.7'
+            classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
         } else {
-            classpath files('../build/libs/gradle-ssh-plugin-0.1.7.jar')
+            classpath files("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
             classpath 'com.jcraft:jsch:0.1.48'
         }
     }
