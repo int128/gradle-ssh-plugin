@@ -15,7 +15,7 @@ apply plugin: 'maven'
 
 boolean validProperty(propertyName) {
     try { project.property(propertyName) != null }
-    catch (MissingPropertyException) { false }
+    catch (MissingPropertyException ignore) { false }
 }
 
 assert validProperty('signing.keyId'), 'properties for signing must be provided'
@@ -23,7 +23,7 @@ assert validProperty('signing.secretKeyRingFile'), 'properties for signing must 
 assert validProperty('sonatypeUsername'), 'properties for publish must be provided'
 assert validProperty('sonatypeFullname'), 'properties for publish must be provided'
 
-String askPassword(prompt) {
+String askPassword(String prompt) {
     "${System.console().readPassword(prompt)}"
 }
 
@@ -39,7 +39,7 @@ uploadArchives {
         repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
             authentication(userName: sonatypeUsername, password: sonatypePassword)
         }
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        beforeDeployment { signing.signPom(it) }
         pom.project {
             name 'Gradle SSH Plugin'
             packaging 'jar'

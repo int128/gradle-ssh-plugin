@@ -68,7 +68,7 @@ class SshSpec {
      * Adds a session.
      *
      * @param remote the remote
-     * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
+     * @param operationClosure closure for {@link OperationHandler} (run in execution phase)
      */
     void session(Remote remote, Closure operationClosure) {
         assert remote != null, 'remote should not be null'
@@ -82,7 +82,7 @@ class SshSpec {
      * Adds sessions.
      *
      * @param remotes collection of {@link Remote}s
-     * @param operationClosure closure for {@link OperationSpec} (run in execution phase)
+     * @param operationClosure closure for {@link OperationHandler} (run in execution phase)
      */
     void session(Collection<Remote> remotes, Closure operationClosure) {
         assert remotes, 'remotes should be set and contain atleast one remote'

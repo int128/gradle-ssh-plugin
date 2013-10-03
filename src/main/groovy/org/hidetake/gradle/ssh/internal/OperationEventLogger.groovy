@@ -47,9 +47,9 @@ class OperationEventLogger implements OperationEventListener {
         log { "Channel #${channel.id} has been closed at status ${channel.exitStatus}" }
     }
 
-    protected void log(Closure<String> message) {
+    protected void log(Closure message) {
         if (logger.isEnabled(logLevel)) {
-            logger.log(logLevel, message())
+            logger.log(logLevel, message() as String)
         }
     }
 }
