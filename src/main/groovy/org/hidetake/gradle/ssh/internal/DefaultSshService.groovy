@@ -22,7 +22,7 @@ class DefaultSshService implements SshService {
     @Override
     void execute(SshSpec sshSpec) {
         assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
-        assert sshSpec.logger != null, 'default of logger should be set by convention'
+        assert sshSpec.logger != null, 'default logger should be set by convention'
 
         def jsch = jschFactory()
         jsch.config.putAll(sshSpec.config)
@@ -79,7 +79,7 @@ class DefaultSshService implements SshService {
      * @param closure
      */
     protected void retry(int retryCount, int retryWaitSec, Logger logger, Closure closure) {
-        assert closure != null, 'closure should not be null'
+        assert closure != null, 'closure should be set'
         if (retryCount > 0) {
             try {
                 closure()

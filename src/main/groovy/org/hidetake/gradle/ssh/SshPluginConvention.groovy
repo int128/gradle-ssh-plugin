@@ -29,12 +29,12 @@ class SshPluginConvention {
     /**
      * Configures global settings.
      *
-     * @param configure closure for {@link SshSpec}
+     * @param configureClosure closure for {@link SshSpec}
      */
-    void ssh(Closure configure) {
-        assert configure != null, 'configure closure should be set'
+    void ssh(Closure configureClosure) {
+        assert configureClosure != null, 'configureClosure should be set'
 
-        ConfigureUtil.configure(configure, sshSpec)
+        ConfigureUtil.configure(configureClosure, sshSpec)
         if (sshSpec.sessionSpecs.size() > 0) {
             throw new IllegalStateException('Do not declare any session in convention')
         }
@@ -46,13 +46,13 @@ class SshPluginConvention {
     /**
      * Executes SSH operations instead of a project task.
      *
-     * @param configure configuration closure for {@link SshSpec}
+     * @param configureClosure configuration closure for {@link SshSpec}
      */
-    void sshexec(Closure configure) {
-        assert configure != null, 'configure closure should be set'
+    void sshexec(Closure configureClosure) {
+        assert configureClosure != null, 'configureClosure should be set'
 
         def localSpec = new SshSpec()
-        ConfigureUtil.configure(configure, localSpec)
+        ConfigureUtil.configure(configureClosure, localSpec)
         def merged = SshSpec.computeMerged(localSpec, sshSpec)
         if (merged.dryRun) {
             dryRunService.execute(merged)

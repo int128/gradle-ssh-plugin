@@ -60,7 +60,7 @@ class SshSpec {
      * @param pairs key value pairs of configuration
      */
     void config(Map<String, Object> pairs) {
-        assert pairs != null, 'config map should not be null'
+        assert pairs != null, 'pairs should be set'
         config.putAll(pairs)
     }
 
@@ -71,10 +71,10 @@ class SshSpec {
      * @param operationClosure closure for {@link OperationHandler} (run in execution phase)
      */
     void session(Remote remote, Closure operationClosure) {
-        assert remote != null, 'remote should not be null'
-        assert remote.user != null, "user name of remote ${remote.name} should not be null"
-        assert remote.host != null, "host name of remote ${remote.name} should not be null"
-        assert operationClosure != null, 'operation closure should not be null'
+        assert remote != null, 'remote should be set'
+        assert remote.user != null, "user of remote ${remote.name} should be set"
+        assert remote.host != null, "host of remote ${remote.name} should be set"
+        assert operationClosure != null, 'operationClosure should be set'
         sessionSpecs.add(new SessionSpec(remote, operationClosure))
     }
 
@@ -85,8 +85,8 @@ class SshSpec {
      * @param operationClosure closure for {@link OperationHandler} (run in execution phase)
      */
     void session(Collection<Remote> remotes, Closure operationClosure) {
-        assert remotes, 'remotes should be set and contain atleast one remote'
-        assert operationClosure != null, 'operation closure should not be null'
+        assert remotes, 'remotes should contain at least one'
+        assert operationClosure != null, 'operationClosure should be set'
         remotes.each { Remote remote -> session(remote, operationClosure) }
     }
 

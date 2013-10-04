@@ -15,7 +15,7 @@ class DryRunSshService implements SshService {
     @Override
     void execute(SshSpec sshSpec) {
         assert sshSpec.dryRun == Boolean.TRUE, 'dryRun should be true'
-        assert sshSpec.logger != null, 'default of logger should be set by convention'
+        assert sshSpec.logger != null, 'default logger should be set by convention'
 
         def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.WARN)
         sshSpec.sessionSpecs.each { spec ->
