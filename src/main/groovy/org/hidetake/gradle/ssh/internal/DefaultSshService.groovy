@@ -21,21 +21,9 @@ class DefaultSshService implements SshService {
 
     @Override
     void execute(SshSpec sshSpec) {
-        assert sshSpec.dryRun != null, 'default of dryRun should be set by convention'
+        assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
         assert sshSpec.logger != null, 'default of logger should be set by convention'
-        if (sshSpec.dryRun) {
-            dryRun(sshSpec)
-        } else {
-            wetRun(sshSpec)
-        }
-    }
 
-    /**
-     * Opens sessions and performs each operations.
-     *
-     * @param sshSpec
-     */
-    void wetRun(SshSpec sshSpec) {
         JSch jsch = jschFactory()
         jsch.config.putAll(sshSpec.config)
 
@@ -78,20 +66,6 @@ class DefaultSshService implements SshService {
             }
         } finally {
             sessions.each { spec, session -> session.disconnect() }
-        }
-    }
-
-    /**
-     * Performs no action.
-     *
-     * @param sshSpec
-     */
-    void dryRun(SshSpec sshSpec) {
-        def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.WARN)
-        sshSpec.sessionSpecs.each { spec ->
-            def handler = new DryRunOperationHandler(spec, [operationEventLogger])
-            println handler
-            handler.with(spec.operationClosure)
         }
     }
 
