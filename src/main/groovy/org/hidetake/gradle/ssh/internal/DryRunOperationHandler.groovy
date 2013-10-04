@@ -15,7 +15,8 @@ import org.hidetake.gradle.ssh.api.SessionSpec
 @TupleConstructor
 class DryRunOperationHandler implements OperationHandler {
     final SessionSpec spec
-    final List<OperationEventListener> listeners = []
+
+    final listeners = [] as List<OperationEventListener>
 
     @Override
     Remote getRemote() {
@@ -43,22 +44,22 @@ class DryRunOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(Map options, String command) {
+    String execute(Map<String, Object> options, String command) {
         listeners*.beginOperation('execute', options, command)
     }
 
     @Override
-    void executeBackground(Map options, String command) {
+    void executeBackground(Map<String, Object> options, String command) {
         listeners*.beginOperation('executeBackground', options, command)
     }
 
     @Override
-    void get(Map options, String remote, String local) {
+    void get(Map<String, Object> options, String remote, String local) {
         listeners*.beginOperation('get', options, remote, local)
     }
 
     @Override
-    void put(Map options, String local, String remote) {
+    void put(Map<String, Object> options, String local, String remote) {
         listeners*.beginOperation('put', options, remote, local)
     }
 

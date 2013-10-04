@@ -44,12 +44,12 @@ class SshSpec {
     /**
      * JSch configuration.
      */
-    final Map config = [:]
+    final config = [:] as Map<String, Object>
 
     /**
      * Sessions.
      */
-    final List<SessionSpec> sessionSpecs = []
+    final sessionSpecs = [] as List<SessionSpec>
 
     /**
      * Adds configuration. For example:
@@ -59,7 +59,7 @@ class SshSpec {
      *
      * @param pairs key value pairs of configuration
      */
-    void config(Map pairs) {
+    void config(Map<String, Object> pairs) {
         assert pairs != null, 'config map should not be null'
         config.putAll(pairs)
     }

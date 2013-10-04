@@ -24,10 +24,10 @@ class DefaultSshService implements SshService {
         assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
         assert sshSpec.logger != null, 'default of logger should be set by convention'
 
-        JSch jsch = jschFactory()
+        def jsch = jschFactory()
         jsch.config.putAll(sshSpec.config)
 
-        Map<SessionSpec, Session> sessions = [:]
+        def sessions = [:] as Map<SessionSpec, Session>
         try {
             sshSpec.sessionSpecs.each { spec ->
                 retry(sshSpec.retryCount, sshSpec.retryWaitSec, sshSpec.logger) {

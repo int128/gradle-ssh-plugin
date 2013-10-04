@@ -39,7 +39,7 @@ class Remote {
     /**
      * Roles.
      */
-    final List<String> roles = []
+    final roles = [] as List<String>
 
     /**
      * Identity key file.

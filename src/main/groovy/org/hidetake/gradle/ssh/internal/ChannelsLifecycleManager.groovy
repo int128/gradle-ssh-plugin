@@ -11,7 +11,7 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  *
  */
 class ChannelsLifecycleManager implements OperationEventListener {
-    final List<Channel> channels = []
+    final channels = [] as List<Channel>
 
     /**
      * Wait for pending channels.

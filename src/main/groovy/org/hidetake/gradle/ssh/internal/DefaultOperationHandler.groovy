@@ -19,10 +19,7 @@ class DefaultOperationHandler implements OperationHandler {
     final SessionSpec sessionSpec
     final Session session
 
-    /**
-     * Event listeners.
-     */
-    final List<OperationEventListener> listeners = []
+    final listeners = [] as List<OperationEventListener>
 
     @Override
     Remote getRemote() {
@@ -35,12 +32,12 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(Map options, String command) {
+    String execute(Map<String, Object> options, String command) {
         listeners*.beginOperation('execute', options, command)
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        options.each { String k, v -> channel[k] = v }
+        options.each { k, v -> channel[k] = v }
 
         def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
         def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
@@ -69,12 +66,12 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    String executeSudo(Map options, String command) {
+    String executeSudo(Map<String, Object> options, String command) {
         listeners*.beginOperation('executeSudo', command, options)
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = "sudo -S -p '' $command"
-        options.each { String k, v -> channel[k] = v }
+        options.each { k, v -> channel[k] = v }
 
         def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
         def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
@@ -125,14 +122,14 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    void executeBackground(Map options, String command) {
+    void executeBackground(Map<String, Object> options, String command) {
         listeners*.beginOperation('executeBackground', command)
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         channel.outputStream = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel)
         channel.errStream = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel)
-        options.each { String k, v -> channel[k] = v }
+        options.each { k, v -> channel[k] = v }
 
         channel.connect()
         listeners*.unmanagedChannelConnected(channel, sessionSpec)
@@ -144,10 +141,10 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    void get(Map options, String remote, String local) {
+    void get(Map<String, Object> options, String remote, String local) {
         listeners*.beginOperation('get', remote, local)
         def channel = session.openChannel('sftp') as ChannelSftp
-        options.each { String k, v -> channel[k] = v }
+        options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
             listeners*.managedChannelConnected(channel, sessionSpec)
@@ -164,10 +161,10 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    void put(Map options, String local, String remote) {
+    void put(Map<String, Object> options, String local, String remote) {
         listeners*.beginOperation('put', remote, local)
         def channel = session.openChannel('sftp') as ChannelSftp
-        options.each { String k, v -> channel[k] = v }
+        options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
             listeners*.managedChannelConnected(channel, sessionSpec)
