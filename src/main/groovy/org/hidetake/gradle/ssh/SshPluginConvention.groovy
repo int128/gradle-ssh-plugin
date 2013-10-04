@@ -20,7 +20,10 @@ class SshPluginConvention {
     /**
      * Alias to omit import in the build script.
      */
-    final SshTask = org.hidetake.gradle.ssh.SshTask.class
+    final SshTask = classOfSshTask
+
+    // fixes inspection warning (Unnecessary fully qualified name)
+    private static final classOfSshTask = SshTask
 
     SshPluginConvention(Project project) {
         sshSpec.logger = project.logger

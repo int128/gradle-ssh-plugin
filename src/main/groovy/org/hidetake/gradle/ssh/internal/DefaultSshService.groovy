@@ -60,7 +60,7 @@ class DefaultSshService implements SshService {
                     handler.listeners.add(exitStatusValidator)
                     handler.with(sessionSpec.operationClosure)
                 }
-                channelsLifecycleManager.waitForPending(exitStatusValidator)
+                channelsLifecycleManager.waitForPending()
             } finally {
                 channelsLifecycleManager.disconnect()
             }
