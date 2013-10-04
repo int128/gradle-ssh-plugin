@@ -1,11 +1,14 @@
 package org.hidetake.gradle.ssh.api
 
+import groovy.transform.TupleConstructor
+
 /**
  * Represents a remote host.
  *
  * @author hidetake.org
  *
  */
+@TupleConstructor
 class Remote {
     /**
      * Name of this instance.
@@ -49,10 +52,6 @@ class Remote {
      * Leave as null if password authentication
      */
     String passphrase
-
-    Remote(String name) {
-        this.name = name
-    }
 
     /**
      * Add a role to this remote.

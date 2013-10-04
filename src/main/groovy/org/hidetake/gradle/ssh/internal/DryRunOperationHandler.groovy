@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import groovy.transform.TupleConstructor
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
@@ -11,18 +12,10 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  * @author hidetake.org
  *
  */
+@TupleConstructor
 class DryRunOperationHandler implements OperationHandler {
-    protected final SessionSpec spec
-
-    /**
-     * Event listeners.
-     */
+    final SessionSpec spec
     final List<OperationEventListener> listeners = []
-
-    DryRunOperationHandler(SessionSpec spec, List<OperationEventListener> listeners) {
-        this.spec = spec
-        this.listeners = listeners
-    }
 
     @Override
     Remote getRemote() {
