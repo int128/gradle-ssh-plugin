@@ -11,7 +11,7 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  *
  */
 class ChannelsLifecycleManager implements OperationEventListener {
-    final List<Channel> channels = []
+    final channels = [] as List<Channel>
 
     /**
      * Wait for pending channels.
@@ -22,15 +22,13 @@ class ChannelsLifecycleManager implements OperationEventListener {
      * <li>closed: execution has been finished (closed and exit status is not -1)</li>
      * <li>disconnected: {@link Channel#disconnect()} has been called (closed and exit status is -1)</li>
      * </ol>
-     *
-     * @param validator
      */
-    void waitForPending(ExitStatusValidator validator) {
+    void waitForPending() {
         def pendingFilter = { Channel channel -> !channel.closed }
         def closedFilter = { Channel channel -> channel.closed && channel.exitStatus != -1 }
         while (channels.find(pendingFilter) != null) {
-            channels.findAll(closedFilter).each { Channel channel ->
-                validator.channelClosed(channel)
+            channels.findAll(closedFilter).each { channel ->
+                ExitStatusValidator.validate(channel)
                 channel.disconnect()
             }
             sleep(500L)

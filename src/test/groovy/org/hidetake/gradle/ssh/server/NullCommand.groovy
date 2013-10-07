@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.server
 
+import groovy.transform.TupleConstructor
 import org.apache.sshd.server.Command
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.ExitCallback
@@ -10,12 +11,9 @@ import org.apache.sshd.server.ExitCallback
  * @author hidetake.org
  *
  */
+@TupleConstructor
 class NullCommand implements Command {
     final int exitValue
-
-    NullCommand(int exitValue) {
-        this.exitValue = exitValue
-    }
 
     @Override
     void setInputStream(InputStream inputStream) {

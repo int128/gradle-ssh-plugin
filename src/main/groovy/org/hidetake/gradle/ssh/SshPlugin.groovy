@@ -33,7 +33,7 @@ class SshPlugin implements Plugin<Project> {
         (remotes as ExtensionAware).extensions.add('role', filterByRole.curry(remotes))
     }
 
-    protected final Closure filterByRole = { Collection remotes, String... roles ->
+    protected final filterByRole = { Collection remotes, String... roles ->
         roles.collect { String role ->
             remotes.findAll { Remote remote -> remote.roles.contains(role) }
         }.flatten().toSet()

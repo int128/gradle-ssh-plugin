@@ -28,7 +28,7 @@ class LoggingOutputStream extends OutputStream {
      * List of output lines.
      * Access this property after {@link #close()} in order to ensure last block is committed.
      */
-    final List<String> lines = []
+    final lines = [] as List<String>
 
     void write(int b) {
         buffer.write(b)

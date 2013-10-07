@@ -31,7 +31,7 @@ interface OperationHandler {
      * @param command
      * @return output value of the command
      */
-    String execute(Map options, String command)
+    String execute(Map<String, Object> options, String command)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -48,7 +48,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    String executeSudo(Map options, String command)
+    String executeSudo(Map<String, Object> options, String command)
 
     /**
      * Performs an execution operation.
@@ -65,7 +65,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    void executeBackground(Map options, String command)
+    void executeBackground(Map<String, Object> options, String command)
 
     /**
      * Performs a GET operation.
@@ -84,7 +84,7 @@ interface OperationHandler {
      * @param remote
      * @param local
      */
-    void get(Map options, String remote, String local)
+    void get(Map<String, Object> options, String remote, String local)
 
     /**
      * Performs a PUT operation.
@@ -103,5 +103,5 @@ interface OperationHandler {
      * @param local
      * @param remote
      */
-    void put(Map options, String local, String remote)
+    void put(Map<String, Object> options, String local, String remote)
 }

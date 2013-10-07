@@ -21,25 +21,13 @@ class DefaultSshService implements SshService {
 
     @Override
     void execute(SshSpec sshSpec) {
-        assert sshSpec.dryRun != null, 'default of dryRun should be set by convention'
-        assert sshSpec.logger != null, 'default of logger should be set by convention'
-        if (sshSpec.dryRun) {
-            dryRun(sshSpec)
-        } else {
-            wetRun(sshSpec)
-        }
-    }
+        assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
+        assert sshSpec.logger != null, 'default logger should be set by convention'
 
-    /**
-     * Opens sessions and performs each operations.
-     *
-     * @param sshSpec
-     */
-    void wetRun(SshSpec sshSpec) {
-        JSch jsch = jschFactory()
+        def jsch = jschFactory()
         jsch.config.putAll(sshSpec.config)
 
-        Map<SessionSpec, Session> sessions = [:]
+        def sessions = [:] as Map<SessionSpec, Session>
         try {
             sshSpec.sessionSpecs.each { spec ->
                 retry(sshSpec.retryCount, sshSpec.retryWaitSec, sshSpec.logger) {
@@ -72,26 +60,12 @@ class DefaultSshService implements SshService {
                     handler.listeners.add(exitStatusValidator)
                     handler.with(sessionSpec.operationClosure)
                 }
-                channelsLifecycleManager.waitForPending(exitStatusValidator)
+                channelsLifecycleManager.waitForPending()
             } finally {
                 channelsLifecycleManager.disconnect()
             }
         } finally {
             sessions.each { spec, session -> session.disconnect() }
-        }
-    }
-
-    /**
-     * Performs no action.
-     *
-     * @param sshSpec
-     */
-    void dryRun(SshSpec sshSpec) {
-        def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.WARN)
-        sshSpec.sessionSpecs.each { spec ->
-            def handler = new DryRunOperationHandler(spec, [operationEventLogger])
-            println handler
-            handler.with(spec.operationClosure)
         }
     }
 
@@ -105,7 +79,7 @@ class DefaultSshService implements SshService {
      * @param closure
      */
     protected void retry(int retryCount, int retryWaitSec, Logger logger, Closure closure) {
-        assert closure != null, 'closure should not be null'
+        assert closure != null, 'closure should be set'
         if (retryCount > 0) {
             try {
                 closure()

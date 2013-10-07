@@ -5,6 +5,7 @@ import org.gradle.api.tasks.TaskAction
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.DefaultSshService
+import org.hidetake.gradle.ssh.internal.DryRunSshService
 
 /**
  * SSH task.
@@ -14,7 +15,8 @@ import org.hidetake.gradle.ssh.internal.DefaultSshService
  *
  */
 class SshTask extends DefaultTask {
-    protected SshService service = DefaultSshService.instance
+    protected service = DefaultSshService.instance
+    protected dryRunService = DryRunSshService.instance
 
     /**
      * Delegate of task specific settings.
@@ -25,7 +27,12 @@ class SshTask extends DefaultTask {
 
     @TaskAction
     void perform() {
-        SshPluginConvention convention = project.convention.getPlugin(SshPluginConvention)
-        service.execute(SshSpec.computeMerged(sshSpec, convention.sshSpec))
+        def convention = project.convention.getPlugin(SshPluginConvention)
+        def merged = SshSpec.computeMerged(sshSpec, convention.sshSpec)
+        if (merged.dryRun) {
+            dryRunService.execute(merged)
+        } else {
+            service.execute(merged)
+        }
     }
 }

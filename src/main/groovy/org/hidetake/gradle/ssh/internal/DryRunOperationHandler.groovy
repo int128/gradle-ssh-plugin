@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import groovy.transform.TupleConstructor
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
@@ -11,18 +12,11 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  * @author hidetake.org
  *
  */
+@TupleConstructor
 class DryRunOperationHandler implements OperationHandler {
-    protected final SessionSpec spec
+    final SessionSpec spec
 
-    /**
-     * Event listeners.
-     */
-    final List<OperationEventListener> listeners = []
-
-    DryRunOperationHandler(SessionSpec spec, List<OperationEventListener> listeners) {
-        this.spec = spec
-        this.listeners = listeners
-    }
+    final listeners = [] as List<OperationEventListener>
 
     @Override
     Remote getRemote() {
@@ -50,22 +44,22 @@ class DryRunOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(Map options, String command) {
+    String execute(Map<String, Object> options, String command) {
         listeners*.beginOperation('execute', options, command)
     }
 
     @Override
-    void executeBackground(Map options, String command) {
+    void executeBackground(Map<String, Object> options, String command) {
         listeners*.beginOperation('executeBackground', options, command)
     }
 
     @Override
-    void get(Map options, String remote, String local) {
+    void get(Map<String, Object> options, String remote, String local) {
         listeners*.beginOperation('get', options, remote, local)
     }
 
     @Override
-    void put(Map options, String local, String remote) {
+    void put(Map<String, Object> options, String local, String remote) {
         listeners*.beginOperation('put', options, remote, local)
     }
 

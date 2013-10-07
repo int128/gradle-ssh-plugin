@@ -26,18 +26,19 @@ class ExitStatusValidator implements OperationEventListener {
 
     @Override
     void managedChannelClosed(Channel channel, SessionSpec spec) {
-        channelClosed(channel)
+        validate(channel)
     }
 
     /**
-     * Notifies that the channel has been closed.
-     * This method raises exception if exit status is greater that zero.
+     * Validates exit status of the channel is zero.
+     * This method must be called before channel is disconnected.
      *
      * @param channel
      */
-    void channelClosed(Channel channel) {
+    static void validate(Channel channel) {
+        assert channel.exitStatus != -1, 'validate should be called before disconnect'
         if (channel.exitStatus > 0) {
-            throw new IllegalStateException("Channel #${channel.id} returned exit status ${channel.exitStatus}")
+            throw new RuntimeException("Channel #${channel.id} returned exit status ${channel.exitStatus}")
         }
     }
 }

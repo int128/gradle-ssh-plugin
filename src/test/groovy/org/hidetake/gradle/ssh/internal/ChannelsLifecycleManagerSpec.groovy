@@ -6,7 +6,6 @@ import spock.lang.Specification
 class ChannelsLifecycleManagerSpec extends Specification {
 
     ChannelsLifecycleManager mgr
-    ExitStatusValidator validatorMock
 
 
     def setupSpec() {
@@ -22,7 +21,6 @@ class ChannelsLifecycleManagerSpec extends Specification {
 
     def setup() {
         mgr = new ChannelsLifecycleManager()
-        validatorMock = Mock(ExitStatusValidator)
     }
 
 
@@ -54,11 +52,14 @@ class ChannelsLifecycleManagerSpec extends Specification {
 
 
     def "wait for pending with no channels does nothing"() {
+        given:
+        GroovyMock(ExitStatusValidator, global: true)
+
         when:
-        mgr.waitForPending(validatorMock)
+        mgr.waitForPending()
 
         then:
-        0 * validatorMock.channelClosed(_)
+        0 * ExitStatusValidator.validate(_)
     }
 
     def "wait for pending, one pending channel that closes"() {
@@ -69,11 +70,14 @@ class ChannelsLifecycleManagerSpec extends Specification {
         2 * channel.closed >> false
         1 * channel.closed >> true
 
+        GroovyMock(ExitStatusValidator, global: true)
+        // FIXME: It did not check exit status of the channel in above case.
+        // 1 * ExitStatusValidator.validate(channel)
+
         when:
-        mgr.waitForPending(validatorMock)
+        mgr.waitForPending()
 
         then:
-        0 * validatorMock.channelClosed(channel)
         0 * channel.disconnect()
     }
 
@@ -87,14 +91,15 @@ class ChannelsLifecycleManagerSpec extends Specification {
         2 * pending.closed >> false
         1 * pending.closed >> true
         2 * closed.closed >> true
-        1 * closed.exitStatus >> 1
+        1 * closed.exitStatus >> 0
 
+        GroovyMock(ExitStatusValidator, global: true)
+        1 * ExitStatusValidator.validate(_)
 
         when:
-        mgr.waitForPending(validatorMock)
+        mgr.waitForPending()
 
         then:
-        1 * validatorMock.channelClosed(closed)
         1 * closed.disconnect()
     }
 
