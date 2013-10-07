@@ -25,7 +25,7 @@ class OperationEventLogger implements OperationEventListener {
 
     @Override
     void unmanagedChannelConnected(Channel channel, SessionSpec spec) {
-        log { "Channel ${channel.id} has been opened (unmanaged)" }
+        log { "Channel #${channel.id} has been opened (unmanaged)" }
     }
 
     @Override
@@ -35,7 +35,11 @@ class OperationEventLogger implements OperationEventListener {
 
     @Override
     void managedChannelClosed(Channel channel, SessionSpec spec) {
-        log { "Channel #${channel.id} has been closed at status ${channel.exitStatus}" }
+        log { "Channel #${channel.id} has been closed with exit status ${channel.exitStatus}" }
+    }
+
+    void unmanagedChannelClosed(Channel channel) {
+        log { "Channel #${channel.id} has been closed with exit status ${channel.exitStatus}" }
     }
 
     protected void log(Closure message) {

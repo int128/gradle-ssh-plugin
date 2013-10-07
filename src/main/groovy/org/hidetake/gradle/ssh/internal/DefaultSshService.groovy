@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import com.jcraft.jsch.Channel
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
@@ -60,7 +61,11 @@ class DefaultSshService implements SshService {
                     handler.listeners.add(exitStatusValidator)
                     handler.with(sessionSpec.operationClosure)
                 }
-                channelsLifecycleManager.waitForPending()
+
+                channelsLifecycleManager.waitForPending { Channel channel ->
+                    operationEventLogger.unmanagedChannelClosed(channel)
+                }
+                channelsLifecycleManager.validateExitStatus()
             } finally {
                 channelsLifecycleManager.disconnect()
             }

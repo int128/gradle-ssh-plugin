@@ -53,13 +53,13 @@ class ChannelsLifecycleManagerSpec extends Specification {
 
     def "wait for pending with no channels does nothing"() {
         given:
-        GroovyMock(ExitStatusValidator, global: true)
+        def closedChannelHandler = Mock(Closure)
 
         when:
-        mgr.waitForPending()
+        mgr.waitForPending(closedChannelHandler)
 
         then:
-        0 * ExitStatusValidator.validate(_)
+        0 * closedChannelHandler.call(_)
     }
 
     def "wait for pending, one pending channel that closes"() {
@@ -67,18 +67,16 @@ class ChannelsLifecycleManagerSpec extends Specification {
         def channel = Mock(Channel)
         mgr.unmanagedChannelConnected(channel, null)
 
-        2 * channel.closed >> false
+        1 * channel.closed >> false
         1 * channel.closed >> true
 
-        GroovyMock(ExitStatusValidator, global: true)
-        // FIXME: It did not check exit status of the channel in above case.
-        // 1 * ExitStatusValidator.validate(channel)
+        def closedChannelHandler = Mock(Closure)
 
         when:
-        mgr.waitForPending()
+        mgr.waitForPending(closedChannelHandler)
 
         then:
-        0 * channel.disconnect()
+        1 * closedChannelHandler.call(channel)
     }
 
     def "wait for pending, one pending and one closed"() {
@@ -88,19 +86,18 @@ class ChannelsLifecycleManagerSpec extends Specification {
         mgr.unmanagedChannelConnected(pending, null)
         mgr.unmanagedChannelConnected(closed, null)
 
-        2 * pending.closed >> false
+        1 * pending.closed >> false
         1 * pending.closed >> true
-        2 * closed.closed >> true
-        1 * closed.exitStatus >> 0
+        1 * closed.closed >> true
 
-        GroovyMock(ExitStatusValidator, global: true)
-        1 * ExitStatusValidator.validate(_)
+        def closedChannelHandler = Mock(Closure)
 
         when:
-        mgr.waitForPending()
+        mgr.waitForPending(closedChannelHandler)
 
         then:
-        1 * closed.disconnect()
+        1 * closedChannelHandler.call(pending)
+        1 * closedChannelHandler.call(closed)
     }
 
 }

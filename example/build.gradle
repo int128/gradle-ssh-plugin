@@ -125,6 +125,15 @@ task executeBadCommand(type: SshTask) {
     }
 }
 
+task executeBadCommandInBackground(type: SshTask) {
+    description 'Executes a bad command in background'
+    session(remotes.localhost) {
+        println description
+        // may be failed
+        executeBackground 'touch /root/test'
+    }
+}
+
 task executeSshInTask << {
     description 'Executes a command in the task'
     def command = "date"
