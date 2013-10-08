@@ -1,117 +1,200 @@
 package org.hidetake.gradle.ssh.server
 
-import java.security.PublicKey
-
-import org.apache.sshd.server.session.ServerSession
+import com.jcraft.jsch.JSchException
+import org.apache.sshd.SshServer
+import org.apache.sshd.server.*
+import org.gradle.api.Project
+import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
-import org.junit.Test
+import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
+import spock.lang.Specification
+
+import java.security.PublicKey
 
 /**
- * Authentication tests.
- * Factors:
- * <ul>
- * <li>Authentication method: password, publickey</li>
- * <li>Settings: global, task-specific</li>
- * </ul>
+ * Authentication tests with the SSH server.
  *
  * @author hidetake.org
  *
  */
-class AuthenticationTest {
-    @Test
-    void passwordAuthentication() {
-        def helper = new IntegrationTestHelper()
-        helper.enablePasswordAuthentication(username: 'someuser', password: 'somepassword')
-        helper.enableCommand()
-        helper.execute {
-            def project = ProjectBuilder.builder().build()
-            project.with {
-                apply plugin: 'ssh'
-                ssh { config(StrictHostKeyChecking: 'no') }
-                remotes {
-                    webServer {
-                        host = helper.server.host
-                        port = helper.server.port
-                        user = 'someuser'
-                        password = 'somepassword'
-                    }
-                }
-                task(type: SshTask, 'testTask') {
-                    session(remotes.webServer) { execute 'ls' }
+class AuthenticationTest extends Specification {
+
+    SshServer server
+    Project project
+
+    def setup() {
+        server = ServerBasedTestHelper.setUpLocalhostServer()
+        project = ProjectBuilder.builder().build()
+        project.with {
+            apply plugin: 'ssh'
+            ssh {
+                config(StrictHostKeyChecking: 'no')
+            }
+            remotes {
+                testServer {
+                    host = server.host
+                    port = server.port
+                    user = 'someuser'
                 }
             }
-            project.tasks.testTask.execute()
         }
-        assert helper.authenticatedByPassword
-        assert helper.requestedCommands.contains('ls')
     }
 
-    @Test
-    void publickeyAuthentication() {
-        def identityFile = new File(AuthenticationTest.getResource('/id_rsa').file)
-        assert identityFile != null, 'could not load test fixture'
-        def helper = new IntegrationTestHelper()
-        helper.enablePublickeyAuthentication { String username, PublicKey key, ServerSession s ->
-            assert username == 'someuser'
-            assert key.algorithm == 'RSA'
-        }
-        helper.enableCommand()
-        helper.execute {
-            def project = ProjectBuilder.builder().build()
-            project.with {
-                apply plugin: 'ssh'
-                ssh { config(StrictHostKeyChecking: 'no') }
-                remotes {
-                    webServer {
-                        host = helper.server.host
-                        port = helper.server.port
-                        user = 'someuser'
-                        identity = identityFile
-                    }
-                }
-                task(type: SshTask, 'testTask') {
-                    session(remotes.webServer) { execute 'ls' }
-                }
-            }
-            project.tasks.testTask.execute()
-        }
-        assert helper.authenticatedByPublickey
-        assert helper.requestedCommands.contains('ls')
+    def teardown() {
+        server.stop(true)
     }
 
-    @Test
-    void publickeyAuthenticationWithPassphrase() {
-        def identityFile = new File(AuthenticationTest.getResource('/id_rsa_pass').file)
-        assert identityFile != null, 'could not load test fixture'
-        def helper = new IntegrationTestHelper()
-        helper.enablePublickeyAuthentication { String username, PublicKey key, ServerSession s ->
-            assert username == 'someuser'
-            assert key.algorithm == 'RSA'
-        }
-        helper.enableCommand()
-        helper.execute {
-            def project = ProjectBuilder.builder().build()
-            project.with {
-                apply plugin: 'ssh'
-                ssh { config(StrictHostKeyChecking: 'no') }
-                remotes {
-                    webServer {
-                        host = helper.server.host
-                        port = helper.server.port
-                        user = 'someuser'
-                        identity = identityFile
-                        passphrase = "gradle"
-                    }
-                }
-                task(type: SshTask, 'testTask') {
-                    session(remotes.webServer) { execute 'ls' }
+    def mockSuccessCommandFactory() {
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('ls') >> Mock(Command) {
+                setExitCallback(_) >> { ExitCallback callback ->
+                    callback.onExit(0)
                 }
             }
-            project.tasks.testTask.execute()
         }
-        assert helper.authenticatedByPublickey
-        assert helper.requestedCommands.contains('ls')
+    }
+
+    def defineTestTask() {
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    execute 'ls'
+                }
+            }
+        }
+    }
+
+    def "password authentication"() {
+        given:
+        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
+            _ * authenticate('someuser', 'somepassword', _) >> true
+        }
+        server.commandFactory = mockSuccessCommandFactory()
+        server.start()
+
+        project.remotes.testServer.password = 'somepassword'
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "password authentication with wrong password"() {
+        given:
+        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
+            _ * authenticate('someuser', 'wrongpassword', _) >> false
+        }
+        server.commandFactory = Mock(CommandFactory) {
+            0 * createCommand(_)
+        }
+        server.start()
+
+        project.remotes.testServer.password = 'wrongpassword'
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.cause instanceof JSchException
+        e.cause.cause.message == 'Auth fail'
+    }
+
+    def "public key authentication"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = mockSuccessCommandFactory()
+        server.start()
+
+        project.remotes.testServer.identity = identityFile('id_rsa')
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "public key authentication but denied"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', _ as PublicKey, _) >> false
+        }
+        server.commandFactory = Mock(CommandFactory) {
+            0 * createCommand(_)
+        }
+        server.start()
+
+        project.remotes.testServer.identity = identityFile('id_rsa')
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.cause instanceof JSchException
+        e.cause.cause.message == 'Auth fail'
+    }
+
+    def "public key authentication with passphrase"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = mockSuccessCommandFactory()
+        server.start()
+
+        project.remotes.testServer.identity = identityFile('id_rsa_pass')
+        project.remotes.testServer.passphrase = "gradle"
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "public key authentication with wrong passphrase"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = Mock(CommandFactory) {
+            0 * createCommand(_)
+        }
+        server.start()
+
+        project.remotes.testServer.identity = identityFile('id_rsa_pass')
+        project.remotes.testServer.passphrase = "wrong"
+
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.cause instanceof JSchException
+        e.cause.cause.message == 'Auth fail'
+    }
+
+    static identityFile(String name) {
+        new File(AuthenticationTest.getResource("/${name}").file)
     }
 
 }
