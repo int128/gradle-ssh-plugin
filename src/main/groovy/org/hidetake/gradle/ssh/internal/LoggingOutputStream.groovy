@@ -54,6 +54,7 @@ class LoggingOutputStream extends OutputStream {
         flush()
         if (!lastBlock.empty) {
             writeLine lastBlock
+            lastBlock = ''
         }
     }
 
