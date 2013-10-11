@@ -7,38 +7,18 @@ import spock.lang.Unroll
 
 class LoggingOutputStreamSpec extends Specification {
 
-    def "constructor args"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
+    LoggingOutputStream stream
+    Logger logger
 
-        when:
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
-        then:
-        stream.logger == logger
-        stream.logLevel == LogLevel.QUIET
+    def setup() {
+        logger = Mock(Logger) {
+            isEnabled(_) >> true
+        }
+        stream = new LoggingOutputStream(logger, LogLevel.QUIET)
     }
 
-    def "logging disabled"() {
-        given:
-        def logger = Mock(Logger)
-        def stream = new LoggingOutputStream(logger, LogLevel.ERROR)
-
-        logger.isEnabled(LogLevel.INFO) >> true
-
-        when:
-        stream.write(0x23)
-        stream.close()
-
-        then:
-        0 * logger.log(_, _)
-    }
 
     def "a byte"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write(0x23)
         stream.close()
@@ -49,10 +29,6 @@ class LoggingOutputStreamSpec extends Specification {
     }
 
     def "a line"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write('single line'.bytes)
         stream.close()
@@ -63,10 +39,6 @@ class LoggingOutputStreamSpec extends Specification {
     }
 
     def "a line terminated with a line separator"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write('single line\n'.bytes)
         stream.close()
@@ -79,10 +51,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "a line terminated with #n line separators"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write("single line${'\n' * n}".toString().bytes)
         stream.close()
@@ -99,10 +67,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "a line starting with #n line separators"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write("${'\n' * n}single line".toString().bytes)
         stream.close()
@@ -120,10 +84,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "a line with #n line separators in the middle"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write("line1${'\n' * n}line2".toString().bytes)
         stream.close()
@@ -142,10 +102,6 @@ class LoggingOutputStreamSpec extends Specification {
     }
 
     def "multi-platforms"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write('line1\r\n\rline2\u2028line3\n\u2029line4\u0085line5'.bytes)
         stream.close()
@@ -162,10 +118,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "flush in line #n times"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.with {
             write('lin'.bytes)
@@ -195,10 +147,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "close #n times, a line"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write('single line'.bytes)
         (1..n).each {
@@ -215,10 +163,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     @Unroll
     def "close #n times, a line terminated with a line separator"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.write('single line\n'.bytes)
         (1..n).each {
@@ -235,10 +179,6 @@ class LoggingOutputStreamSpec extends Specification {
     }
 
     def "with writer"() {
-        given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
-
         when:
         stream.withWriter {
             it.append 'line3\nline4\nline5'
@@ -253,8 +193,6 @@ class LoggingOutputStreamSpec extends Specification {
 
     def "apply filter"() {
         given:
-        def logger = createLoggerMock(LogLevel.QUIET)
-        def stream = new LoggingOutputStream(logger, LogLevel.QUIET)
         stream.filter = { String line -> line.contains('4') }
 
         when:
@@ -274,10 +212,19 @@ class LoggingOutputStreamSpec extends Specification {
         stream.lines == ['line4']
     }
 
-    protected createLoggerMock(LogLevel level) {
-        def logger = Mock(Logger)
-        logger.isEnabled(level) >> true
-        logger
+    def "logging disabled"() {
+        given:
+        logger = Mock(Logger) {
+            isEnabled(_) >> false
+        }
+        stream = new LoggingOutputStream(logger, LogLevel.QUIET)
+
+        when:
+        stream.write(0x23)
+        stream.close()
+
+        then:
+        0 * logger.log(_, _ as String)
     }
 
 }
