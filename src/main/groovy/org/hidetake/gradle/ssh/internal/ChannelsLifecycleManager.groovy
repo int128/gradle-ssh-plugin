@@ -31,7 +31,7 @@ class ChannelsLifecycleManager implements OperationEventListener {
             def closedChannels = pendingChannels.findAll { it.closed }
             closedChannels.each(closedChannelHandler)
             pendingChannels.removeAll(closedChannels)
-            sleep 500
+            sleep(100)
         }
     }
 

@@ -48,7 +48,7 @@ class DefaultOperationHandler implements OperationHandler {
             channel.connect()
             listeners*.managedChannelConnected(channel, sessionSpec)
             while (!channel.closed) {
-                Thread.sleep(500)
+                sleep(100)
             }
             listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
@@ -104,7 +104,7 @@ class DefaultOperationHandler implements OperationHandler {
                 if (authenticationFailed) {
                     throw new RuntimeException('Unable to execute sudo command. Wrong username/password')
                 }
-                Thread.sleep(500)
+                sleep(100)
             }
             listeners*.managedChannelClosed(channel, sessionSpec)
         } finally {
