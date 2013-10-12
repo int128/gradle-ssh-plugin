@@ -11,7 +11,6 @@ import spock.lang.Unroll
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createSpec
 
-
 class SshSpecSpec extends Specification {
 
 
@@ -136,6 +135,7 @@ class SshSpecSpec extends Specification {
             logger = Mock(Logger)
             outputLogLevel = LogLevel.DEBUG
             errorLogLevel = LogLevel.INFO
+            encoding = 'US-ASCII'
             config([myConf: 'myConf2'])
 
             it
@@ -153,6 +153,7 @@ class SshSpecSpec extends Specification {
         merged.logger == spec2.logger
         merged.outputLogLevel == spec2.outputLogLevel
         merged.errorLogLevel == spec2.errorLogLevel
+        merged.encoding == spec2.encoding
     }
 
     private def assertEquals(SshSpec expected, SshSpec actual) {

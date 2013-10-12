@@ -13,6 +13,7 @@ import org.gradle.api.logging.Logger
 class LoggingOutputStream extends OutputStream {
     final Logger logger
     final LogLevel logLevel
+    final String charset = 'UTF-8'
 
     private static final LINE_SEPARATOR = ~/\r\n|[\n\r\u2028\u2029\u0085]/
     private final buffer = new ByteArrayOutputStream(512)
@@ -40,7 +41,7 @@ class LoggingOutputStream extends OutputStream {
      * it should save last block and write it with next line.
      */
     void flush() {
-        def block = lastBlock + new String(buffer.toByteArray())
+        def block = lastBlock + new String(buffer.toByteArray(), charset)
         buffer.reset()
 
         def blockLines = LINE_SEPARATOR.split(block, Integer.MIN_VALUE).toList()
