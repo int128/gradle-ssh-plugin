@@ -106,8 +106,7 @@ In the `SshTask` closure, following methods and properties are available:
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `outputLogLevel` - Log level of standard output for executing commands. Default is according to the convention property.
   * `errorLogLevel` - Log level of standard error for executing commands. Default is according to the convention property.
-  * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
-  * `logger` - (deprecated)
+  * `encoding` - Encoding of input and output for executing commands. Default is according to the convention property.
 
 Specification of the closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 Note that the closure will be called in **evaluation** phase on Gradle.
@@ -169,7 +168,7 @@ Following properties and methods are available:
   * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
   * `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
   * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
-  * `logger` - (deprecated)
+  * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
 
 Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 
