@@ -42,6 +42,11 @@ class SshSpec {
     LogLevel errorLogLevel = null
 
     /**
+     * Encoding of input and output stream.
+     */
+    String encoding = null
+
+    /**
      * JSch configuration.
      */
     final config = [:] as Map<String, Object>
@@ -108,6 +113,7 @@ class SshSpec {
         merged.logger = specs.collect { it.logger }.find()
         merged.outputLogLevel = specs.collect { it.outputLogLevel }.findResult(LogLevel.QUIET) { it }
         merged.errorLogLevel = specs.collect { it.errorLogLevel }.findResult(LogLevel.ERROR) { it }
+        merged.encoding = specs.collect { it.encoding }.findResult('UTF-8') { it }
         merged
     }
 }
