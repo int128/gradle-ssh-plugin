@@ -104,8 +104,9 @@ In the `SshTask` closure, following methods and properties are available:
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
   * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
-  * `outputLogLevel` - Log level of standard output while command execution. Default is according to the convention property.
-  * `errorLogLevel` - Log level of standard error while command execution. Default is according to the convention property.
+  * `outputLogLevel` - Log level of standard output for executing commands. Default is according to the convention property.
+  * `errorLogLevel` - Log level of standard error for executing commands. Default is according to the convention property.
+  * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
   * `logger` - (deprecated)
 
 Specification of the closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
