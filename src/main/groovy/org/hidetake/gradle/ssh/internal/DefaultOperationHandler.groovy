@@ -39,8 +39,8 @@ class DefaultOperationHandler implements OperationHandler {
         channel.command = command
         options.each { k, v -> channel[k] = v }
 
-        def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel, sshSpec.encoding)
+        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
+        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
         channel.outputStream = outputLogger
         channel.errStream = errorLogger
 
@@ -73,8 +73,8 @@ class DefaultOperationHandler implements OperationHandler {
         channel.command = "sudo -S -p '' $command"
         options.each { k, v -> channel[k] = v }
 
-        def outputLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel, sshSpec.encoding)
+        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
+        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
         channel.outputStream = outputLogger
         channel.errStream = errorLogger
 
@@ -127,8 +127,8 @@ class DefaultOperationHandler implements OperationHandler {
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        channel.outputStream = new LoggingOutputStream(sshSpec.logger, sshSpec.outputLogLevel, sshSpec.encoding)
-        channel.errStream = new LoggingOutputStream(sshSpec.logger, sshSpec.errorLogLevel, sshSpec.encoding)
+        channel.outputStream = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
+        channel.errStream = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
         options.each { k, v -> channel[k] = v }
 
         channel.connect()

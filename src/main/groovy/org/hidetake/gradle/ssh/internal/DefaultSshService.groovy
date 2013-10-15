@@ -5,10 +5,10 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
-import org.slf4j.Logger
 
 /**
  * Default implementation of {@link SshService}.
@@ -20,10 +20,11 @@ import org.slf4j.Logger
 class DefaultSshService implements SshService {
     protected Closure<JSch> jschFactory = { new JSch() }
 
+    static final logger = Logging.getLogger(DefaultSshService)
+
     @Override
     void execute(SshSpec sshSpec) {
         assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
-        assert sshSpec.logger != null, 'default logger should be set by convention'
 
         def jsch = jschFactory()
         jsch.config.putAll(sshSpec.config)
@@ -31,7 +32,7 @@ class DefaultSshService implements SshService {
         def sessions = [:] as Map<SessionSpec, Session>
         try {
             sshSpec.sessionSpecs.each { spec ->
-                retry(sshSpec.retryCount, sshSpec.retryWaitSec, sshSpec.logger) {
+                retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
                     def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
                     if (spec.remote.password) {
                         session.password = spec.remote.password
@@ -52,7 +53,7 @@ class DefaultSshService implements SshService {
 
             def channelsLifecycleManager = new ChannelsLifecycleManager()
             try {
-                def operationEventLogger = new OperationEventLogger(sshSpec.logger, LogLevel.INFO)
+                def operationEventLogger = new OperationEventLogger(LogLevel.INFO)
                 def exitStatusValidator = new ExitStatusValidator()
                 sessions.each { sessionSpec, session ->
                     def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session)
@@ -80,10 +81,9 @@ class DefaultSshService implements SshService {
      *
      * @param retryCount
      * @param retryWaitSec
-     * @param logger logger (this is SLF4J logger, not Gradle logger)
      * @param closure
      */
-    protected void retry(int retryCount, int retryWaitSec, Logger logger, Closure closure) {
+    protected void retry(int retryCount, int retryWaitSec, Closure closure) {
         assert closure != null, 'closure should be set'
         if (retryCount > 0) {
             try {
@@ -91,7 +91,7 @@ class DefaultSshService implements SshService {
             } catch (JSchException e) {
                 logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
                 Thread.sleep(retryWaitSec * 1000L)
-                retry(retryCount - 1, retryWaitSec, logger, closure)
+                retry(retryCount - 1, retryWaitSec, closure)
             }
         } else {
             closure()

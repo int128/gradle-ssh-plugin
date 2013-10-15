@@ -3,7 +3,7 @@ package org.hidetake.gradle.ssh.internal
 import com.jcraft.jsch.Channel
 import groovy.transform.TupleConstructor
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.SessionSpec
 
@@ -15,8 +15,9 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  */
 @TupleConstructor
 class OperationEventLogger implements OperationEventListener {
-    final Logger logger
     final LogLevel logLevel
+
+    static final logger = Logging.getLogger(OperationEventLogger)
 
     @Override
     void beginOperation(String operation, Object... args) {

@@ -6,10 +6,10 @@ import org.apache.sshd.server.Environment
 import org.apache.sshd.server.PasswordAuthenticator
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
+import org.hidetake.gradle.ssh.internal.LoggingOutputStream
 import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
 import org.hidetake.gradle.ssh.test.ServerBasedTestHelper.CommandContext
 import spock.lang.Specification
@@ -142,14 +142,13 @@ class CommandExecutionTest extends Specification {
     @Unroll
     def "logging, #description"() {
         given:
-        def loggerMock = Mock(Logger) {
-            isEnabled(_) >> true
+        def logger = GroovySpy(LoggingOutputStream.logger.class, global: true) {
+            isEnabled(LogLevel.INFO) >> true
         }
 
         project.with {
             ssh {
                 outputLogLevel = LogLevel.INFO
-                logger = loggerMock
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
@@ -173,7 +172,7 @@ class CommandExecutionTest extends Specification {
 
         then:
         logMessages.each {
-            1 * loggerMock.log(LogLevel.INFO, it)
+            1 * logger.log(LogLevel.INFO, it)
         }
 
         where:

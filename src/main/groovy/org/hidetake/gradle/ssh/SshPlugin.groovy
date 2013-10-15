@@ -18,7 +18,7 @@ class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         attachRemoteContainer(project)
-        project.convention.plugins.put('ssh', new SshPluginConvention(project))
+        project.convention.plugins.put('ssh', new SshPluginConvention())
     }
 
     protected attachRemoteContainer(Project project) {
