@@ -90,7 +90,7 @@ class DefaultSshService implements SshService {
                 closure()
             } catch (JSchException e) {
                 logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
-                Thread.sleep(retryWaitSec * 1000L)
+                sleep(retryWaitSec * 1000L)
                 retry(retryCount - 1, retryWaitSec, closure)
             }
         } else {
