@@ -11,10 +11,11 @@ class LoggingOutputStreamSpec extends Specification {
     Logger logger
 
     def setup() {
-        logger = Mock(Logger) {
-            isEnabled(_) >> true
+        logger = GroovySpy(OperationEventLogger.logger.class, global: true) {
+            isEnabled(LogLevel.QUIET) >> true
+            isEnabled(_) >> false
         }
-        stream = new LoggingOutputStream(logger, LogLevel.QUIET)
+        stream = new LoggingOutputStream(LogLevel.QUIET)
     }
 
 
@@ -233,10 +234,7 @@ class LoggingOutputStreamSpec extends Specification {
 
     def "logging disabled"() {
         given:
-        logger = Mock(Logger) {
-            isEnabled(_) >> false
-        }
-        stream = new LoggingOutputStream(logger, LogLevel.QUIET)
+        stream = new LoggingOutputStream(LogLevel.DEBUG)
 
         when:
         stream.write(0x23)
@@ -249,7 +247,7 @@ class LoggingOutputStreamSpec extends Specification {
 
     def "explicit charset"() {
         given:
-        stream = new LoggingOutputStream(logger, LogLevel.QUIET, 'Shift_JIS')
+        stream = new LoggingOutputStream(LogLevel.QUIET, 'Shift_JIS')
 
         when:
         stream.withWriter('Shift_JIS') {

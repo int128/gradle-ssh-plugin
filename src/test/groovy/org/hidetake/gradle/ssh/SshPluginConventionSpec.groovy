@@ -2,14 +2,12 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import spock.lang.Specification
 
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
-
 
 class SshPluginConventionSpec extends Specification {
 
@@ -19,7 +17,7 @@ class SshPluginConventionSpec extends Specification {
 
     def setup() {
         project = ProjectBuilder.builder().build()
-        convention = new SshPluginConvention(project)
+        convention = new SshPluginConvention()
     }
 
 
@@ -30,7 +28,6 @@ class SshPluginConventionSpec extends Specification {
             dryRun = true
             retryCount = 1
             retryWaitSec = 1
-            logger = [:] as Logger
             config(myConfig: 'myConfigValue')
             outputLogLevel = LogLevel.DEBUG
             errorLogLevel = LogLevel.INFO
@@ -50,20 +47,6 @@ class SshPluginConventionSpec extends Specification {
         }
     }
 
-    def "configure ssh default values"() {
-        given:
-        def configClosure = {}
-
-        when:
-        convention.ssh(configClosure)
-
-        then:
-        convention.sshSpec.with {
-            logger == project.logger
-        }
-
-    }
-
     def "configure ssh closure must be seg"() {
         when:
         convention.ssh(null)
@@ -80,14 +63,6 @@ class SshPluginConventionSpec extends Specification {
         then:
         IllegalStateException ex = thrown()
         ex.message.contains("session")
-    }
-
-    def "configure ssh does not allow setting logger to null"() {
-        when:
-        convention.ssh({ logger = null })
-        then:
-        IllegalStateException ex = thrown()
-        ex.message.contains("logger")
     }
 
 

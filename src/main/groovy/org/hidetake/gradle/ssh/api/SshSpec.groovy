@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.api
 
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
 
 /**
  * Specification of a SSH task.
@@ -25,11 +24,6 @@ class SshSpec {
      * Interval time in seconds between retries.
      */
     Integer retryWaitSec = null
-
-    /**
-     * Logger.
-     */
-    Logger logger = null
 
     /**
      * Log level for standard output of commands.
@@ -110,7 +104,6 @@ class SshSpec {
         merged.dryRun = specs.collect { it.dryRun }.findResult(false) { it }
         merged.retryCount = specs.collect { it.retryCount }.findResult(0) { it }
         merged.retryWaitSec = specs.collect { it.retryWaitSec }.findResult(0) { it }
-        merged.logger = specs.collect { it.logger }.find()
         merged.outputLogLevel = specs.collect { it.outputLogLevel }.findResult(LogLevel.QUIET) { it }
         merged.errorLogLevel = specs.collect { it.errorLogLevel }.findResult(LogLevel.ERROR) { it }
         merged.encoding = specs.collect { it.encoding }.findResult('UTF-8') { it }
