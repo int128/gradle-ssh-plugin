@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh.internal
 
 import groovy.transform.TupleConstructor
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 /**
  * An implementation of {@link OutputStream} with logging facility.
@@ -11,9 +11,10 @@ import org.gradle.api.logging.Logger
  */
 @TupleConstructor
 class LoggingOutputStream extends OutputStream {
-    final Logger logger
     final LogLevel logLevel
     final String charset = 'UTF-8'
+
+    static final logger = Logging.getLogger(LoggingOutputStream)
 
     private static final LINE_SEPARATOR = ~/\r\n|[\n\r\u2028\u2029\u0085]/
     private final buffer = new ByteArrayOutputStream(512)

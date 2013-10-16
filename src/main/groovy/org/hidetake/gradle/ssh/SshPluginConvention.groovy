@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh
 
-import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.DefaultSshService
@@ -25,10 +24,6 @@ class SshPluginConvention {
     // fixes inspection warning (Unnecessary fully qualified name)
     private static final classOfSshTask = SshTask
 
-    SshPluginConvention(Project project) {
-        sshSpec.logger = project.logger
-    }
-
     /**
      * Configures global settings.
      *
@@ -40,9 +35,6 @@ class SshPluginConvention {
         ConfigureUtil.configure(configureClosure, sshSpec)
         if (sshSpec.sessionSpecs.size() > 0) {
             throw new IllegalStateException('Do not declare any session in convention')
-        }
-        if (sshSpec.logger == null) {
-            throw new IllegalStateException('Do not set logger to null in convention')
         }
     }
 
