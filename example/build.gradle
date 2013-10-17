@@ -17,11 +17,15 @@ buildscript {
     }
 
     dependencies {
-        // using local build if possible
-        classpath files("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
-        // using Maven Central if local build does not exist
-        classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
-        classpath 'com.jcraft:jsch:0.1.48'
+        def localBuild = file("../build/libs/gradle-ssh-plugin-${productProperties.version}.jar")
+        if (localBuild.exists()) {
+            println "Using local build: ${localBuild.path}"
+            classpath files(localBuild)
+            classpath 'com.jcraft:jsch:0.1.50'
+        } else {
+            println "Using released build in the Maven central repository"
+            classpath "org.hidetake:gradle-ssh-plugin:${productProperties.version}"
+        }
     }
 }
 
