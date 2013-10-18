@@ -11,7 +11,7 @@ class LoggingOutputStreamSpec extends Specification {
     Logger logger
 
     def setup() {
-        logger = GroovySpy(OperationEventLogger.logger.class, global: true) {
+        logger = GroovySpy(LoggingOutputStream.logger.class, global: true) {
             isEnabled(LogLevel.QUIET) >> true
             isEnabled(_) >> false
         }

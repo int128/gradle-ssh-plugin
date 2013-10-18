@@ -56,7 +56,7 @@ interface OperationHandler {
      *
      * @param command
      */
-    void executeBackground(String command)
+    CommandPromise executeBackground(String command)
 
     /**
      * Performs an execution operation.
@@ -65,7 +65,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    void executeBackground(Map<String, Object> options, String command)
+    CommandPromise executeBackground(Map<String, Object> options, String command)
 
     /**
      * Performs a GET operation.

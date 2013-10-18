@@ -3,7 +3,9 @@ package org.hidetake.gradle.ssh.internal
 import com.jcraft.jsch.JSchException
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
+@ConfineMetaClassChanges(DefaultSshService)
 class DefaultSshServiceSpec extends Specification {
 
     @Shared
@@ -13,10 +15,6 @@ class DefaultSshServiceSpec extends Specification {
         DefaultSshService.instance.metaClass.static.sleep = { long ms ->
             sleepMock.call(ms)
         }
-    }
-
-    def teardownSpec() {
-        DefaultSshService.instance.metaClass.static.sleep = null
     }
 
     def setup() {

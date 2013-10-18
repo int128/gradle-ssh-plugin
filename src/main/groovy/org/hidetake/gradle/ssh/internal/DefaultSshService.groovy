@@ -1,10 +1,8 @@
 package org.hidetake.gradle.ssh.internal
 
-import com.jcraft.jsch.Channel
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
@@ -51,24 +49,19 @@ class DefaultSshService implements SshService {
                 }
             }
 
-            def channelsLifecycleManager = new ChannelsLifecycleManager()
+            def commandLifecycleManager = new CommandLifecycleManager()
             try {
-                def operationEventLogger = new OperationEventLogger(LogLevel.INFO)
-                def exitStatusValidator = new ExitStatusValidator()
                 sessions.each { sessionSpec, session ->
-                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session)
-                    handler.listeners.add(channelsLifecycleManager)
-                    handler.listeners.add(operationEventLogger)
-                    handler.listeners.add(exitStatusValidator)
+                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, commandLifecycleManager)
                     handler.with(sessionSpec.operationClosure)
                 }
 
-                channelsLifecycleManager.waitForPending { Channel channel ->
-                    operationEventLogger.unmanagedChannelClosed(channel)
+                commandLifecycleManager.waitForPending { CommandContext context ->
+                    logger.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
                 }
-                channelsLifecycleManager.validateExitStatus()
+                commandLifecycleManager.validateExitStatus()
             } finally {
-                channelsLifecycleManager.disconnect()
+                commandLifecycleManager.disconnect()
             }
         } finally {
             sessions.each { spec, session -> session.disconnect() }

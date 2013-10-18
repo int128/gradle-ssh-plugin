@@ -4,6 +4,7 @@ import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
+import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.*
 
@@ -14,12 +15,12 @@ import org.hidetake.gradle.ssh.api.*
  *
  */
 @TupleConstructor
+@Slf4j
 class DefaultOperationHandler implements OperationHandler {
     final SshSpec sshSpec
     final SessionSpec sessionSpec
     final Session session
-
-    final listeners = [] as List<OperationEventListener>
+    final CommandLifecycleManager commandLifecycleManager
 
     @Override
     Remote getRemote() {
@@ -33,31 +34,22 @@ class DefaultOperationHandler implements OperationHandler {
 
     @Override
     String execute(Map<String, Object> options, String command) {
-        listeners*.beginOperation('execute', options, command)
+        log.info("Executing command: ${command}")
 
-        def channel = session.openChannel('exec') as ChannelExec
-        channel.command = command
-        options.each { k, v -> channel[k] = v }
-
-        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
-        channel.outputStream = outputLogger
-        channel.errStream = errorLogger
-
+        def manager = new CommandLifecycleManager()
         try {
-            channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
-            while (!channel.closed) {
-                sleep(100)
-            }
-            listeners*.managedChannelClosed(channel, sessionSpec)
-        } finally {
-            channel.disconnect()
-            outputLogger.close()
-            errorLogger.close()
-        }
+            def context = invokeCommand(options, command)
+            log.info("Channel #${context.channel.id} has been opened")
 
-        outputLogger.lines.join(Utilities.eol())
+            manager << context
+            manager.waitForPending()
+            log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
+
+            manager.validateExitStatus()
+            context.standardOutput.lines.join(Utilities.eol())
+        } finally {
+            manager.disconnect()
+        }
     }
 
     @Override
@@ -67,7 +59,7 @@ class DefaultOperationHandler implements OperationHandler {
 
     @Override
     String executeSudo(Map<String, Object> options, String command) {
-        listeners*.beginOperation('executeSudo', command, options)
+        log.info("Executing command with sudo support: ${command}")
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = "sudo -S -p '' $command"
@@ -96,7 +88,7 @@ class DefaultOperationHandler implements OperationHandler {
 
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been opened")
             channel.outputStream.withWriter(sshSpec.encoding) {
                 it << sessionSpec.remote.password << '\n'
             }
@@ -106,7 +98,7 @@ class DefaultOperationHandler implements OperationHandler {
                 }
                 sleep(100)
             }
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
             outputLogger.close()
@@ -117,22 +109,33 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    void executeBackground(String command) {
+    CommandPromise executeBackground(String command) {
         executeBackground([:], command)
     }
 
     @Override
-    void executeBackground(Map<String, Object> options, String command) {
-        listeners*.beginOperation('executeBackground', command)
+    CommandPromise executeBackground(Map<String, Object> options, String command) {
+        log.info("Executing command in background: ${command}")
 
+        def context = invokeCommand(options, command)
+        log.info("Channel #${context.channel.id} has been opened")
+        commandLifecycleManager << context
+        context
+    }
+
+    protected CommandContext invokeCommand(Map<String, Object> options, String command) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        channel.outputStream = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        channel.errStream = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
         options.each { k, v -> channel[k] = v }
 
+        def context = new CommandContext(channel,
+                new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding),
+                new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding))
+        channel.outputStream = context.standardOutput
+        channel.errStream = context.standardError
+
         channel.connect()
-        listeners*.unmanagedChannelConnected(channel, sessionSpec)
+        context
     }
 
     @Override
@@ -142,14 +145,14 @@ class DefaultOperationHandler implements OperationHandler {
 
     @Override
     void get(Map<String, Object> options, String remote, String local) {
-        listeners*.beginOperation('get', remote, local)
+        log.info("Get: ${remote} -> ${local}")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been opened")
             channel.get(remote, local)
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
         }
@@ -162,14 +165,14 @@ class DefaultOperationHandler implements OperationHandler {
 
     @Override
     void put(Map<String, Object> options, String local, String remote) {
-        listeners*.beginOperation('put', remote, local)
+        log.info("Put: ${local} -> ${remote}")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been opened")
             channel.put(local, remote, ChannelSftp.OVERWRITE)
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
         }

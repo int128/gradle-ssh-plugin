@@ -1,7 +1,8 @@
 package org.hidetake.gradle.ssh.internal
 
 import groovy.transform.TupleConstructor
-import org.hidetake.gradle.ssh.api.OperationEventListener
+import groovy.util.logging.Slf4j
+import org.hidetake.gradle.ssh.api.CommandPromise
 import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
@@ -13,10 +14,9 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  *
  */
 @TupleConstructor
+@Slf4j
 class DryRunOperationHandler implements OperationHandler {
     final SessionSpec spec
-
-    final listeners = [] as List<OperationEventListener>
 
     @Override
     Remote getRemote() {
@@ -25,51 +25,54 @@ class DryRunOperationHandler implements OperationHandler {
 
     @Override
     String execute(String command) {
-        listeners*.beginOperation('execute', command)
+        execute([:], command)
     }
 
     @Override
-    void executeBackground(String command) {
-        listeners*.beginOperation('executeBackground', command)
+    CommandPromise executeBackground(String command) {
+        executeBackground([:], command)
     }
 
     @Override
     void get(String remote, String local) {
-        listeners*.beginOperation('get', remote, local)
+        get([:], remote, local)
     }
 
     @Override
     void put(String local, String remote) {
-        listeners*.beginOperation('put', remote, local)
+        put([:], local, remote)
     }
 
     @Override
     String execute(Map<String, Object> options, String command) {
-        listeners*.beginOperation('execute', options, command)
+        log.info("Executing command: ${command}")
+        null
     }
 
     @Override
-    void executeBackground(Map<String, Object> options, String command) {
-        listeners*.beginOperation('executeBackground', options, command)
+    CommandPromise executeBackground(Map<String, Object> options, String command) {
+        log.info("Executing command in background: ${command}")
+        new CommandContext()
     }
 
     @Override
     void get(Map<String, Object> options, String remote, String local) {
-        listeners*.beginOperation('get', options, remote, local)
+        log.info("Get: ${remote} -> ${local}")
     }
 
     @Override
     void put(Map<String, Object> options, String local, String remote) {
-        listeners*.beginOperation('put', options, remote, local)
+        log.info("Put: ${local} -> ${remote}")
     }
 
     @Override
     String executeSudo(String command) {
-        listeners*.beginOperation('executeSudo', command)
+        executeSudo([:], command)
     }
 
     @Override
     String executeSudo(Map options, String command) {
-        listeners*.beginOperation('executeSudo', options, command)
+        log.info("Executing command with sudo support: ${command}")
+        null
     }
 }
