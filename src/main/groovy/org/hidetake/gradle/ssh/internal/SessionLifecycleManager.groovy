@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import com.jcraft.jsch.Channel
+import groovy.util.logging.Slf4j
 
 /**
  * Event listener for lifecycle management of commands.
@@ -15,8 +16,9 @@ import com.jcraft.jsch.Channel
  * @author hidetake.org
  *
  */
-class CommandLifecycleManager {
-    final contexts = [] as List<CommandContext>
+@Slf4j
+class SessionLifecycleManager {
+    final contexts = [] as List<DefaultCommandContext>
 
     /**
      * Add a context to be managed.
@@ -24,7 +26,7 @@ class CommandLifecycleManager {
      * @param context
      * @return this
      */
-    def leftShift(CommandContext context) {
+    def leftShift(DefaultCommandContext context) {
         contexts << context
         this
     }
@@ -35,7 +37,7 @@ class CommandLifecycleManager {
      * @param closedCommandHandler callback handler for closed command
      */
     void waitForPending(Closure closedCommandHandler = {}) {
-        def pendingCommands = new ArrayList<CommandContext>(contexts)
+        def pendingCommands = new ArrayList<DefaultCommandContext>(contexts)
         while (!pendingCommands.empty) {
             def closedCommands = pendingCommands.findAll { it.channel.closed }
             closedCommands.each(closedCommandHandler)
@@ -49,12 +51,13 @@ class CommandLifecycleManager {
      * This method must be called before any channel is disconnected.
      */
     void validateExitStatus() {
-        contexts.each {
-            def status = it.channel.exitStatus
-            assert status != -1, 'method should be called before disconnect'
-            if (status > 0) {
-                throw new RuntimeException("Channel #${it.channel.id} returned exit status ${status}")
-            }
+        def errors = contexts.findAll { it.channel.exitStatus != 0 }
+        if (errors.size() > 1) {
+            errors.each { log.error("Channel #${it.channel.id} finished with exit status ${it.channel.exitStatus}") }
+            throw new RuntimeException("${errors.size()} channels returned error exit status")
+        } else if (errors.size() == 1) {
+            def e = errors.first()
+            throw new RuntimeException( "Channel #${e.channel.id} finished with exit status ${e.channel.exitStatus}")
         }
     }
 

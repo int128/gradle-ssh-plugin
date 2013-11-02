@@ -1,33 +1,33 @@
 package org.hidetake.gradle.ssh.internal
 
-import com.jcraft.jsch.Channel
+import com.jcraft.jsch.ChannelExec
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineMetaClassChanges(CommandLifecycleManager)
-class CommandLifecycleManagerSpec extends Specification {
+@ConfineMetaClassChanges(SessionLifecycleManager)
+class SessionLifecycleManagerSpec extends Specification {
 
-    CommandLifecycleManager mgr
+    SessionLifecycleManager mgr
 
     @Shared
     Closure sleepMock
 
     def setupSpec() {
-        CommandLifecycleManager.metaClass.static.sleep = { long ms ->
+        SessionLifecycleManager.metaClass.static.sleep = { long ms ->
             sleepMock.call(ms)
         }
     }
 
     def setup() {
-        mgr = new CommandLifecycleManager()
+        mgr = new SessionLifecycleManager()
         sleepMock = Mock(Closure)
     }
 
 
     def "executionStarted adds command"() {
         given:
-        def channel = Mock(CommandContext)
+        def channel = Mock(DefaultCommandContext)
 
         when:
         mgr << channel
@@ -38,8 +38,8 @@ class CommandLifecycleManagerSpec extends Specification {
 
     def "disconnect disconnects all commands"() {
         given:
-        def c1 = new CommandContext(Mock(Channel))
-        def c2 = new CommandContext(Mock(Channel))
+        def c1 = new DefaultCommandContext(Mock(ChannelExec))
+        def c2 = new DefaultCommandContext(Mock(ChannelExec))
 
         mgr << c1
         mgr << c2
@@ -68,7 +68,7 @@ class CommandLifecycleManagerSpec extends Specification {
 
     def "wait for pending, one pending channel that closes"() {
         given:
-        def context = new CommandContext(Mock(Channel))
+        def context = new DefaultCommandContext(Mock(ChannelExec))
         mgr << context
 
         def closedChannelHandler = Mock(Closure)
@@ -85,8 +85,8 @@ class CommandLifecycleManagerSpec extends Specification {
 
     def "wait for pending, one pending and one closed"() {
         given:
-        def pending = new CommandContext(Mock(Channel))
-        def closed = new CommandContext(Mock(Channel))
+        def pending = new DefaultCommandContext(Mock(ChannelExec))
+        def closed = new DefaultCommandContext(Mock(ChannelExec))
         mgr << pending
         mgr << closed
 

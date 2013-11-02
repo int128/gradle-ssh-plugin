@@ -16,11 +16,11 @@ import org.hidetake.gradle.ssh.api.*
  */
 @TupleConstructor
 @Slf4j
-class DefaultOperationHandler implements OperationHandler {
+class DefaultOperationHandler extends AbstractOperationHandler {
     final SshSpec sshSpec
     final SessionSpec sessionSpec
     final Session session
-    final CommandLifecycleManager commandLifecycleManager
+    final SessionLifecycleManager globalLifecycleManager
 
     @Override
     Remote getRemote() {
@@ -28,119 +28,83 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(String command) {
-        execute([:], command)
-    }
-
-    @Override
-    String execute(Map<String, Object> options, String command) {
+    String execute(Map<String, Object> options, String command, Closure interactions) {
         log.info("Executing command: ${command}")
 
-        def manager = new CommandLifecycleManager()
+        def lifecycleManager = new SessionLifecycleManager()
         try {
-            def context = invokeCommand(options, command)
+            def channel = session.openChannel('exec') as ChannelExec
+            channel.command = command
+            options.each { k, v -> channel[k] = v }
+
+            def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+            context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+
+            def lines = [] as List<String>
+            context.standardOutput.lineListeners.add { String line -> lines << line }
+
+            interactions.delegate = context
+            interactions.resolveStrategy = Closure.DELEGATE_FIRST
+            interactions()
+
+            lifecycleManager << context
+            context.channel.connect()
             log.info("Channel #${context.channel.id} has been opened")
-
-            manager << context
-            manager.waitForPending()
+            lifecycleManager.waitForPending()
             log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
-
-            manager.validateExitStatus()
-            context.standardOutput.lines.join(Utilities.eol())
+            lifecycleManager.validateExitStatus()
+            lines.join(Utilities.eol())
         } finally {
-            manager.disconnect()
+            lifecycleManager.disconnect()
         }
-    }
-
-    @Override
-    String executeSudo(String command) {
-        executeSudo([:], command)
     }
 
     @Override
     String executeSudo(Map<String, Object> options, String command) {
         log.info("Executing command with sudo support: ${command}")
 
-        def channel = session.openChannel('exec') as ChannelExec
-        channel.command = "sudo -S -p '' $command"
-        options.each { k, v -> channel[k] = v }
+        def prompt = UUID.randomUUID().toString()
+        def lines = [] as List<String>
+        execute(options, "sudo -S -p '$prompt' $command") {
+            interaction {
+                when(partial: prompt, from: standardOutput) {
+                    log.info("Sending password for sudo authentication on channel #${channel.id}")
+                    standardInput << sessionSpec.remote.password << '\n'
 
-        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
-        channel.outputStream = outputLogger
-        channel.errStream = errorLogger
-
-        // filter password and check authentication failure.
-        boolean authenticationFailed = false
-        int lineNumber = 0
-        outputLogger.filter = { String line ->
-            // usually password or messages appear within a few lines.
-            if (++lineNumber < 5) {
-                if (line.contains('try again')) {
-                    // this closure runs in I/O thread, so needs to notify failure to main thread.
-                    authenticationFailed = true
+                    when(nextLine: _, from: standardOutput) {
+                        when(nextLine: 'Sorry, try again.') {
+                            throw new RuntimeException("Sudo authentication failed on channel #${channel.id}")
+                        }
+                        when(line: _, from: standardOutput) {
+                            lines << it
+                        }
+                    }
                 }
-                !line.contains(sessionSpec.remote.password)
-            } else {
-                true
+                when(line: _, from: standardOutput) {
+                    lines << it
+                }
             }
         }
 
-        try {
-            channel.connect()
-            log.info("Channel #${channel.id} has been opened")
-            channel.outputStream.withWriter(sshSpec.encoding) {
-                it << sessionSpec.remote.password << '\n'
-            }
-            while (!channel.closed) {
-                if (authenticationFailed) {
-                    throw new RuntimeException('Unable to execute sudo command. Wrong username/password')
-                }
-                sleep(100)
-            }
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-        } finally {
-            channel.disconnect()
-            outputLogger.close()
-            errorLogger.close()
-        }
-
-        outputLogger.lines.join(Utilities.eol())
+        lines.join(Utilities.eol())
     }
 
     @Override
-    CommandPromise executeBackground(String command) {
-        executeBackground([:], command)
-    }
-
-    @Override
-    CommandPromise executeBackground(Map<String, Object> options, String command) {
+    CommandContext executeBackground(Map<String, Object> options, String command) {
         log.info("Executing command in background: ${command}")
 
-        def context = invokeCommand(options, command)
-        log.info("Channel #${context.channel.id} has been opened")
-        commandLifecycleManager << context
-        context
-    }
-
-    protected CommandContext invokeCommand(Map<String, Object> options, String command) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         options.each { k, v -> channel[k] = v }
 
-        def context = new CommandContext(channel,
-                new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding),
-                new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding))
-        channel.outputStream = context.standardOutput
-        channel.errStream = context.standardError
+        def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+        context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
 
-        channel.connect()
+        globalLifecycleManager << context
+        context.channel.connect()
+        log.info("Channel #${context.channel.id} has been opened")
+
         context
-    }
-
-    @Override
-    void get(String remote, String local) {
-        get([:], remote, local)
     }
 
     @Override
@@ -156,11 +120,6 @@ class DefaultOperationHandler implements OperationHandler {
         } finally {
             channel.disconnect()
         }
-    }
-
-    @Override
-    void put(String local, String remote) {
-        put([:], local, remote)
     }
 
     @Override

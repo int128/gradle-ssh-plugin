@@ -49,19 +49,19 @@ class DefaultSshService implements SshService {
                 }
             }
 
-            def commandLifecycleManager = new CommandLifecycleManager()
+            def lifecycleManager = new SessionLifecycleManager()
             try {
                 sessions.each { sessionSpec, session ->
-                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, commandLifecycleManager)
+                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, lifecycleManager)
                     handler.with(sessionSpec.operationClosure)
                 }
 
-                commandLifecycleManager.waitForPending { CommandContext context ->
+                lifecycleManager.waitForPending { DefaultCommandContext context ->
                     logger.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
                 }
-                commandLifecycleManager.validateExitStatus()
+                lifecycleManager.validateExitStatus()
             } finally {
-                commandLifecycleManager.disconnect()
+                lifecycleManager.disconnect()
             }
         } finally {
             sessions.each { spec, session -> session.disconnect() }

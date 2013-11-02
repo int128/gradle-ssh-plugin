@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh.internal
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.CommandPromise
+import org.hidetake.gradle.ssh.api.CommandContext
 import org.hidetake.gradle.ssh.api.OperationHandler
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
@@ -15,7 +15,7 @@ import org.hidetake.gradle.ssh.api.SessionSpec
  */
 @TupleConstructor
 @Slf4j
-class DryRunOperationHandler implements OperationHandler {
+class DryRunOperationHandler extends AbstractOperationHandler {
     final SessionSpec spec
 
     @Override
@@ -24,35 +24,21 @@ class DryRunOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(String command) {
-        execute([:], command)
-    }
-
-    @Override
-    CommandPromise executeBackground(String command) {
-        executeBackground([:], command)
-    }
-
-    @Override
-    void get(String remote, String local) {
-        get([:], remote, local)
-    }
-
-    @Override
-    void put(String local, String remote) {
-        put([:], local, remote)
-    }
-
-    @Override
-    String execute(Map<String, Object> options, String command) {
+    String execute(Map<String, Object> options, String command, Closure interactions) {
         log.info("Executing command: ${command}")
         null
     }
 
     @Override
-    CommandPromise executeBackground(Map<String, Object> options, String command) {
+    String executeSudo(Map options, String command) {
+        log.info("Executing command with sudo support: ${command}")
+        null
+    }
+
+    @Override
+    CommandContext executeBackground(Map<String, Object> options, String command) {
         log.info("Executing command in background: ${command}")
-        new CommandContext()
+        new DryRunCommandContext()
     }
 
     @Override
@@ -63,16 +49,5 @@ class DryRunOperationHandler implements OperationHandler {
     @Override
     void put(Map<String, Object> options, String local, String remote) {
         log.info("Put: ${local} -> ${remote}")
-    }
-
-    @Override
-    String executeSudo(String command) {
-        executeSudo([:], command)
-    }
-
-    @Override
-    String executeSudo(Map options, String command) {
-        log.info("Executing command with sudo support: ${command}")
-        null
     }
 }

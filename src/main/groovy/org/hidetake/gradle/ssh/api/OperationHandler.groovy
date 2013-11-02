@@ -27,11 +27,32 @@ interface OperationHandler {
      * Performs an execution operation.
      * This method blocks until channel is closed.
      *
+     * @param command
+     * @param interactions closure including interactions
+     * @return output value of the command
+     */
+    String execute(String command, Closure interactions)
+
+    /**
+     * Performs an execution operation.
+     * This method blocks until channel is closed.
+     *
      * @param options properties to configure the channel
      * @param command
      * @return output value of the command
      */
     String execute(Map<String, Object> options, String command)
+
+    /**
+     * Performs an execution operation.
+     * This method blocks until channel is closed.
+     *
+     * @param options properties to configure the channel
+     * @param command
+     * @param interactions closure including interactions
+     * @return output value of the command
+     */
+    String execute(Map<String, Object> options, String command, Closure interactions)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -56,7 +77,7 @@ interface OperationHandler {
      *
      * @param command
      */
-    CommandPromise executeBackground(String command)
+    CommandContext executeBackground(String command)
 
     /**
      * Performs an execution operation.
@@ -65,7 +86,7 @@ interface OperationHandler {
      * @param options properties to configure the channel
      * @param command
      */
-    CommandPromise executeBackground(Map<String, Object> options, String command)
+    CommandContext executeBackground(Map<String, Object> options, String command)
 
     /**
      * Performs a GET operation.
