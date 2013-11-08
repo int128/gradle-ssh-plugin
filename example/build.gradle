@@ -149,6 +149,20 @@ task executeSshInTask << {
     }
 }
 
+task putFile(type: SshTask) {
+    description 'Put a file to the remote host'
+    session(remotes.localhost) {
+        put(file('build.gradle').path, '/dev/null')
+    }
+}
+
+task getFile(type: SshTask) {
+    description 'Get a file from the remote host'
+    session(remotes.localhost) {
+        get(file('build.gradle').path, '/dev/null')
+    }
+}
+
 //
 // Above remote hosts are still valid in child projects.
 // Run Gradle with -i flag to see remote hosts in each projects.
