@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import com.jcraft.jsch.Channel
+import com.jcraft.jsch.ChannelExec
 import org.hidetake.gradle.ssh.api.OperationEventListener
 import org.hidetake.gradle.ssh.api.SessionSpec
 
@@ -36,9 +37,11 @@ class ExitStatusValidator implements OperationEventListener {
      * @param channel
      */
     static void validate(Channel channel) {
-        assert channel.exitStatus != -1, 'validate should be called before disconnect'
-        if (channel.exitStatus > 0) {
-            throw new RuntimeException("Channel #${channel.id} returned exit status ${channel.exitStatus}")
+        if (channel instanceof ChannelExec) {
+            assert channel.exitStatus != -1, 'validate should be called before disconnect'
+            if (channel.exitStatus > 0) {
+                throw new RuntimeException("Channel #${channel.id} returned exit status ${channel.exitStatus}")
+            }
         }
     }
 }
