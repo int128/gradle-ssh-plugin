@@ -4,6 +4,7 @@ import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
+import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.*
 
@@ -14,12 +15,12 @@ import org.hidetake.gradle.ssh.api.*
  *
  */
 @TupleConstructor
-class DefaultOperationHandler implements OperationHandler {
+@Slf4j
+class DefaultOperationHandler extends AbstractOperationHandler {
     final SshSpec sshSpec
     final SessionSpec sessionSpec
     final Session session
-
-    final listeners = [] as List<OperationEventListener>
+    final SessionLifecycleManager globalLifecycleManager
 
     @Override
     Remote getRemote() {
@@ -27,149 +28,110 @@ class DefaultOperationHandler implements OperationHandler {
     }
 
     @Override
-    String execute(String command) {
-        execute([:], command)
-    }
+    String execute(Map<String, Object> options, String command, Closure interactions) {
+        log.info("Executing command: ${command}")
 
-    @Override
-    String execute(Map<String, Object> options, String command) {
-        listeners*.beginOperation('execute', options, command)
-
-        def channel = session.openChannel('exec') as ChannelExec
-        channel.command = command
-        options.each { k, v -> channel[k] = v }
-
-        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
-        channel.outputStream = outputLogger
-        channel.errStream = errorLogger
-
+        def lifecycleManager = new SessionLifecycleManager()
         try {
-            channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
-            while (!channel.closed) {
-                sleep(100)
-            }
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            def channel = session.openChannel('exec') as ChannelExec
+            channel.command = command
+            options.each { k, v -> channel[k] = v }
+
+            def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+            context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+
+            def lines = [] as List<String>
+            context.standardOutput.lineListeners.add { String line -> lines << line }
+
+            interactions.delegate = context
+            interactions.resolveStrategy = Closure.DELEGATE_FIRST
+            interactions()
+
+            lifecycleManager << context
+            context.channel.connect()
+            log.info("Channel #${context.channel.id} has been opened")
+            lifecycleManager.waitForPending()
+            log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
+            lifecycleManager.validateExitStatus()
+            lines.join(Utilities.eol())
         } finally {
-            channel.disconnect()
-            outputLogger.close()
-            errorLogger.close()
+            lifecycleManager.disconnect()
         }
-
-        outputLogger.lines.join(Utilities.eol())
-    }
-
-    @Override
-    String executeSudo(String command) {
-        executeSudo([:], command)
     }
 
     @Override
     String executeSudo(Map<String, Object> options, String command) {
-        listeners*.beginOperation('executeSudo', command, options)
+        log.info("Executing command with sudo support: ${command}")
 
-        def channel = session.openChannel('exec') as ChannelExec
-        channel.command = "sudo -S -p '' $command"
-        options.each { k, v -> channel[k] = v }
+        def prompt = UUID.randomUUID().toString()
+        def lines = [] as List<String>
+        execute(options, "sudo -S -p '$prompt' $command") {
+            interaction {
+                when(partial: prompt, from: standardOutput) {
+                    log.info("Sending password for sudo authentication on channel #${channel.id}")
+                    standardInput << sessionSpec.remote.password << '\n'
 
-        def outputLogger = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        def errorLogger = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
-        channel.outputStream = outputLogger
-        channel.errStream = errorLogger
-
-        // filter password and check authentication failure.
-        boolean authenticationFailed = false
-        int lineNumber = 0
-        outputLogger.filter = { String line ->
-            // usually password or messages appear within a few lines.
-            if (++lineNumber < 5) {
-                if (line.contains('try again')) {
-                    // this closure runs in I/O thread, so needs to notify failure to main thread.
-                    authenticationFailed = true
+                    when(nextLine: _, from: standardOutput) {
+                        when(nextLine: 'Sorry, try again.') {
+                            throw new RuntimeException("Sudo authentication failed on channel #${channel.id}")
+                        }
+                        when(line: _, from: standardOutput) {
+                            lines << it
+                        }
+                    }
                 }
-                !line.contains(sessionSpec.remote.password)
-            } else {
-                true
+                when(line: _, from: standardOutput) {
+                    lines << it
+                }
             }
         }
 
-        try {
-            channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
-            channel.outputStream.withWriter(sshSpec.encoding) {
-                it << sessionSpec.remote.password << '\n'
-            }
-            while (!channel.closed) {
-                if (authenticationFailed) {
-                    throw new RuntimeException('Unable to execute sudo command. Wrong username/password')
-                }
-                sleep(100)
-            }
-            listeners*.managedChannelClosed(channel, sessionSpec)
-        } finally {
-            channel.disconnect()
-            outputLogger.close()
-            errorLogger.close()
-        }
-
-        outputLogger.lines.join(Utilities.eol())
+        lines.join(Utilities.eol())
     }
 
     @Override
-    void executeBackground(String command) {
-        executeBackground([:], command)
-    }
-
-    @Override
-    void executeBackground(Map<String, Object> options, String command) {
-        listeners*.beginOperation('executeBackground', command)
+    CommandContext executeBackground(Map<String, Object> options, String command) {
+        log.info("Executing command in background: ${command}")
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        channel.outputStream = new LoggingOutputStream(sshSpec.outputLogLevel, sshSpec.encoding)
-        channel.errStream = new LoggingOutputStream(sshSpec.errorLogLevel, sshSpec.encoding)
         options.each { k, v -> channel[k] = v }
 
-        channel.connect()
-        listeners*.unmanagedChannelConnected(channel, sessionSpec)
-    }
+        def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+        context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
 
-    @Override
-    void get(String remote, String local) {
-        get([:], remote, local)
+        globalLifecycleManager << context
+        context.channel.connect()
+        log.info("Channel #${context.channel.id} has been opened")
+
+        context
     }
 
     @Override
     void get(Map<String, Object> options, String remote, String local) {
-        listeners*.beginOperation('get', remote, local)
+        log.info("Get: ${remote} -> ${local}")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been opened")
             channel.get(remote, local)
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
         }
     }
 
     @Override
-    void put(String local, String remote) {
-        put([:], local, remote)
-    }
-
-    @Override
     void put(Map<String, Object> options, String local, String remote) {
-        listeners*.beginOperation('put', remote, local)
+        log.info("Put: ${local} -> ${remote}")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {
             channel.connect()
-            listeners*.managedChannelConnected(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been opened")
             channel.put(local, remote, ChannelSftp.OVERWRITE)
-            listeners*.managedChannelClosed(channel, sessionSpec)
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
         }

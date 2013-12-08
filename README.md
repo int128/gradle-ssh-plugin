@@ -127,6 +127,45 @@ Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
 
 
+### Command interaction support
+
+The execute method can take a closure for interaction.
+```groovy
+execute('passwd', pty: true) {
+  interaction {
+    when(partial: ~/.+[Pp]assowrd: */) {
+      standardInput << oldPassword << '\n'
+      when(partial: ~/.+[Pp]assowrd: */) {
+        standardInput << newPassword << '\n'
+      }
+    }
+  }
+}
+```
+
+In the `interaction` closure, use `when` methods to declare rules:
+  * `when(nextLine: pattern, from: stream) { action }` - When next line from the `stream` matches to the `pattern`, the action will be called.
+  * `when(line: pattern, from: stream) { action }` - When a line from the `stream` matches to the `pattern`, the action will be called.
+  * `when(partial: pattern, from: stream) { action }` - Performs match when the stream is flushed. This is useful for answering to a prompt such as `yes or no?`.
+
+`pattern` is one of following:
+  * If pattern is a string, it performs exact match.
+  * If pattern is a regular expression, it performs regular expression match. Groovy provides pretty notation such as `~/pattern/`.
+  * If pattern is `_`, it matches to any line even if empty.
+
+`stream` is one of following:
+  * `standardOutput` - Standard output of the command.
+  * `standardError` - Standard error of the command.
+  * If stream is omitted, it means any.
+
+Rules will be evaluated in order. First rule has the highest priority.
+
+In the action closure, following property is available:
+  * `standardInput` - Output stream to the remote command. (Read only)
+
+See also sudo password interactions in the [class DefaultOperationHandler](src/main/groovy/org/hidetake/gradle/ssh/internal/DefaultOperationHandler.groovy).
+
+
 Use SSH in the task
 -------------------
 

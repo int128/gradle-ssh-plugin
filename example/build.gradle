@@ -138,6 +138,25 @@ task executeBadCommandInBackground(type: SshTask) {
     }
 }
 
+task executeWithInteractions(type: SshTask) {
+    description 'Executes a command with interactions'
+    session(remotes.localhost) {
+        println description
+        def oldPassword = 'old-one'
+        def newPassword = 'new-one'
+        execute('passwd', pty: true) {
+            interaction {
+                when(partial: ~/.+[Pp]assowrd: */) {
+                    standardInput << oldPassword << '\n'
+                    when(partial: ~/.+[Pp]assowrd: */) {
+                        standardInput << newPassword << '\n'
+                    }
+                }
+            }
+        }
+    }
+}
+
 task executeSshInTask << {
     description 'Executes a command in the task'
     def command = "date"

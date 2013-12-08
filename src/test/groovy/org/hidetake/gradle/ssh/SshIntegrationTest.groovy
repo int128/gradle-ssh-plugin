@@ -2,7 +2,8 @@ package org.hidetake.gradle.ssh
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.OperationEventLogger
+import org.hidetake.gradle.ssh.internal.DryRunOperationHandler
+import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 class SshIntegrationTest extends Specification {
@@ -14,15 +15,14 @@ class SshIntegrationTest extends Specification {
         def task = project.tasks.sshTask
         task.dryRun = true
 
-        def loggerMock = GroovySpy(OperationEventLogger.logger.class, global: true) {
-            isEnabled(_) >> true
-        }
+        // TODO: this functional test should assert logging, but no way to mock @Log
+        def spy = GroovySpy(DryRunOperationHandler, global: true)
 
         when:
         task.perform()
 
         then:
-        1 * loggerMock.log(_, { it.contains("ls -l") } as String)
+        1 * spy.execute(_, 'ls -l')
     }
 
     def "dry run task with sshexec"() {
@@ -35,15 +35,14 @@ class SshIntegrationTest extends Specification {
             }
         }
 
-        def loggerMock = GroovySpy(OperationEventLogger.logger.class, global: true) {
-            isEnabled(_) >> true
-        }
+        // TODO: this functional test should assert logging, but no way to mock @Log
+        def spy = GroovySpy(DryRunOperationHandler, global: true)
 
         when:
         task.execute()
 
         then:
-        1 * loggerMock.log(_, { it.contains("ls -l") } as String)
+        1 * spy.execute(_, 'ls -l')
     }
 
 

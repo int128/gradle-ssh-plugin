@@ -18,7 +18,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 @Slf4j
-class CommandExecutionTest extends Specification {
+class SudoCommandExecutionTest extends Specification {
 
     SshServer server
     Project project
@@ -50,37 +50,88 @@ class CommandExecutionTest extends Specification {
         server.stop(true)
     }
 
-    def commandInteraction(Closure closure) {
+    def sudoInteraction(String commandline, Closure closure) {
+        def matcher = commandline =~ /^sudo -S -p '(.+?)' (.+)$/
+        assert matcher.matches()
+        def groups = matcher[0] as List
+        def prompt = groups[1]
+        def command = groups[2]
+
         new ServerBasedTestHelper.AbstractCommand() {
             @Override
             void start(Environment env) {
-                closure(context)
+                log.info("Sending prompt: $prompt")
+                context.outputStream << prompt
+                context.outputStream.flush()
+                closure(command, context)
             }
         }
     }
 
 
-    def "execute commands sequentially"() {
+    def "execute commands"() {
         given:
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    execute 'somecommand1'
-                    execute 'somecommand2'
-                    execute 'somecommand3'
+                    executeSudo 'somecommand1'
+                    executeSudo 'somecommand2'
                 }
             }
         }
 
-        def recorder = new ServerBasedTestHelper.CommandRecorder()
-        server.commandFactory = recorder
+        def commandMock = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                sudoInteraction(commandline) { String command, CommandContext c ->
+                    commandMock(command)
+                    c.outputStream << '\n'
+                    c.outputStream.flush()
+                    c.exitCallback.onExit(0)
+                }
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then: 1 * commandMock.call('somecommand1')
+        then: 1 * commandMock.call('somecommand2')
+    }
+
+    def "handling authentication failure"() {
+        given:
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    executeSudo 'somecommand'
+                }
+            }
+        }
+
+        def commandMock = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                sudoInteraction(commandline) { String command, CommandContext c ->
+                    commandMock(command)
+                    c.outputStream << '\n' << 'Sorry, try again.' << '\n'
+                    c.outputStream.flush()
+                    c.exitCallback.onExit(1)
+                }
+            }
+        }
         server.start()
 
         when:
         project.tasks.testTask.execute()
 
         then:
-        recorder.commands == ['somecommand1', 'somecommand2', 'somecommand3']
+        1 * commandMock.call('somecommand')
+
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.message.contains('exit status -1')
     }
 
     def "handling command failure"() {
@@ -88,20 +139,31 @@ class CommandExecutionTest extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    execute 'somecommand'
+                    executeSudo 'somecommand'
                 }
             }
         }
 
-        def recorder = new ServerBasedTestHelper.CommandRecorder(1)
-        server.commandFactory = recorder
+        def commandMock = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                sudoInteraction(commandline) { String command, CommandContext c ->
+                    commandMock(command)
+                    c.outputStream << '\n'
+                    c.outputStream.flush()
+                    c.exitCallback.onExit(1)
+                }
+            }
+        }
         server.start()
 
         when:
         project.tasks.testTask.execute()
 
         then:
-        recorder.commands == ['somecommand']
+        1 * commandMock.call('somecommand')
+
+        then:
         TaskExecutionException e = thrown()
         e.cause.message.contains('exit status 1')
     }
@@ -112,23 +174,32 @@ class CommandExecutionTest extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    project.ext.resultActual = execute 'somecommand'
+                    project.ext.resultActual = executeSudo 'somecommand'
                 }
             }
         }
 
+        def commandMock = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> commandInteraction { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') {
-                    it << outputValue
+            createCommand(_) >> { String commandline ->
+                sudoInteraction(commandline) { String command, CommandContext c ->
+                    commandMock(command)
+                    c.outputStream << '\n'
+                    c.outputStream.flush()
+                    c.outputStream.withWriter('UTF-8') {
+                        it << outputValue
+                    }
+                    c.exitCallback.onExit(0)
                 }
-                c.exitCallback.onExit(0)
             }
         }
         server.start()
 
         when:
         project.tasks.testTask.execute()
+
+        then:
+        1 * commandMock.call('somecommand')
 
         then:
         project.ext.resultActual == resultExpected
@@ -155,23 +226,32 @@ class CommandExecutionTest extends Specification {
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    execute 'somecommand'
+                    executeSudo 'somecommand'
                 }
             }
         }
 
+        def commandMock = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> commandInteraction { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') {
-                    it << outputValue
+            createCommand(_) >> { String commandline ->
+                sudoInteraction(commandline) { String command, CommandContext c ->
+                    commandMock(command)
+                    c.outputStream << '\n'
+                    c.outputStream.flush()
+                    c.outputStream.withWriter('UTF-8') {
+                        it << outputValue
+                    }
+                    c.exitCallback.onExit(0)
                 }
-                c.exitCallback.onExit(0)
             }
         }
         server.start()
 
         when:
         project.tasks.testTask.execute()
+
+        then:
+        1 * commandMock.call('somecommand')
 
         then:
         logMessages.each {
