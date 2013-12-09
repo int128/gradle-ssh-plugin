@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh.server
 import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
-import org.apache.sshd.server.Environment
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.Project
@@ -13,8 +12,8 @@ import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
 import org.hidetake.gradle.ssh.internal.DefaultOperationHandler
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper.CommandContext
+import org.hidetake.gradle.ssh.test.SshServerMock
+import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -27,7 +26,7 @@ class CommandExecutionTest extends Specification {
     Project project
 
     def setup() {
-        server = ServerBasedTestHelper.setUpLocalhostServer()
+        server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
@@ -53,15 +52,6 @@ class CommandExecutionTest extends Specification {
         server.stop(true)
     }
 
-    def commandInteraction(Closure closure) {
-        new ServerBasedTestHelper.AbstractCommand() {
-            @Override
-            void start(Environment env) {
-                closure(context)
-            }
-        }
-    }
-
 
     def "execute commands sequentially"() {
         given:
@@ -75,15 +65,23 @@ class CommandExecutionTest extends Specification {
             }
         }
 
-        def recorder = new ServerBasedTestHelper.CommandRecorder()
-        server.commandFactory = recorder
+        def recorder = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                SshServerMock.command { CommandContext c ->
+                    recorder(commandline)
+                    c.exitCallback.onExit(0)
+                }
+            }
+        }
         server.start()
 
         when:
         project.tasks.testTask.execute()
 
-        then:
-        recorder.commands == ['somecommand1', 'somecommand2', 'somecommand3']
+        then: 1 * recorder.call('somecommand1')
+        then: 1 * recorder.call('somecommand2')
+        then: 1 * recorder.call('somecommand3')
     }
 
     def "handling command failure"() {
@@ -96,15 +94,17 @@ class CommandExecutionTest extends Specification {
             }
         }
 
-        def recorder = new ServerBasedTestHelper.CommandRecorder(1)
-        server.commandFactory = recorder
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.exitCallback.onExit(1)
+            }
+        }
         server.start()
 
         when:
         project.tasks.testTask.execute()
 
         then:
-        recorder.commands == ['somecommand']
         TaskExecutionException e = thrown()
         e.cause.message.contains('exit status 1')
     }
@@ -121,10 +121,8 @@ class CommandExecutionTest extends Specification {
         }
 
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> commandInteraction { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') {
-                    it << outputValue
-                }
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << outputValue }
                 c.exitCallback.onExit(0)
             }
         }
@@ -164,10 +162,8 @@ class CommandExecutionTest extends Specification {
         }
 
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> commandInteraction { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') {
-                    it << outputValue
-                }
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << outputValue }
                 c.exitCallback.onExit(0)
             }
         }

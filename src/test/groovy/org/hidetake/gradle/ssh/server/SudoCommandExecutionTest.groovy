@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh.server
 import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
-import org.apache.sshd.server.Environment
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.Project
@@ -13,8 +12,8 @@ import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
 import org.hidetake.gradle.ssh.internal.DefaultOperationHandler
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper.CommandContext
+import org.hidetake.gradle.ssh.test.SshServerMock
+import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -27,7 +26,7 @@ class SudoCommandExecutionTest extends Specification {
     Project project
 
     def setup() {
-        server = ServerBasedTestHelper.setUpLocalhostServer()
+        server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
@@ -53,43 +52,33 @@ class SudoCommandExecutionTest extends Specification {
         server.stop(true)
     }
 
-    def sudoInteraction(String commandline, Closure closure) {
+    def parseSudoCommandLine(String commandline) {
         def matcher = commandline =~ /^sudo -S -p '(.+?)' (.+)$/
         assert matcher.matches()
         def groups = matcher[0] as List
-        def prompt = groups[1]
-        def command = groups[2]
-
-        new ServerBasedTestHelper.AbstractCommand() {
-            @Override
-            void start(Environment env) {
-                log.info("Sending prompt: $prompt")
-                context.outputStream << prompt
-                context.outputStream.flush()
-                closure(command, context)
-            }
-        }
+        [prompt: groups[1], commandline: groups[2]]
     }
 
 
-    def "execute commands"() {
+    def "execute commands sequentially"() {
         given:
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
                     executeSudo 'somecommand1'
                     executeSudo 'somecommand2'
+                    executeSudo 'somecommand3'
                 }
             }
         }
 
-        def commandMock = Mock(Closure)
+        def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                sudoInteraction(commandline) { String command, CommandContext c ->
-                    commandMock(command)
-                    c.outputStream << '\n'
-                    c.outputStream.flush()
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') { it << sudo.prompt << '\n' }
                     c.exitCallback.onExit(0)
                 }
             }
@@ -99,8 +88,9 @@ class SudoCommandExecutionTest extends Specification {
         when:
         project.tasks.testTask.execute()
 
-        then: 1 * commandMock.call('somecommand1')
-        then: 1 * commandMock.call('somecommand2')
+        then: 1 * recorder.call('somecommand1')
+        then: 1 * recorder.call('somecommand2')
+        then: 1 * recorder.call('somecommand3')
     }
 
     def "handling authentication failure"() {
@@ -113,13 +103,17 @@ class SudoCommandExecutionTest extends Specification {
             }
         }
 
-        def commandMock = Mock(Closure)
+        def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                sudoInteraction(commandline) { String command, CommandContext c ->
-                    commandMock(command)
-                    c.outputStream << '\n' << 'Sorry, try again.' << '\n'
-                    c.outputStream.flush()
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') {
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << 'Sorry, try again.' << '\n'
+                    }
                     c.exitCallback.onExit(1)
                 }
             }
@@ -130,7 +124,7 @@ class SudoCommandExecutionTest extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * commandMock.call('somecommand')
+        1 * recorder.call('somecommand')
 
         then:
         TaskExecutionException e = thrown()
@@ -147,13 +141,13 @@ class SudoCommandExecutionTest extends Specification {
             }
         }
 
-        def commandMock = Mock(Closure)
+        def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                sudoInteraction(commandline) { String command, CommandContext c ->
-                    commandMock(command)
-                    c.outputStream << '\n'
-                    c.outputStream.flush()
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') { it << sudo.prompt << '\n' }
                     c.exitCallback.onExit(1)
                 }
             }
@@ -164,7 +158,7 @@ class SudoCommandExecutionTest extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * commandMock.call('somecommand')
+        1 * recorder.call('somecommand')
 
         then:
         TaskExecutionException e = thrown()
@@ -182,15 +176,16 @@ class SudoCommandExecutionTest extends Specification {
             }
         }
 
-        def commandMock = Mock(Closure)
+        def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                sudoInteraction(commandline) { String command, CommandContext c ->
-                    commandMock(command)
-                    c.outputStream << '\n'
-                    c.outputStream.flush()
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
                     c.outputStream.withWriter('UTF-8') {
-                        it << outputValue
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << outputValue
                     }
                     c.exitCallback.onExit(0)
                 }
@@ -202,7 +197,7 @@ class SudoCommandExecutionTest extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * commandMock.call('somecommand')
+        1 * recorder.call('somecommand')
 
         then:
         project.ext.resultActual == resultExpected
@@ -234,15 +229,16 @@ class SudoCommandExecutionTest extends Specification {
             }
         }
 
-        def commandMock = Mock(Closure)
+        def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                sudoInteraction(commandline) { String command, CommandContext c ->
-                    commandMock(command)
-                    c.outputStream << '\n'
-                    c.outputStream.flush()
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
                     c.outputStream.withWriter('UTF-8') {
-                        it << outputValue
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << outputValue
                     }
                     c.exitCallback.onExit(0)
                 }
@@ -254,7 +250,7 @@ class SudoCommandExecutionTest extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * commandMock.call('somecommand')
+        1 * recorder.call('somecommand')
 
         then:
         logMessages.each {

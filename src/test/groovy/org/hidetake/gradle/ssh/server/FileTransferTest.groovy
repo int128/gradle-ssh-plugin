@@ -6,7 +6,7 @@ import org.apache.sshd.server.sftp.SftpSubsystem
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
+import org.hidetake.gradle.ssh.test.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
@@ -23,7 +23,7 @@ class FileTransferTest extends Specification {
     TemporaryFolder temporaryFolder
 
     def setupSpec() {
-        server = ServerBasedTestHelper.setUpLocalhostServer()
+        server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }

@@ -7,7 +7,7 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
-import org.hidetake.gradle.ssh.test.ServerBasedTestHelper
+import org.hidetake.gradle.ssh.test.SshServerMock
 import spock.lang.Specification
 
 import java.security.PublicKey
@@ -24,7 +24,7 @@ class AuthenticationTest extends Specification {
     Project project
 
     def setup() {
-        server = ServerBasedTestHelper.setUpLocalhostServer()
+        server = SshServerMock.setUpLocalhostServer()
         project = ProjectBuilder.builder().build()
         project.with {
             apply plugin: 'ssh'
@@ -45,8 +45,8 @@ class AuthenticationTest extends Specification {
         server.stop(true)
     }
 
-    def mockSuccessCommandFactory() {
-        server.commandFactory = Mock(CommandFactory) {
+    def successCommandFactory() {
+        Mock(CommandFactory) {
             1 * createCommand('ls') >> Mock(Command) {
                 setExitCallback(_) >> { ExitCallback callback ->
                     callback.onExit(0)
@@ -70,11 +70,10 @@ class AuthenticationTest extends Specification {
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
-        server.commandFactory = mockSuccessCommandFactory()
+        server.commandFactory = successCommandFactory()
         server.start()
 
         project.remotes.testServer.password = 'somepassword'
-
         defineTestTask()
 
         when:
@@ -95,7 +94,6 @@ class AuthenticationTest extends Specification {
         server.start()
 
         project.remotes.testServer.password = 'wrongpassword'
-
         defineTestTask()
 
         when:
@@ -112,11 +110,10 @@ class AuthenticationTest extends Specification {
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
             _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
         }
-        server.commandFactory = mockSuccessCommandFactory()
+        server.commandFactory = successCommandFactory()
         server.start()
 
         project.remotes.testServer.identity = identityFile('id_rsa')
-
         defineTestTask()
 
         when:
@@ -137,7 +134,6 @@ class AuthenticationTest extends Specification {
         server.start()
 
         project.remotes.testServer.identity = identityFile('id_rsa')
-
         defineTestTask()
 
         when:
@@ -154,12 +150,11 @@ class AuthenticationTest extends Specification {
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
             _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
         }
-        server.commandFactory = mockSuccessCommandFactory()
+        server.commandFactory = successCommandFactory()
         server.start()
 
         project.remotes.testServer.identity = identityFile('id_rsa_pass')
         project.remotes.testServer.passphrase = "gradle"
-
         defineTestTask()
 
         when:
@@ -181,7 +176,6 @@ class AuthenticationTest extends Specification {
 
         project.remotes.testServer.identity = identityFile('id_rsa_pass')
         project.remotes.testServer.passphrase = "wrong"
-
         defineTestTask()
 
         when:
