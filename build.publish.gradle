@@ -1,12 +1,6 @@
 /**
  * Build script for publishing JARs into the Maven central repository.
- * Some properties must be provided in gradle.properties.
- * (see validation below)
- *
- * To publish, just invoke:
- * <code>
- * gradle uploadArchives
- * </code>
+ * Metadata properties must be provided by gradle.properties.
  *
  * @author hidetake.org
  */
@@ -29,6 +23,12 @@ String askPassword(String prompt) {
 
 ext.'signing.password' = askPassword("Enter password for PGP key ${property('signing.keyId')}: ")
 ext.'sonatypePassword' = askPassword("Enter password for ${sonatypeUsername}@oss.sonatype.org: ")
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
 
 signing {
     sign configurations.archives
@@ -65,4 +65,7 @@ uploadArchives {
             }
         }
     }
+}
+
+task publishMavenCentral(dependsOn: tasks.uploadArchives) {
 }

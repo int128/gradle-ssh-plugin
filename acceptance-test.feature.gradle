@@ -1,0 +1,313 @@
+apply plugin: 'ssh'
+
+ssh {
+    config(StrictHostKeyChecking: 'no')
+}
+
+remotes {
+    localhost {
+        role 'testServers'
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+    sudoWithPassword {
+        host = 'localhost'
+        user = "user${(Math.random() * 100) as int}p"
+        password = "pass${(Math.random() * 100) as int}"
+    }
+    sudoNoPassword {
+        host = 'localhost'
+        user = "user${(Math.random() * 100) as int}n"
+        password = "pass${(Math.random() * 100) as int}"
+    }
+}
+
+
+feature('executing a command') {
+    task 'executeCommand'
+}
+
+task executeCommand(type: SshTask) {
+    doFirst {
+        ext.x = (Math.random() * 100) as int
+        ext.y = (Math.random() * 100) as int
+    }
+    session(remotes.localhost) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
+feature('filter hosts by role') {
+    task 'executeCommandByRole'
+}
+
+task executeCommandByRole(type: SshTask) {
+    doFirst {
+        ext.x = (Math.random() * 100) as int
+        ext.y = (Math.random() * 100) as int
+    }
+    session(remotes.role('testServers')) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
+feature('executing commands sequentially') {
+    task 'executeSequentially'
+}
+
+task executeSequentially(type: SshTask) {
+    doFirst {
+        ext.x = (Math.random() * 100) as int
+        ext.y = (Math.random() * 100) as int
+    }
+    session(remotes.localhost) {
+        ext.a = execute "expr $x + $y | tee /tmp/testdata"
+        ext.b = execute "expr $x + `cat /tmp/testdata`"
+        execute 'rm -v /tmp/testdata'
+    }
+    doLast {
+        assert a as int == (x + y)
+        assert b as int == (x + x + y)
+    }
+}
+
+
+feature('each command should have independent environment') {
+    task 'testEnvironmentOfCommand'
+}
+
+task testEnvironmentOfCommand(type: SshTask) {
+    session(remotes.localhost) {
+        execute "export testdata=dummy"
+        ext.a = execute 'echo "testdata is $testdata"'
+    }
+    doLast {
+        assert a == 'testdata is '
+    }
+}
+
+
+feature('executing commands concurrently') {
+    task 'executeConcurrently'
+}
+
+task executeConcurrently(type: SshTask) {
+    doFirst {
+        ext.temp0 = UUID.randomUUID().toString()
+        ext.temp1 = UUID.randomUUID().toString()
+        ext.temp2 = UUID.randomUUID().toString()
+    }
+    session(remotes.localhost) {
+        executeBackground "sleep 2 && date +%s > /tmp/$temp2"
+        executeBackground "sleep 1 && date +%s > /tmp/$temp1"
+        executeBackground            "date +%s > /tmp/$temp0"
+    }
+    doLast {
+        // TODO: should add test for checking if it waits for all background commands
+        sshexec {
+            session(remotes.localhost) {
+                ext.time2 = execute("cat /tmp/$temp2 && rm /tmp/$temp2")
+                ext.time1 = execute("cat /tmp/$temp1 && rm /tmp/$temp1")
+                ext.time0 = execute("cat /tmp/$temp0 && rm /tmp/$temp0")
+            }
+        }
+        assert Math.abs((time2 as int) - (time0 as int)) == 2
+        assert Math.abs((time1 as int) - (time0 as int)) == 1
+    }
+}
+
+
+feature('handling failure of the remote command') {
+    task 'failureStatus'
+}
+
+task failureStatus << {
+    try {
+        sshexec {
+            session(remotes.localhost) {
+                execute 'exit 1'
+            }
+        }
+        assert false, 'an exception should be thrown'
+    } catch(RuntimeException e) {
+        assert e.localizedMessage.contains('status 1')
+    }
+}
+
+
+feature('handling failure of the remote command in background') {
+    task 'failureStatusInBackground'
+}
+
+task failureStatusInBackground << {
+    try {
+        sshexec {
+            session(remotes.localhost) {
+                executeBackground 'exit 1'
+            }
+        }
+        assert false, 'an exception should be thrown'
+    } catch(RuntimeException e) {
+        assert e.localizedMessage.contains('status 1')
+    }
+}
+
+
+feature('executing a privileged command by sudo') {
+    task 'executeSudoWithPassword'
+    aggressiveTest 'requires creating an user and setting up sudoers'
+}
+
+task executeSudoWithPassword(type: SshTask) {
+    dependsOn   'createUserForSudoWithPassword'
+    finalizedBy 'deleteUserForSudoWithPassword'
+
+    session(remotes.sudoWithPassword) {
+        ext.whoami = executeSudo('whoami', pty: true)
+    }
+    doLast {
+        assert whoami == 'root'
+    }
+}
+
+task createUserForSudoWithPassword(type: SshTask) {
+    finalizedBy 'deleteUserForSudoWithPassword'
+
+    session(remotes.localhost) {
+        def username = remotes.sudoWithPassword.user
+        def password = remotes.sudoWithPassword.password
+        execute("sudo useradd -m $username")
+        execute("sudo passwd $username") {
+            interaction {
+                when(partial: ~/.+[Pp]assword: */) {
+                    standardInput << password << '\n'
+                }
+            }
+        }
+        execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
+        execute("sudo chmod 440 /tmp/$username")
+        execute("sudo chown 0.0 /tmp/$username")
+        execute("sudo mv /tmp/$username /etc/sudoers.d")
+    }
+}
+
+task deleteUserForSudoWithPassword(type: SshTask) {
+    session(remotes.localhost) {
+        def username = remotes.sudoWithPassword.user
+        execute("sudo rm -v /etc/sudoers.d/$username")
+        execute("sudo userdel -r $username")
+    }
+}
+
+
+feature('executing a privileged command by sudo without password') {
+    task 'executeSudoNoPassword'
+    aggressiveTest 'requires creating an user and setting up sudoers'
+}
+
+task executeSudoNoPassword(type: SshTask) {
+    dependsOn 'createUserForSudoNoPassword'
+    finalizedBy 'deleteUserForSudoNoPassword'
+
+    session(remotes.localhost) {
+        ext.whoami = executeSudo('whoami', pty: true)
+    }
+    doLast {
+        assert whoami == 'root'
+    }
+}
+
+task createUserForSudoNoPassword(type: SshTask) {
+    finalizedBy 'deleteUserForSudoNoPassword'
+
+    session(remotes.localhost) {
+        def username = remotes.sudoNoPassword.user
+        def password = remotes.sudoNoPassword.password
+        execute("sudo useradd -m $username")
+        execute("sudo passwd $username") {
+            interaction {
+                when(partial: ~/.+[Pp]assword: */) {
+                    standardInput << password << '\n'
+                }
+            }
+        }
+        execute("echo '$username ALL=(ALL) NOPASSWD: ALL' > /tmp/$username")
+        execute("sudo chmod 440 /tmp/$username")
+        execute("sudo chown 0.0 /tmp/$username")
+        execute("sudo mv /tmp/$username /etc/sudoers.d")
+    }
+}
+
+task deleteUserForSudoNoPassword(type: SshTask) {
+    session(remotes.localhost) {
+        def username = remotes.sudoNoPassword.user
+        execute("sudo rm -v /etc/sudoers.d/$username")
+        execute("sudo userdel -r $username")
+    }
+}
+
+
+feature('sending files to the remote host') {
+    task 'storeDataFile'
+}
+
+task storeDataFile(type: SshTask) {
+    doFirst {
+        ext.targetFileName = UUID.randomUUID().toString()
+        ext.targetContent = UUID.randomUUID().toString()
+        file("$buildDir/testdata").delete()
+        file("$buildDir/testdata") << targetContent
+    }
+    session(remotes.localhost) {
+        put("$buildDir/testdata", "/tmp/$targetFileName")
+    }
+    doLast {
+        sshexec {
+            session(remotes.localhost) {
+                execute("grep '$targetContent' /tmp/$targetFileName")
+                execute("rm -v /tmp/$targetFileName")
+            }
+        }
+        file("$buildDir/testdata").delete()
+    }
+}
+
+
+feature('acquiring data files on the remote host') {
+    task 'acquireDataFile'
+}
+
+task acquireDataFile(type: SshTask) {
+    doFirst {
+        ext.x = (Math.random() * 100) as int
+        ext.y = (Math.random() * 100) as int
+        ext.plusFileName = UUID.randomUUID().toString()
+        ext.minusFileName = UUID.randomUUID().toString()
+    }
+    session(remotes.localhost) {
+        execute("expr $x + $y > /tmp/$plusFileName")
+        execute("expr $x - $y > /tmp/$minusFileName")
+
+        get("/tmp/$plusFileName", buildDir.path)
+        get("/tmp/$minusFileName", buildDir.path)
+
+        execute("rm -v /tmp/$plusFileName")
+        execute("rm -v /tmp/$minusFileName")
+    }
+    doLast {
+        assert file("$buildDir/$plusFileName").text as int == (x + y)
+        assert file("$buildDir/$plusFileName").delete()
+
+        assert file("$buildDir/$minusFileName").text as int == (x - y)
+        assert file("$buildDir/$minusFileName").delete()
+    }
+}
