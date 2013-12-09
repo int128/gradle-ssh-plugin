@@ -1,7 +1,3 @@
 language: java
-
-jdk:
-  - oraclejdk7
-
-script:
-  - "./gradlew -i build"
+jdk: oraclejdk7
+script: TERM=dumb ./gradlew -i build
