@@ -1,5 +1,4 @@
 apply plugin: 'groovy'
-apply plugin: 'project-report'
 
 repositories {
     mavenCentral()
@@ -35,5 +34,5 @@ if (gradle.startParameter.taskNames.contains('uploadArchives')) {
 
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.8'
+    gradleVersion = '1.9'
 }
