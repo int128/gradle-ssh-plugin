@@ -5,6 +5,7 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.PasswordAuthenticator
+import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
@@ -19,6 +20,8 @@ import spock.lang.Unroll
 
 @Slf4j
 class CommandExecutionTest extends Specification {
+
+    private static final NL = Utilities.eol()
 
     SshServer server
     Project project
@@ -138,8 +141,8 @@ class CommandExecutionTest extends Specification {
         'empty'                | ''                           | ''
         'a line'               | 'some result'                | 'some result'
         'a line with line sep' | 'some result\n'              | 'some result'
-        'lines'                | 'some result\nsecond line'   | 'some result\nsecond line'
-        'lines with line sep'  | 'some result\nsecond line\n' | 'some result\nsecond line'
+        'lines'                | 'some result\nsecond line'   | "some result${NL}second line"
+        'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
     }
 
     @Unroll
