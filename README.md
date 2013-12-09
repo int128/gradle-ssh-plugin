@@ -127,9 +127,23 @@ Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
 
 
-### Command interaction support
+#### Result handling
 
-The execute method can take a closure for interaction.
+Session operation methods will raise an exception if error occurs:
+  * `execute` throws an exception if exit status of the remote command is not zero.
+  * `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
+  * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
+  * `get` - throws an exception if error occurs.
+  * `put` - throws an exception if error occurs.
+
+These methods return value:
+  * `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
+  * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
+
+
+#### Command interaction support
+
+`execute` method can take a closure for interaction.
 ```groovy
 execute('passwd', pty: true) {
   interaction {
