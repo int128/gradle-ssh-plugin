@@ -12,7 +12,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 
-class FileTransferTest extends Specification {
+class FileTransferSpec extends Specification {
 
     @Shared
     SshServer server

@@ -18,7 +18,7 @@ import java.security.PublicKey
  * @author hidetake.org
  *
  */
-class AuthenticationTest extends Specification {
+class AuthenticationSpec extends Specification {
 
     SshServer server
     Project project
@@ -188,7 +188,7 @@ class AuthenticationTest extends Specification {
     }
 
     static identityFile(String name) {
-        new File(AuthenticationTest.getResource("/${name}").file)
+        new File(AuthenticationSpec.getResource("/${name}").file)
     }
 
 }
