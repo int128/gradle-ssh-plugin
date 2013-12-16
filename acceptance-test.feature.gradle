@@ -105,6 +105,11 @@ task executeConcurrently(type: SshTask) {
         ext.temp0 = UUID.randomUUID().toString()
         ext.temp1 = UUID.randomUUID().toString()
         ext.temp2 = UUID.randomUUID().toString()
+        ext.temp3 = UUID.randomUUID().toString()
+    }
+    // task should start sessions concurrently
+    session(remotes.localhost) {
+        executeBackground "sleep 3 && date +%s > /tmp/$temp3"
     }
     session(remotes.localhost) {
         executeBackground "sleep 2 && date +%s > /tmp/$temp2"
@@ -112,14 +117,16 @@ task executeConcurrently(type: SshTask) {
         executeBackground            "date +%s > /tmp/$temp0"
     }
     doLast {
-        // TODO: should add test for checking if it waits for all background commands
+        // all commands should be completed at this point
         sshexec {
             session(remotes.localhost) {
+                ext.time3 = execute("cat /tmp/$temp3 && rm /tmp/$temp3")
                 ext.time2 = execute("cat /tmp/$temp2 && rm /tmp/$temp2")
                 ext.time1 = execute("cat /tmp/$temp1 && rm /tmp/$temp1")
                 ext.time0 = execute("cat /tmp/$temp0 && rm /tmp/$temp0")
             }
         }
+        assert Math.abs((time3 as int) - (time0 as int)) == 3
         assert Math.abs((time2 as int) - (time0 as int)) == 2
         assert Math.abs((time1 as int) - (time0 as int)) == 1
     }
