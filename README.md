@@ -3,7 +3,7 @@ Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugi
 
 This plugin provides remote command execution and file transfer capabilities.
 
-See also [Example of build.gradle](example/build.gradle) and [Release notes](https://github.com/int128/gradle-ssh-plugin/releases).
+See also [ssh task examples](acceptance-test.feature.gradle) and [release note](https://github.com/int128/gradle-ssh-plugin/releases).
 
 
 How to use
