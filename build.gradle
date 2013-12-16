@@ -13,8 +13,8 @@ dependencies {
 }
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {
-    classifier = 'javadoc'
     from "${buildDir}/javadoc"
+    classifier = 'javadoc'
 }
 
 task sourcesJar(type: Jar) {
@@ -22,16 +22,22 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-artifacts {
-    archives jar
-    archives javadocJar
-    archives sourcesJar
-}
-
-if (gradle.startParameter.taskNames.contains('uploadArchives')) {
+if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
     apply from: 'build.publish.gradle'
 }
 
+if (gradle.startParameter.taskNames.contains('publishLocal')) {
+    artifacts {
+        archives jar
+    }
+    uploadArchives {
+        repositories.ivy {
+            url = "$buildDir/ivy"
+        }
+    }
+    task publishLocal(dependsOn: tasks.uploadArchives) {
+    }
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.9'
