@@ -1,6 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
-import com.jcraft.jsch.ChannelExec
+import com.jcraft.jsch.ChannelShell
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.gradle.api.logging.LogLevel
@@ -13,13 +13,12 @@ import org.hidetake.gradle.ssh.internal.command.LineOutputStream
 
 @TupleConstructor
 @Slf4j
-class DefaultCommandContext implements CommandContext, ChannelObservable {
-    final ChannelExec channel
+class DefaultShellContext implements CommandContext, ChannelObservable {
+    final ChannelShell channel
     final OutputStream standardInput
     final LineOutputStream standardOutput
-    final LineOutputStream standardError
 
-    private static final logger = Logging.getLogger(DefaultCommandContext)
+    private static final logger = Logging.getLogger(DefaultShellContext)
 
     /**
      * Create an instance for the channel.
@@ -28,17 +27,14 @@ class DefaultCommandContext implements CommandContext, ChannelObservable {
      * @param charset character set for streams
      * @return an instance
      */
-    static create(ChannelExec channel, String charset) {
+    static create(ChannelShell channel, String charset) {
         def standardOutputStream = new LineOutputStream(charset)
-        def standardErrorStream = new LineOutputStream(charset)
         channel.outputStream = standardOutputStream
-        channel.errStream = standardErrorStream
-        new DefaultCommandContext(channel, channel.outputStream, standardOutputStream, standardErrorStream)
+        new DefaultShellContext(channel, channel.outputStream, standardOutputStream)
     }
 
-    void enableLogging(LogLevel standardOutputLevel, LogLevel standardErrorLevel) {
+    void enableLogging(LogLevel standardOutputLevel) {
         standardOutput.loggingListeners.add { String message -> logger.log(standardOutputLevel, message) }
-        standardError.loggingListeners.add { String message -> logger.log(standardErrorLevel, message) }
     }
 
     @Override
@@ -49,6 +45,5 @@ class DefaultCommandContext implements CommandContext, ChannelObservable {
 
         engine.alterInteractionRules(rules)
         engine.attach(standardOutput, Stream.StandardOutput)
-        engine.attach(standardError, Stream.StandardError)
     }
 }

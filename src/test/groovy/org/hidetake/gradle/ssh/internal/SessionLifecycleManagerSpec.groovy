@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import com.jcraft.jsch.Channel
 import com.jcraft.jsch.ChannelExec
 import spock.lang.Shared
 import spock.lang.Specification
@@ -27,10 +28,10 @@ class SessionLifecycleManagerSpec extends Specification {
 
     def "executionStarted adds command"() {
         given:
-        def channel = Mock(DefaultCommandContext)
+        def o = Mock(ChannelObservable)
 
         when:
-        mgr << channel
+        mgr << o
 
         then:
         mgr.contexts.size() == 1
@@ -38,18 +39,20 @@ class SessionLifecycleManagerSpec extends Specification {
 
     def "disconnect disconnects all commands"() {
         given:
-        def c1 = new DefaultCommandContext(Mock(ChannelExec))
-        def c2 = new DefaultCommandContext(Mock(ChannelExec))
+        def c1 = Mock(Channel)
+        def c2 = Mock(Channel)
+        def o1 = Mock(ChannelObservable) { getChannel() >> c1 }
+        def o2 = Mock(ChannelObservable) { getChannel() >> c2 }
 
-        mgr << c1
-        mgr << c2
+        mgr << o1
+        mgr << o2
 
         when:
         mgr.disconnect()
 
         then:
-        1 * c1.channel.disconnect()
-        1 * c2.channel.disconnect()
+        1 * c1.disconnect()
+        1 * c2.disconnect()
     }
 
 
@@ -68,27 +71,30 @@ class SessionLifecycleManagerSpec extends Specification {
 
     def "wait for pending, one pending channel that closes"() {
         given:
-        def context = new DefaultCommandContext(Mock(ChannelExec))
-        mgr << context
+        def c = Mock(Channel)
+        def o = Mock(ChannelObservable) { getChannel() >> c }
+        mgr << o
 
         def closedChannelHandler = Mock(Closure)
 
         when:
         mgr.waitForPending(closedChannelHandler)
 
-        then: 1 * context.channel.closed >> false
+        then: 1 * c.closed >> false
         then: 1 * sleepMock.call(_)
-        then: 1 * context.channel.closed >> true
-        then: 1 * closedChannelHandler.call(context)
+        then: 1 * c.closed >> true
+        then: 1 * closedChannelHandler.call(o)
         then: 1 * sleepMock.call(_)
     }
 
     def "wait for pending, one pending and one closed"() {
         given:
-        def pending = new DefaultCommandContext(Mock(ChannelExec))
-        def closed = new DefaultCommandContext(Mock(ChannelExec))
-        mgr << pending
-        mgr << closed
+        def pending = Mock(Channel)
+        def closed = Mock(Channel)
+        def pendingObservable = Mock(ChannelObservable) { getChannel() >> pending }
+        def closedObservable = Mock(ChannelObservable) { getChannel() >> closed }
+        mgr << pendingObservable
+        mgr << closedObservable
 
         def closedChannelHandler = Mock(Closure)
 
@@ -96,13 +102,13 @@ class SessionLifecycleManagerSpec extends Specification {
         mgr.waitForPending(closedChannelHandler)
 
         then:
-        1 * pending.channel.closed >> false
-        1 * closed.channel.closed >> true
+        1 * pending.closed >> false
+        1 * closed.closed >> true
 
-        then: 1 * closedChannelHandler.call(closed)
+        then: 1 * closedChannelHandler.call(closedObservable)
         then: 1 * sleepMock.call(_)
-        then: 1 * pending.channel.closed >> true
-        then: 1 * closedChannelHandler.call(pending)
+        then: 1 * pending.closed >> true
+        then: 1 * closedChannelHandler.call(pendingObservable)
         then: 1 * sleepMock.call(_)
     }
 

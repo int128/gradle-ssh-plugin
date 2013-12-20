@@ -24,6 +24,11 @@ class DryRunOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
+    void shell(Map<String, Object> options, Closure interactions) {
+        log.info('Executing shell')
+    }
+
+    @Override
     String execute(Map<String, Object> options, String command, Closure interactions) {
         log.info("Executing command: ${command}")
         null

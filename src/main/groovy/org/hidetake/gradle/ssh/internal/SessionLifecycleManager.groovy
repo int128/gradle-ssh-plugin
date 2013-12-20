@@ -18,7 +18,7 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class SessionLifecycleManager {
-    final contexts = [] as List<DefaultCommandContext>
+    final contexts = [] as List<ChannelObservable>
 
     /**
      * Add a context to be managed.
@@ -26,7 +26,7 @@ class SessionLifecycleManager {
      * @param context
      * @return this
      */
-    def leftShift(DefaultCommandContext context) {
+    def leftShift(ChannelObservable context) {
         contexts << context
         this
     }
@@ -37,7 +37,7 @@ class SessionLifecycleManager {
      * @param closedCommandHandler callback handler for closed command
      */
     void waitForPending(Closure closedCommandHandler = {}) {
-        def pendingCommands = new ArrayList<DefaultCommandContext>(contexts)
+        def pendingCommands = new ArrayList<ChannelObservable>(contexts)
         while (!pendingCommands.empty) {
             def closedCommands = pendingCommands.findAll { it.channel.closed }
             closedCommands.each(closedCommandHandler)

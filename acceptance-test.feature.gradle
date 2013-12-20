@@ -263,6 +263,23 @@ task deleteUserForSudoNoPassword(type: SshTask) {
 }
 
 
+feature('executing a shell') {
+    task 'executeShell'
+}
+
+task executeShell(type: SshTask) {
+    session(remotes.localhost) {
+        shell {
+            interaction {
+                when(partial: ~/.*$/) {
+                    standardInput << 'exit 0' << '\n'
+                }
+            }
+        }
+    }
+}
+
+
 feature('sending files to the remote host') {
     task 'storeDataFile'
 }
