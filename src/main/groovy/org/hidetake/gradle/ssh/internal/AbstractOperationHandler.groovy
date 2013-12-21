@@ -5,6 +5,11 @@ import org.hidetake.gradle.ssh.api.OperationHandler
 
 abstract class AbstractOperationHandler implements OperationHandler {
     @Override
+    void shell(Closure interactions) {
+        shell([:], interactions)
+    }
+
+    @Override
     String execute(String command) {
         execute([:], command)
     }
