@@ -1,15 +1,18 @@
 description 'Automated acceptance test with SSH server'
 
 buildscript {
+    def version = file('../gradle.properties').withReader {
+        def properties = new Properties()
+        properties.load(it)
+        properties.version
+    }
     repositories {
-        ivy { url = "$buildDir/ivy" }
+        ivy { url = '../build/ivy' }
         mavenCentral()
     }
     dependencies {
         classpath "org.hidetake:gradle-ssh-plugin:$version"
     }
-    // avoid dependency resolution problem
-    version = null
 }
 
 class FeatureDelegate {
@@ -54,4 +57,4 @@ task aggressiveTest {
     description = 'Run tests which may cause modification of the environment'
 }
 
-apply from: 'acceptance-test.feature.gradle'
+apply from: 'features.gradle'
