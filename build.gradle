@@ -22,20 +22,19 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
-    apply from: 'build.publish.gradle'
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
 }
 
-if (gradle.startParameter.taskNames.contains('publishLocal')) {
-    artifacts {
-        archives jar
-    }
+if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
+    apply from: 'build.publish.gradle'
+} else {
     uploadArchives {
         repositories.ivy {
             url = "$buildDir/ivy"
         }
-    }
-    task publishLocal(dependsOn: tasks.uploadArchives) {
     }
 }
 

@@ -1,34 +1,24 @@
 /**
  * Build script for publishing JARs into the Maven central repository.
  * Metadata properties must be provided by gradle.properties.
- *
- * @author hidetake.org
  */
 apply plugin: 'signing'
 apply plugin: 'maven'
 
-boolean validProperty(propertyName) {
+def validProperty = { String propertyName ->
     try { project.property(propertyName) != null }
     catch (MissingPropertyException ignore) { false }
 }
 
-assert validProperty('signing.keyId'), 'properties for signing must be provided'
-assert validProperty('signing.secretKeyRingFile'), 'properties for signing must be provided'
-assert validProperty('sonatypeUsername'), 'properties for publish must be provided'
-assert validProperty('sonatypeFullname'), 'properties for publish must be provided'
+def askPassword = { String prompt -> System.console().readPassword(prompt).toString() }
 
-String askPassword(String prompt) {
-    "${System.console().readPassword(prompt)}"
-}
+assert validProperty('signing.keyId'),             'properties for signing must be provided'
+assert validProperty('signing.secretKeyRingFile'), 'properties for signing must be provided'
+assert validProperty('sonatypeUsername'),          'properties for publish must be provided'
+assert validProperty('sonatypeFullname'),          'properties for publish must be provided'
 
 ext.'signing.password' = askPassword("Enter password for PGP key ${property('signing.keyId')}: ")
 ext.'sonatypePassword' = askPassword("Enter password for ${sonatypeUsername}@oss.sonatype.org: ")
-
-artifacts {
-    archives jar
-    archives javadocJar
-    archives sourcesJar
-}
 
 signing {
     sign configurations.archives
@@ -46,8 +36,8 @@ uploadArchives {
             description project.description
             url 'https://github.com/int128/gradle-ssh-plugin'
             scm {
-                url 'git@github.com:int128/gradle-ssh-plugin.git'
-                connection 'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
+                url                         'git@github.com:int128/gradle-ssh-plugin.git'
+                connection          'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
                 developerConnection 'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
             }
             licenses {

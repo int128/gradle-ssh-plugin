@@ -1,8 +1,9 @@
 language: java
 jdk: oraclejdk7
+install:
+  - TERM=dumb ./gradlew -i uploadArchives
 script:
-  - TERM=dumb ./gradlew -i build
-  - TERM=dumb ./gradlew -i publishLocal
+  - TERM=dumb ./gradlew -i check
   - ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
   - tee -a ~/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
   - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa localhost true
