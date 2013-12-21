@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.internal
 
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.ChannelShell
 import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
@@ -25,6 +26,33 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     @Override
     Remote getRemote() {
         sessionSpec.remote
+    }
+
+    @Override
+    void shell(Map<String, Object> options, Closure interactions) {
+        log.info('Executing shell')
+
+        def lifecycleManager = new SessionLifecycleManager()
+        try {
+            def channel = session.openChannel('shell') as ChannelShell
+            options.each { k, v -> channel[k] = v }
+
+            def context = DefaultShellContext.create(channel, sshSpec.encoding)
+            context.enableLogging(sshSpec.outputLogLevel)
+
+            interactions.delegate = context
+            interactions.resolveStrategy = Closure.DELEGATE_FIRST
+            interactions()
+
+            lifecycleManager << context
+            context.channel.connect()
+            log.info("Channel #${context.channel.id} has been opened")
+            lifecycleManager.waitForPending()
+            log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
+            lifecycleManager.validateExitStatus()
+        } finally {
+            lifecycleManager.disconnect()
+        }
     }
 
     @Override

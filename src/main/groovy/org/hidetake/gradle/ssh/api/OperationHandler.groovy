@@ -15,6 +15,25 @@ interface OperationHandler {
     Remote getRemote()
 
     /**
+     * Performs a shell operation.
+     * This method blocks until channel is closed.
+     *
+     * @param options properties to configure the channel
+     * @param interactions closure including interactions
+     * @return output value of the command
+     */
+    void shell(Map<String, Object> options, Closure interactions)
+
+    /**
+     * Performs a shell operation.
+     * This method blocks until channel is closed.
+     *
+     * @param interactions closure including interactions
+     * @return output value of the command
+     */
+    void shell(Closure interactions)
+
+    /**
      * Performs an execution operation.
      * This method blocks until channel is closed.
      *
