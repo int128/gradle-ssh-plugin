@@ -13,13 +13,13 @@ remotes {
     }
     sudoWithPassword {
         host = 'localhost'
-        user = "user${(Math.random() * 100) as int}p"
-        password = "pass${(Math.random() * 100) as int}"
+        user = "user${randomInt()}p"
+        password = "pass${randomInt()}"
     }
     sudoNoPassword {
         host = 'localhost'
-        user = "user${(Math.random() * 100) as int}n"
-        password = "pass${(Math.random() * 100) as int}"
+        user = "user${randomInt()}n"
+        password = "pass${randomInt()}"
     }
 }
 
@@ -30,8 +30,8 @@ feature('executing a command') {
 
 task executeCommand(type: SshTask) {
     doFirst {
-        ext.x = (Math.random() * 100) as int
-        ext.y = (Math.random() * 100) as int
+        ext.x = randomInt()
+        ext.y = randomInt()
     }
     session(remotes.localhost) {
         ext.a = execute "expr $x + $y"
@@ -48,8 +48,8 @@ feature('filter hosts by role') {
 
 task executeCommandByRole(type: SshTask) {
     doFirst {
-        ext.x = (Math.random() * 100) as int
-        ext.y = (Math.random() * 100) as int
+        ext.x = randomInt()
+        ext.y = randomInt()
     }
     session(remotes.role('testServers')) {
         ext.a = execute "expr $x + $y"
@@ -66,13 +66,16 @@ feature('executing commands sequentially') {
 
 task executeSequentially(type: SshTask) {
     doFirst {
-        ext.x = (Math.random() * 100) as int
-        ext.y = (Math.random() * 100) as int
+        ext.x = randomInt()
+        ext.y = randomInt()
+        ext.pathA = "/tmp/data-${randomInt()}"
+        ext.pathB = "/tmp/data-${randomInt()}"
     }
     session(remotes.localhost) {
-        ext.a = execute "expr $x + $y | tee /tmp/testdata"
-        ext.b = execute "expr $x + `cat /tmp/testdata`"
-        execute 'rm -v /tmp/testdata'
+        execute "expr $x + $y > $pathA"
+        execute "expr $x + `cat $pathA` > $pathB"
+        ext.a = execute "cat $pathA && rm $pathA"
+        ext.b = execute "cat $pathB && rm $pathB"
     }
     doLast {
         assert a as int == (x + y)
@@ -102,33 +105,33 @@ feature('executing commands concurrently') {
 
 task executeConcurrently(type: SshTask) {
     doFirst {
-        ext.temp0 = UUID.randomUUID().toString()
-        ext.temp1 = UUID.randomUUID().toString()
-        ext.temp2 = UUID.randomUUID().toString()
-        ext.temp3 = UUID.randomUUID().toString()
+        ext.pathA = "/tmp/data-${randomInt()}"
+        ext.pathB = "/tmp/data-${randomInt()}"
+        ext.pathC = "/tmp/data-${randomInt()}"
+        ext.pathD = "/tmp/data-${randomInt()}"
     }
     // task should start sessions concurrently
     session(remotes.localhost) {
-        executeBackground "sleep 3 && date +%s > /tmp/$temp3"
+        executeBackground "sleep 3 && date +%s > $pathA"
     }
     session(remotes.localhost) {
-        executeBackground "sleep 2 && date +%s > /tmp/$temp2"
-        executeBackground "sleep 1 && date +%s > /tmp/$temp1"
-        executeBackground            "date +%s > /tmp/$temp0"
+        executeBackground "sleep 2 && date +%s > $pathB"
+        executeBackground "sleep 1 && date +%s > $pathC"
+        executeBackground            "date +%s > $pathD"
     }
     doLast {
         // all commands should be completed at this point
         sshexec {
             session(remotes.localhost) {
-                ext.time3 = execute("cat /tmp/$temp3 && rm /tmp/$temp3")
-                ext.time2 = execute("cat /tmp/$temp2 && rm /tmp/$temp2")
-                ext.time1 = execute("cat /tmp/$temp1 && rm /tmp/$temp1")
-                ext.time0 = execute("cat /tmp/$temp0 && rm /tmp/$temp0")
+                ext.timeA = execute("cat $pathA && rm $pathA")
+                ext.timeB = execute("cat $pathB && rm $pathB")
+                ext.timeC = execute("cat $pathC && rm $pathC")
+                ext.timeD = execute("cat $pathD && rm $pathD")
             }
         }
-        assert Math.abs((time3 as int) - (time0 as int)) == 3
-        assert Math.abs((time2 as int) - (time0 as int)) == 2
-        assert Math.abs((time1 as int) - (time0 as int)) == 1
+        assert Math.abs((timeA as int) - (timeD as int)) == 3
+        assert Math.abs((timeB as int) - (timeD as int)) == 2
+        assert Math.abs((timeC as int) - (timeD as int)) == 1
     }
 }
 
@@ -280,60 +283,40 @@ task executeShell(type: SshTask) {
 }
 
 
-feature('sending files to the remote host') {
-    task 'storeDataFile'
+feature('sending files to the remote host and acquiring result files') {
+    task 'putAndGetFiles'
 }
 
-task storeDataFile(type: SshTask) {
+task putAndGetFiles(type: SshTask) {
     doFirst {
-        ext.targetFileName = UUID.randomUUID().toString()
-        ext.targetContent = UUID.randomUUID().toString()
+        ext.x = randomInt()
+        ext.y = randomInt()
+
+        buildDir.delete()
         buildDir.mkdir()
-        file("$buildDir/testdata").delete()
-        file("$buildDir/testdata") << targetContent
+        file("$buildDir/X") << x
+        file("$buildDir/Y") << y
+
+        ext.pathX = "/tmp/data-${randomInt()}"
+        ext.pathY = "/tmp/data-${randomInt()}"
+        ext.pathA = "/tmp/data-${randomInt()}"
+        ext.pathB = "/tmp/data-${randomInt()}"
     }
     session(remotes.localhost) {
-        put("$buildDir/testdata", "/tmp/$targetFileName")
+        put("$buildDir/X", pathX)
+        put("$buildDir/Y", pathY)
+        execute("expr `cat $pathX` + `cat $pathY` > $pathA")
+        execute("expr `cat $pathX` - `cat $pathY` > $pathB")
+        get(pathA, "$buildDir/A")
+        get(pathB, "$buildDir/B")
     }
     doLast {
-        sshexec {
-            session(remotes.localhost) {
-                execute("grep '$targetContent' /tmp/$targetFileName")
-                execute("rm -v /tmp/$targetFileName")
-            }
-        }
-        file("$buildDir/testdata").delete()
+        assert file("$buildDir/A").text as int == (x + y)
+        assert file("$buildDir/B").text as int == (x - y)
     }
 }
 
 
-feature('acquiring data files on the remote host') {
-    task 'acquireDataFile'
-}
-
-task acquireDataFile(type: SshTask) {
-    doFirst {
-        ext.x = (Math.random() * 100) as int
-        ext.y = (Math.random() * 100) as int
-        ext.plusFileName = UUID.randomUUID().toString()
-        ext.minusFileName = UUID.randomUUID().toString()
-        buildDir.mkdir()
-    }
-    session(remotes.localhost) {
-        execute("expr $x + $y > /tmp/$plusFileName")
-        execute("expr $x - $y > /tmp/$minusFileName")
-
-        get("/tmp/$plusFileName", buildDir.path)
-        get("/tmp/$minusFileName", buildDir.path)
-
-        execute("rm -v /tmp/$plusFileName")
-        execute("rm -v /tmp/$minusFileName")
-    }
-    doLast {
-        assert file("$buildDir/$plusFileName").text as int == (x + y)
-        assert file("$buildDir/$plusFileName").delete()
-
-        assert file("$buildDir/$minusFileName").text as int == (x - y)
-        assert file("$buildDir/$minusFileName").delete()
-    }
+static randomInt(int max = 10000) {
+    (Math.random() * max) as int
 }
