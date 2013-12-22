@@ -288,6 +288,7 @@ task storeDataFile(type: SshTask) {
     doFirst {
         ext.targetFileName = UUID.randomUUID().toString()
         ext.targetContent = UUID.randomUUID().toString()
+        buildDir.mkdir()
         file("$buildDir/testdata").delete()
         file("$buildDir/testdata") << targetContent
     }
@@ -316,6 +317,7 @@ task acquireDataFile(type: SshTask) {
         ext.y = (Math.random() * 100) as int
         ext.plusFileName = UUID.randomUUID().toString()
         ext.minusFileName = UUID.randomUUID().toString()
+        buildDir.mkdir()
     }
     session(remotes.localhost) {
         execute("expr $x + $y > /tmp/$plusFileName")
