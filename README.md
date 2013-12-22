@@ -116,6 +116,7 @@ In the `session` closure, following methods and properties are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
   * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
+  * `shell` - Opens a shell. This method blocks until the shell is finished. Note that you should provide termination input such as `exit` or `quit` with the interaction closure.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
   * `remote` - Remote host of current session. (Read only)
@@ -133,6 +134,7 @@ Session operation methods will raise an exception if error occurs:
   * `execute` throws an exception if exit status of the remote command is not zero.
   * `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
   * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
+  * `shell` throws an exception if exit status of the shell is not zero.
   * `get` - throws an exception if error occurs.
   * `put` - throws an exception if error occurs.
 
@@ -143,7 +145,7 @@ These methods return value:
 
 #### Command interaction support
 
-`execute` method can take a closure for interaction.
+`execute` and `shell` method can take a closure for interaction.
 ```groovy
 execute('passwd', pty: true) {
   interaction {
