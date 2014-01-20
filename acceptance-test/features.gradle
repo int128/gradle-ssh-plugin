@@ -2,6 +2,7 @@ apply plugin: 'ssh'
 
 ssh {
     config(StrictHostKeyChecking: 'no')
+    identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 }
 
 remotes {
@@ -9,7 +10,6 @@ remotes {
         role 'testServers'
         host = 'localhost'
         user = System.properties['user.name']
-        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
     }
     sudoWithPassword {
         host = 'localhost'
@@ -261,6 +261,51 @@ task deleteUserForSudoNoPassword(type: SshTask) {
     session(remotes.localhost) {
         def username = remotes.sudoNoPassword.user
         execute("sudo rm -v /etc/sudoers.d/$username")
+        execute("sudo userdel -r $username")
+    }
+}
+
+
+feature('using remote specific identity') {
+    task 'useRemoteSpecificIdentity'
+    aggressiveTest 'requires creating an user and setting up key pair'
+}
+
+remotes {
+    dedicatedIdentity {
+        host = 'localhost'
+        user = "user${randomInt()}n"
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa_pass")
+        passphrase = 'pass_phrase'
+    }
+}
+
+task useRemoteSpecificIdentity(type: SshTask) {
+    dependsOn   'createUserWithAuthorizedKey'
+    finalizedBy 'deleteUserWithAuthorizedKey'
+
+    session(remotes.dedicatedIdentity) {
+        ext.whoami = execute('whoami')
+    }
+    doLast {
+        assert whoami == remotes.dedicatedIdentity.user
+    }
+}
+
+task createUserWithAuthorizedKey(type: SshTask) {
+    finalizedBy 'deleteUserWithAuthorizedKey'
+
+    session(remotes.localhost) {
+        def username = remotes.dedicatedIdentity.user
+        execute("sudo useradd -m $username")
+        execute("sudo -u $username mkdir ~$username/.ssh")
+        execute("sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub")
+    }
+}
+
+task deleteUserWithAuthorizedKey(type: SshTask) {
+    session(remotes.localhost) {
+        def username = remotes.dedicatedIdentity.user
         execute("sudo userdel -r $username")
     }
 }
