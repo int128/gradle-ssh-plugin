@@ -5,6 +5,7 @@ install:
 script:
   - TERM=dumb ./gradlew -i check
   - ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
+  - ssh-keygen -t rsa -N 'pass_phrase' -C '' -f ~/.ssh/id_rsa_pass
   - tee -a ~/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
   - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa localhost true
   - TERM=dumb ./gradlew -i -p acceptance-test test aggressiveTest

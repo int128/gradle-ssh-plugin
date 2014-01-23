@@ -15,6 +15,10 @@ class SshSpecSpec extends Specification {
 
     SshSpec spec
 
+    private static final identityA = new File("identityA")
+    private static final identityB = new File("identityB")
+
+
     def setup() {
         spec = new SshSpec()
     }
@@ -152,6 +156,43 @@ class SshSpecSpec extends Specification {
         merged.errorLogLevel == spec2.errorLogLevel
         merged.encoding == spec2.encoding
     }
+
+
+    @Unroll
+    def "compute merged identity in order (#i1 #p1, #i2 #p2)"() {
+        given:
+        def spec1 = createSpec()
+        spec1.with {
+            identity = i1
+            passphrase = p1
+        }
+        def spec2 = createSpec()
+        spec2.with {
+            identity = i2
+            passphrase = p2
+        }
+
+        when:
+        def merged = SshSpec.computeMerged(spec2, spec1)
+
+        then:
+        merged.identity == i0
+        merged.passphrase == p0
+
+        where:
+        i1        | p1   | i2        | p2   || i0        | p0
+        null      | null | null      | null || null      | null
+        identityA | null | null      | null || identityA | null
+        identityA | "pA" | null      | null || identityA | "pA"
+        null      | null | identityA | null || identityA | null
+        null      | null | identityA | "pA" || identityA | "pA"
+        identityA | null | identityB | null || identityB | null
+        identityA | "pA" | identityB | null || identityB | null
+        identityA | null | identityB | "pB" || identityB | "pB"
+        identityA | "pA" | identityB | "pB" || identityB | "pB"
+    }
+
+
 
     private def assertEquals(SshSpec expected, SshSpec actual) {
         assert expected.config == actual.config
