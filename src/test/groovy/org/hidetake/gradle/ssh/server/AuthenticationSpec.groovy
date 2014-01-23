@@ -123,6 +123,28 @@ class AuthenticationSpec extends Specification {
         noExceptionThrown()
     }
 
+    def "public key authentication with global identity"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = successCommandFactory()
+        server.start()
+
+        project.with {
+            ssh {
+                identity = identityFile('id_rsa')
+            }
+        }
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        noExceptionThrown()
+    }
+
     def "public key authentication but denied"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
@@ -164,6 +186,29 @@ class AuthenticationSpec extends Specification {
         noExceptionThrown()
     }
 
+    def "public key authentication with global identity and passphrase"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = successCommandFactory()
+        server.start()
+
+        project.with {
+            ssh {
+                identity = identityFile('id_rsa_pass')
+                passphrase = "gradle"
+            }
+        }
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        noExceptionThrown()
+    }
+
     def "public key authentication with wrong passphrase"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
@@ -180,6 +225,35 @@ class AuthenticationSpec extends Specification {
 
         when:
         project.tasks.testTask.execute()
+
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.cause instanceof JSchException
+        e.cause.cause.message == 'Auth fail'
+    }
+
+    def "remote specific identity overrides global one"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
+            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        }
+        server.commandFactory = Mock(CommandFactory)
+        server.start()
+
+        project.with {
+            ssh {
+                identity = identityFile('id_rsa')
+            }
+            // may be failed because it needs pass-phrase
+            remotes.testServer.identity = identityFile('id_rsa_pass')
+        }
+        defineTestTask()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        0 * server.commandFactory.createCommand(_)
 
         then:
         TaskExecutionException e = thrown()

@@ -35,7 +35,7 @@ remotes {
   web01 {
     host = '192.168.1.101'
     user = 'jenkins'
-    identity = file('config/identity.key')
+    password = System.properties['ssh.password']
   }
 }
 ```
@@ -46,8 +46,8 @@ A remote host instance has following properties:
   * `port` - Port. Default is 22. (Optional)
   * `user` - User name.
   * `password` - Password for password authentication. (Optional)
-  * `identity` - Private key for public-key authentication. (Optional)
-  * `passphrase` - Passphrase for private key when using public-key authentication. (Optional)
+  * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
+  * `passphrase` - Pass phrase for the private key. (Optional)
 
 Also remote hosts can be associated with roles, using `role(name)` like:
 
@@ -209,12 +209,15 @@ Global settings can be defined in the `ssh` closure:
 ```groovy
 ssh {
   dryRun = true
+  identity = file('config/identity.key')
   config(StrictHostKeyChecking: 'no')
 }
 ```
 
 Following properties and methods are available:
 
+  * `identity` - Private key file for public-key authentication. This can be overridden by remote specific one.
+  * `passphrase` - Pass phrase for the private key.
   * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).

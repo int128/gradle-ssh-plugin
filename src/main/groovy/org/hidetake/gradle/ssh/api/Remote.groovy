@@ -42,14 +42,13 @@ class Remote {
     final roles = [] as List<String>
 
     /**
-     * Identity key file.
-     * Leave as null if password authentication.
+     * Identity key file for public-key authentication.
      */
     File identity
 
     /**
-     * Passphrase for private key
-     * Leave as null if password authentication
+     * Pass-phrase for the identity key.
+     * This may be null.
      */
     String passphrase
 

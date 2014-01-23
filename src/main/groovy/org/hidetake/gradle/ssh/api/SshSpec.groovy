@@ -10,6 +10,17 @@ import org.gradle.api.logging.LogLevel
  */
 class SshSpec {
     /**
+     * Identity key file for public-key authentication.
+     */
+    File identity
+
+    /**
+     * Pass-phrase for the identity key.
+     * This may be null.
+     */
+    String passphrase
+
+    /**
      * Dry-run flag.
      * If <code>true</code>, performs no action.
      */
@@ -101,6 +112,14 @@ class SshSpec {
             merged.config.putAll(spec.config)
             merged.sessionSpecs.addAll(spec.sessionSpecs)
         }
+
+        specs.findResult { spec ->
+            spec.identity ? [identity: spec.identity, passphrase: spec.passphrase] : null
+        }?.with { Map map ->
+            merged.identity = map.identity
+            merged.passphrase = map.passphrase
+        }
+
         merged.dryRun = specs.collect { it.dryRun }.findResult(false) { it }
         merged.retryCount = specs.collect { it.retryCount }.findResult(0) { it }
         merged.retryWaitSec = specs.collect { it.retryWaitSec }.findResult(0) { it }
