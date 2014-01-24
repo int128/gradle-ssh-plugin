@@ -120,12 +120,12 @@ class SshSpec {
             merged.passphrase = map.passphrase
         }
 
-        merged.dryRun = specs.findResult(false) { it.dryRun }
-        merged.retryCount = specs.findResult(0) { it.retryCount }
-        merged.retryWaitSec = specs.findResult(0) { it.retryWaitSec }
-        merged.outputLogLevel = specs.findResult(LogLevel.QUIET) { it.outputLogLevel }
-        merged.errorLogLevel = specs.findResult(LogLevel.ERROR) { it.errorLogLevel }
-        merged.encoding = specs.findResult('UTF-8') { it.encoding }
+        merged.dryRun = specs.findResult(false) { it.dryRun } as boolean
+        merged.retryCount = specs.findResult(0) { it.retryCount } as int
+        merged.retryWaitSec = specs.findResult(0) { it.retryWaitSec } as int
+        merged.outputLogLevel = specs.findResult(LogLevel.QUIET) { it.outputLogLevel } as LogLevel
+        merged.errorLogLevel = specs.findResult(LogLevel.ERROR) { it.errorLogLevel } as LogLevel
+        merged.encoding = specs.findResult('UTF-8') { it.encoding } as String
         merged
     }
 }
