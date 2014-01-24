@@ -49,40 +49,55 @@ A remote host instance has following properties:
   * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
   * `passphrase` - Pass phrase for the private key. (Optional)
 
-Also remote hosts can be associated with roles, using `role(name)` like:
+
+### Associate with roles
+
+A remote host can be associated with roles, use `role(name...)`:
 
 ```groovy
 remotes {
   web01 {
-    role('webServers')
+    role('webServers', 'master')
     host = '192.168.1.101'
-    //...
+    user = 'jenkins'
   }
   web02 {
     role('webServers')
     host = '192.168.1.102'
-    //...
-  }
-  web03 {
-    role('webServers')
-    host = '192.168.1.103'
-    //...
+    user = 'jenkins'
   }
 }
 ```
 
-Calling the function `remotes.role()` with roles will return list of remote hosts associated with those roles.
+
+### Manage remote hosts
+
+Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
+the remote host can be accessed by its name.
+Also it can be accessed by its roles using `remotes.role(name...)`.
+
+A remote host can be defined dynamically in runtime. Use `remotes.create(name)`:
+```groovy
+def server = remotes.create('web03') {
+  host = /* given in runtime */
+  user = /* given in runtime */
+}
+sshexec {
+  session(server) {
+  }
+}
+```
 
 
 Define a SSH task
 -----------------
 
-To define a SSH task, write `task(type: SshTask)` like:
+To define a SSH task, use `task(type: SshTask)` like:
 
 ```groovy
 task checkWebServer(type: SshTask) {
   session(remotes.web01) {
-    def pids = execute('pidof nginx').trim().split(/ /)
+    def pids = execute('pidof nginx').split(/ /)
     assert pids.length > 1
   }
 }
@@ -94,6 +109,23 @@ task reloadServers(type: SshTask) {
 }
 ```
 
+Specification of `SshTask` closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+Note that the closure will be called in **evaluation** phase on Gradle.
+
+
+### Task specific settings
+
+In the `SshTask` closure, following properties are available:
+  * `dryRun` - Dry run flag. If true, performs no action.
+  * `outputLogLevel` - Log level of standard output for executing commands.
+  * `errorLogLevel` - Log level of standard error for executing commands.
+  * `encoding` - Encoding of input and output for executing commands.
+
+Also following method is available:
+  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
+
+Task specific setting overrides the global setting.
+
 
 ### Open a session
 
@@ -102,57 +134,41 @@ In the `SshTask` closure, following methods are available:
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
 
 
-#### Task specific settings
-
-Following properties are available:
-  * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
-  * `outputLogLevel` - Log level of standard output for executing commands. Default is according to the convention property.
-  * `errorLogLevel` - Log level of standard error for executing commands. Default is according to the convention property.
-  * `encoding` - Encoding of input and output for executing commands. Default is according to the convention property.
-
-Also following method is available:
-  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
-
-Specification of the closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
-Note that the closure will be called in **evaluation** phase on Gradle.
-
-
-### Execute commands or transfer files
+### Execute a command
 
 In the `session` closure, following methods are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
   * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `shell` - Opens a shell. This method blocks until the shell is finished. Note that you should provide termination input such as `exit` or `quit` with the interaction closure.
-  * `get(remote, local)` - Fetches a file or directory from remote host.
-  * `put(local, remote)` - Sends a file or directory to remote host.
 
 Also following property is available:
   * `remote` - Remote host of current session. (Read only)
 
-Specification of the closure is defined in the [interface OperationHandler](src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
+Specification of `session` closure is defined in the [interface OperationHandler](src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
 Note that the closure will be called in **execution** phase on Gradle.
 
-Above operations accepts option arguments.
-For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
+
+#### Execution settings
+
+These methods accept following settings as map:
+  * `pty: true` - Requests PTY allocation (to execute sudo). Default is false.
 
 
-#### Handle result
+#### Handle the result
 
-Session operation methods will raise an exception if error occurs:
+These methods raise an exception and stop the Gradle if error occurs:
   * `execute` throws an exception if exit status of the remote command is not zero.
   * `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
   * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
   * `shell` throws an exception if exit status of the shell is not zero.
-  * `get` - throws an exception if error occurs.
-  * `put` - throws an exception if error occurs.
 
 These methods return value:
   * `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
   * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
 
 
-#### Interact with stream
+#### Interact with the stream
 
 `execute` and `shell` method can take a closure for interaction.
 ```groovy
@@ -191,6 +207,18 @@ In the action closure, following property is available:
 See also sudo password interactions in the [class DefaultOperationHandler](src/main/groovy/org/hidetake/gradle/ssh/internal/DefaultOperationHandler.groovy).
 
 
+### Transfer a file or directory
+
+In the `session` closure, following methods are available:
+  * `get(remote, local)` - Fetches a file or directory from remote host.
+  * `put(local, remote)` - Sends a file or directory to remote host.
+
+
+#### Handle the result
+
+These methods raise an exception and stop the Gradle if error occurs.
+
+
 Use SSH in the task
 -------------------
 
@@ -208,6 +236,8 @@ task prepareEnvironment {
   }
 }
 ```
+
+In `sshexec` closure, same properties and methods as the `SshTask` are available.
 
 
 Global settings
@@ -236,7 +266,7 @@ Following properties are available:
 Also following method is available:
   * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
 
-Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
+Specification of `ssh` closure is defined in the [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 
 
 Contributions
