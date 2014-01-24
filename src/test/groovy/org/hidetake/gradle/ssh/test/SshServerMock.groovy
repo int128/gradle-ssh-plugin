@@ -44,6 +44,12 @@ class SshServerMock {
         }] as Command
     }
 
+    static commandWithExit(int status) {
+        command { CommandContext c ->
+            c.exitCallback.onExit(status)
+        }
+    }
+
     static SshServer setUpLocalhostServer() {
         SshServer.setUpDefaultServer().with {
             host = 'localhost'

@@ -132,6 +132,7 @@ class SshSpecSpec extends Specification {
         def spec1 = createSpec()
         def spec2 = new SshSpec().with {
             sessionSpecs.addAll([new SessionSpec(Mock(Remote), {-> println "whatever" })])
+            knownHosts = new File("dummy")
             dryRun = true
             retryCount = 2
             retryWaitSec = 2
@@ -149,6 +150,7 @@ class SshSpecSpec extends Specification {
         then:
         merged.config == spec1.config + spec2.config
         merged.sessionSpecs == spec1.sessionSpecs + spec2.sessionSpecs
+        merged.knownHosts == spec2.knownHosts
         merged.dryRun == spec2.dryRun
         merged.retryCount == spec2.retryCount
         merged.retryWaitSec == spec2.retryWaitSec
@@ -196,6 +198,7 @@ class SshSpecSpec extends Specification {
 
     private def assertEquals(SshSpec expected, SshSpec actual) {
         assert expected.config == actual.config
+        assert expected.knownHosts == actual.knownHosts
         assert expected.dryRun == actual.dryRun
         assert expected.retryCount == actual.retryCount
         assert expected.retryWaitSec == actual.retryWaitSec

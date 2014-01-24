@@ -122,7 +122,7 @@ In the `SshTask` closure, following properties are available:
   * `encoding` - Encoding of input and output for executing commands.
 
 Also following method is available:
-  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
+  * `config(key: value)` - _(deprecated; removed in v0.3.0)_ Pass config to the JSch.
 
 Task specific setting overrides the global setting.
 
@@ -249,13 +249,14 @@ Global settings can be defined in the `ssh` closure:
 ssh {
   dryRun = true
   identity = file('config/identity.key')
-  config(StrictHostKeyChecking: 'no')
+  knownHosts = allowAnyHosts
 }
 ```
 
 Following properties are available:
   * `identity` - Private key file for public-key authentication. This can be overridden by remote specific one.
   * `passphrase` - Pass phrase for the private key.
+  * `knownHosts` - Known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
   * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
@@ -264,7 +265,7 @@ Following properties are available:
   * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
 
 Also following method is available:
-  * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
+  * `config(key: value)` - _(deprecated; removed in v0.3.0)_ Pass config to the JSch.
 
 Specification of `ssh` closure is defined in the [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 
