@@ -95,30 +95,39 @@ task reloadServers(type: SshTask) {
 ```
 
 
-### Task configuration
+### Open a session
 
-In the `SshTask` closure, following methods and properties are available:
+In the `SshTask` closure, following methods are available:
   * `session(remote)` - Adds a session to the remote host.
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
-  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
+
+
+#### Task specific settings
+
+Following properties are available:
   * `dryRun` - Dry run flag. If true, performs no action. Default is according to the convention property.
   * `outputLogLevel` - Log level of standard output for executing commands. Default is according to the convention property.
   * `errorLogLevel` - Log level of standard error for executing commands. Default is according to the convention property.
   * `encoding` - Encoding of input and output for executing commands. Default is according to the convention property.
 
+Also following method is available:
+  * `config(key: value)` - Adds an configuration entry. All configurations are given to JSch. This method overwrites entries if same defined in convention.
+
 Specification of the closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 Note that the closure will be called in **evaluation** phase on Gradle.
 
 
-### Session operation
+### Execute commands or transfer files
 
-In the `session` closure, following methods and properties are available:
+In the `session` closure, following methods are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
   * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
   * `shell` - Opens a shell. This method blocks until the shell is finished. Note that you should provide termination input such as `exit` or `quit` with the interaction closure.
   * `get(remote, local)` - Fetches a file or directory from remote host.
   * `put(local, remote)` - Sends a file or directory to remote host.
+
+Also following property is available:
   * `remote` - Remote host of current session. (Read only)
 
 Specification of the closure is defined in the [interface OperationHandler](src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
@@ -128,7 +137,7 @@ Above operations accepts option arguments.
 For instance, adding `pty: true` makes the channel to request PTY allocation (to execute sudo).
 
 
-#### Result handling
+#### Handle result
 
 Session operation methods will raise an exception if error occurs:
   * `execute` throws an exception if exit status of the remote command is not zero.
@@ -143,7 +152,7 @@ These methods return value:
   * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
 
 
-#### Command interaction support
+#### Interact with stream
 
 `execute` and `shell` method can take a closure for interaction.
 ```groovy
@@ -201,8 +210,8 @@ task prepareEnvironment {
 ```
 
 
-Convention properties
----------------------
+Global settings
+---------------
 
 Global settings can be defined in the `ssh` closure:
 
@@ -214,17 +223,18 @@ ssh {
 }
 ```
 
-Following properties and methods are available:
-
+Following properties are available:
   * `identity` - Private key file for public-key authentication. This can be overridden by remote specific one.
   * `passphrase` - Pass phrase for the private key.
-  * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
   * `dryRun` - Dry run flag. If true, performs no action. Default is false.
   * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
   * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
   * `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
   * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
   * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
+
+Also following method is available:
+  * `config(key: value)` - Adds configuration entries. All configurations are passed to JSch.
 
 Specification of the closure is defined in [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
 
