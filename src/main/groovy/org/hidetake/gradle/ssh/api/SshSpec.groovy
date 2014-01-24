@@ -12,13 +12,13 @@ class SshSpec {
     /**
      * Identity key file for public-key authentication.
      */
-    File identity
+    File identity = null
 
     /**
      * Pass-phrase for the identity key.
      * This may be null.
      */
-    String passphrase
+    String passphrase = null
 
     /**
      * Dry-run flag.
