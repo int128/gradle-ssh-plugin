@@ -1,11 +1,15 @@
 language: java
 jdk: oraclejdk7
 install:
-  - TERM=dumb ./gradlew -i uploadArchives
+  - ./gradlew uploadArchives
 script:
-  - TERM=dumb ./gradlew -i check
-  - ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
-  - ssh-keygen -t rsa -N 'pass_phrase' -C '' -f ~/.ssh/id_rsa_pass
-  - tee -a ~/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
-  - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa localhost true
-  - TERM=dumb ./gradlew -i -p acceptance-test test aggressiveTest
+  - ./gradlew check
+after_script:
+  - ./.travis.sh publish_report
+  - ./.travis.sh acceptance_test
+
+env:
+  global:
+    - TERM=dumb
+    - secure: "e2x0ZQEtmjT8JC5FmSjRARfd8NKLMICuCig6xoBttrbcdW0C0vRouqWzuz20nwrEUHsaG7F09FcirbtVzGpBgJAjSSO1J3g8QkmD3n/KeKsV2r2cEMLpcEH9CIUjudSPAixEQZ/Nop5/7m97NrMQxupeGk0XoU6ginmmk2wUfu0="
+    - secure: "aejx3iksaHn/Kl8fKLR6E/M89Ief0fqb6C/y4lzdOn4zM8nB7E1hV1PUOnSDAb5JUdMw1fzaw2tCyIpml2yskDPzQQUyAFUEypX0zLOrU2SV+R35Ds2iyOIZUZnPY5P+ORtXzVZBAUX/ZQGoCyh7EetKwNAku9xiaF1/A+KZ5so="
