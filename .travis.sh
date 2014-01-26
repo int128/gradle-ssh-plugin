@@ -9,11 +9,7 @@ function acceptance_test () {
 }
 
 function publish_report () {
-    case "$TRAVIS_BRANCH" in
-    "master" | "travis")
-        product_version="$(grep version= gradle.properties | cut -d= -f2)"
-        [ -n "$product_version" ]
-
+    if [ "$TRAVIS_BRANCH" = "master" ]; then
         set +x
         echo "machine github.com" >> ~/.netrc
         echo "login $GH_LOGIN"    >> ~/.netrc
@@ -25,17 +21,15 @@ function publish_report () {
         git clone --quiet --branch=gh-pages "https://github.com/$TRAVIS_REPO_SLUG.git" gh-pages
         cd gh-pages
 
-        git rm -r "build/$product_version" || true
-        mkdir -p "build/$product_version"
-        cp -a ../build/reports "build/$product_version"
-        cp -a ../build/docs    "build/$product_version"
-        git add "build/$product_version"
+        git rm -r build || true
+        mkdir -p build
+        cp -a ../build/reports ../build/docs build
+        git add build
         git commit -m "Automatically updated (Travis build $TRAVIS_BUILD_NUMBER)"
         git push origin gh-pages
 
         rm -v ~/.netrc
-        ;;
-    esac
+    fi
 }
 
 "$@"
