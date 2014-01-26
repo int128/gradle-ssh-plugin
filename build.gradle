@@ -13,7 +13,7 @@ dependencies {
 }
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {
-    from "${buildDir}/javadoc"
+    from "${buildDir}/docs/groovydoc"
     classifier = 'javadoc'
 }
 
