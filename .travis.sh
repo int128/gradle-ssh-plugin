@@ -9,7 +9,7 @@ function acceptance_test () {
 }
 
 function publish_report () {
-    if [ "$TRAVIS_BRANCH" = "master" ]; then
+    if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         set +x
         echo "machine github.com" >> ~/.netrc
         echo "login $GH_LOGIN"    >> ~/.netrc
@@ -21,10 +21,11 @@ function publish_report () {
         git clone --quiet --branch=gh-pages "https://github.com/$TRAVIS_REPO_SLUG.git" gh-pages
         cd gh-pages
 
-        git rm -r build || true
-        mkdir -p build
-        cp -a ../build/reports ../build/docs build
-        git add build
+        git rm -r "build/$TRAVIS_BRANCH" || true
+        mkdir -p "build/$TRAVIS_BRANCH"
+        cp -a ../build/reports "build/$TRAVIS_BRANCH"
+        cp -a ../build/docs    "build/$TRAVIS_BRANCH"
+        git add "build/$TRAVIS_BRANCH"
         git commit -m "Automatically updated (Travis build $TRAVIS_BUILD_NUMBER)"
         git push origin gh-pages
 
