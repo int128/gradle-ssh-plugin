@@ -4,9 +4,9 @@ install:
   - ./gradlew uploadArchives
 script:
   - ./gradlew check
+  - ./.travis.sh acceptance_test
 after_script:
   - ./.travis.sh publish_report
-  - ./.travis.sh acceptance_test
 
 env:
   global:
