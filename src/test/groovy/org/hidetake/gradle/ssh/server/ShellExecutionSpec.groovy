@@ -26,7 +26,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             apply plugin: 'ssh'
             ssh {
-                config(StrictHostKeyChecking: 'no')
+                knownHosts = allowAnyHosts
             }
             remotes {
                 testServer {

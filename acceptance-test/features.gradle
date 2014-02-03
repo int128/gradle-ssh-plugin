@@ -1,7 +1,6 @@
 apply plugin: 'ssh'
 
 ssh {
-    config(StrictHostKeyChecking: 'no')
     identity = file("${System.properties['user.home']}/.ssh/id_rsa")
 }
 

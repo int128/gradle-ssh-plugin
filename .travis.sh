@@ -4,7 +4,14 @@ function acceptance_test () {
     ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
     ssh-keygen -t rsa -N 'pass_phrase' -C '' -f ~/.ssh/id_rsa_pass
     tee -a ~/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
-    ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa localhost true
+
+    ssh -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=~/.ssh/known_hosts \
+        -o HashKnownHosts=no \
+        -o HostKeyAlgorithms=ssh-rsa \
+        -i ~/.ssh/id_rsa localhost true
+    grep localhost ~/.ssh/known_hosts
+
     ./gradlew -i -p acceptance-test test aggressiveTest
 }
 

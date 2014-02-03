@@ -9,6 +9,7 @@ class TestDataHelper {
     static SshSpec createSpec() {
         new SshSpec().with {
             sessionSpecs.addAll([new SessionSpec(createRemote(), {-> println "whatever" })])
+            knownHosts = new File("known_hosts")
             dryRun = false
             retryCount = 1
             retryWaitSec = 1

@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.internal.DryRunOperationHandler
-import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 class SshIntegrationTest extends Specification {
@@ -52,7 +51,7 @@ class SshIntegrationTest extends Specification {
             apply plugin: 'ssh'
 
             ssh {
-                config StrictHostKeyChecking: false
+                knownHosts = allowAnyHosts
             }
 
             remotes {

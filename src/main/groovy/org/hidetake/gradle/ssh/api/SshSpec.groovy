@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.api
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.logging.LogLevel
 
 /**
@@ -8,7 +9,10 @@ import org.gradle.api.logging.LogLevel
  * @author hidetake.org
  *
  */
+@Slf4j
 class SshSpec {
+    static final allowAnyHosts = new File(UUID.randomUUID().toString())
+
     /**
      * Identity key file for public-key authentication.
      */
@@ -19,6 +23,12 @@ class SshSpec {
      * This may be null.
      */
     String passphrase = null
+
+    /**
+     * Known hosts file.
+     * If {@link #allowAnyHosts}, strict host key checking is turned off.
+     */
+    File knownHosts = null
 
     /**
      * Dry-run flag.
@@ -53,6 +63,8 @@ class SshSpec {
 
     /**
      * JSch configuration.
+     *
+     * @deprecated removed in v0.3.0
      */
     final config = [:] as Map<String, Object>
 
@@ -68,9 +80,11 @@ class SshSpec {
      * </pre>
      *
      * @param pairs key value pairs of configuration
+     * @deprecated removed in v0.3.0
      */
     void config(Map<String, Object> pairs) {
         assert pairs != null, 'pairs should be set'
+        log.warn("Deprecated: config() in ssh closure will be removed in v0.3.0")
         config.putAll(pairs)
     }
 
@@ -120,6 +134,8 @@ class SshSpec {
             merged.passphrase = map.passphrase
         }
 
+        merged.knownHosts = specs.findResult(
+                new File("${System.properties['user.home']}/.ssh/known_hosts")) { it.knownHosts } as File
         merged.dryRun = specs.findResult(false) { it.dryRun } as boolean
         merged.retryCount = specs.findResult(0) { it.retryCount } as int
         merged.retryWaitSec = specs.findResult(0) { it.retryWaitSec } as int
