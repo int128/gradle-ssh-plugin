@@ -12,7 +12,8 @@ function acceptance_test () {
         -i ~/.ssh/id_rsa localhost true
     grep localhost ~/.ssh/known_hosts
 
-    ./gradlew -i -p acceptance-test test aggressiveTest
+    mkdir -p build/reports
+    ./gradlew -i -s -p acceptance-test test aggressiveTest > "build/reports/acceptance-test.log" 2>&1
 }
 
 function publish_report () {
