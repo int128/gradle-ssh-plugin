@@ -10,7 +10,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
-import org.hidetake.gradle.ssh.internal.DefaultOperationHandler
+import org.hidetake.gradle.ssh.internal.operation.DefaultHandler
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
@@ -212,7 +212,7 @@ class SudoCommandExecutionSpec extends Specification {
     @Unroll
     def "logging, #description"() {
         given:
-        def logger = GroovySpy(Logging.getLogger(DefaultOperationHandler).class, global: true) {
+        def logger = GroovySpy(Logging.getLogger(DefaultHandler).class, global: true) {
             isEnabled(LogLevel.INFO) >> true
         }
 

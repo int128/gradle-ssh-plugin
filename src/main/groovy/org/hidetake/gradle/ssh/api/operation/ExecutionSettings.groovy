@@ -12,4 +12,6 @@ class ExecutionSettings {
     boolean pty = false
 
     boolean logging = true
+
+    static final DEFAULT = new ExecutionSettings([:])
 }

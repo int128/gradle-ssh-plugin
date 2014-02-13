@@ -1,8 +1,9 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.internal.operation.Handler
+import org.hidetake.gradle.ssh.internal.operation.OperationProxy
 
 /**
  * Dry run implementation of {@link SshService}.
@@ -12,14 +13,14 @@ import org.hidetake.gradle.ssh.api.SshSpec
  */
 @Singleton
 class DryRunSshService implements SshService {
-    def handlerFactory = { SessionSpec spec -> new DryRunOperationHandler(spec) }
+    protected handler = [:] as Handler
 
     @Override
     void execute(SshSpec sshSpec) {
         assert sshSpec.dryRun == Boolean.TRUE, 'dryRun should be true'
 
         sshSpec.sessionSpecs.each { spec ->
-            handlerFactory(spec).with(spec.operationClosure)
+            new OperationProxy(handler, spec.remote).with(spec.operationClosure)
         }
     }
 }

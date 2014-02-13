@@ -10,4 +10,6 @@ import groovy.transform.Immutable
 @Immutable
 class ShellSettings {
     boolean logging = true
+
+    static final DEFAULT = new ShellSettings([:])
 }

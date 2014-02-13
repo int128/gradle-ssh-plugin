@@ -16,7 +16,7 @@ class SessionSpec {
     final Remote remote
 
     /**
-     * Closure for {@link OperationHandler}.
+     * Closure for {@link Operation}.
      */
     final Closure operationClosure
 }

@@ -6,6 +6,8 @@ import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 import org.hidetake.gradle.ssh.internal.session.SessionManager
+import org.hidetake.gradle.ssh.internal.operation.DefaultHandler
+import org.hidetake.gradle.ssh.internal.operation.OperationProxy
 
 /**
  * Default implementation of {@link SshService}.
@@ -27,7 +29,8 @@ class DefaultSshService implements SshService {
                 def session = sessionManager.create(sessionSpec.remote)
 
                 def operation = sessionSpec.operationClosure
-                operation.delegate = new DefaultOperationHandler(sshSpec, sessionSpec, session, channelManager)
+                def handler = new DefaultHandler(sshSpec, sessionSpec, session, channelManager)
+                operation.delegate = new OperationProxy(handler, sessionSpec.remote)
                 operation.resolveStrategy = Closure.DELEGATE_FIRST
                 operation
             }.each {

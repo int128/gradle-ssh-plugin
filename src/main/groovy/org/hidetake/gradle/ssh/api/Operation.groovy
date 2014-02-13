@@ -6,7 +6,7 @@ package org.hidetake.gradle.ssh.api
  * @author hidetake.org
  *
  */
-interface OperationHandler {
+interface Operation {
     /**
      * Returns remote host for current operation.
      *
@@ -18,11 +18,11 @@ interface OperationHandler {
      * Performs a shell operation.
      * This method blocks until channel is closed.
      *
-     * @param options properties to configure the channel
+     * @param settings shell settings
      * @param interactions closure including interactions
      * @return output value of the command
      */
-    void shell(Map<String, Object> options, Closure interactions)
+    void shell(HashMap settings, Closure interactions)
 
     /**
      * Performs a shell operation.
@@ -56,22 +56,22 @@ interface OperationHandler {
      * Performs an execution operation.
      * This method blocks until channel is closed.
      *
-     * @param options properties to configure the channel
+     * @param settings execution settings
      * @param command
      * @return output value of the command
      */
-    String execute(Map<String, Object> options, String command)
+    String execute(HashMap settings, String command)
 
     /**
      * Performs an execution operation.
      * This method blocks until channel is closed.
      *
-     * @param options properties to configure the channel
+     * @param settings execution settings
      * @param command
      * @param interactions closure including interactions
      * @return output value of the command
      */
-    String execute(Map<String, Object> options, String command, Closure interactions)
+    String execute(HashMap settings, String command, Closure interactions)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -85,10 +85,10 @@ interface OperationHandler {
      * Performs a sudo operation, explicitly providing password for the sudo user.
      * This method blocks until channel is closed
      *
-     * @param options properties to configure the channel
+     * @param settings execution settings
      * @param command
      */
-    String executeSudo(Map<String, Object> options, String command)
+    String executeSudo(HashMap settings, String command)
 
     /**
      * Performs an execution operation.
@@ -102,10 +102,10 @@ interface OperationHandler {
      * Performs an execution operation.
      * This method returns immediately and executes the command concurrently.
      *
-     * @param options properties to configure the channel
+     * @param settings execution settings
      * @param command
      */
-    CommandContext executeBackground(Map<String, Object> options, String command)
+    CommandContext executeBackground(HashMap settings, String command)
 
     /**
      * Performs a GET operation.
@@ -117,16 +117,6 @@ interface OperationHandler {
     void get(String remote, String local)
 
     /**
-     * Performs a GET operation.
-     * This method blocks until channel is closed.
-     *
-     * @param options properties to configure the channel
-     * @param remote
-     * @param local
-     */
-    void get(Map<String, Object> options, String remote, String local)
-
-    /**
      * Performs a PUT operation.
      * This method blocks until channel is closed.
      *
@@ -134,14 +124,4 @@ interface OperationHandler {
      * @param remote
      */
     void put(String local, String remote)
-
-    /**
-     * Performs a PUT operation.
-     * This method blocks until channel is closed.
-     *
-     * @param options properties to configure the channel
-     * @param local
-     * @param remote
-     */
-    void put(Map<String, Object> options, String local, String remote)
 }

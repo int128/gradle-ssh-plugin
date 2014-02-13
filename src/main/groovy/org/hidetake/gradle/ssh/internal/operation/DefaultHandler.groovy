@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.internal.operation
 
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
@@ -7,35 +7,31 @@ import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.*
+import org.hidetake.gradle.ssh.api.CommandContext
+import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.internal.DefaultCommandContext
+import org.hidetake.gradle.ssh.internal.DefaultShellContext
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
- * Default implementation of {@link OperationHandler}.
+ * Default implementation of {@link org.hidetake.gradle.ssh.api.Operation}.
  *
  * @author hidetake.org
  *
  */
 @TupleConstructor
 @Slf4j
-class DefaultOperationHandler extends AbstractOperationHandler {
+class DefaultHandler implements Handler {
     final SshSpec sshSpec
     final SessionSpec sessionSpec
     final Session session
     final ChannelManager globalChannelManager
 
     @Override
-    Remote getRemote() {
-        sessionSpec.remote
-    }
-
-    @Override
-    void shell(Map<String, Object> options, Closure interactions) {
-        log.info("Execute a shell with options ($options)")
-
-        def settings = new ShellSettings(logging: options.logging)
+    void shell(ShellSettings settings, Closure interactions) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
@@ -60,10 +56,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
-    String execute(Map<String, Object> options, String command, Closure interactions) {
-        log.info("Execute a command (${command}) with options ($options)")
-
-        def settings = new ExecutionSettings(pty: options.pty, logging: options.logging)
+    String execute(ExecutionSettings settings, String command, Closure interactions) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('exec') as ChannelExec
@@ -95,12 +88,10 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
-    String executeSudo(Map<String, Object> options, String command) {
-        log.info("Execute a command ($command) with sudo support and options ($options)")
-
+    String executeSudo(ExecutionSettings settings, String command) {
         def prompt = UUID.randomUUID().toString()
         def lines = [] as List<String>
-        execute(options, "sudo -S -p '$prompt' $command") {
+        execute(settings, "sudo -S -p '$prompt' $command") {
             interaction {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Sending password for sudo authentication on channel #${channel.id}")
@@ -125,10 +116,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
-    CommandContext executeBackground(Map<String, Object> options, String command) {
-        log.info("Execute a command ($command) in background")
-
-        def settings = new ExecutionSettings(pty: options.pty, logging: options.logging)
+    CommandContext executeBackground(ExecutionSettings settings, String command) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         channel.pty = settings.pty
@@ -146,10 +134,8 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
-    void get(Map<String, Object> options, String remote, String local) {
-        log.info("Get a remote file (${remote}) to local (${local})")
+    void get(String remote, String local) {
         def channel = session.openChannel('sftp') as ChannelSftp
-
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
@@ -161,10 +147,8 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     }
 
     @Override
-    void put(Map<String, Object> options, String local, String remote) {
-        log.info("Put a local file (${local}) to remote (${remote})")
+    void put(String local, String remote) {
         def channel = session.openChannel('sftp') as ChannelSftp
-
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")

@@ -1,16 +1,19 @@
-package org.hidetake.gradle.ssh.integration
+package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
-import org.hidetake.gradle.ssh.internal.DryRunOperationHandler
-import org.hidetake.gradle.ssh.internal.DryRunSshService
+import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.internal.operation.Handler
 import spock.lang.Specification
 
-class DryRunOperationHandlerSpec extends Specification {
+import static org.hidetake.gradle.ssh.internal.operation.OperationProxy.NULL_CLOSURE
+
+class DryRunSshServiceSpec extends Specification {
 
     Project project
-    DryRunOperationHandler handler
+    Handler handler
 
     def setup() {
         project = ProjectBuilder.builder().build()
@@ -30,8 +33,8 @@ class DryRunOperationHandlerSpec extends Specification {
             }
         }
 
-        handler = Spy(DryRunOperationHandler)
-        DryRunSshService.instance.handlerFactory = { handler }
+        handler = Mock(Handler)
+        DryRunSshService.instance.handler = handler
     }
 
 
@@ -50,7 +53,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell([:], _)
+        1 * handler.shell(ShellSettings.DEFAULT, _)
     }
 
     def "execute a command"() {
@@ -65,7 +68,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute([:], 'ls -l', _)
+        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', NULL_CLOSURE)
     }
 
     def "execute a command with options"() {
@@ -80,7 +83,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute([pty: true], 'ls -l', _)
+        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', NULL_CLOSURE)
     }
 
     def "execute a command with an interaction closure"() {
@@ -98,7 +101,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute([:], 'ls -l', _)
+        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', _)
     }
 
     def "execute a command with options and an interaction closure"() {
@@ -116,7 +119,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute([pty: true], 'ls -l', _)
+        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', _)
     }
 
     def "execute a command in background"() {
@@ -131,7 +134,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground([:], 'ls -l')
+        1 * handler.executeBackground(ExecutionSettings.DEFAULT, 'ls -l')
     }
 
     def "execute a command with options in background"() {
@@ -146,7 +149,7 @@ class DryRunOperationHandlerSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground([pty: true], 'ls -l')
+        1 * handler.executeBackground(new ExecutionSettings(pty: true), 'ls -l')
     }
 
 }
