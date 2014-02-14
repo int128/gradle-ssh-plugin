@@ -30,7 +30,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     void shell(Map<String, Object> options, Closure interactions) {
-        log.info('Executing shell')
+        log.info("Execute a shell with options ($options)")
 
         def lifecycleManager = new SessionLifecycleManager()
         try {
@@ -57,7 +57,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     String execute(Map<String, Object> options, String command, Closure interactions) {
-        log.info("Executing command: ${command}")
+        log.info("Execute a command (${command}) with options ($options)")
 
         def lifecycleManager = new SessionLifecycleManager()
         try {
@@ -89,7 +89,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     String executeSudo(Map<String, Object> options, String command) {
-        log.info("Executing command with sudo support: ${command}")
+        log.info("Execute a command ($command) with sudo support and options ($options)")
 
         def prompt = UUID.randomUUID().toString()
         def lines = [] as List<String>
@@ -119,7 +119,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     CommandContext executeBackground(Map<String, Object> options, String command) {
-        log.info("Executing command in background: ${command}")
+        log.info("Execute a command ($command) in background")
 
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
@@ -137,7 +137,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     void get(Map<String, Object> options, String remote, String local) {
-        log.info("Get: ${remote} -> ${local}")
+        log.info("Get a remote file (${remote}) to local (${local})")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {
@@ -152,7 +152,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
     @Override
     void put(Map<String, Object> options, String local, String remote) {
-        log.info("Put: ${local} -> ${remote}")
+        log.info("Put a local file (${local}) to remote (${remote})")
         def channel = session.openChannel('sftp') as ChannelSftp
         options.each { k, v -> channel[k] = v }
         try {

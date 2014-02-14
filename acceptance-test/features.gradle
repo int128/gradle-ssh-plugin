@@ -98,6 +98,22 @@ task testEnvironmentOfCommand(type: SshTask) {
 }
 
 
+feature('executing a command with PTY allocation') {
+    task 'executeCommandWithPty'
+}
+
+task executeCommandWithPty(type: SshTask) {
+    session(remotes.localhost) {
+        executeBackground("env | grep -v SSH_TTY")
+        executeBackground("env | grep SSH_TTY", pty: true)
+    }
+    session(remotes.localhost) {
+        execute("env | grep -v SSH_TTY")
+        execute("env | grep SSH_TTY", pty: true)
+    }
+}
+
+
 feature('executing commands concurrently') {
     task 'executeConcurrently'
 }

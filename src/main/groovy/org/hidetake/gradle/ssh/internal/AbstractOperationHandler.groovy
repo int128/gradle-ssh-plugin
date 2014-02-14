@@ -21,7 +21,7 @@ abstract class AbstractOperationHandler implements OperationHandler {
 
     @Override
     String execute(Map<String, Object> options, String command) {
-        execute([:], command, {})
+        execute(options, command, {})
     }
 
     @Override
