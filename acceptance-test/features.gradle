@@ -347,15 +347,15 @@ feature('sending files to the remote host and acquiring result files') {
     task 'putAndGetFiles'
 }
 
-task putAndGetFiles(type: SshTask) {
+task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
     doFirst {
         ext.x = randomInt()
         ext.y = randomInt()
 
-        buildDir.delete()
-        buildDir.mkdir()
-        file("$buildDir/X") << x
-        file("$buildDir/Y") << y
+        ext.localX = file("$buildDir/local-${randomInt()}") << x
+        ext.localY = file("$buildDir/local-${randomInt()}") << y
+        ext.localA = file("$buildDir/local-${randomInt()}")
+        ext.localB = file("$buildDir/local-${randomInt()}")
 
         ext.pathX = "/tmp/data-${randomInt()}"
         ext.pathY = "/tmp/data-${randomInt()}"
@@ -363,19 +363,27 @@ task putAndGetFiles(type: SshTask) {
         ext.pathB = "/tmp/data-${randomInt()}"
     }
     session(remotes.localhost) {
-        put("$buildDir/X", pathX)
-        put("$buildDir/Y", pathY)
+        put(localX.path, pathX)
+        put(localY.path, pathY)
         execute("expr `cat $pathX` + `cat $pathY` > $pathA")
         execute("expr `cat $pathX` - `cat $pathY` > $pathB")
-        get(pathA, "$buildDir/A")
-        get(pathB, "$buildDir/B")
+        get(pathA, localA.path)
+        get(pathB, localB.path)
+        execute("rm -v $pathX $pathY $pathA $pathB")
     }
     doLast {
-        assert file("$buildDir/A").text as int == (x + y)
-        assert file("$buildDir/B").text as int == (x - y)
+        assert localA.text as int == (x + y)
+        assert localB.text as int == (x - y)
     }
 }
 
+
+task setupBuildDir(type: Delete) {
+    delete buildDir
+    doLast {
+        buildDir.mkdir()
+    }
+}
 
 static randomInt(int max = 10000) {
     (Math.random() * max) as int
