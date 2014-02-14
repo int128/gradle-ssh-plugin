@@ -207,11 +207,11 @@ In the action closure, following property is available:
 See also sudo password interactions in the [class DefaultOperationHandler](src/main/groovy/org/hidetake/gradle/ssh/internal/DefaultOperationHandler.groovy).
 
 
-### Transfer a file or directory
+### Transfer files
 
 In the `session` closure, following methods are available:
-  * `get(remote, local)` - Fetches a file or directory from remote host.
-  * `put(local, remote)` - Sends a file or directory to remote host.
+  * `get(remote, local)` - Fetches a file from remote host.
+  * `put(local, remote)` - Sends a file to remote host.
 
 
 #### Handle the result
