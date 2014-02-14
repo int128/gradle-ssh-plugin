@@ -25,34 +25,34 @@ class DryRunOperationHandler extends AbstractOperationHandler {
 
     @Override
     void shell(Map<String, Object> options, Closure interactions) {
-        log.info('Executing shell')
+        log.info("Execute a shell with options ($options)")
     }
 
     @Override
     String execute(Map<String, Object> options, String command, Closure interactions) {
-        log.info("Executing command: ${command}")
+        log.info("Execute a command (${command}) with options ($options)")
         null
     }
 
     @Override
     String executeSudo(Map options, String command) {
-        log.info("Executing command with sudo support: ${command}")
+        log.info("Execute a command ($command) with sudo support and options ($options)")
         null
     }
 
     @Override
     CommandContext executeBackground(Map<String, Object> options, String command) {
-        log.info("Executing command in background: ${command}")
+        log.info("Execute a command ($command) with options ($options) in background")
         new DryRunCommandContext()
     }
 
     @Override
     void get(Map<String, Object> options, String remote, String local) {
-        log.info("Get: ${remote} -> ${local}")
+        log.info("Get a remote file (${remote}) to local (${local})")
     }
 
     @Override
     void put(Map<String, Object> options, String local, String remote) {
-        log.info("Put: ${local} -> ${remote}")
+        log.info("Put a local file (${local}) to remote (${remote})")
     }
 }
