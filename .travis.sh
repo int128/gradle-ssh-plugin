@@ -1,6 +1,8 @@
 #!/bin/bash -xe
 
 function acceptance_test () {
+    exec > >(tee "build/reports/acceptance-test.log") 2>&1
+
     ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
     ssh-keygen -t rsa -N 'pass_phrase' -C '' -f ~/.ssh/id_rsa_pass
     tee -a ~/.ssh/authorized_keys < ~/.ssh/id_rsa.pub
@@ -13,7 +15,7 @@ function acceptance_test () {
     grep localhost ~/.ssh/known_hosts
 
     mkdir -p build/reports
-    ./gradlew -i -s -p acceptance-test test aggressiveTest > "build/reports/acceptance-test.log" 2>&1
+    ./gradlew -i -s -p acceptance-test test aggressiveTest
 }
 
 function publish_report () {
