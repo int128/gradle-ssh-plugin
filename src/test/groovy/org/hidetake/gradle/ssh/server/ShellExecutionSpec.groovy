@@ -4,12 +4,16 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.SshTask
+import org.hidetake.gradle.ssh.internal.DefaultOperationHandler
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class ShellExecutionSpec extends Specification {
 
@@ -92,6 +96,79 @@ class ShellExecutionSpec extends Specification {
         then:
         TaskExecutionException e = thrown()
         e.cause.message.contains('exit status 1')
+    }
+
+    @Unroll
+    def "logging, #description"() {
+        given:
+        def logger = GroovySpy(Logging.getLogger(DefaultOperationHandler).class, global: true) {
+            isEnabled(LogLevel.INFO) >> true
+        }
+
+        project.with {
+            ssh {
+                outputLogLevel = LogLevel.INFO
+            }
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    shell {}
+                }
+            }
+        }
+
+        server.shellFactory = Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << outputValue }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        logMessages.each { 1 * logger.log(LogLevel.INFO, it) }
+
+        where:
+        description            | outputValue                  | logMessages
+        'a line'               | 'some result'                | ['some result']
+        'a line with line sep' | 'some result\n'              | ['some result']
+        'lines'                | 'some result\nsecond line'   | ['some result', 'second line']
+        'lines with line sep'  | 'some result\nsecond line\n' | ['some result', 'second line']
+    }
+
+    @Unroll
+    def "toggle logging = #logging"() {
+        given:
+        def logger = GroovySpy(Logging.getLogger(DefaultOperationHandler).class, global: true) {
+            isEnabled(_) >> true
+        }
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    shell(logging: logging) {}
+                }
+            }
+        }
+
+        server.shellFactory = Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        (logging ? 1 : 0) * logger.log(_, 'some message')
+
+        where:
+        logging << [true, false]
     }
 
 }
