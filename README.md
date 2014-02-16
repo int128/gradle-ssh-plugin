@@ -24,6 +24,8 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
+Use [project template](https://github.com/int128/gradle-ssh) for quick start.
+
 
 Define remote hosts
 -------------------
