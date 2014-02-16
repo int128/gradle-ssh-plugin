@@ -3,13 +3,11 @@ Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugi
 
 This plugin provides remote command execution and file transfer capabilities.
 
-See also [test features](acceptance-test/features.gradle) and [release note](https://github.com/int128/gradle-ssh-plugin/releases).
-
 
 How to use
 ----------
 
-Add a dependency and apply it in your build.gradle:
+Add the plugin dependency into your build.gradle:
 
 ```groovy
 buildscript {
@@ -25,6 +23,19 @@ apply plugin: 'ssh'
 ```
 
 Use [project template](https://github.com/int128/gradle-ssh) for quick start.
+See [release notes](https://github.com/int128/gradle-ssh-plugin/releases).
+
+
+Features
+--------
+
+  * Integrated with Gradle
+  * Password and public key authentication
+  * Strict host key checking with a known-hosts file
+  * Remote command execution
+  * Stream interaction with a remote command or shell
+  * Providing a pass-phrase for the sudo prompt
+  * File transfer via SFTP
 
 
 Define remote hosts
@@ -43,7 +54,6 @@ remotes {
 ```
 
 A remote host instance has following properties:
-
   * `host` - Hostname or IP address
   * `port` - Port. Default is 22. (Optional)
   * `user` - User name.
@@ -55,7 +65,6 @@ A remote host instance has following properties:
 ### Associate with roles
 
 A remote host can be associated with roles, use `role(name...)`:
-
 ```groovy
 remotes {
   web01 {
@@ -111,8 +120,7 @@ task reloadServers(type: SshTask) {
 }
 ```
 
-Specification of `SshTask` closure is defined in the [class SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
-Note that the closure will be called in **evaluation** phase on Gradle.
+Note that closure of a task is called in **evaluation** phase on Gradle.
 
 
 ### Task specific settings
@@ -135,6 +143,8 @@ In the `SshTask` closure, following methods are available:
   * `session(remote)` - Adds a session to the remote host.
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
 
+Note that closure of a session is called in **execution** phase on Gradle.
+
 
 ### Execute a command
 
@@ -146,9 +156,6 @@ In the `session` closure, following methods are available:
 
 Also following property is available:
   * `remote` - Remote host of current session. (Read only)
-
-Specification of `session` closure is defined in the [interface OperationHandler](src/main/groovy/org/hidetake/gradle/ssh/api/OperationHandler.groovy).
-Note that the closure will be called in **execution** phase on Gradle.
 
 
 #### Execution settings
@@ -206,8 +213,6 @@ Rules will be evaluated in order. First rule has the highest priority.
 In the action closure, following property is available:
   * `standardInput` - Output stream to the remote command. (Read only)
 
-See also sudo password interactions in the [class DefaultOperationHandler](src/main/groovy/org/hidetake/gradle/ssh/internal/DefaultOperationHandler.groovy).
-
 
 ### Transfer files
 
@@ -218,7 +223,7 @@ In the `session` closure, following methods are available:
 
 #### Handle the result
 
-These methods raise an exception and stop the Gradle if error occurs.
+These methods raise an exception and stop Gradle if error occurs.
 
 
 Use SSH in the task
@@ -239,7 +244,7 @@ task prepareEnvironment {
 }
 ```
 
-In `sshexec` closure, same properties and methods as the `SshTask` are available.
+In `sshexec` closure, same properties and methods as `SshTask` are available.
 
 
 Global settings
@@ -269,10 +274,9 @@ Following properties are available:
 Also following method is available:
   * `config(key: value)` - _(deprecated; removed in v0.3.0)_ Pass config to the JSch.
 
-Specification of `ssh` closure is defined in the [SshSpec](src/main/groovy/org/hidetake/gradle/ssh/api/SshSpec.groovy).
-
 
 Contributions
 -------------
 
-Thanks for contributions. Your issue reports or pull requests are welcome.
+Thanks for contributions.
+Please send me your issue reports or pull requests.
