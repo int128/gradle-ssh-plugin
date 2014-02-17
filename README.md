@@ -29,31 +29,34 @@ See [release notes](https://github.com/int128/gradle-ssh-plugin/releases).
 Features
 --------
 
-  * Integrated with Gradle
+  * Remote command execution
+  * Providing a pass-phrase for the sudo prompt
+  * Stream interaction with a remote command or shell
+  * File transfer via SFTP
   * Password and public key authentication
   * Strict host key checking with a known-hosts file
-  * Remote command execution
-  * Stream interaction with a remote command or shell
-  * Providing a pass-phrase for the sudo prompt
-  * File transfer via SFTP
 
 
-Define remote hosts
--------------------
+Define a remote host
+--------------------
 
 At first, define remote hosts:
 
 ```groovy
 remotes {
   web01 {
+    role('masterNode')
     host = '192.168.1.101'
     user = 'jenkins'
-    password = System.properties['ssh.password']
+  }
+  web02 {
+    host = '192.168.1.102'
+    user = 'jenkins'
   }
 }
 ```
 
-A remote host instance has following properties:
+A remote host object has following properties:
   * `host` - Hostname or IP address
   * `port` - Port. Default is 22. (Optional)
   * `user` - User name.
@@ -61,43 +64,7 @@ A remote host instance has following properties:
   * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
   * `passphrase` - Pass phrase for the private key. (Optional)
 
-
-### Associate with roles
-
-A remote host can be associated with roles, use `role(name...)`:
-```groovy
-remotes {
-  web01 {
-    role('webServers', 'master')
-    host = '192.168.1.101'
-    user = 'jenkins'
-  }
-  web02 {
-    role('webServers')
-    host = '192.168.1.102'
-    user = 'jenkins'
-  }
-}
-```
-
-
-### Manage remote hosts
-
-Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
-the remote host can be accessed by its name.
-Also it can be accessed by its roles using `remotes.role(name...)`.
-
-A remote host can be defined dynamically in runtime. Use `remotes.create(name)`:
-```groovy
-def server = remotes.create('web03') {
-  host = /* given in runtime */
-  user = /* given in runtime */
-}
-sshexec {
-  session(server) {
-  }
-}
-```
+Use `role(name)` to associate the host with roles. A remote host can be associated with multiple roles.
 
 
 Define a SSH task
@@ -114,7 +81,7 @@ task checkWebServer(type: SshTask) {
 }
 
 task reloadServers(type: SshTask) {
-  session(remotes.role('webServers', 'dbServers')) {
+  session(remotes.role('webServers', 'appServers')) {
     executeBackground('sudo service httpd reload', pty: true)
   }
 }
@@ -144,6 +111,14 @@ In the `SshTask` closure, following methods are available:
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
 
 Note that closure of a session is called in **execution** phase on Gradle.
+
+
+#### Specify a remote host by name or role
+
+`session` method takes one or more remote hosts.
+  * `remotes.hostname` - Specifies the remote host.
+  * `remotes.role(A)` - Specifies remote hosts associated with A.
+  * `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
 
 
 ### Execute a command
@@ -229,22 +204,37 @@ These methods raise an exception and stop Gradle if error occurs.
 Use SSH in the task
 -------------------
 
-To execute SSH in the task, call `sshexec()` method with a closure:
+To execute SSH in the task, call `sshexec` method with a closure:
 
 ```groovy
-task prepareEnvironment {
-  doLast {
-    def operation = 'reload'
-    sshexec {
-      session(remotes.role('webServers')) {
-        execute("sudo service httpd ${operation}", pty: true)
-      }
+task reloadService << {
+  def serviceName = /* given in execution phase */
+  sshexec {
+    session(remotes.server01) {
+      execute("sudo service $serviceName reload")
     }
   }
 }
 ```
 
 In `sshexec` closure, same properties and methods as `SshTask` are available.
+
+
+### Manipulate the remotes container
+
+Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
+a remote host can be defined dynamically using `remotes.create(name)`:
+```groovy
+remotes.create('dynamic1') {
+  host = /* given in execution phase */
+  user = /* given in execution phase */
+}
+sshexec {
+  session(remotes.dynamic1) {
+    execute('...')
+  }
+}
+```
 
 
 Global settings
