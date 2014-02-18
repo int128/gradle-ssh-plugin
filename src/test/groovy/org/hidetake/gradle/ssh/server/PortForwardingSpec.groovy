@@ -16,23 +16,14 @@ class PortForwardingSpec extends Specification {
 
     SshServer targetServer
     SshdSocketAddress targetAddress
-    SshServer gatewayServer
+    SshServer gateway1Server
     Project project
 
     def setup() {
-        targetServer = SshServerMock.setUpLocalhostServer()
-        targetServer.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('targetUser', 'targetPassword', _) >> true
-        }
-        targetServer.shellFactory = Mock(Factory)
-
+        targetServer = setupServer('target')
         targetAddress = new SshdSocketAddress(targetServer.host, targetServer.port)
 
-        gatewayServer = SshServerMock.setUpLocalhostServer()
-        gatewayServer.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('gatewayUser', 'gatewayPassword', _) >> true
-        }
-        gatewayServer.tcpipForwardingFilter = Mock(ForwardingFilter)
+        gateway1Server = setupServer('gateway1')
 
         project = ProjectBuilder.builder().build()
         project.with {
@@ -40,47 +31,48 @@ class PortForwardingSpec extends Specification {
             ssh {
                 knownHosts = allowAnyHosts
             }
-            remotes {
-                target {
-                    host = targetServer.host
-                    port = targetServer.port
-                    user = 'targetUser'
-                    password = 'targetPassword'
-                }
-                gateway {
-                    host = gatewayServer.host
-                    port = gatewayServer.port
-                    user = 'gatewayUser'
-                    password = 'gatewayPassword'
-                }
-            }
-            remotes.target.gateway = remotes.gateway
         }
+    }
+
+    def setupServer(String name) {
+        def server = SshServerMock.setUpLocalhostServer()
+        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
+            _ * authenticate("${name}User", "${name}Password", _) >> true
+        }
+        server.shellFactory = Mock(Factory)
+        server.tcpipForwardingFilter = Mock(ForwardingFilter)
+        server
     }
 
     def teardown() {
         targetServer.stop(true)
-        gatewayServer.stop(true)
+        gateway1Server.stop(true)
     }
 
 
     def "local port forwarding"() {
         given:
-        gatewayServer.start()
+        gateway1Server.start()
         targetServer.start()
 
         project.with {
             task(type: SshTask, 'localPortForwardingTask') {
-                session(remotes.gateway) {
-                    int localPort = forwardLocalPortTo(remotes.target.host, remotes.target.port)
-
+                remotes {
+                    gw {
+                        host = gateway1Server.host
+                        port = gateway1Server.port
+                        user = 'gateway1User'
+                        password = 'gateway1Password'
+                    }
+                }
+                session(remotes.gw) {
+                    int localPort = forwardLocalPortTo(targetServer.host, targetServer.port)
                     remotes.create('targetViaGateway') {
                         host = 'localhost'
                         port = localPort
                         user = 'targetUser'
                         password = 'targetPassword'
                     }
-
                     sshexec {
                         session(remotes.targetViaGateway) {
                             shell {}
@@ -94,7 +86,7 @@ class PortForwardingSpec extends Specification {
         project.tasks.localPortForwardingTask.execute()
 
         then:
-        1 * gatewayServer.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
+        1 * gateway1Server.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
@@ -105,10 +97,25 @@ class PortForwardingSpec extends Specification {
 
     def "connect via the gateway server"() {
         given:
-        gatewayServer.start()
+        gateway1Server.start()
         targetServer.start()
 
         project.with {
+            remotes {
+                gw {
+                    host = gateway1Server.host
+                    port = gateway1Server.port
+                    user = 'gateway1User'
+                    password = 'gateway1Password'
+                }
+                target {
+                    host = targetServer.host
+                    port = targetServer.port
+                    user = 'targetUser'
+                    password = 'targetPassword'
+                    gateway = remotes.gw
+                }
+            }
             task(type: SshTask, 'testTask') {
                 session(remotes.target) {
                     shell {}
@@ -120,7 +127,7 @@ class PortForwardingSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * gatewayServer.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
+        1 * gateway1Server.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->

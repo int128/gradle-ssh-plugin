@@ -64,8 +64,28 @@ A remote host object has following properties:
   * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
   * `passphrase` - Pass phrase for the private key. (Optional)
   * `agent` - If this flag is set, Putty Agent or ssh-agent will be used to authentication. (Optional)
+  * `gateway` - Gateway remote host. If this is set, port-forwarding tunnel will be used to connect. (Optional)
 
 Use `role(name)` to associate the host with roles. A remote host can be associated with multiple roles.
+
+
+### Access through gateway servers
+
+A remote host can be accessed through one or more gateway servers.
+
+```groovy
+remotes {
+  gw01 {
+    host = '10.2.3.4'
+    user = 'gwuser'
+  }
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    gateway = remotes.gw01
+  }
+}
+```
 
 
 Define a SSH task

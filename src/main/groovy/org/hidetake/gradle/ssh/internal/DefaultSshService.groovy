@@ -6,9 +6,11 @@ import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
+import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.internal.session.GatewaySessionTransformation
 import org.hidetake.gradle.ssh.internal.session.SessionManager
 
 /**
@@ -51,7 +53,8 @@ class DefaultSshService implements SshService {
         def sessionManager = new SessionManager()
         def channelManager = new ChannelManager()
         try {
-            sshSpec.sessionSpecs.each { spec ->
+            def sessionSpecs = GatewaySessionTransformation.transform(sshSpec.sessionSpecs)
+            sessionSpecs.each { SessionSpec spec ->
                 def session = retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
                     def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
                     if (spec.remote.password) {
