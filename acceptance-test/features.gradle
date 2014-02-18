@@ -120,33 +120,25 @@ feature('executing commands concurrently') {
 
 task executeConcurrently(type: SshTask) {
     doFirst {
-        ext.pathA = "/tmp/data-${randomInt()}"
-        ext.pathB = "/tmp/data-${randomInt()}"
-        ext.pathC = "/tmp/data-${randomInt()}"
-        ext.pathD = "/tmp/data-${randomInt()}"
+        ext.tempPath = "/tmp/data-${randomInt()}"
     }
     // task should start sessions concurrently
     session(remotes.localhost) {
-        executeBackground "sleep 3 && date +%s > $pathA"
+        executeBackground "sleep 2 && echo 2 >> $tempPath"
     }
     session(remotes.localhost) {
-        executeBackground "sleep 2 && date +%s > $pathB"
-        executeBackground "sleep 1 && date +%s > $pathC"
-        executeBackground            "date +%s > $pathD"
+        executeBackground "sleep 3 && echo 3 >> $tempPath"
+        executeBackground "sleep 1 && echo 1 >> $tempPath"
+        executeBackground            "echo 0 >> $tempPath"
     }
     doLast {
         // all commands should be completed at this point
         sshexec {
             session(remotes.localhost) {
-                ext.timeA = execute("cat $pathA && rm $pathA")
-                ext.timeB = execute("cat $pathB && rm $pathB")
-                ext.timeC = execute("cat $pathC && rm $pathC")
-                ext.timeD = execute("cat $pathD && rm $pathD")
+                ext.result = execute("cat $tempPath && rm $tempPath")
             }
         }
-        assert Math.abs((timeA as int) - (timeD as int)) == 3
-        assert Math.abs((timeB as int) - (timeD as int)) == 2
-        assert Math.abs((timeC as int) - (timeD as int)) == 1
+        assert result.readLines() == ['0', '1', '2', '3']
     }
 }
 
