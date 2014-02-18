@@ -8,6 +8,8 @@ import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.*
+import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.ShellSettings
 
 /**
  * Default implementation of {@link OperationHandler}.
@@ -32,13 +34,22 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     void shell(Map<String, Object> options, Closure interactions) {
         log.info("Execute a shell with options ($options)")
 
+        def settings = new ShellSettings(logging: options.logging)
         def lifecycleManager = new SessionLifecycleManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
-            options.each { k, v -> channel[k] = v }
+
+            // TODO: removed in v0.3.0
+            def remainingOptions = options.findAll { !(it.key in ['logging']) }
+            remainingOptions.each { k, v ->
+                channel[k] = v
+                log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
+            }
 
             def context = DefaultShellContext.create(channel, sshSpec.encoding)
-            context.enableLogging(sshSpec.outputLogLevel)
+            if (settings.logging) {
+                context.enableLogging(sshSpec.outputLogLevel)
+            }
 
             interactions.delegate = context
             interactions.resolveStrategy = Closure.DELEGATE_FIRST
@@ -59,14 +70,24 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     String execute(Map<String, Object> options, String command, Closure interactions) {
         log.info("Execute a command (${command}) with options ($options)")
 
+        def settings = new ExecutionSettings(pty: options.pty, logging: options.logging)
         def lifecycleManager = new SessionLifecycleManager()
         try {
             def channel = session.openChannel('exec') as ChannelExec
             channel.command = command
-            options.each { k, v -> channel[k] = v }
+            channel.pty = settings.pty
+
+            // TODO: removed in v0.3.0
+            def remainingOptions = options.findAll { !(it.key in ['pty', 'logging']) }
+            remainingOptions.each { k, v ->
+                channel[k] = v
+                log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
+            }
 
             def context = DefaultCommandContext.create(channel, sshSpec.encoding)
-            context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+            if (settings.logging) {
+                context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+            }
 
             def lines = [] as List<String>
             context.standardOutput.lineListeners.add { String line -> lines << line }
@@ -121,12 +142,22 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     CommandContext executeBackground(Map<String, Object> options, String command) {
         log.info("Execute a command ($command) in background")
 
+        def settings = new ExecutionSettings(pty: options.pty, logging: options.logging)
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        options.each { k, v -> channel[k] = v }
+        channel.pty = settings.pty
+
+        // TODO: removed in v0.3.0
+        def remainingOptions = options.findAll { !(it.key in ['pty', 'logging']) }
+        remainingOptions.each { k, v ->
+            channel[k] = v
+            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
+        }
 
         def context = DefaultCommandContext.create(channel, sshSpec.encoding)
-        context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+        if (settings.logging) {
+            context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+        }
 
         globalLifecycleManager << context
         context.channel.connect()
@@ -139,7 +170,13 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     void get(Map<String, Object> options, String remote, String local) {
         log.info("Get a remote file (${remote}) to local (${local})")
         def channel = session.openChannel('sftp') as ChannelSftp
-        options.each { k, v -> channel[k] = v }
+
+        // TODO: removed in v0.3.0
+        options.each { k, v ->
+            channel[k] = v
+            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
+        }
+
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
@@ -154,7 +191,13 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     void put(Map<String, Object> options, String local, String remote) {
         log.info("Put a local file (${local}) to remote (${remote})")
         def channel = session.openChannel('sftp') as ChannelSftp
-        options.each { k, v -> channel[k] = v }
+
+        // TODO: removed in v0.3.0
+        options.each { k, v ->
+            channel[k] = v
+            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
+        }
+
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")

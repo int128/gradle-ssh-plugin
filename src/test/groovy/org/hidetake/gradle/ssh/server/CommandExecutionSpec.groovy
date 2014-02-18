@@ -185,4 +185,37 @@ class CommandExecutionSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | ['some result', 'second line']
     }
 
+    @Unroll
+    def "toggle logging = #logging"() {
+        given:
+        def logger = GroovySpy(Logging.getLogger(DefaultOperationHandler).class, global: true) {
+            isEnabled(_) >> true
+        }
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    execute('somecommand', logging: logging)
+                }
+            }
+        }
+
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        (logging ? 1 : 0) * logger.log(_, 'some message')
+
+        where:
+        logging << [true, false]
+    }
+
 }

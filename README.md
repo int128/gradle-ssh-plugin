@@ -136,7 +136,10 @@ Also following property is available:
 #### Execution settings
 
 These methods accept following settings as map:
-  * `pty: true` - Requests PTY allocation (to execute sudo). Default is false.
+  * `pty: true` - Requests PTY allocation. e.g. sudo interaction. Default is `pty: false`. This setting is ignored for a shell operation.
+  * `logging: false` - Turns off logging of standard output and error. e.g. hiding credential. Default is `logging: true`.
+
+Other settings are still available (directly passed to JSch) but will not be supported in v0.3.0.
 
 
 #### Handle the result
