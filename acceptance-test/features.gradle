@@ -64,17 +64,19 @@ feature('executing commands sequentially') {
 }
 
 task executeSequentially(type: SshTask) {
+    finalizedBy 'cleanRemoteTemp'
+
     doFirst {
         ext.x = randomInt()
         ext.y = randomInt()
-        ext.pathA = "/tmp/data-${randomInt()}"
-        ext.pathB = "/tmp/data-${randomInt()}"
+        ext.pathA = remoteTempPath('A')
+        ext.pathB = remoteTempPath('B')
     }
     session(remotes.localhost) {
         execute "expr $x + $y > $pathA"
         execute "expr $x + `cat $pathA` > $pathB"
-        ext.a = execute "cat $pathA && rm $pathA"
-        ext.b = execute "cat $pathB && rm $pathB"
+        ext.a = execute "cat $pathA"
+        ext.b = execute "cat $pathB"
     }
     doLast {
         assert a as int == (x + y)
@@ -119,8 +121,10 @@ feature('executing commands concurrently') {
 }
 
 task executeConcurrently(type: SshTask) {
+    finalizedBy 'cleanRemoteTemp'
+
     doFirst {
-        ext.tempPath = "/tmp/data-${randomInt()}"
+        ext.tempPath = remoteTempPath(name)
     }
     // task should start sessions concurrently
     session(remotes.localhost) {
@@ -135,7 +139,7 @@ task executeConcurrently(type: SshTask) {
         // all commands should be completed at this point
         sshexec {
             session(remotes.localhost) {
-                ext.result = execute("cat $tempPath && rm $tempPath")
+                ext.result = execute("cat $tempPath")
             }
         }
         assert result.readLines() == ['0', '1', '2', '3']
@@ -340,6 +344,8 @@ feature('sending files to the remote host and acquiring result files') {
 }
 
 task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
+    finalizedBy 'cleanRemoteTemp'
+
     doFirst {
         ext.x = randomInt()
         ext.y = randomInt()
@@ -349,10 +355,10 @@ task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
         ext.localA = file("$buildDir/local-${randomInt()}")
         ext.localB = file("$buildDir/local-${randomInt()}")
 
-        ext.pathX = "/tmp/data-${randomInt()}"
-        ext.pathY = "/tmp/data-${randomInt()}"
-        ext.pathA = "/tmp/data-${randomInt()}"
-        ext.pathB = "/tmp/data-${randomInt()}"
+        ext.pathX = remoteTempPath('X')
+        ext.pathY = remoteTempPath('Y')
+        ext.pathA = remoteTempPath('A')
+        ext.pathB = remoteTempPath('B')
     }
     session(remotes.localhost) {
         put(localX.path, pathX)
@@ -361,7 +367,6 @@ task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
         execute("expr `cat $pathX` - `cat $pathY` > $pathB")
         get(pathA, localA.path)
         get(pathB, localB.path)
-        execute("rm -v $pathX $pathY $pathA $pathB")
     }
     doLast {
         assert localA.text as int == (x + y)
@@ -375,6 +380,19 @@ task setupBuildDir(type: Delete) {
     doLast {
         buildDir.mkdir()
     }
+}
+
+task cleanRemoteTemp(type: SshTask) {
+    session(remotes.localhost) {
+        assert remoteTempPrefix
+        execute("rm -v ${remoteTempPrefix}*")
+    }
+}
+
+ext.remoteTempPrefix = "/tmp/fixture-${randomInt()}"
+
+def remoteTempPath(String name = '') {
+    "$remoteTempPrefix-$name"
 }
 
 static randomInt(int max = 10000) {
