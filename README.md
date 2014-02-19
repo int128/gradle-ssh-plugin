@@ -205,6 +205,12 @@ In the `session` closure, following methods are available:
 These methods raise an exception and stop Gradle if error occurs.
 
 
+### Port forwarding
+
+In the `session` closure, following methods are available:
+  * `forwardLocalPortTo(remoteHost, remotePort)` - Forwards local port to the remote port. This method returns a local port automatically assigned.
+
+
 Use SSH in the task
 -------------------
 

@@ -55,4 +55,10 @@ class DryRunOperationHandler extends AbstractOperationHandler {
     void put(Map<String, Object> options, String local, String remote) {
         log.info("Put a local file (${local}) to remote (${remote})")
     }
+
+    @Override
+    int forwardLocalPortTo(String remoteHost, int remotePort) {
+        log.info("Start local port fowarding to remote ($remoteHost:$remotePort)")
+        0
+    }
 }

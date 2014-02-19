@@ -208,4 +208,11 @@ class DefaultOperationHandler extends AbstractOperationHandler {
             channel.disconnect()
         }
     }
+
+    @Override
+    int forwardLocalPortTo(String remoteHost, int remotePort) {
+        def localPort = session.setPortForwardingL(0, remoteHost, remotePort)
+        log.info("Started port fowarding from local port $localPort to remote ($remoteHost:$remotePort)")
+        localPort
+    }
 }
