@@ -4,7 +4,6 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
-import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
@@ -19,8 +18,6 @@ import org.hidetake.gradle.ssh.api.SshSpec
 @Slf4j
 class DefaultSshService implements SshService {
     protected Closure<JSch> jschFactory = { new JSch() }
-
-    static final logger = Logging.getLogger(DefaultSshService)
 
     @Override
     void execute(SshSpec sshSpec) {
@@ -77,7 +74,7 @@ class DefaultSshService implements SshService {
                 }
 
                 lifecycleManager.waitForPending { DefaultCommandContext context ->
-                    logger.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
+                    log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
                 }
                 lifecycleManager.validateExitStatus()
             } finally {
@@ -102,7 +99,7 @@ class DefaultSshService implements SshService {
             try {
                 closure()
             } catch (JSchException e) {
-                logger.warn "Retrying connection: ${e.getClass().name}: ${e.localizedMessage}"
+                log.warn("Retrying connection: ${e.getClass().name}: ${e.localizedMessage}")
                 sleep(retryWaitSec * 1000L)
                 retry(retryCount - 1, retryWaitSec, closure)
             }
