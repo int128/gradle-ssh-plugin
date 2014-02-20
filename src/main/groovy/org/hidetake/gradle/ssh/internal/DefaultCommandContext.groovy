@@ -2,7 +2,6 @@ package org.hidetake.gradle.ssh.internal
 
 import com.jcraft.jsch.ChannelExec
 import groovy.transform.TupleConstructor
-import groovy.util.logging.Slf4j
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.CommandContext
@@ -12,7 +11,6 @@ import org.hidetake.gradle.ssh.internal.command.InteractionDelegate
 import org.hidetake.gradle.ssh.internal.command.LineOutputStream
 
 @TupleConstructor
-@Slf4j
 class DefaultCommandContext implements CommandContext, ChannelObservable {
     final ChannelExec channel
     final OutputStream standardInput

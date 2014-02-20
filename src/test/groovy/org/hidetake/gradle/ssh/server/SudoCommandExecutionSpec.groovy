@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.server
 
-import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
@@ -17,7 +16,6 @@ import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
 import spock.lang.Unroll
 
-@Slf4j
 class SudoCommandExecutionSpec extends Specification {
 
     private static final NL = Utilities.eol()
