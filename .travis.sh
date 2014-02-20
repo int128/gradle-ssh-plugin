@@ -28,7 +28,7 @@ function publish_report () {
 
         git config --global user.email 'travis@travis-ci.org'
         git config --global user.name 'travis'
-        git clone --quiet --branch=gh-pages "https://github.com/$TRAVIS_REPO_SLUG.git" gh-pages
+        git clone --quiet --branch=gh-pages "https://github.com/$GH_REPO.git" gh-pages
         cd gh-pages
 
         git rm -r "build/$TRAVIS_BRANCH" || true

@@ -11,5 +11,6 @@ after_script:
 env:
   global:
     - TERM=dumb
+    - GH_REPO=int128/gradle-ssh-plugin-doc
     - secure: "e2x0ZQEtmjT8JC5FmSjRARfd8NKLMICuCig6xoBttrbcdW0C0vRouqWzuz20nwrEUHsaG7F09FcirbtVzGpBgJAjSSO1J3g8QkmD3n/KeKsV2r2cEMLpcEH9CIUjudSPAixEQZ/Nop5/7m97NrMQxupeGk0XoU6ginmmk2wUfu0="
     - secure: "aejx3iksaHn/Kl8fKLR6E/M89Ief0fqb6C/y4lzdOn4zM8nB7E1hV1PUOnSDAb5JUdMw1fzaw2tCyIpml2yskDPzQQUyAFUEypX0zLOrU2SV+R35Ds2iyOIZUZnPY5P+ORtXzVZBAUX/ZQGoCyh7EetKwNAku9xiaF1/A+KZ5so="
