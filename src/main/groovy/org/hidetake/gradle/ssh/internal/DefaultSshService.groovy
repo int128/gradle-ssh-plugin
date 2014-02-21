@@ -3,14 +3,13 @@ package org.hidetake.gradle.ssh.internal
 import com.jcraft.jsch.Channel
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
-import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.internal.session.SessionManager
 
 /**
  * Default implementation of {@link SshService}.
@@ -49,15 +48,15 @@ class DefaultSshService implements SshService {
             log.debug("Using known-hosts file: ${sshSpec.knownHosts.path}")
         }
 
-        def sessions = [:] as Map<SessionSpec, Session>
+        def sessionManager = new SessionManager()
+        def channelManager = new ChannelManager()
         try {
             sshSpec.sessionSpecs.each { spec ->
-                retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
+                def session = retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
                     def session = jsch.getSession(spec.remote.user, spec.remote.host, spec.remote.port)
                     if (spec.remote.password) {
                         session.password = spec.remote.password
                     }
-
                     jsch.removeAllIdentity()
                     if (spec.remote.identity) {
                         jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase as String)
@@ -71,26 +70,21 @@ class DefaultSshService implements SshService {
 					}
 
                     session.connect()
-                    sessions.put(spec, session)
+                    session
                 }
+                sessionManager.add(session)
+
+                def handler = new DefaultOperationHandler(sshSpec, spec, session, channelManager)
+                handler.with(spec.operationClosure)
             }
 
-            def channelManager = new ChannelManager()
-            try {
-                sessions.each { sessionSpec, session ->
-                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, channelManager)
-                    handler.with(sessionSpec.operationClosure)
-                }
-
-                channelManager.waitForPending { Channel channel ->
-                    log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-                }
-                channelManager.validateExitStatus()
-            } finally {
-                channelManager.disconnect()
+            channelManager.waitForPending { Channel channel ->
+                log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
             }
+            channelManager.validateExitStatus()
         } finally {
-            sessions.each { spec, session -> session.disconnect() }
+            channelManager.disconnect()
+            sessionManager.disconnect()
         }
     }
 
@@ -102,7 +96,7 @@ class DefaultSshService implements SshService {
      * @param retryWaitSec
      * @param closure
      */
-    protected void retry(int retryCount, int retryWaitSec, Closure closure) {
+    protected <T> T retry(int retryCount, int retryWaitSec, Closure<T> closure) {
         assert closure != null, 'closure should be set'
         if (retryCount > 0) {
             try {
