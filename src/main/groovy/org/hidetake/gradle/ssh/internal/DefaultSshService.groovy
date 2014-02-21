@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.internal
 
+import com.jcraft.jsch.Channel
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
@@ -7,6 +8,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
  * Default implementation of {@link SshService}.
@@ -66,19 +68,19 @@ class DefaultSshService implements SshService {
                 }
             }
 
-            def lifecycleManager = new SessionLifecycleManager()
+            def channelManager = new ChannelManager()
             try {
                 sessions.each { sessionSpec, session ->
-                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, lifecycleManager)
+                    def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, channelManager)
                     handler.with(sessionSpec.operationClosure)
                 }
 
-                lifecycleManager.waitForPending { DefaultCommandContext context ->
-                    log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
+                channelManager.waitForPending { Channel channel ->
+                    log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
                 }
-                lifecycleManager.validateExitStatus()
+                channelManager.validateExitStatus()
             } finally {
-                lifecycleManager.disconnect()
+                channelManager.disconnect()
             }
         } finally {
             sessions.each { spec, session -> session.disconnect() }

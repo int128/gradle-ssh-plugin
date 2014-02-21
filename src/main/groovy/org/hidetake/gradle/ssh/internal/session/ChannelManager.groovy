@@ -1,10 +1,10 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.internal.session
 
 import com.jcraft.jsch.Channel
 import groovy.util.logging.Slf4j
 
 /**
- * Event listener for lifecycle management of commands.
+ * Channel lifecycle manager.
  *
  * <p>A command context has state of following:</p>
  * <ol>
@@ -17,18 +17,16 @@ import groovy.util.logging.Slf4j
  *
  */
 @Slf4j
-class SessionLifecycleManager {
-    final contexts = [] as List<ChannelObservable>
+class ChannelManager {
+    final channels = [] as List<Channel>
 
     /**
-     * Add a context to be managed.
+     * Add a channel to be managed.
      *
-     * @param context
-     * @return this
+     * @param channel
      */
-    def leftShift(ChannelObservable context) {
-        contexts << context
-        this
+    void add(Channel channel) {
+        channels.add(channel)
     }
 
     /**
@@ -36,10 +34,10 @@ class SessionLifecycleManager {
      *
      * @param closedCommandHandler callback handler for closed command
      */
-    void waitForPending(Closure closedCommandHandler = {}) {
-        def pendingCommands = new ArrayList<ChannelObservable>(contexts)
+    void waitForPending(Closure closedCommandHandler = { Channel c -> }) {
+        def pendingCommands = new ArrayList<Channel>(channels)
         while (!pendingCommands.empty) {
-            def closedCommands = pendingCommands.findAll { it.channel.closed }
+            def closedCommands = pendingCommands.findAll { it.closed }
             closedCommands.each(closedCommandHandler)
             pendingCommands.removeAll(closedCommands)
             sleep(100)
@@ -51,13 +49,13 @@ class SessionLifecycleManager {
      * This method must be called before any channel is disconnected.
      */
     void validateExitStatus() {
-        def errors = contexts.findAll { it.channel.exitStatus != 0 }
+        def errors = channels.findAll { it.exitStatus != 0 }
         if (errors.size() > 1) {
-            errors.each { log.error("Channel #${it.channel.id} finished with exit status ${it.channel.exitStatus}") }
+            errors.each { log.error("Channel #${it.id} finished with exit status ${it.exitStatus}") }
             throw new RuntimeException("${errors.size()} channels returned error exit status")
         } else if (errors.size() == 1) {
             def e = errors.first()
-            throw new RuntimeException( "Channel #${e.channel.id} finished with exit status ${e.channel.exitStatus}")
+            throw new RuntimeException("Channel #${e.id} finished with exit status ${e.exitStatus}")
         }
     }
 
@@ -65,6 +63,6 @@ class SessionLifecycleManager {
      * Disconnect all channels.
      */
     void disconnect() {
-        contexts.each { it.channel.disconnect() }
+        channels.each { it.disconnect() }
     }
 }
