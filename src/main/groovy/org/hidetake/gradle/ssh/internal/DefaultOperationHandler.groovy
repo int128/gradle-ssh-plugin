@@ -10,6 +10,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.*
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
  * Default implementation of {@link OperationHandler}.
@@ -23,7 +24,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     final SshSpec sshSpec
     final SessionSpec sessionSpec
     final Session session
-    final SessionLifecycleManager globalLifecycleManager
+    final ChannelManager globalChannelManager
 
     @Override
     Remote getRemote() {
@@ -35,7 +36,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
         log.info("Execute a shell with options ($options)")
 
         def settings = new ShellSettings(logging: options.logging)
-        def lifecycleManager = new SessionLifecycleManager()
+        def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
 
@@ -55,14 +56,14 @@ class DefaultOperationHandler extends AbstractOperationHandler {
             interactions.resolveStrategy = Closure.DELEGATE_FIRST
             interactions()
 
-            lifecycleManager << context
-            context.channel.connect()
-            log.info("Channel #${context.channel.id} has been opened")
-            lifecycleManager.waitForPending()
-            log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
-            lifecycleManager.validateExitStatus()
+            channel.connect()
+            channelManager.add(channel)
+            log.info("Channel #${channel.id} has been opened")
+            channelManager.waitForPending()
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            channelManager.validateExitStatus()
         } finally {
-            lifecycleManager.disconnect()
+            channelManager.disconnect()
         }
     }
 
@@ -71,7 +72,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
         log.info("Execute a command (${command}) with options ($options)")
 
         def settings = new ExecutionSettings(pty: options.pty, logging: options.logging)
-        def lifecycleManager = new SessionLifecycleManager()
+        def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('exec') as ChannelExec
             channel.command = command
@@ -96,15 +97,15 @@ class DefaultOperationHandler extends AbstractOperationHandler {
             interactions.resolveStrategy = Closure.DELEGATE_FIRST
             interactions()
 
-            lifecycleManager << context
-            context.channel.connect()
-            log.info("Channel #${context.channel.id} has been opened")
-            lifecycleManager.waitForPending()
-            log.info("Channel #${context.channel.id} has been closed with exit status ${context.channel.exitStatus}")
-            lifecycleManager.validateExitStatus()
+            channel.connect()
+            channelManager.add(channel)
+            log.info("Channel #${channel.id} has been opened")
+            channelManager.waitForPending()
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            channelManager.validateExitStatus()
             lines.join(Utilities.eol())
         } finally {
-            lifecycleManager.disconnect()
+            channelManager.disconnect()
         }
     }
 
@@ -159,9 +160,9 @@ class DefaultOperationHandler extends AbstractOperationHandler {
             context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
         }
 
-        globalLifecycleManager << context
-        context.channel.connect()
-        log.info("Channel #${context.channel.id} has been opened")
+        globalChannelManager.add(channel)
+        channel.connect()
+        log.info("Channel #${channel.id} has been opened")
 
         context
     }

@@ -11,7 +11,7 @@ import org.hidetake.gradle.ssh.internal.command.InteractionDelegate
 import org.hidetake.gradle.ssh.internal.command.LineOutputStream
 
 @TupleConstructor
-class DefaultCommandContext implements CommandContext, ChannelObservable {
+class DefaultCommandContext implements CommandContext {
     final ChannelExec channel
     final OutputStream standardInput
     final LineOutputStream standardOutput

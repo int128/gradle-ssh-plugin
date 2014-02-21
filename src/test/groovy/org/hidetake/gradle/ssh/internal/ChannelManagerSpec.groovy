@@ -1,51 +1,49 @@
 package org.hidetake.gradle.ssh.internal
 
 import com.jcraft.jsch.Channel
-import com.jcraft.jsch.ChannelExec
+import org.hidetake.gradle.ssh.internal.session.ChannelManager
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineMetaClassChanges(SessionLifecycleManager)
-class SessionLifecycleManagerSpec extends Specification {
+@ConfineMetaClassChanges(ChannelManager)
+class ChannelManagerSpec extends Specification {
 
-    SessionLifecycleManager mgr
+    ChannelManager mgr
 
     @Shared
     Closure sleepMock
 
     def setupSpec() {
-        SessionLifecycleManager.metaClass.static.sleep = { long ms ->
+        ChannelManager.metaClass.static.sleep = { long ms ->
             sleepMock.call(ms)
         }
     }
 
     def setup() {
-        mgr = new SessionLifecycleManager()
+        mgr = new ChannelManager()
         sleepMock = Mock(Closure)
     }
 
 
     def "executionStarted adds command"() {
         given:
-        def o = Mock(ChannelObservable)
+        def c = Mock(Channel)
 
         when:
-        mgr << o
+        mgr.add(c)
 
         then:
-        mgr.contexts.size() == 1
+        mgr.channels.size() == 1
     }
 
     def "disconnect disconnects all commands"() {
         given:
         def c1 = Mock(Channel)
         def c2 = Mock(Channel)
-        def o1 = Mock(ChannelObservable) { getChannel() >> c1 }
-        def o2 = Mock(ChannelObservable) { getChannel() >> c2 }
 
-        mgr << o1
-        mgr << o2
+        mgr.add(c1)
+        mgr.add(c2)
 
         when:
         mgr.disconnect()
@@ -72,8 +70,7 @@ class SessionLifecycleManagerSpec extends Specification {
     def "wait for pending, one pending channel that closes"() {
         given:
         def c = Mock(Channel)
-        def o = Mock(ChannelObservable) { getChannel() >> c }
-        mgr << o
+        mgr.add(c)
 
         def closedChannelHandler = Mock(Closure)
 
@@ -83,7 +80,7 @@ class SessionLifecycleManagerSpec extends Specification {
         then: 1 * c.closed >> false
         then: 1 * sleepMock.call(_)
         then: 1 * c.closed >> true
-        then: 1 * closedChannelHandler.call(o)
+        then: 1 * closedChannelHandler.call(c)
         then: 1 * sleepMock.call(_)
     }
 
@@ -91,10 +88,8 @@ class SessionLifecycleManagerSpec extends Specification {
         given:
         def pending = Mock(Channel)
         def closed = Mock(Channel)
-        def pendingObservable = Mock(ChannelObservable) { getChannel() >> pending }
-        def closedObservable = Mock(ChannelObservable) { getChannel() >> closed }
-        mgr << pendingObservable
-        mgr << closedObservable
+        mgr.add(pending)
+        mgr.add(closed)
 
         def closedChannelHandler = Mock(Closure)
 
@@ -105,10 +100,10 @@ class SessionLifecycleManagerSpec extends Specification {
         1 * pending.closed >> false
         1 * closed.closed >> true
 
-        then: 1 * closedChannelHandler.call(closedObservable)
+        then: 1 * closedChannelHandler.call(closed)
         then: 1 * sleepMock.call(_)
         then: 1 * pending.closed >> true
-        then: 1 * closedChannelHandler.call(pendingObservable)
+        then: 1 * closedChannelHandler.call(pending)
         then: 1 * sleepMock.call(_)
     }
 
