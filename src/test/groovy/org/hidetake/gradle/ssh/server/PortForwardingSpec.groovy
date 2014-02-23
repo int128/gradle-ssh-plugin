@@ -15,15 +15,14 @@ import spock.lang.Specification
 class PortForwardingSpec extends Specification {
 
     SshServer targetServer
-    SshdSocketAddress targetAddress
     SshServer gateway1Server
+    SshServer gateway2Server
     Project project
 
     def setup() {
         targetServer = setupServer('target')
-        targetAddress = new SshdSocketAddress(targetServer.host, targetServer.port)
-
         gateway1Server = setupServer('gateway1')
+        gateway2Server = setupServer('gateway2')
 
         project = ProjectBuilder.builder().build()
         project.with {
@@ -47,6 +46,7 @@ class PortForwardingSpec extends Specification {
     def teardown() {
         targetServer.stop(true)
         gateway1Server.stop(true)
+        gateway2Server.stop(true)
     }
 
 
@@ -86,7 +86,7 @@ class PortForwardingSpec extends Specification {
         project.tasks.localPortForwardingTask.execute()
 
         then:
-        1 * gateway1Server.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
+        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
@@ -127,12 +127,68 @@ class PortForwardingSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * gateway1Server.tcpipForwardingFilter.canConnect(targetAddress, _) >> true
+        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
             c.exitCallback.onExit(0)
         }
+    }
+
+    def "connect via 2 gateway servers"() {
+        given:
+        gateway1Server.start()
+        gateway2Server.start()
+        targetServer.start()
+
+        project.with {
+            remotes {
+                gw01 {
+                    host = gateway1Server.host
+                    port = gateway1Server.port
+                    user = 'gateway1User'
+                    password = 'gateway1Password'
+                }
+                gw02 {
+                    host = gateway2Server.host
+                    port = gateway2Server.port
+                    user = 'gateway2User'
+                    password = 'gateway2Password'
+                    gateway = remotes.gw01
+                }
+                target {
+                    host = targetServer.host
+                    port = targetServer.port
+                    user = 'targetUser'
+                    password = 'targetPassword'
+                    gateway = remotes.gw02
+                }
+            }
+            task(type: SshTask, 'testTask') {
+                session(remotes.target) {
+                    shell {}
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
+
+        then:
+        1 * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+
+        then:
+        1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
+            c.exitCallback.onExit(0)
+        }
+    }
+
+
+    static addressOf(SshServer server) {
+        new SshdSocketAddress(server.host, server.port)
     }
 
 }
