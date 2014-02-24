@@ -4,6 +4,8 @@ import com.jcraft.jsch.Channel
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
+import com.jcraft.jsch.agentproxy.ConnectorFactory
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshService
@@ -61,7 +63,12 @@ class DefaultSshService implements SshService {
                         jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase as String)
                     } else if (sshSpec.identity) {
                         jsch.addIdentity(sshSpec.identity.path, sshSpec.passphrase as String)
-                    }
+                    } else if (spec.remote.usePuttyAgent) {
+						def connectorFactory = ConnectorFactory.getDefault()
+						def connector = connectorFactory.createConnector()
+						def identityRepository = new RemoteIdentityRepository(connector)
+						jsch.setIdentityRepository(identityRepository)
+					}
 
                     session.connect()
                     sessions.put(spec, session)
