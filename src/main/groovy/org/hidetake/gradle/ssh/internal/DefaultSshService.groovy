@@ -63,7 +63,7 @@ class DefaultSshService implements SshService {
                         jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase as String)
                     } else if (sshSpec.identity) {
                         jsch.addIdentity(sshSpec.identity.path, sshSpec.passphrase as String)
-                    } else if (spec.remote.usePuttyAgent) {
+                    } else if (spec.remote.agent) {
 						def connectorFactory = ConnectorFactory.getDefault()
 						def connector = connectorFactory.createConnector()
 						def identityRepository = new RemoteIdentityRepository(connector)

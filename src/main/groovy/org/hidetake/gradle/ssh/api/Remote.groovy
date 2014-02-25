@@ -53,10 +53,10 @@ class Remote {
     String passphrase
 
     /**
-     * Use Putty Agent flag.
-     * If <code>true</code>, Putty Agent will be used to authenticate.
+     * Use agent flag.
+     * If <code>true</code>, Putty Agent or ssh-agent will be used to authenticate.
      */
-    boolean usePuttyAgent
+    boolean agent
 
     /**
      * Add a role to this remote.
