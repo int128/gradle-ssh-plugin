@@ -1,6 +1,7 @@
 #!/bin/bash -xe
 
 function acceptance_test () {
+    mkdir -p build/reports
     exec > >(tee "build/reports/acceptance-test.log") 2>&1
 
     ssh-keygen -t rsa -N '' -C '' -f ~/.ssh/id_rsa
@@ -14,7 +15,6 @@ function acceptance_test () {
         -i ~/.ssh/id_rsa localhost true
     grep localhost ~/.ssh/known_hosts
 
-    mkdir -p build/reports
     ./gradlew -i -s -p acceptance-test test aggressiveTest
 
     eval $(ssh-agent)
