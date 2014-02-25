@@ -16,6 +16,9 @@ function acceptance_test () {
 
     mkdir -p build/reports
     ./gradlew -i -s -p acceptance-test test aggressiveTest
+
+    ssh-add ~/.ssh/id_rsa
+    ./gradlew -i -s -p acceptance-test testWithAgent
 }
 
 function publish_report () {

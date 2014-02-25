@@ -1,14 +1,16 @@
 apply plugin: 'ssh'
 
-ssh {
-    identity = file("${System.properties['user.home']}/.ssh/id_rsa")
-}
-
 remotes {
     localhost {
         role 'testServers'
         host = 'localhost'
         user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+    usingAgent {
+        host = 'localhost'
+        user = System.properties['user.name']
+        agent = true
     }
     sudoWithPassword {
         host = 'localhost'
@@ -53,6 +55,25 @@ task executeCommandByRole(type: SshTask) {
         ext.y = randomInt()
     }
     session(remotes.role('testServers')) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
+feature('authenticate with the ssh agent') {
+    task 'authenticateWithSshAgent'
+    category 'testWithAgent'
+}
+
+task authenticateWithSshAgent(type: SshTask) {
+    doFirst {
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.usingAgent) {
         ext.a = execute "expr $x + $y"
     }
     doLast {

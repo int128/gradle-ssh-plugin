@@ -50,6 +50,10 @@ task test {
     description = 'Run tests'
 }
 
+task testWithAgent {
+    description = 'Run tests which require ssh-agent'
+}
+
 task aggressiveTest {
     description = 'Run tests which may cause modification of the environment'
 }
