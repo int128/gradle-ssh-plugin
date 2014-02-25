@@ -63,6 +63,7 @@ A remote host object has following properties:
   * `password` - Password for password authentication. (Optional)
   * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
   * `passphrase` - Pass phrase for the private key. (Optional)
+  * `agent` - If this flag is set, Putty Agent or ssh-agent will be used to authentication. (Optional)
 
 Use `role(name)` to associate the host with roles. A remote host can be associated with multiple roles.
 
