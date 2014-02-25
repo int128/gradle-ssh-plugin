@@ -17,16 +17,15 @@ buildscript {
 
 class FeatureDelegate {
     String task = null
-    boolean aggressiveTest = false
-    String aggressiveReason = null
+    final List<String> categories = []
 
     void task(String path) {
         assert task == null, 'feature task is already set'
         task = path
     }
-    void aggressiveTest(String reason) {
-        aggressiveTest = true
-        aggressiveReason = reason
+
+    void category(String name) {
+        categories << name
     }
 }
 
@@ -37,15 +36,13 @@ def feature(String name, Closure featureClosure) {
     featureClosure.call()
 
     if (feature.task) {
-        if (feature.aggressiveTest) {
-            tasks.aggressiveTest.dependsOn(feature.task)
-            logger.info("Added feature: $name (aggressive test because ${feature.aggressiveReason})")
-        } else {
-            tasks.test.dependsOn(feature.task)
-            logger.info("Added feature: $name")
+        logger.info("Added feature: $name")
+        feature.categories.each { project.tasks.getByName(it).dependsOn(feature.task) }
+        if (feature.categories.empty) {
+            logger.warn "Warning: feature `$name` does not belong to any category"
         }
     } else {
-        logger.warn "Feature ignored: $name"
+        logger.warn "Warning: empty feature `$name`"
     }
 }
 

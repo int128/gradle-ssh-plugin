@@ -25,6 +25,7 @@ remotes {
 
 feature('executing a command') {
     task 'executeCommand'
+    category 'test'
 }
 
 task executeCommand(type: SshTask) {
@@ -43,6 +44,7 @@ task executeCommand(type: SshTask) {
 
 feature('filter hosts by role') {
     task 'executeCommandByRole'
+    category 'test'
 }
 
 task executeCommandByRole(type: SshTask) {
@@ -61,6 +63,7 @@ task executeCommandByRole(type: SshTask) {
 
 feature('executing commands sequentially') {
     task 'executeSequentially'
+    category 'test'
 }
 
 task executeSequentially(type: SshTask) {
@@ -87,6 +90,7 @@ task executeSequentially(type: SshTask) {
 
 feature('each command should have independent environment') {
     task 'testEnvironmentOfCommand'
+    category 'test'
 }
 
 task testEnvironmentOfCommand(type: SshTask) {
@@ -102,6 +106,7 @@ task testEnvironmentOfCommand(type: SshTask) {
 
 feature('executing a command with PTY allocation') {
     task 'executeCommandWithPty'
+    category 'test'
 }
 
 task executeCommandWithPty(type: SshTask) {
@@ -118,6 +123,7 @@ task executeCommandWithPty(type: SshTask) {
 
 feature('executing commands concurrently') {
     task 'executeConcurrently'
+    category 'test'
 }
 
 task executeConcurrently(type: SshTask) {
@@ -149,6 +155,7 @@ task executeConcurrently(type: SshTask) {
 
 feature('handling failure of the remote command') {
     task 'failureStatus'
+    category 'test'
 }
 
 task failureStatus << {
@@ -167,6 +174,7 @@ task failureStatus << {
 
 feature('handling failure of the remote command in background') {
     task 'failureStatusInBackground'
+    category 'test'
 }
 
 task failureStatusInBackground << {
@@ -185,7 +193,7 @@ task failureStatusInBackground << {
 
 feature('executing a privileged command by sudo') {
     task 'executeSudoWithPassword'
-    aggressiveTest 'requires creating an user and setting up sudoers'
+    category 'aggressiveTest'
 }
 
 task executeSudoWithPassword(type: SshTask) {
@@ -232,7 +240,7 @@ task deleteUserForSudoWithPassword(type: SshTask) {
 
 feature('executing a privileged command by sudo without password') {
     task 'executeSudoNoPassword'
-    aggressiveTest 'requires creating an user and setting up sudoers'
+    category 'aggressiveTest'
 }
 
 task executeSudoNoPassword(type: SshTask) {
@@ -279,7 +287,7 @@ task deleteUserForSudoNoPassword(type: SshTask) {
 
 feature('using remote specific identity') {
     task 'useRemoteSpecificIdentity'
-    aggressiveTest 'requires creating an user and setting up key pair'
+    category 'aggressiveTest'
 }
 
 remotes {
@@ -324,6 +332,7 @@ task deleteUserWithAuthorizedKey(type: SshTask) {
 
 feature('executing a shell') {
     task 'executeShell'
+    category 'test'
 }
 
 task executeShell(type: SshTask) {
@@ -341,6 +350,7 @@ task executeShell(type: SshTask) {
 
 feature('sending files to the remote host and acquiring result files') {
     task 'putAndGetFiles'
+    category 'test'
 }
 
 task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
