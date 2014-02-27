@@ -22,6 +22,23 @@ remotes {
         user = "user${randomInt()}n"
         password = "pass${randomInt()}"
     }
+    gw1 {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+    gw2 {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+        gateway = remotes.gw1
+    }
+    viaGateway {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+        gateway = remotes.gw2
+    }
 }
 
 
@@ -74,6 +91,28 @@ task authenticateWithSshAgent(type: SshTask) {
         ext.y = randomInt()
     }
     session(remotes.usingAgent) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
+feature('connect via a gateway host') {
+    task 'connectViaGateway'
+    category 'testGateway'
+}
+
+task connectViaGateway(type: SshTask) {
+    doFirst {
+        // FIXME: this affects global settings
+        ssh { knownHosts = allowAnyHosts }
+
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.viaGateway) {
         ext.a = execute "expr $x + $y"
     }
     doLast {
