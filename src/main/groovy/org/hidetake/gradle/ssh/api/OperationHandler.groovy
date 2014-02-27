@@ -144,4 +144,13 @@ interface OperationHandler {
      * @param remote
      */
     void put(Map<String, Object> options, String local, String remote)
+
+    /**
+     * Enables local port forwarding.
+     *
+     * @param remoteHost remote host
+     * @param remotePort remote port
+     * @return local port (automatically assigned)
+     */
+    int forwardLocalPortTo(String remoteHost, int remotePort)
 }

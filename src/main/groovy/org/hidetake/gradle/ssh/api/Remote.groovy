@@ -31,15 +31,16 @@ class Remote {
     String host
 
     /**
+     * Gateway host.
+     * This may be null.
+     */
+    Remote gateway
+
+    /**
      * Password.
      * Leave as null if public key authentication.
      */
     String password
-
-    /**
-     * Roles.
-     */
-    final roles = [] as List<String>
 
     /**
      * Identity key file for public-key authentication.
@@ -57,6 +58,11 @@ class Remote {
      * If <code>true</code>, Putty Agent or ssh-agent will be used to authenticate.
      */
     boolean agent
+
+    /**
+     * Roles.
+     */
+    final roles = [] as List<String>
 
     /**
      * Add a role to this remote.
