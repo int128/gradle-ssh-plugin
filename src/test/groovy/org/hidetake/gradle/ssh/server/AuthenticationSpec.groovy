@@ -229,7 +229,7 @@ class AuthenticationSpec extends Specification {
         then:
         TaskExecutionException e = thrown()
         e.cause.cause instanceof JSchException
-        e.cause.cause.message == 'Auth fail'
+        e.cause.cause.message == 'USERAUTH fail'
     }
 
     def "remote specific identity overrides global one"() {
@@ -258,7 +258,7 @@ class AuthenticationSpec extends Specification {
         then:
         TaskExecutionException e = thrown()
         e.cause.cause instanceof JSchException
-        e.cause.cause.message == 'Auth fail'
+        e.cause.cause.message == 'USERAUTH fail'
     }
 
     static identityFile(String name) {
