@@ -23,6 +23,13 @@ import org.hidetake.gradle.ssh.internal.session.ChannelManager
 class DefaultSshService implements SshService {
     protected Closure<JSch> jschFactory = { new JSch() }
 
+    @Lazy
+    protected remoteIdentityRepository = {
+        def connectorFactory = ConnectorFactory.getDefault()
+        def connector = connectorFactory.createConnector()
+        new RemoteIdentityRepository(connector)
+    }()
+
     @Override
     void execute(SshSpec sshSpec) {
         assert sshSpec.dryRun == Boolean.FALSE, 'dryRun should be false'
@@ -58,17 +65,17 @@ class DefaultSshService implements SshService {
                         session.password = spec.remote.password
                     }
 
-                    jsch.removeAllIdentity()
-                    if (spec.remote.identity) {
-                        jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase as String)
-                    } else if (sshSpec.identity) {
-                        jsch.addIdentity(sshSpec.identity.path, sshSpec.passphrase as String)
-                    } else if (spec.remote.agent) {
-						def connectorFactory = ConnectorFactory.getDefault()
-						def connector = connectorFactory.createConnector()
-						def identityRepository = new RemoteIdentityRepository(connector)
-						jsch.setIdentityRepository(identityRepository)
-					}
+                    if (spec.remote.agent) {
+                        jsch.identityRepository = remoteIdentityRepository
+                    } else {
+                        jsch.identityRepository = null    /* null means the default repository */
+                        jsch.removeAllIdentity()
+                        if (spec.remote.identity) {
+                            jsch.addIdentity(spec.remote.identity.path, spec.remote.passphrase as String)
+                        } else if (sshSpec.identity) {
+                            jsch.addIdentity(sshSpec.identity.path, sshSpec.passphrase as String)
+                        }
+                    }
 
                     session.connect()
                     sessions.put(spec, session)
