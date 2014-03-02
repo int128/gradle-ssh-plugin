@@ -50,51 +50,6 @@ class PortForwardingSpec extends Specification {
     }
 
 
-    def "local port forwarding"() {
-        given:
-        gateway1Server.start()
-        targetServer.start()
-
-        project.with {
-            task(type: SshTask, 'localPortForwardingTask') {
-                remotes {
-                    gw {
-                        host = gateway1Server.host
-                        port = gateway1Server.port
-                        user = 'gateway1User'
-                        password = 'gateway1Password'
-                    }
-                }
-                session(remotes.gw) {
-                    int localPort = forwardLocalPortTo(targetServer.host, targetServer.port)
-                    remotes.create('targetViaGateway') {
-                        host = 'localhost'
-                        port = localPort
-                        user = 'targetUser'
-                        password = 'targetPassword'
-                    }
-                    sshexec {
-                        session(remotes.targetViaGateway) {
-                            shell {}
-                        }
-                    }
-                }
-            }
-        }
-
-        when:
-        project.tasks.localPortForwardingTask.execute()
-
-        then:
-        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
-
-        then:
-        1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(0)
-        }
-    }
-
-
     def "connect via the gateway server"() {
         given:
         gateway1Server.start()
