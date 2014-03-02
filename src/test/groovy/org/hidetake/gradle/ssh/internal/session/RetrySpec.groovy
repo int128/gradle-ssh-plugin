@@ -1,18 +1,18 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.internal.session
 
 import com.jcraft.jsch.JSchException
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineMetaClassChanges(DefaultSshService)
-class DefaultSshServiceSpec extends Specification {
+@ConfineMetaClassChanges(Retry)
+class RetrySpec extends Specification {
 
     @Shared
     Closure sleepMock
 
     def setupSpec() {
-        DefaultSshService.instance.metaClass.static.sleep = { long ms ->
+        Retry.metaClass.static.sleep = { long ms ->
             sleepMock.call(ms)
         }
     }
@@ -27,7 +27,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(0, 10, closure)
+        Retry.retry(0, 10, closure)
 
         then:
         1 * closure.call()
@@ -41,7 +41,7 @@ class DefaultSshServiceSpec extends Specification {
         }
 
         when:
-        DefaultSshService.instance.retry(0, 10, closure)
+        Retry.retry(0, 10, closure)
 
         then:
         0 * sleepMock.call(_)
@@ -53,7 +53,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(1, 10, closure)
+        Retry.retry(1, 10, closure)
 
         then:
         1 * closure.call()
@@ -65,7 +65,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(1, 10, closure)
+        Retry.retry(1, 10, closure)
 
         then: 1 * closure.call() >> { throw new JSchException() }
         then: 1 * sleepMock.call(10000)
@@ -77,7 +77,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(1, 10, closure)
+        Retry.retry(1, 10, closure)
 
         then: 1 * closure.call() >> { throw new JSchException() }
         then: 1 * sleepMock.call(10000)
@@ -90,7 +90,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(2, 10, closure)
+        Retry.retry(2, 10, closure)
 
         then:
         1 * closure.call()
@@ -102,7 +102,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(2, 10, closure)
+        Retry.retry(2, 10, closure)
 
         then: 1 * closure.call() >> { throw new JSchException() }
         then: 1 * sleepMock.call(10000)
@@ -114,7 +114,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(2, 10, closure)
+        Retry.retry(2, 10, closure)
 
         then: 1 * closure.call() >> { throw new JSchException() }
         then: 1 * sleepMock.call(10000)
@@ -128,7 +128,7 @@ class DefaultSshServiceSpec extends Specification {
         def closure = Mock(Closure)
 
         when:
-        DefaultSshService.instance.retry(2, 10, closure)
+        Retry.retry(2, 10, closure)
 
         then: 1 * closure.call() >> { throw new JSchException() }
         then: 1 * sleepMock.call(10000)
