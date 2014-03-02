@@ -17,6 +17,8 @@ import static org.hidetake.gradle.ssh.internal.session.Retry.retry
  */
 @Slf4j
 class SessionManager {
+    protected static final LOCALHOST = '127.0.0.1'
+
     final SshSpec sshSpec
     final JSch jsch
     final List<Session> sessions = []
@@ -55,12 +57,31 @@ class SessionManager {
     /**
      * Establish a JSch session.
      *
-     * @param spec session spec
+     * @param remote target remote host
      * @return a JSch session
      */
     Session create(Remote remote) {
+        if (remote.gateway) {
+            def session = create(remote.gateway)
+            def localPort = session.setPortForwardingL(0, remote.host, remote.port)
+            log.info("Enabled local port forwarding from $localPort to ${remote.host}:${remote.port}")
+            createVia(remote, LOCALHOST, localPort)
+        } else {
+            createVia(remote, remote.host, remote.port)
+        }
+    }
+
+    /**
+     * Establish a JSch session via given host and port.
+     *
+     * @param remote target remote host
+     * @param host endpoint host (usually <code>remote.host</code>)
+     * @param port endpoint port (usually <code>remote.port</code>)
+     * @return a JSch session
+     */
+    protected Session createVia(Remote remote, String host, int port) {
         retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
-            def session = jsch.getSession(remote.user, remote.host, remote.port)
+            def session = jsch.getSession(remote.user, host, port)
             if (remote.password) {
                 session.password = remote.password
             }
@@ -77,6 +98,7 @@ class SessionManager {
             }
 
             session.connect()
+            log.info("Established a session to $remote via $host:$port")
             sessions.add(session)
             session
         }

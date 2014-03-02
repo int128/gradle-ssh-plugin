@@ -5,7 +5,6 @@ import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSpec
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
-import org.hidetake.gradle.ssh.internal.session.GatewaySessionTransformation
 import org.hidetake.gradle.ssh.internal.session.SessionManager
 
 /**
@@ -24,12 +23,15 @@ class DefaultSshService implements SshService {
         def sessionManager = new SessionManager(sshSpec)
         def channelManager = new ChannelManager()
         try {
-            def sessionSpecs = GatewaySessionTransformation.transform(sshSpec.sessionSpecs)
-            sessionSpecs.each { sessionSpec ->
+            sshSpec.sessionSpecs.collect { sessionSpec ->
                 def session = sessionManager.create(sessionSpec.remote)
 
-                def handler = new DefaultOperationHandler(sshSpec, sessionSpec, session, channelManager)
-                handler.with(sessionSpec.operationClosure)
+                def operation = sessionSpec.operationClosure
+                operation.delegate = new DefaultOperationHandler(sshSpec, sessionSpec, session, channelManager)
+                operation.resolveStrategy = Closure.DELEGATE_FIRST
+                operation
+            }.each {
+                it.call()
             }
 
             channelManager.waitForPending { Channel channel ->
