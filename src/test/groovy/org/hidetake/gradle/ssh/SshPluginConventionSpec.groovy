@@ -28,7 +28,6 @@ class SshPluginConventionSpec extends Specification {
             dryRun = true
             retryCount = 1
             retryWaitSec = 1
-            config(myConfig: 'myConfigValue')
             outputLogLevel = LogLevel.DEBUG
             errorLogLevel = LogLevel.INFO
         }
@@ -41,7 +40,6 @@ class SshPluginConventionSpec extends Specification {
             dryRun
             retryCount == 1
             retryWaitSec == 1
-            config.myConfig == 'myConfigValue'
             outputLogLevel == LogLevel.DEBUG
             errorLogLevel == LogLevel.INFO
         }

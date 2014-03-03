@@ -62,31 +62,9 @@ class SshSpec {
     String encoding = null
 
     /**
-     * JSch configuration.
-     *
-     * @deprecated removed in v0.3.0
-     */
-    final config = [:] as Map<String, Object>
-
-    /**
      * Sessions.
      */
     final sessionSpecs = [] as List<SessionSpec>
-
-    /**
-     * Adds configuration. For example:
-     * <pre>
-     * config(StrictHostKeyChecking: 'no')
-     * </pre>
-     *
-     * @param pairs key value pairs of configuration
-     * @deprecated removed in v0.3.0
-     */
-    void config(Map<String, Object> pairs) {
-        assert pairs != null, 'pairs should be set'
-        log.warn("Deprecated: config() in ssh closure will be removed in v0.3.0")
-        config.putAll(pairs)
-    }
 
     /**
      * Adds a session.
@@ -123,7 +101,6 @@ class SshSpec {
     static SshSpec computeMerged(SshSpec... specs) {
         def merged = new SshSpec()
         specs.reverse().each { spec ->
-            merged.config.putAll(spec.config)
             merged.sessionSpecs.addAll(spec.sessionSpecs)
         }
 

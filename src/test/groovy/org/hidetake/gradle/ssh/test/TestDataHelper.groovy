@@ -13,7 +13,6 @@ class TestDataHelper {
             dryRun = false
             retryCount = 1
             retryWaitSec = 1
-            config([myConf: 'myConf'])
             outputLogLevel = LogLevel.LIFECYCLE
             errorLogLevel = LogLevel.LIFECYCLE
 

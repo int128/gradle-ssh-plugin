@@ -39,14 +39,6 @@ class DefaultOperationHandler extends AbstractOperationHandler {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
-
-            // TODO: removed in v0.3.0
-            def remainingOptions = options.findAll { !(it.key in ['logging']) }
-            remainingOptions.each { k, v ->
-                channel[k] = v
-                log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
-            }
-
             def context = DefaultShellContext.create(channel, sshSpec.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSpec.outputLogLevel)
@@ -77,13 +69,6 @@ class DefaultOperationHandler extends AbstractOperationHandler {
             def channel = session.openChannel('exec') as ChannelExec
             channel.command = command
             channel.pty = settings.pty
-
-            // TODO: removed in v0.3.0
-            def remainingOptions = options.findAll { !(it.key in ['pty', 'logging']) }
-            remainingOptions.each { k, v ->
-                channel[k] = v
-                log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
-            }
 
             def context = DefaultCommandContext.create(channel, sshSpec.encoding)
             if (settings.logging) {
@@ -148,13 +133,6 @@ class DefaultOperationHandler extends AbstractOperationHandler {
         channel.command = command
         channel.pty = settings.pty
 
-        // TODO: removed in v0.3.0
-        def remainingOptions = options.findAll { !(it.key in ['pty', 'logging']) }
-        remainingOptions.each { k, v ->
-            channel[k] = v
-            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
-        }
-
         def context = DefaultCommandContext.create(channel, sshSpec.encoding)
         if (settings.logging) {
             context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
@@ -172,12 +150,6 @@ class DefaultOperationHandler extends AbstractOperationHandler {
         log.info("Get a remote file (${remote}) to local (${local})")
         def channel = session.openChannel('sftp') as ChannelSftp
 
-        // TODO: removed in v0.3.0
-        options.each { k, v ->
-            channel[k] = v
-            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
-        }
-
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
@@ -192,12 +164,6 @@ class DefaultOperationHandler extends AbstractOperationHandler {
     void put(Map<String, Object> options, String local, String remote) {
         log.info("Put a local file (${local}) to remote (${remote})")
         def channel = session.openChannel('sftp') as ChannelSftp
-
-        // TODO: removed in v0.3.0
-        options.each { k, v ->
-            channel[k] = v
-            log.warn("Deprecated: JSch option `$k` will be no longer supported in v0.3.0")
-        }
 
         try {
             channel.connect()

@@ -33,17 +33,6 @@ class SessionManager {
         sshSpec = sshSpec1
         jsch = new JSch()
 
-        // TODO: for backward compatibility, to be removed in v0.3.0
-        sshSpec.config.each { k, v ->
-            if ([k, v] == ['StrictHostKeyChecking', 'no']) {
-                sshSpec.knownHosts = SshSpec.allowAnyHosts
-                log.warn("Deprecated: Use `knownHosts = allowAnyHosts` instead of `config($k: '$v')`")
-            } else {
-                jsch.setConfig(k, v.toString())
-                log.warn("Deprecated: JSch config `$k` will be no longer supported in v0.3.0")
-            }
-        }
-
         if (sshSpec.knownHosts == SshSpec.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
             log.info('Strict host key checking is turned off. Use only for testing purpose.')

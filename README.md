@@ -119,9 +119,6 @@ In the `SshTask` closure, following properties are available:
   * `errorLogLevel` - Log level of standard error for executing commands.
   * `encoding` - Encoding of input and output for executing commands.
 
-Also following method is available:
-  * `config(key: value)` - _(deprecated; removed in v0.3.0)_ Pass config to the JSch.
-
 Task specific setting overrides the global setting.
 
 
@@ -284,9 +281,6 @@ Following properties are available:
   * `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
   * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
   * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
-
-Also following method is available:
-  * `config(key: value)` - _(deprecated; removed in v0.3.0)_ Pass config to the JSch.
 
 
 Contributions

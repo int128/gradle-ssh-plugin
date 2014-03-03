@@ -23,23 +23,6 @@ class SshSpecSpec extends Specification {
         spec = new SshSpec()
     }
 
-    def "add configuration params"() {
-        when:
-        spec.config conf1: '1', conf2: '2'
-
-        then:
-        spec.config.size() == 2
-        spec.config == [conf1: '1', conf2: '2']
-    }
-
-    def "add config with null param throws assertion error"() {
-        when:
-        spec.config null
-
-        then:
-        thrown AssertionError
-    }
-
 
     def "add session"() {
         given:
@@ -139,7 +122,6 @@ class SshSpecSpec extends Specification {
             outputLogLevel = LogLevel.DEBUG
             errorLogLevel = LogLevel.INFO
             encoding = 'US-ASCII'
-            config([myConf: 'myConf2'])
 
             it
         }
@@ -148,7 +130,6 @@ class SshSpecSpec extends Specification {
         def merged = SshSpec.computeMerged(spec2, spec1)
 
         then:
-        merged.config == spec1.config + spec2.config
         merged.sessionSpecs == spec1.sessionSpecs + spec2.sessionSpecs
         merged.knownHosts == spec2.knownHosts
         merged.dryRun == spec2.dryRun
@@ -197,7 +178,6 @@ class SshSpecSpec extends Specification {
 
 
     private def assertEquals(SshSpec expected, SshSpec actual) {
-        assert expected.config == actual.config
         assert expected.knownHosts == actual.knownHosts
         assert expected.dryRun == actual.dryRun
         assert expected.retryCount == actual.retryCount

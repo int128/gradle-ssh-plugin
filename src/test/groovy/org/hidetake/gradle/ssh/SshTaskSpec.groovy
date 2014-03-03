@@ -35,18 +35,6 @@ class SshTaskSpec extends Specification {
         1 * mockService.execute(mergedSpecMock)
     }
 
-    def "task delegates to SshSpec"() {
-        when:
-        Project project = setupSampleProject()
-        SshTask task = project.tasks.testTask
-
-
-        then:
-        task.config == task.sshSpec.config
-        task.config.myConf == 'MyConfValue'
-
-    }
-
 
 
     private Project setupSampleProject() {
@@ -60,7 +48,6 @@ class SshTaskSpec extends Specification {
                 }
             }
             task(type: SshTask, 'testTask') {
-                config(myConf: 'MyConfValue')
                 session(remotes.webServer) {
                     execute 'ls'
                 }
