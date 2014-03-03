@@ -54,6 +54,10 @@ task testWithAgent {
     description = 'Run tests which require ssh-agent'
 }
 
+task testGateway {
+    description = 'Run tests of gateway (separate to turn off host key checking)'
+}
+
 task aggressiveTest {
     description = 'Run tests which may cause modification of the environment'
 }
