@@ -1,8 +1,8 @@
-package org.hidetake.gradle.ssh.internal.command
+package org.hidetake.gradle.ssh.internal.interaction
 
-import org.hidetake.gradle.ssh.api.command.Stream
-import org.hidetake.gradle.ssh.api.command.Wildcard
-import org.hidetake.gradle.ssh.internal.command.InteractionRule.Event
+import org.hidetake.gradle.ssh.api.interaction.Stream
+import org.hidetake.gradle.ssh.api.interaction.Wildcard
+import org.hidetake.gradle.ssh.internal.interaction.InteractionRule.Event
 import spock.lang.Specification
 import spock.lang.Unroll
 

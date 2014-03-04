@@ -1,9 +1,9 @@
-package org.hidetake.gradle.ssh.internal.command
+package org.hidetake.gradle.ssh.internal.interaction
 
 import groovy.transform.Immutable
 import groovy.transform.TupleConstructor
-import org.hidetake.gradle.ssh.api.command.Stream
-import org.hidetake.gradle.ssh.api.command.Wildcard
+import org.hidetake.gradle.ssh.api.interaction.Stream
+import org.hidetake.gradle.ssh.api.interaction.Wildcard
 
 import java.util.regex.Pattern
 

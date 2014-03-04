@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.command
+package org.hidetake.gradle.ssh.internal.interaction
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
