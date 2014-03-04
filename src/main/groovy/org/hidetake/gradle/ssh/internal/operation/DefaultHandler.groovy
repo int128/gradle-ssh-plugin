@@ -9,7 +9,7 @@ import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.CommandContext
 import org.hidetake.gradle.ssh.api.SessionSpec
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.internal.DefaultCommandContext
@@ -25,7 +25,7 @@ import org.hidetake.gradle.ssh.internal.session.ChannelManager
 @TupleConstructor
 @Slf4j
 class DefaultHandler implements Handler {
-    final SshSpec sshSpec
+    final SshSettings sshSettings
     final SessionSpec sessionSpec
     final Session session
     final ChannelManager globalChannelManager
@@ -35,9 +35,9 @@ class DefaultHandler implements Handler {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
-            def context = DefaultShellContext.create(channel, sshSpec.encoding)
+            def context = DefaultShellContext.create(channel, sshSettings.encoding)
             if (settings.logging) {
-                context.enableLogging(sshSpec.outputLogLevel)
+                context.enableLogging(sshSettings.outputLogLevel)
             }
 
             interactions.delegate = context
@@ -63,9 +63,9 @@ class DefaultHandler implements Handler {
             channel.command = command
             channel.pty = settings.pty
 
-            def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+            def context = DefaultCommandContext.create(channel, sshSettings.encoding)
             if (settings.logging) {
-                context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+                context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
             }
 
             def lines = [] as List<String>
@@ -121,9 +121,9 @@ class DefaultHandler implements Handler {
         channel.command = command
         channel.pty = settings.pty
 
-        def context = DefaultCommandContext.create(channel, sshSpec.encoding)
+        def context = DefaultCommandContext.create(channel, sshSettings.encoding)
         if (settings.logging) {
-            context.enableLogging(sshSpec.outputLogLevel, sshSpec.errorLogLevel)
+            context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
         }
 
         globalChannelManager.add(channel)

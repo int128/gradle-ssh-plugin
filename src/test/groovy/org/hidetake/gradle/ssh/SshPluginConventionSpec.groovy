@@ -4,7 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.SshService
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 import spock.lang.Specification
 
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
@@ -36,7 +36,7 @@ class SshPluginConventionSpec extends Specification {
         convention.ssh(configClosure)
 
         then:
-        convention.sshSpec.with {
+        convention.sshSettings.with {
             dryRun
             retryCount == 1
             retryWaitSec == 1
@@ -69,9 +69,9 @@ class SshPluginConventionSpec extends Specification {
         SshService serviceMock = Mock(SshService)
         convention.service = serviceMock
 
-        SshSpec mergedSpecMock = Mock(SshSpec)
-        GroovySpy(SshSpec, global: true)
-        1 * SshSpec.computeMerged(_, _) >> mergedSpecMock
+        SshSettings mergedSpecMock = Mock(SshSettings)
+        GroovySpy(SshSettings, global: true)
+        1 * SshSettings.computeMerged(_, _) >> mergedSpecMock
 
         when:
         convention.sshexec({})
