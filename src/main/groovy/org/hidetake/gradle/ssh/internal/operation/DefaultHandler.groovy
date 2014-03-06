@@ -7,13 +7,10 @@ import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.CommandContext
-import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.internal.DefaultCommandContext
-import org.hidetake.gradle.ssh.internal.DefaultShellContext
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
@@ -26,7 +23,7 @@ import org.hidetake.gradle.ssh.internal.session.ChannelManager
 @Slf4j
 class DefaultHandler implements Handler {
     final SshSettings sshSettings
-    final SessionSpec sessionSpec
+    final Remote remote
     final Session session
     final ChannelManager globalChannelManager
 
@@ -35,7 +32,7 @@ class DefaultHandler implements Handler {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
-            def context = DefaultShellContext.create(channel, sshSettings.encoding)
+            def context = ShellDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel)
             }
@@ -63,7 +60,7 @@ class DefaultHandler implements Handler {
             channel.command = command
             channel.pty = settings.pty
 
-            def context = DefaultCommandContext.create(channel, sshSettings.encoding)
+            def context = ExecutionDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
             }
@@ -95,7 +92,7 @@ class DefaultHandler implements Handler {
             interaction {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Sending password for sudo authentication on channel #${channel.id}")
-                    standardInput << sessionSpec.remote.password << '\n'
+                    standardInput << remote.password << '\n'
 
                     when(nextLine: _, from: standardOutput) {
                         when(nextLine: 'Sorry, try again.') {
@@ -116,12 +113,12 @@ class DefaultHandler implements Handler {
     }
 
     @Override
-    CommandContext executeBackground(ExecutionSettings settings, String command) {
+    void executeBackground(ExecutionSettings settings, String command) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         channel.pty = settings.pty
 
-        def context = DefaultCommandContext.create(channel, sshSettings.encoding)
+        def context = ExecutionDelegate.create(channel, sshSettings.encoding)
         if (settings.logging) {
             context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
         }
@@ -129,8 +126,6 @@ class DefaultHandler implements Handler {
         globalChannelManager.add(channel)
         channel.connect()
         log.info("Channel #${channel.id} has been opened")
-
-        context
     }
 
     @Override

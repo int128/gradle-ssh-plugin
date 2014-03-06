@@ -1,58 +1,49 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.gradle.util.ConfigureUtil
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.internal.DefaultSshService
-import org.hidetake.gradle.ssh.internal.DryRunSshService
+import org.hidetake.gradle.ssh.api.task.Executor
+import org.hidetake.gradle.ssh.registry.Registry
+
+import static org.gradle.util.ConfigureUtil.configure
 
 /**
  * Convention properties and methods.
  *
  * @author hidetake.org
- *
  */
 class SshPluginConvention {
-    protected final sshSettings = new SshSettings()
-    protected service = DefaultSshService.instance
-    protected dryRunService = DryRunSshService.instance
-
     /**
-     * Alias to omit import in the build script.
+     * Alias to omit import in build script.
      */
-    final SshTask = classOfSshTask
-
-    // fixes inspection warning (Unnecessary fully qualified name)
-    private static final classOfSshTask = SshTask
+    final Class SshTask = org.hidetake.gradle.ssh.plugin.SshTask
 
     /**
-     * Configures global settings.
+     * Global settings.
+     */
+    final ssh = new SshSettings()
+
+    private final executor = Registry.instance[Executor]
+
+    /**
+     * Configure global settings.
      *
-     * @param configureClosure closure for {@link SshSettings}
+     * @param closure closure for {@link SshSettings}
      */
-    void ssh(Closure configureClosure) {
-        assert configureClosure != null, 'configureClosure should be set'
-
-        ConfigureUtil.configure(configureClosure, sshSettings)
-        if (sshSettings.sessionSpecs.size() > 0) {
-            throw new IllegalStateException('Do not declare any session in convention')
-        }
+    void ssh(Closure closure) {
+        assert closure, 'closure should be set'
+        configure(closure, ssh)
     }
 
     /**
-     * Executes SSH operations instead of a project task.
+     * Execute a task.
      *
-     * @param configureClosure configuration closure for {@link SshSettings}
+     * @param closure closure for {@link SshTaskDelegate}
      */
-    void sshexec(Closure configureClosure) {
-        assert configureClosure != null, 'configureClosure should be set'
-
-        def localSpec = new SshSettings()
-        ConfigureUtil.configure(configureClosure, localSpec)
-        def merged = SshSettings.computeMerged(localSpec, sshSettings)
-        if (merged.dryRun) {
-            dryRunService.execute(merged)
-        } else {
-            service.execute(merged)
-        }
+    void sshexec(Closure closure) {
+        assert closure, 'closure should be set'
+        def delegate = new SshTaskDelegate()
+        configure(closure, delegate)
+        def mergedSettings = SshSettings.computeMerged(delegate.sshSettings, ssh)
+        executor.execute(mergedSettings, delegate.sessionSpecs)
     }
 }

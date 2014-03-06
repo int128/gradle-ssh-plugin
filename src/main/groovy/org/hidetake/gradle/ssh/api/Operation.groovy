@@ -96,7 +96,7 @@ interface Operation {
      *
      * @param command
      */
-    CommandContext executeBackground(String command)
+    void executeBackground(String command)
 
     /**
      * Performs an execution operation.
@@ -105,7 +105,7 @@ interface Operation {
      * @param settings execution settings
      * @param command
      */
-    CommandContext executeBackground(HashMap settings, String command)
+    void executeBackground(HashMap settings, String command)
 
     /**
      * Performs a GET operation.

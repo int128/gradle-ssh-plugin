@@ -4,7 +4,7 @@ package org.hidetake.gradle.ssh.api.interaction
  *
  * @author hidetake.org
  */
-interface Interaction {
+interface InteractionHandler {
     /**
      * Wildcard for condition expression.
      */

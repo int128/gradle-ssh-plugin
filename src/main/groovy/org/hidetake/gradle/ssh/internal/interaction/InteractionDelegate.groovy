@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal.interaction
 
 import groovy.transform.TupleConstructor
-import org.hidetake.gradle.ssh.api.interaction.Interaction
+import org.hidetake.gradle.ssh.api.interaction.InteractionHandler
 
 /**
  * A delegate class for interaction closure.
@@ -9,7 +9,7 @@ import org.hidetake.gradle.ssh.api.interaction.Interaction
  * @author hidetake.org
  */
 @TupleConstructor
-class InteractionDelegate implements Interaction {
+class InteractionDelegate implements InteractionHandler {
     final OutputStream standardInput
 
     private final List<InteractionRule> interactionRules = []

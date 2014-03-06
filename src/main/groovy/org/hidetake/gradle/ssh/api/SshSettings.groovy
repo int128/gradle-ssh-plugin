@@ -62,37 +62,6 @@ class SshSettings {
     String encoding = null
 
     /**
-     * Sessions.
-     */
-    final sessionSpecs = [] as List<SessionSpec>
-
-    /**
-     * Adds a session.
-     *
-     * @param remote the remote
-     * @param operationClosure closure for {@link Operation} (run in execution phase)
-     */
-    void session(Remote remote, Closure operationClosure) {
-        assert remote != null, 'remote should be set'
-        assert remote.user != null, "user of remote ${remote.name} should be set"
-        assert remote.host != null, "host of remote ${remote.name} should be set"
-        assert operationClosure != null, 'operationClosure should be set'
-        sessionSpecs.add(new SessionSpec(remote, operationClosure))
-    }
-
-    /**
-     * Adds sessions.
-     *
-     * @param remotes collection of {@link Remote}s
-     * @param operationClosure closure for {@link Operation} (run in execution phase)
-     */
-    void session(Collection<Remote> remotes, Closure operationClosure) {
-        assert remotes, 'remotes should contain at least one'
-        assert operationClosure != null, 'operationClosure should be set'
-        remotes.each { Remote remote -> session(remote, operationClosure) }
-    }
-
-    /**
      * Computes merged settings.
      *
      * @param specs list of {@link SshSettings}s in priority order (first item is highest priority)
@@ -100,9 +69,6 @@ class SshSettings {
      */
     static SshSettings computeMerged(SshSettings... specs) {
         def merged = new SshSettings()
-        specs.reverse().each { spec ->
-            merged.sessionSpecs.addAll(spec.sessionSpecs)
-        }
 
         specs.findResult { spec ->
             spec.identity ? [identity: spec.identity, passphrase: spec.passphrase] : null

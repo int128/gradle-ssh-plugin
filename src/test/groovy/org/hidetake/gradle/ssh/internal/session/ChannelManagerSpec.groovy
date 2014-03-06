@@ -1,7 +1,6 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.internal.session
 
 import com.jcraft.jsch.Channel
-import org.hidetake.gradle.ssh.internal.session.ChannelManager
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges

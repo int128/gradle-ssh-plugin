@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.internal.task
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -6,11 +6,10 @@ import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.internal.operation.Handler
 import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.internal.operation.OperationProxy
 import spock.lang.Specification
 
-import static org.hidetake.gradle.ssh.internal.operation.OperationProxy.NULL_CLOSURE
-
-class DryRunSshServiceSpec extends Specification {
+class DryRunSpec extends Specification {
 
     Project project
     Handler handler
@@ -34,7 +33,7 @@ class DryRunSshServiceSpec extends Specification {
         }
 
         handler = Mock(Handler)
-        DryRunSshService.instance.handler = handler
+        DryRun.instance.handler = handler
     }
 
 
@@ -68,7 +67,7 @@ class DryRunSshServiceSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', NULL_CLOSURE)
+        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', OperationProxy.NULL_CLOSURE)
     }
 
     def "execute a command with options"() {
@@ -83,7 +82,7 @@ class DryRunSshServiceSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', NULL_CLOSURE)
+        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', OperationProxy.NULL_CLOSURE)
     }
 
     def "execute a command with an interaction closure"() {
