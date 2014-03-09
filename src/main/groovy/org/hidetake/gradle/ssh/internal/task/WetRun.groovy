@@ -5,9 +5,9 @@ import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.task.Executor
-import org.hidetake.gradle.ssh.internal.operation.DefaultHandler
-import org.hidetake.gradle.ssh.internal.operation.OperationProxy
+import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.internal.session.SessionManager
 
 /**
@@ -26,8 +26,8 @@ class WetRun implements Executor {
             sessionSpecs.collect { sessionSpec ->
                 def session = sessionManager.create(sessionSpec.remote)
                 def operation = sessionSpec.operationClosure
-                def handler = new DefaultHandler(sshSettings, sessionSpec.remote, session, channelManager)
-                operation.delegate = new OperationProxy(handler)
+                def handler = new DefaultOperations(sshSettings, sessionSpec.remote, session, channelManager)
+                operation.delegate = new SessionDelegate(handler)
                 operation.resolveStrategy = Closure.DELEGATE_FIRST
                 operation
             }.each {

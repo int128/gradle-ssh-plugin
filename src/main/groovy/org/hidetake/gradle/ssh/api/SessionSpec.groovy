@@ -16,7 +16,7 @@ class SessionSpec {
     final Remote remote
 
     /**
-     * Closure for {@link Operation}.
+     * Closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler}.
      */
     final Closure operationClosure
 }

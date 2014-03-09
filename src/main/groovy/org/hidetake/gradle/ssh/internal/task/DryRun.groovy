@@ -2,9 +2,9 @@ package org.hidetake.gradle.ssh.internal.task
 
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.task.Executor
-import org.hidetake.gradle.ssh.internal.operation.Handler
-import org.hidetake.gradle.ssh.internal.operation.OperationProxy
+import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 
 /**
  * A dry run implementation of executor.
@@ -13,12 +13,12 @@ import org.hidetake.gradle.ssh.internal.operation.OperationProxy
  */
 @Singleton
 class DryRun implements Executor {
-    protected Handler handler = [:] as Handler
+    protected Operations handler = [:] as Operations
 
     @Override
     void execute(SshSettings sshSettings, List<SessionSpec> sessionSpecs) {
         sessionSpecs.each { spec ->
-            new OperationProxy(handler).with(spec.operationClosure)
+            new SessionDelegate(handler).with(spec.operationClosure)
         }
     }
 }

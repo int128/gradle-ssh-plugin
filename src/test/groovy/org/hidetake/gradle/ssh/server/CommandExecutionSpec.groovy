@@ -9,8 +9,8 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.operation.DefaultHandler
 import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
@@ -144,7 +144,7 @@ class CommandExecutionSpec extends Specification {
     @Unroll
     def "logging, #description"() {
         given:
-        def logger = GroovySpy(Logging.getLogger(DefaultHandler).class, global: true) {
+        def logger = GroovySpy(Logging.getLogger(DefaultOperations).class, global: true) {
             isEnabled(LogLevel.INFO) >> true
         }
 
@@ -186,7 +186,7 @@ class CommandExecutionSpec extends Specification {
     @Unroll
     def "toggle logging = #logging"() {
         given:
-        def logger = GroovySpy(Logging.getLogger(DefaultHandler).class, global: true) {
+        def logger = GroovySpy(Logging.getLogger(DefaultOperations).class, global: true) {
             isEnabled(_) >> true
         }
 

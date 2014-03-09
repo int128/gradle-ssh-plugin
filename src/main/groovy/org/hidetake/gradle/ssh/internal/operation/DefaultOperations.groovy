@@ -10,25 +10,25 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
- * Default implementation of {@link org.hidetake.gradle.ssh.api.Operation}.
+ * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
  *
  * @author hidetake.org
- *
  */
 @TupleConstructor
 @Slf4j
-class DefaultHandler implements Handler {
+class DefaultOperations implements Operations {
     final SshSettings sshSettings
     final Remote remote
     final Session session
     final ChannelManager globalChannelManager
 
     @Override
-    void shell(ShellSettings settings, Closure interactions) {
+    void shell(ShellSettings settings, Closure closure) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
@@ -37,9 +37,9 @@ class DefaultHandler implements Handler {
                 context.enableLogging(sshSettings.outputLogLevel)
             }
 
-            interactions.delegate = context
-            interactions.resolveStrategy = Closure.DELEGATE_FIRST
-            interactions()
+            closure.delegate = context
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure()
 
             channel.connect()
             channelManager.add(channel)
@@ -53,7 +53,7 @@ class DefaultHandler implements Handler {
     }
 
     @Override
-    String execute(ExecutionSettings settings, String command, Closure interactions) {
+    String execute(ExecutionSettings settings, String command, Closure closure) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('exec') as ChannelExec
@@ -68,9 +68,9 @@ class DefaultHandler implements Handler {
             def lines = [] as List<String>
             context.standardOutput.lineListeners.add { String line -> lines << line }
 
-            interactions.delegate = context
-            interactions.resolveStrategy = Closure.DELEGATE_FIRST
-            interactions()
+            closure.delegate = context
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure()
 
             channel.connect()
             channelManager.add(channel)

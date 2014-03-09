@@ -1,12 +1,13 @@
-package org.hidetake.gradle.ssh.api
+package org.hidetake.gradle.ssh.api.session
+
+import org.hidetake.gradle.ssh.api.Remote
 
 /**
- * Handler for a operation closure.
+ * Handler of operations in a session closure.
  *
  * @author hidetake.org
- *
  */
-interface Operation {
+interface SessionHandler {
     /**
      * Returns remote host for current operation.
      *
@@ -19,19 +20,19 @@ interface Operation {
      * This method blocks until channel is closed.
      *
      * @param settings shell settings
-     * @param interactions closure including interactions
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ShellHandler}
      * @return output value of the command
      */
-    void shell(HashMap settings, Closure interactions)
+    void shell(HashMap settings, Closure closure)
 
     /**
      * Performs a shell operation.
      * This method blocks until channel is closed.
      *
-     * @param interactions closure including interactions
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ShellHandler}
      * @return output value of the command
      */
-    void shell(Closure interactions)
+    void shell(Closure closure)
 
     /**
      * Performs an execution operation.
@@ -47,10 +48,10 @@ interface Operation {
      * This method blocks until channel is closed.
      *
      * @param command
-     * @param interactions closure including interactions
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ExecutionHandler}
      * @return output value of the command
      */
-    String execute(String command, Closure interactions)
+    String execute(String command, Closure closure)
 
     /**
      * Performs an execution operation.
@@ -68,10 +69,10 @@ interface Operation {
      *
      * @param settings execution settings
      * @param command
-     * @param interactions closure including interactions
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ExecutionHandler}
      * @return output value of the command
      */
-    String execute(HashMap settings, String command, Closure interactions)
+    String execute(HashMap settings, String command, Closure closure)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.

@@ -26,7 +26,7 @@ class SshTaskDelegate {
      * Add a session.
      *
      * @param remote the {@link Remote}
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.Operation} (run in execution phase)
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
      */
     void session(Remote remote, Closure closure) {
         assert remote, 'remote should be set'
@@ -40,7 +40,7 @@ class SshTaskDelegate {
      * Add sessions.
      *
      * @param remotes collection of {@link Remote}s
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.Operation} (run in execution phase)
+     * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
      */
     void session(Collection<Remote> remotes, Closure closure) {
         assert remotes, 'remotes should contain at least one'
