@@ -4,7 +4,6 @@ import com.jcraft.jsch.Channel
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.operation.OperationsFactory
 import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
 import org.hidetake.gradle.ssh.registry.Registry
@@ -19,21 +18,14 @@ import org.hidetake.gradle.ssh.registry.Registry
 class DefaultExecutor implements Executor {
     @Override
     void execute(SshSettings sshSettings, List<SessionSpec> sessionSpecs) {
-        def sessionHandlerFactory = Registry.instance[SessionHandlerFactory]
-        def operationsFactory = Registry.instance[OperationsFactory]
+        def factory = Registry.instance[SessionHandlerFactory]
 
         def sessionManager = new SessionManager(sshSettings)
         def channelManager = new ChannelManager()
         try {
             sessionSpecs.collect { sessionSpec ->
-                if (sshSettings.dryRun) {
-                    sessionSpec.operationClosure.delegate = sessionHandlerFactory.create()
-                } else {
-                    def session = sessionManager.create(sessionSpec.remote)
-                    sessionSpec.operationClosure.delegate = sessionHandlerFactory.create(
-                        operationsFactory.create(
-                            sessionSpec.remote, session, channelManager, sshSettings))
-                }
+                def sessionHandler = factory.create(sessionSpec.remote, sessionManager, channelManager, sshSettings)
+                sessionSpec.operationClosure.delegate = sessionHandler
                 sessionSpec.operationClosure.resolveStrategy = Closure.DELEGATE_FIRST
                 sessionSpec.operationClosure
             }.each {

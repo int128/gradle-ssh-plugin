@@ -1,6 +1,9 @@
 package org.hidetake.gradle.ssh.api.session
 
-import org.hidetake.gradle.ssh.api.operation.Operations
+import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.internal.session.SessionManager
 
 /**
  * A factory interface of {@link SessionHandler}.
@@ -9,17 +12,13 @@ import org.hidetake.gradle.ssh.api.operation.Operations
  */
 interface SessionHandlerFactory {
     /**
-     * Create an instance with null operations.
-     *
-     * @return an instance
-     */
-    SessionHandler create()
-
-    /**
      * Create an instance.
      *
-     * @param operations
+     * @param remote
+     * @param sessionManager
+     * @param channelManager
+     * @param sshSettings
      * @return an instance
      */
-    SessionHandler create(Operations operations)
+    SessionHandler create(Remote remote, SessionManager sessionManager, ChannelManager channelManager, SshSettings sshSettings)
 }

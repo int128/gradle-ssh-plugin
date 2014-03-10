@@ -5,15 +5,15 @@ import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.internal.session.DefaultExecutor
-import org.hidetake.gradle.ssh.internal.session.SessionDelegate
+import org.hidetake.gradle.ssh.internal.session.SessionDelegateFactory
 
 @Singleton
 class Registry extends AbstractRegistry {
     @Override
     void wire() {
         this[Executor] = DefaultExecutor.instance
+        this[SessionHandlerFactory] = SessionDelegateFactory.instance
 
         factory(OperationsFactory, DefaultOperations)
-        factory(SessionHandlerFactory, SessionDelegate)
     }
 }
