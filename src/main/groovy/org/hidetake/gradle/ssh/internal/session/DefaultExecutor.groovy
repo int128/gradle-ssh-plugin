@@ -1,14 +1,12 @@
-package org.hidetake.gradle.ssh.internal.task
+package org.hidetake.gradle.ssh.internal.session
 
 import com.jcraft.jsch.Channel
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.OperationsFactory
+import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
-import org.hidetake.gradle.ssh.api.task.Executor
-import org.hidetake.gradle.ssh.internal.session.ChannelManager
-import org.hidetake.gradle.ssh.internal.session.SessionManager
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
@@ -18,21 +16,24 @@ import org.hidetake.gradle.ssh.registry.Registry
  */
 @Singleton
 @Slf4j
-class WetRun implements Executor {
-    private final sessionHandlerFactory = Registry.instance[SessionHandlerFactory]
-    private final operationsFactory = Registry.instance[OperationsFactory]
-
+class DefaultExecutor implements Executor {
     @Override
     void execute(SshSettings sshSettings, List<SessionSpec> sessionSpecs) {
+        def sessionHandlerFactory = Registry.instance[SessionHandlerFactory]
+        def operationsFactory = Registry.instance[OperationsFactory]
+
         def sessionManager = new SessionManager(sshSettings)
         def channelManager = new ChannelManager()
         try {
             sessionSpecs.collect { sessionSpec ->
-                def session = sessionManager.create(sessionSpec.remote)
-                sessionSpec.operationClosure.delegate =
-                    sessionHandlerFactory.create(
+                if (sshSettings.dryRun) {
+                    sessionSpec.operationClosure.delegate = sessionHandlerFactory.create()
+                } else {
+                    def session = sessionManager.create(sessionSpec.remote)
+                    sessionSpec.operationClosure.delegate = sessionHandlerFactory.create(
                         operationsFactory.create(
                             sessionSpec.remote, session, channelManager, sshSettings))
+                }
                 sessionSpec.operationClosure.resolveStrategy = Closure.DELEGATE_FIRST
                 sessionSpec.operationClosure
             }.each {

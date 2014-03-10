@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.task.Executor
+import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification

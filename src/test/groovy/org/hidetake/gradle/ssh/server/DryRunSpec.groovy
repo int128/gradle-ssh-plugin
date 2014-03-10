@@ -1,20 +1,29 @@
-package org.hidetake.gradle.ssh.internal.task
+package org.hidetake.gradle.ssh.server
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
 import org.hidetake.gradle.ssh.internal.session.SessionDelegate
+import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.registry.Registry
+import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
 
+@ConfineRegistryChanges
 class DryRunSpec extends Specification {
 
     Project project
     Operations handler
 
     def setup() {
+        handler = Mock(Operations)
+        Registry.instance[SessionHandlerFactory] = Mock(SessionHandlerFactory) {
+            1 * create() >> Registry.instance[SessionHandlerFactory].create(handler)
+        }
+
         project = ProjectBuilder.builder().build()
         project.with {
             apply plugin: 'ssh'
@@ -31,9 +40,6 @@ class DryRunSpec extends Specification {
             task(type: SshTask, 'testTask') {
             }
         }
-
-        handler = Mock(Operations)
-        DryRun.instance.handler = handler
     }
 
 

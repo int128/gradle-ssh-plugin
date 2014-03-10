@@ -9,6 +9,13 @@ import org.hidetake.gradle.ssh.api.operation.Operations
  */
 interface SessionHandlerFactory {
     /**
+     * Create an instance with null operations.
+     *
+     * @return an instance
+     */
+    SessionHandler create()
+
+    /**
      * Create an instance.
      *
      * @param operations

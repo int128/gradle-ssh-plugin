@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.api.task
+package org.hidetake.gradle.ssh.api.session
 
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings

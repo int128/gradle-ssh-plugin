@@ -3,7 +3,7 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.task.Executor
+import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
