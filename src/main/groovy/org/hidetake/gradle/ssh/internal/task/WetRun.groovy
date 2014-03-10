@@ -4,11 +4,12 @@ import com.jcraft.jsch.Channel
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationsFactory
+import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
 import org.hidetake.gradle.ssh.api.task.Executor
-import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
-import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.internal.session.SessionManager
+import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * A default implementation of executor.
@@ -18,6 +19,9 @@ import org.hidetake.gradle.ssh.internal.session.SessionManager
 @Singleton
 @Slf4j
 class WetRun implements Executor {
+    private final sessionHandlerFactory = Registry.instance[SessionHandlerFactory]
+    private final operationsFactory = Registry.instance[OperationsFactory]
+
     @Override
     void execute(SshSettings sshSettings, List<SessionSpec> sessionSpecs) {
         def sessionManager = new SessionManager(sshSettings)
@@ -25,11 +29,12 @@ class WetRun implements Executor {
         try {
             sessionSpecs.collect { sessionSpec ->
                 def session = sessionManager.create(sessionSpec.remote)
-                def operation = sessionSpec.operationClosure
-                def handler = new DefaultOperations(sshSettings, sessionSpec.remote, session, channelManager)
-                operation.delegate = new SessionDelegate(handler)
-                operation.resolveStrategy = Closure.DELEGATE_FIRST
-                operation
+                sessionSpec.operationClosure.delegate =
+                    sessionHandlerFactory.create(
+                        operationsFactory.create(
+                            sessionSpec.remote, session, channelManager, sshSettings))
+                sessionSpec.operationClosure.resolveStrategy = Closure.DELEGATE_FIRST
+                sessionSpec.operationClosure
             }.each {
                 it.call()
             }

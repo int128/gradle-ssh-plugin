@@ -22,10 +22,10 @@ import org.hidetake.gradle.ssh.internal.session.ChannelManager
 @TupleConstructor
 @Slf4j
 class DefaultOperations implements Operations {
-    final SshSettings sshSettings
     final Remote remote
     final Session session
     final ChannelManager globalChannelManager
+    final SshSettings sshSettings
 
     @Override
     void shell(ShellSettings settings, Closure closure) {
