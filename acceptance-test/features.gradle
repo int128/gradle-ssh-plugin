@@ -445,6 +445,29 @@ task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
 }
 
 
+feature('sending files to the remote host and acquiring result files') {
+    task 'getLargeFile'
+    category 'aggressiveTest'
+}
+
+task getLargeFile(type: SshTask, dependsOn: 'setupBuildDir') {
+    finalizedBy 'cleanRemoteTemp'
+
+    doFirst {
+        ext.sizeX = 1024 * 256
+        ext.localX = file("$buildDir/local-${randomInt()}")
+        ext.pathX = remoteTempPath('X')
+    }
+    session(remotes.localhost) {
+        execute("dd if=/dev/zero of=$pathX bs=1024 count=$sizeX")
+        get(pathX, localX.path)
+    }
+    doLast {
+        assert localX.size() == 1024 * sizeX
+    }
+}
+
+
 task setupBuildDir(type: Delete) {
     delete buildDir
     doLast {

@@ -10,6 +10,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.gradle.ssh.api.*
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.internal.operation.FileTransferLogger
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
@@ -180,9 +181,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
         try {
             channel.connect()
-            log.info("Channel #${channel.id} has been opened")
-            channel.get(remote, local)
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            channel.get(remote, local, new FileTransferLogger())
         } finally {
             channel.disconnect()
         }
@@ -201,9 +200,7 @@ class DefaultOperationHandler extends AbstractOperationHandler {
 
         try {
             channel.connect()
-            log.info("Channel #${channel.id} has been opened")
-            channel.put(local, remote, ChannelSftp.OVERWRITE)
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
         } finally {
             channel.disconnect()
         }
