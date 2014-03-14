@@ -76,7 +76,7 @@ class FileTransferLoggerSpec extends Specification {
         then:
         status.maxSize == 2000
         status.transferredSize == 0
-        status.percent == 0
+        status.percent == 0.0
     }
 
     def "count up"() {
@@ -89,7 +89,7 @@ class FileTransferLoggerSpec extends Specification {
         then:
         status.maxSize == 5000
         status.transferredSize == 2000
-        status.percent == 40
+        status.percent == 0.4
 
         when:
         status << 2000
@@ -97,7 +97,7 @@ class FileTransferLoggerSpec extends Specification {
         then:
         status.maxSize == 5000
         status.transferredSize == 4000
-        status.percent == 80
+        status.percent == 0.8
 
         when:
         status << 1000
@@ -105,7 +105,7 @@ class FileTransferLoggerSpec extends Specification {
         then:
         status.maxSize == 5000
         status.transferredSize == 5000
-        status.percent == 100
+        status.percent == 1.0
     }
 
     @ConfineMetaClassChanges(FileTransferLogger.Status)
@@ -153,11 +153,11 @@ class FileTransferLoggerSpec extends Specification {
 
         when: FileTransferLogger.Status.metaClass.static.currentTime = { -> 3000 }
         and:  status << 500
-        then: status.bytesPerSecond == (500 /* bytes */ / 2 /* sec */)
+        then: status.kiloBytesPerSecond == (0.5 /* kB */ / 2 /* sec */)
 
         when: FileTransferLogger.Status.metaClass.static.currentTime = { -> 6000 }
         and:  status << 300
-        then: status.bytesPerSecond == (800 /* bytes */ / 5 /* sec */)
+        then: status.kiloBytesPerSecond == (0.8 /* kB */ / 5 /* sec */)
     }
 
 }
