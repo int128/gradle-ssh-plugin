@@ -4,7 +4,7 @@ import com.jcraft.jsch.SftpProgressMonitor
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 
-import static java.lang.String.format
+import java.text.NumberFormat
 
 /**
  * Logger for file transfer.
@@ -17,10 +17,18 @@ class FileTransferLogger implements SftpProgressMonitor {
 
     protected Status status
 
+    private final bytesFormat = NumberFormat.integerInstance
+    private final percentFormat = NumberFormat.percentInstance
+    private final timeFormat = NumberFormat.numberInstance
+
+    FileTransferLogger() {
+        timeFormat.maximumFractionDigits = 3
+    }
+
     @Override
     void init(int op, String src, String dest, long max) {
         status = new Status(max)
-        log.info("Starting transfer ${formatBytes(status.maxSize)}.")
+        log.info("Starting transfer ${bytesFormat.format(status.maxSize)} bytes.")
     }
 
     @Override
@@ -28,28 +36,17 @@ class FileTransferLogger implements SftpProgressMonitor {
         status << count
         if (status.elapsedTimeFromCheckPoint > LOG_INTERVAL_MILLIS) {
             status.checkPoint()
-            log.info("Transferred ${status.percent}% in ${formatTime(status.elapsedTime)}.")
+            log.info("Transferred ${percentFormat.format(status.percent)} " +
+                     "in ${timeFormat.format(status.elapsedTime / 1000.0)} secs.")
         }
         true
     }
 
     @Override
     void end() {
-        log.info("Finished transfer ${formatBytes(status.transferredSize)} " +
-                 "(${formatKBytes(status.bytesPerSecond)}/s). " +
-                 "Took ${formatTime(status.elapsedTime)}.")
-    }
-
-    private static formatBytes(long number) {
-        format('%,d bytes', number)
-    }
-
-    private static formatKBytes(long number) {
-        format('%,d kB', number / 1000 as long)
-    }
-
-    private static formatTime(long number) {
-        format('%.3f secs', number / 1000.0 as double)
+        log.info("Finished transfer ${bytesFormat.format(status.transferredSize)} bytes " +
+                 "(${bytesFormat.format(status.kiloBytesPerSecond)} kB/s). " +
+                 "Took ${timeFormat.format(status.elapsedTime / 1000.0)} secs.")
     }
 
     @TupleConstructor
@@ -65,12 +62,12 @@ class FileTransferLogger implements SftpProgressMonitor {
             this
         }
 
-        int getPercent() {
-            maxSize ? 100 * transferredSize / maxSize : 0
+        double getPercent() {
+            maxSize ? transferredSize / maxSize : 0
         }
 
-        long getBytesPerSecond() {
-            1000 * transferredSize / elapsedTime
+        double getKiloBytesPerSecond() {
+            transferredSize / elapsedTime
         }
 
         long getElapsedTime() {
