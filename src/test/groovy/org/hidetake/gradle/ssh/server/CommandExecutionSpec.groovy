@@ -9,8 +9,8 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.SshTask
 import org.hidetake.gradle.ssh.internal.operation.DefaultHandler
+import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification

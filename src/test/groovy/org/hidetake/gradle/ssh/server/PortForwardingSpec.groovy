@@ -7,7 +7,7 @@ import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.SshTask
+import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification

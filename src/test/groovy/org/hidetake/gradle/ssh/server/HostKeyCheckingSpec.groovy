@@ -7,7 +7,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.SshTask
+import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder

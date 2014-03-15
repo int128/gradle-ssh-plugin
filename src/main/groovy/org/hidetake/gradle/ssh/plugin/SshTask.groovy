@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction

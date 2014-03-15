@@ -2,10 +2,10 @@ package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.SshTask
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.internal.operation.Handler
+import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
 
 import static org.hidetake.gradle.ssh.internal.operation.OperationProxy.NULL_CLOSURE

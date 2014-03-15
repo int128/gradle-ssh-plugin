@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.util.ConfigureUtil
 import org.hidetake.gradle.ssh.api.SshSettings
