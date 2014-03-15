@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.api.command
+package org.hidetake.gradle.ssh.api.interaction
 
 /**
  * Stream.

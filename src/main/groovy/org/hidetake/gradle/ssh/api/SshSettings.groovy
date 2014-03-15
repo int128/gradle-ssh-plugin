@@ -4,13 +4,13 @@ import groovy.util.logging.Slf4j
 import org.gradle.api.logging.LogLevel
 
 /**
- * Specification of a SSH task.
+ * Global SSH settings.
  *
  * @author hidetake.org
  *
  */
 @Slf4j
-class SshSpec {
+class SshSettings {
     static final allowAnyHosts = new File(UUID.randomUUID().toString())
 
     /**
@@ -95,11 +95,11 @@ class SshSpec {
     /**
      * Computes merged settings.
      *
-     * @param specs list of {@link SshSpec}s in priority order (first item is highest priority)
+     * @param specs list of {@link SshSettings}s in priority order (first item is highest priority)
      * @return merged one
      */
-    static SshSpec computeMerged(SshSpec... specs) {
-        def merged = new SshSpec()
+    static SshSettings computeMerged(SshSettings... specs) {
+        def merged = new SshSettings()
         specs.reverse().each { spec ->
             merged.sessionSpecs.addAll(spec.sessionSpecs)
         }

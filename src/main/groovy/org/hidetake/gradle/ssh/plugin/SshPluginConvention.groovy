@@ -1,7 +1,7 @@
-package org.hidetake.gradle.ssh
+package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.util.ConfigureUtil
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.internal.DefaultSshService
 import org.hidetake.gradle.ssh.internal.DryRunSshService
 
@@ -12,7 +12,7 @@ import org.hidetake.gradle.ssh.internal.DryRunSshService
  *
  */
 class SshPluginConvention {
-    protected final sshSpec = new SshSpec()
+    protected final sshSettings = new SshSettings()
     protected service = DefaultSshService.instance
     protected dryRunService = DryRunSshService.instance
 
@@ -27,13 +27,13 @@ class SshPluginConvention {
     /**
      * Configures global settings.
      *
-     * @param configureClosure closure for {@link SshSpec}
+     * @param configureClosure closure for {@link SshSettings}
      */
     void ssh(Closure configureClosure) {
         assert configureClosure != null, 'configureClosure should be set'
 
-        ConfigureUtil.configure(configureClosure, sshSpec)
-        if (sshSpec.sessionSpecs.size() > 0) {
+        ConfigureUtil.configure(configureClosure, sshSettings)
+        if (sshSettings.sessionSpecs.size() > 0) {
             throw new IllegalStateException('Do not declare any session in convention')
         }
     }
@@ -41,14 +41,14 @@ class SshPluginConvention {
     /**
      * Executes SSH operations instead of a project task.
      *
-     * @param configureClosure configuration closure for {@link SshSpec}
+     * @param configureClosure configuration closure for {@link SshSettings}
      */
     void sshexec(Closure configureClosure) {
         assert configureClosure != null, 'configureClosure should be set'
 
-        def localSpec = new SshSpec()
+        def localSpec = new SshSettings()
         ConfigureUtil.configure(configureClosure, localSpec)
-        def merged = SshSpec.computeMerged(localSpec, sshSpec)
+        def merged = SshSettings.computeMerged(localSpec, sshSettings)
         if (merged.dryRun) {
             dryRunService.execute(merged)
         } else {

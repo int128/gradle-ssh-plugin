@@ -3,24 +3,24 @@ package org.hidetake.gradle.ssh.internal
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createSpec
 
-class SshSpecSpec extends Specification {
+class SshSettingsSpec extends Specification {
 
 
-    SshSpec spec
+    SshSettings settings
 
     private static final identityA = new File("identityA")
     private static final identityB = new File("identityB")
 
 
     def setup() {
-        spec = new SshSpec()
+        settings = new SshSettings()
     }
 
 
@@ -30,13 +30,13 @@ class SshSpecSpec extends Specification {
         def operationClosure = {-> println "whatever" }
 
         when:
-        spec.session(remote, operationClosure)
+        settings.session(remote, operationClosure)
 
 
         then:
-        spec.sessionSpecs.size() == 1
-        spec.sessionSpecs[0].remote == remote
-        spec.sessionSpecs[0].operationClosure == operationClosure
+        settings.sessionSpecs.size() == 1
+        settings.sessionSpecs[0].remote == remote
+        settings.sessionSpecs[0].operationClosure == operationClosure
     }
 
     @Unroll("add session with remote: #theRemote, user: #theUser, host: #theHost")
@@ -46,7 +46,7 @@ class SshSpecSpec extends Specification {
 
         when:
         remote = theRemote ? createRemote([user: theUser, host: theHost]) : null
-        spec.session(remote, theOperationClosure)
+        settings.session(remote, theOperationClosure)
 
         then:
         AssertionError e = thrown()
@@ -70,10 +70,10 @@ class SshSpecSpec extends Specification {
         def closure = {-> println "whatever" }
 
         when:
-        spec.session([remote1, remote2], closure)
+        settings.session([remote1, remote2], closure)
 
         then:
-        spec.sessionSpecs.size() == 2
+        settings.sessionSpecs.size() == 2
     }
 
 
@@ -82,14 +82,14 @@ class SshSpecSpec extends Specification {
         def remote = createRemote()
 
         when:
-        spec.session([], {-> println "whatever" })
+        settings.session([], {-> println "whatever" })
 
         then:
         AssertionError ex = thrown()
         ex.message.contains("remotes")
 
         when:
-        spec.session([remote], null)
+        settings.session([remote], null)
 
         then:
         AssertionError ex2 = thrown()
@@ -104,7 +104,7 @@ class SshSpecSpec extends Specification {
         def spec = createSpec()
 
         when:
-        def merged = SshSpec.computeMerged(spec)
+        def merged = SshSettings.computeMerged(spec)
 
         then:
         assertEquals spec, merged
@@ -113,7 +113,7 @@ class SshSpecSpec extends Specification {
     def "compute merged adheres to priority order"() {
         given:
         def spec1 = createSpec()
-        def spec2 = new SshSpec().with {
+        def spec2 = new SshSettings().with {
             sessionSpecs.addAll([new SessionSpec(Mock(Remote), {-> println "whatever" })])
             knownHosts = new File("dummy")
             dryRun = true
@@ -127,7 +127,7 @@ class SshSpecSpec extends Specification {
         }
 
         when:
-        def merged = SshSpec.computeMerged(spec2, spec1)
+        def merged = SshSettings.computeMerged(spec2, spec1)
 
         then:
         merged.sessionSpecs == spec1.sessionSpecs + spec2.sessionSpecs
@@ -156,7 +156,7 @@ class SshSpecSpec extends Specification {
         }
 
         when:
-        def merged = SshSpec.computeMerged(spec2, spec1)
+        def merged = SshSettings.computeMerged(spec2, spec1)
 
         then:
         merged.identity == i0
@@ -177,7 +177,7 @@ class SshSpecSpec extends Specification {
 
 
 
-    private def assertEquals(SshSpec expected, SshSpec actual) {
+    private def assertEquals(SshSettings expected, SshSettings actual) {
         assert expected.knownHosts == actual.knownHosts
         assert expected.dryRun == actual.dryRun
         assert expected.retryCount == actual.retryCount

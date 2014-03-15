@@ -1,9 +1,9 @@
 package org.hidetake.gradle.ssh.api
 
 /**
- * Service to execute a SSH task specified by {@link SshSpec}.
+ * Service to execute a SSH task specified by {@link SshSettings}.
  *
- * @see SshSpec
+ * @see SshSettings
  * @author hidetake.org
  *
  */
@@ -11,7 +11,7 @@ interface SshService {
     /**
      * Executes a SSH task.
      *
-     * @param sshSpec specification
+     * @param sshSettings ssh settings
      */
-    void execute(SshSpec sshSpec)
+    void execute(SshSettings sshSettings)
 }

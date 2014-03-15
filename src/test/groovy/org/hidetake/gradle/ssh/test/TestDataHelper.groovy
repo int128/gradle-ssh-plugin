@@ -3,11 +3,11 @@ package org.hidetake.gradle.ssh.test
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SessionSpec
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 
 class TestDataHelper {
-    static SshSpec createSpec() {
-        new SshSpec().with {
+    static SshSettings createSpec() {
+        new SshSettings().with {
             sessionSpecs.addAll([new SessionSpec(createRemote(), {-> println "whatever" })])
             knownHosts = new File("known_hosts")
             dryRun = false

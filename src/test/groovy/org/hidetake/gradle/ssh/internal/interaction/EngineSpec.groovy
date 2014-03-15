@@ -1,7 +1,7 @@
-package org.hidetake.gradle.ssh.internal.command
+package org.hidetake.gradle.ssh.internal.interaction
 
-import org.hidetake.gradle.ssh.api.command.Stream
-import org.hidetake.gradle.ssh.internal.command.Engine.Counter
+import org.hidetake.gradle.ssh.api.interaction.Stream
+import org.hidetake.gradle.ssh.internal.interaction.Engine.Counter
 import spock.lang.Specification
 
 @SuppressWarnings('GroovyAccessibility')

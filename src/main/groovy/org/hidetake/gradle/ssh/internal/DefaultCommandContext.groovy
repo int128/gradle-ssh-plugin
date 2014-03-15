@@ -5,10 +5,10 @@ import groovy.transform.TupleConstructor
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.CommandContext
-import org.hidetake.gradle.ssh.api.command.Stream
-import org.hidetake.gradle.ssh.internal.command.Engine
-import org.hidetake.gradle.ssh.internal.command.InteractionDelegate
-import org.hidetake.gradle.ssh.internal.command.LineOutputStream
+import org.hidetake.gradle.ssh.api.interaction.Stream
+import org.hidetake.gradle.ssh.internal.interaction.Engine
+import org.hidetake.gradle.ssh.internal.interaction.InteractionDelegate
+import org.hidetake.gradle.ssh.internal.interaction.LineOutputStream
 
 @TupleConstructor
 class DefaultCommandContext implements CommandContext {

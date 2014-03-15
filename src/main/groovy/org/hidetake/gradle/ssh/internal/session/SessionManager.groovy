@@ -6,7 +6,7 @@ import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSpec
+import org.hidetake.gradle.ssh.api.SshSettings
 
 import static org.hidetake.gradle.ssh.internal.session.Retry.retry
 
@@ -19,27 +19,27 @@ import static org.hidetake.gradle.ssh.internal.session.Retry.retry
 class SessionManager {
     protected static final LOCALHOST = '127.0.0.1'
 
-    final SshSpec sshSpec
+    final SshSettings sshSettings
     final JSch jsch
     final List<Session> sessions = []
 
     /**
      * Constructor.
      *
-     * @param sshSpec ssh spec
+     * @param sshSettings1 ssh settings
      * @return a SessionManager instance
      */
-    def SessionManager(SshSpec sshSpec1) {
-        sshSpec = sshSpec1
+    def SessionManager(SshSettings sshSettings1) {
+        sshSettings = sshSettings1
         jsch = new JSch()
 
-        if (sshSpec.knownHosts == SshSpec.allowAnyHosts) {
+        if (sshSettings.knownHosts == SshSettings.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
             log.info('Strict host key checking is turned off. Use only for testing purpose.')
         } else {
-            jsch.setKnownHosts(sshSpec.knownHosts.path)
+            jsch.setKnownHosts(sshSettings.knownHosts.path)
             jsch.setConfig('StrictHostKeyChecking', 'yes')
-            log.debug("Using known-hosts file: ${sshSpec.knownHosts.path}")
+            log.debug("Using known-hosts file: ${sshSettings.knownHosts.path}")
         }
     }
 
@@ -69,7 +69,7 @@ class SessionManager {
      * @return a JSch session
      */
     protected Session createVia(Remote remote, String host, int port) {
-        retry(sshSpec.retryCount, sshSpec.retryWaitSec) {
+        retry(sshSettings.retryCount, sshSettings.retryWaitSec) {
             def session = jsch.getSession(remote.user, host, port)
             if (remote.password) {
                 session.password = remote.password
@@ -82,8 +82,8 @@ class SessionManager {
                 jsch.removeAllIdentity()
                 if (remote.identity) {
                     jsch.addIdentity(remote.identity.path, remote.passphrase as String)
-                } else if (sshSpec.identity) {
-                    jsch.addIdentity(sshSpec.identity.path, sshSpec.passphrase as String)
+                } else if (sshSettings.identity) {
+                    jsch.addIdentity(sshSettings.identity.path, sshSettings.passphrase as String)
                 }
             }
 
