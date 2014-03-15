@@ -1,90 +1,94 @@
-package org.hidetake.gradle.ssh.internal.operation
+package org.hidetake.gradle.ssh.internal.session
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.CommandContext
-import org.hidetake.gradle.ssh.api.Operation
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.session.SessionHandler
 
 @TupleConstructor
 @Slf4j
-class OperationProxy implements Operation {
+class SessionDelegate implements SessionHandler {
     static final NULL_CLOSURE = {}
 
-    final Handler handler
-    final Remote remote
+    final Operations operations = null
 
     @Override
-    void shell(HashMap settings, Closure interactions) {
-        log.info("Execute a shell with settings ($settings)")
-        handler.shell(new ShellSettings(settings), interactions)
+    Remote getRemote() {
+        operations?.remote
     }
 
     @Override
-    void shell(Closure interactions) {
+    void shell(HashMap settings, Closure closure) {
+        log.info("Execute a shell with settings ($settings)")
+        operations?.shell(new ShellSettings(settings), closure)
+    }
+
+    @Override
+    void shell(Closure closure) {
         log.info("Execute a shell")
-        handler.shell(ShellSettings.DEFAULT, interactions)
+        operations?.shell(ShellSettings.DEFAULT, closure)
     }
 
     @Override
     String execute(String command) {
         log.info("Execute a command ($command)")
-        handler.execute(ExecutionSettings.DEFAULT, command, NULL_CLOSURE)
+        operations?.execute(ExecutionSettings.DEFAULT, command, NULL_CLOSURE)
     }
 
     @Override
-    String execute(String command, Closure interactions) {
+    String execute(String command, Closure closure) {
         log.info("Execute a command ($command) with interactions")
-        handler.execute(ExecutionSettings.DEFAULT, command, interactions)
+        operations?.execute(ExecutionSettings.DEFAULT, command, closure)
     }
 
     @Override
     String execute(HashMap settings, String command) {
         log.info("Execute a command ($command) with settings ($settings)")
-        handler.execute(new ExecutionSettings(settings), command, NULL_CLOSURE)
+        operations?.execute(new ExecutionSettings(settings), command, NULL_CLOSURE)
     }
 
     @Override
-    String execute(HashMap settings, String command, Closure interactions) {
+    String execute(HashMap settings, String command, Closure closure) {
         log.info("Execute a command ($command) with settings ($settings) and interactions")
-        handler.execute(new ExecutionSettings(settings), command, interactions)
+        operations?.execute(new ExecutionSettings(settings), command, closure)
     }
 
     @Override
     String executeSudo(String command) {
         log.info("Execute a command ($command) with sudo support")
-        handler.executeSudo(ExecutionSettings.DEFAULT, command)
+        operations?.executeSudo(ExecutionSettings.DEFAULT, command)
     }
 
     @Override
     String executeSudo(HashMap settings, String command) {
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        handler.executeSudo(new ExecutionSettings(settings), command)
+        operations?.executeSudo(new ExecutionSettings(settings), command)
     }
 
     @Override
-    CommandContext executeBackground(String command) {
+    void executeBackground(String command) {
         log.info("Execute a command ($command) in background")
-        handler.executeBackground(ExecutionSettings.DEFAULT, command)
+        operations?.executeBackground(ExecutionSettings.DEFAULT, command)
     }
 
     @Override
-    CommandContext executeBackground(HashMap settings, String command) {
+    void executeBackground(HashMap settings, String command) {
         log.info("Execute a command ($command) with settings ($settings) in background")
-        handler.executeBackground(new ExecutionSettings(settings), command)
+        operations?.executeBackground(new ExecutionSettings(settings), command)
     }
 
     @Override
     void get(String remote, String local) {
         log.info("Get a remote file ($remote) to local ($local)")
-        handler.get(remote, local)
+        operations?.get(remote, local)
     }
 
     @Override
     void put(String local, String remote) {
         log.info("Put a local file ($local) to remote ($remote)")
-        handler.put(local, remote)
+        operations?.put(local, remote)
     }
 }

@@ -7,42 +7,39 @@ import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.CommandContext
-import org.hidetake.gradle.ssh.api.SessionSpec
+import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.internal.DefaultCommandContext
-import org.hidetake.gradle.ssh.internal.DefaultShellContext
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
 
 /**
- * Default implementation of {@link org.hidetake.gradle.ssh.api.Operation}.
+ * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
  *
  * @author hidetake.org
- *
  */
 @TupleConstructor
 @Slf4j
-class DefaultHandler implements Handler {
-    final SshSettings sshSettings
-    final SessionSpec sessionSpec
+class DefaultOperations implements Operations {
+    final Remote remote
     final Session session
     final ChannelManager globalChannelManager
+    final SshSettings sshSettings
 
     @Override
-    void shell(ShellSettings settings, Closure interactions) {
+    void shell(ShellSettings settings, Closure closure) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('shell') as ChannelShell
-            def context = DefaultShellContext.create(channel, sshSettings.encoding)
+            def context = ShellDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel)
             }
 
-            interactions.delegate = context
-            interactions.resolveStrategy = Closure.DELEGATE_FIRST
-            interactions()
+            closure.delegate = context
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure()
 
             channel.connect()
             channelManager.add(channel)
@@ -56,14 +53,14 @@ class DefaultHandler implements Handler {
     }
 
     @Override
-    String execute(ExecutionSettings settings, String command, Closure interactions) {
+    String execute(ExecutionSettings settings, String command, Closure closure) {
         def channelManager = new ChannelManager()
         try {
             def channel = session.openChannel('exec') as ChannelExec
             channel.command = command
             channel.pty = settings.pty
 
-            def context = DefaultCommandContext.create(channel, sshSettings.encoding)
+            def context = ExecutionDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
             }
@@ -71,9 +68,9 @@ class DefaultHandler implements Handler {
             def lines = [] as List<String>
             context.standardOutput.lineListeners.add { String line -> lines << line }
 
-            interactions.delegate = context
-            interactions.resolveStrategy = Closure.DELEGATE_FIRST
-            interactions()
+            closure.delegate = context
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure()
 
             channel.connect()
             channelManager.add(channel)
@@ -95,7 +92,7 @@ class DefaultHandler implements Handler {
             interaction {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Sending password for sudo authentication on channel #${channel.id}")
-                    standardInput << sessionSpec.remote.password << '\n'
+                    standardInput << remote.password << '\n'
 
                     when(nextLine: _, from: standardOutput) {
                         when(nextLine: 'Sorry, try again.') {
@@ -116,12 +113,12 @@ class DefaultHandler implements Handler {
     }
 
     @Override
-    CommandContext executeBackground(ExecutionSettings settings, String command) {
+    void executeBackground(ExecutionSettings settings, String command) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         channel.pty = settings.pty
 
-        def context = DefaultCommandContext.create(channel, sshSettings.encoding)
+        def context = ExecutionDelegate.create(channel, sshSettings.encoding)
         if (settings.logging) {
             context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
         }
@@ -129,8 +126,6 @@ class DefaultHandler implements Handler {
         globalChannelManager.add(channel)
         channel.connect()
         log.info("Channel #${channel.id} has been opened")
-
-        context
     }
 
     @Override

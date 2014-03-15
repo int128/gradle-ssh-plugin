@@ -1,13 +1,10 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.api.logging.LogLevel
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createSpec
 
 class SshSettingsSpec extends Specification {
@@ -22,81 +19,6 @@ class SshSettingsSpec extends Specification {
     def setup() {
         settings = new SshSettings()
     }
-
-
-    def "add session"() {
-        given:
-        def remote = createRemote()
-        def operationClosure = {-> println "whatever" }
-
-        when:
-        settings.session(remote, operationClosure)
-
-
-        then:
-        settings.sessionSpecs.size() == 1
-        settings.sessionSpecs[0].remote == remote
-        settings.sessionSpecs[0].operationClosure == operationClosure
-    }
-
-    @Unroll("add session with remote: #theRemote, user: #theUser, host: #theHost")
-    def "add session with invalid params throws assertion error"() {
-        given:
-        def remote
-
-        when:
-        remote = theRemote ? createRemote([user: theUser, host: theHost]) : null
-        settings.session(remote, theOperationClosure)
-
-        then:
-        AssertionError e = thrown()
-        e.message.contains(errorContains)
-
-
-        where:
-        theRemote  | theUser  | theHost          | theOperationClosure | errorContains
-        null       | "myUser" | "www.myhost.com" | {-> println it }    | "remote"
-        "myRemote" | null     | "www.myhost.com" | {-> println it }    | "user"
-        "myRemote" | "myUser" | null             | {-> println it }    | "host"
-        "myRemote" | "myUser" | "www.myhost.com" | null                | "operation"
-    }
-
-
-
-    def "add session for multiple remotes"() {
-        given:
-        def remote1 = createRemote([name: "remote1"])
-        def remote2 = createRemote([name: "remote2"])
-        def closure = {-> println "whatever" }
-
-        when:
-        settings.session([remote1, remote2], closure)
-
-        then:
-        settings.sessionSpecs.size() == 2
-    }
-
-
-    def "add session for multiple remotes with illegal args throws assertion error"() {
-        given:
-        def remote = createRemote()
-
-        when:
-        settings.session([], {-> println "whatever" })
-
-        then:
-        AssertionError ex = thrown()
-        ex.message.contains("remotes")
-
-        when:
-        settings.session([remote], null)
-
-        then:
-        AssertionError ex2 = thrown()
-        ex2.message.contains("operation")
-
-    }
-
 
 
     def "compute merged on one spec is a clone"() {
@@ -114,7 +36,6 @@ class SshSettingsSpec extends Specification {
         given:
         def spec1 = createSpec()
         def spec2 = new SshSettings().with {
-            sessionSpecs.addAll([new SessionSpec(Mock(Remote), {-> println "whatever" })])
             knownHosts = new File("dummy")
             dryRun = true
             retryCount = 2
@@ -130,7 +51,6 @@ class SshSettingsSpec extends Specification {
         def merged = SshSettings.computeMerged(spec2, spec1)
 
         then:
-        merged.sessionSpecs == spec1.sessionSpecs + spec2.sessionSpecs
         merged.knownHosts == spec2.knownHosts
         merged.dryRun == spec2.dryRun
         merged.retryCount == spec2.retryCount
@@ -177,12 +97,11 @@ class SshSettingsSpec extends Specification {
 
 
 
-    private def assertEquals(SshSettings expected, SshSettings actual) {
+    private static assertEquals(SshSettings expected, SshSettings actual) {
         assert expected.knownHosts == actual.knownHosts
         assert expected.dryRun == actual.dryRun
         assert expected.retryCount == actual.retryCount
         assert expected.retryWaitSec == actual.retryWaitSec
-        assert expected.sessionSpecs == actual.sessionSpecs
         assert expected.outputLogLevel == actual.outputLogLevel
         assert expected.errorLogLevel == actual.errorLogLevel
 

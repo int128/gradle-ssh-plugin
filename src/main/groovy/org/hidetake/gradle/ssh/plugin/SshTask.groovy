@@ -2,37 +2,25 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.hidetake.gradle.ssh.api.SshService
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.internal.DefaultSshService
-import org.hidetake.gradle.ssh.internal.DryRunSshService
+import org.hidetake.gradle.ssh.api.session.Executor
+import org.hidetake.gradle.ssh.registry.Registry
 
 /**
- * SSH task.
+ * A SSH task for Gradle.
  *
- * @see SshService
  * @author hidetake.org
- *
  */
 class SshTask extends DefaultTask {
-    protected service = DefaultSshService.instance
-    protected dryRunService = DryRunSshService.instance
+    private final executor = Registry.instance[Executor]
 
-    /**
-     * Delegate of task specific settings.
-     * This overrides global settings.
-     */
     @Delegate
-    final SshSettings sshSettings = new SshSettings()
+    protected final SshTaskDelegate sshTaskDelegate = new SshTaskDelegate()
 
     @TaskAction
     void perform() {
         def convention = project.convention.getPlugin(SshPluginConvention)
-        def merged = SshSettings.computeMerged(sshSettings, convention.sshSettings)
-        if (merged.dryRun) {
-            dryRunService.execute(merged)
-        } else {
-            service.execute(merged)
-        }
+        def mergedSettings = SshSettings.computeMerged(sshSettings, convention.ssh)
+        executor.execute(mergedSettings, sshTaskDelegate.sessionSpecs)
     }
 }

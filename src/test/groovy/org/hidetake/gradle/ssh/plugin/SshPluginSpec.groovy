@@ -26,10 +26,10 @@ class SshPluginSpec extends Specification {
     def "apply the full monty"() {
         when:
         def project = createProject()
-        def globalSpec = project.convention.plugins.ssh.sshSettings
+        def globalSettings = project.convention.getPlugin(SshPluginConvention).ssh
 
         then:
-        globalSpec.knownHosts == SshSettings.allowAnyHosts
+        globalSettings.knownHosts == SshSettings.allowAnyHosts
         project.remotes.size() == 4
     }
 

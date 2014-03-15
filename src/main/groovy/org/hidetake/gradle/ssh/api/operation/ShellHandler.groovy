@@ -1,11 +1,11 @@
-package org.hidetake.gradle.ssh.api
+package org.hidetake.gradle.ssh.api.operation
 
 /**
- * Context interface for command execution.
+ * Handler for closure of a shell operation.
  *
  * @author hidetake.org
  */
-interface CommandContext {
+interface ShellHandler {
     /**
      * Declares stream interactions with the server.
      *
