@@ -9,7 +9,6 @@ import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.internal.session.ChannelManager
 import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
@@ -30,55 +29,60 @@ class DefaultOperations implements Operations {
 
     @Override
     void shell(ShellSettings settings, Closure closure) {
-        def channelManager = new ChannelManager()
+        def channel = connection.createShellChannel(settings)
+        def context = ShellDelegate.create(channel, sshSettings.encoding)
+        if (settings.logging) {
+            context.enableLogging(sshSettings.outputLogLevel)
+        }
+
+        closure.delegate = context
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        closure()
+
         try {
-            def channel = connection.createShellChannel(settings)
-            def context = ShellDelegate.create(channel, sshSettings.encoding)
-            if (settings.logging) {
-                context.enableLogging(sshSettings.outputLogLevel)
-            }
-
-            closure.delegate = context
-            closure.resolveStrategy = Closure.DELEGATE_FIRST
-            closure()
-
             channel.connect()
-            channelManager.add(channel)
             log.info("Channel #${channel.id} has been opened")
-            channelManager.waitForPending()
+            while (!channel.closed) {
+                sleep(100)
+            }
             log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-            channelManager.validateExitStatus()
+            if (channel.exitStatus != 0) {
+                throw new RuntimeException("Shell session finished with exit status ${channel.exitStatus}")
+            }
         } finally {
-            channelManager.disconnect()
+            channel.disconnect()
         }
     }
 
     @Override
     String execute(ExecutionSettings settings, String command, Closure closure) {
-        def channelManager = new ChannelManager()
+        def channel = connection.createExecutionChannel(command, settings)
+        def context = ExecutionDelegate.create(channel, sshSettings.encoding)
+        if (settings.logging) {
+            context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
+        }
+
+        def lines = [] as List<String>
+        context.standardOutput.lineListeners.add { String line -> lines << line }
+
+        closure.delegate = context
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        closure()
+
         try {
-            def channel = connection.createExecutionChannel(command, settings)
-            def context = ExecutionDelegate.create(channel, sshSettings.encoding)
-            if (settings.logging) {
-                context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
-            }
-
-            def lines = [] as List<String>
-            context.standardOutput.lineListeners.add { String line -> lines << line }
-
-            closure.delegate = context
-            closure.resolveStrategy = Closure.DELEGATE_FIRST
-            closure()
-
             channel.connect()
-            channelManager.add(channel)
             log.info("Channel #${channel.id} has been opened")
-            channelManager.waitForPending()
+            while (!channel.closed) {
+                sleep(100)
+            }
             log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-            channelManager.validateExitStatus()
+            if (channel.exitStatus != 0) {
+                throw new RuntimeException(
+                    "Command ($command) execution session finished with exit status ${channel.exitStatus}")
+            }
             lines.join(Utilities.eol())
         } finally {
-            channelManager.disconnect()
+            channel.disconnect()
         }
     }
 
