@@ -246,7 +246,7 @@ task failureStatusInBackground << {
         }
         assert false, 'an exception should be thrown'
     } catch(RuntimeException e) {
-        assert e.localizedMessage.contains('status 1')
+        assert e.localizedMessage.contains('with error')
     }
 }
 

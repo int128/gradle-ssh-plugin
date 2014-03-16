@@ -1,9 +1,7 @@
 package org.hidetake.gradle.ssh.api.operation
 
-import com.jcraft.jsch.Session
-import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
  * A factory interface of {@link Operations}.
@@ -14,11 +12,9 @@ interface OperationsFactory {
     /**
      * Create an instance.
      *
-     * @param remote
-     * @param session
-     * @param channelManager
+     * @param connection
      * @param sshSettings
      * @return an instance
      */
-    Operations create(Remote remote, Session session, ChannelManager channelManager, SshSettings sshSettings)
+    Operations create(Connection connection, SshSettings sshSettings)
 }

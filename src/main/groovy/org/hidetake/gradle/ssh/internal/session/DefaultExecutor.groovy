@@ -1,12 +1,12 @@
 package org.hidetake.gradle.ssh.internal.session
 
-import com.jcraft.jsch.Channel
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Executor
 import org.hidetake.gradle.ssh.api.session.SessionHandlerFactory
 import org.hidetake.gradle.ssh.registry.Registry
+import org.hidetake.gradle.ssh.ssh.api.ConnectionManagerFactory
 
 /**
  * A default implementation of executor.
@@ -18,13 +18,11 @@ import org.hidetake.gradle.ssh.registry.Registry
 class DefaultExecutor implements Executor {
     @Override
     void execute(SshSettings sshSettings, List<SessionSpec> sessionSpecs) {
-        def factory = Registry.instance[SessionHandlerFactory]
-
-        def sessionManager = new SessionManager(sshSettings)
-        def channelManager = new ChannelManager()
+        def connectionManager = Registry.instance[ConnectionManagerFactory].create(sshSettings)
         try {
             sessionSpecs.collect { sessionSpec ->
-                def sessionHandler = factory.create(sessionSpec.remote, sessionManager, channelManager, sshSettings)
+                def factory = Registry.instance[SessionHandlerFactory]
+                def sessionHandler = factory.create(sessionSpec.remote, connectionManager, sshSettings)
                 sessionSpec.operationClosure.delegate = sessionHandler
                 sessionSpec.operationClosure.resolveStrategy = Closure.DELEGATE_FIRST
                 sessionSpec.operationClosure
@@ -32,13 +30,14 @@ class DefaultExecutor implements Executor {
                 it.call()
             }
 
-            channelManager.waitForPending { Channel channel ->
-                log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            while (connectionManager.anyPending) {
+                sleep(100)
             }
-            channelManager.validateExitStatus()
+            if (connectionManager.anyError) {
+                throw new RuntimeException('At least one session finished with error')
+            }
         } finally {
-            channelManager.disconnect()
-            sessionManager.disconnect()
+            connectionManager.cleanup()
         }
     }
 }

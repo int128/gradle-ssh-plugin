@@ -1,9 +1,6 @@
 package org.hidetake.gradle.ssh.internal.operation
 
-import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
-import com.jcraft.jsch.ChannelShell
-import com.jcraft.jsch.Session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
@@ -13,6 +10,7 @@ import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.internal.session.ChannelManager
+import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
  * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
@@ -22,16 +20,19 @@ import org.hidetake.gradle.ssh.internal.session.ChannelManager
 @TupleConstructor
 @Slf4j
 class DefaultOperations implements Operations {
-    final Remote remote
-    final Session session
-    final ChannelManager globalChannelManager
+    final Connection connection
     final SshSettings sshSettings
+
+    @Override
+    Remote getRemote() {
+        connection.remote
+    }
 
     @Override
     void shell(ShellSettings settings, Closure closure) {
         def channelManager = new ChannelManager()
         try {
-            def channel = session.openChannel('shell') as ChannelShell
+            def channel = connection.createShellChannel(settings)
             def context = ShellDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel)
@@ -56,10 +57,7 @@ class DefaultOperations implements Operations {
     String execute(ExecutionSettings settings, String command, Closure closure) {
         def channelManager = new ChannelManager()
         try {
-            def channel = session.openChannel('exec') as ChannelExec
-            channel.command = command
-            channel.pty = settings.pty
-
+            def channel = connection.createExecutionChannel(command, settings)
             def context = ExecutionDelegate.create(channel, sshSettings.encoding)
             if (settings.logging) {
                 context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
@@ -114,23 +112,19 @@ class DefaultOperations implements Operations {
 
     @Override
     void executeBackground(ExecutionSettings settings, String command) {
-        def channel = session.openChannel('exec') as ChannelExec
-        channel.command = command
-        channel.pty = settings.pty
-
+        def channel = connection.createExecutionChannel(command, settings)
         def context = ExecutionDelegate.create(channel, sshSettings.encoding)
         if (settings.logging) {
             context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
         }
 
-        globalChannelManager.add(channel)
         channel.connect()
         log.info("Channel #${channel.id} has been opened")
     }
 
     @Override
     void get(String remote, String local) {
-        def channel = session.openChannel('sftp') as ChannelSftp
+        def channel = connection.createSftpChannel()
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
@@ -143,7 +137,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void put(String local, String remote) {
-        def channel = session.openChannel('sftp') as ChannelSftp
+        def channel = connection.createSftpChannel()
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
