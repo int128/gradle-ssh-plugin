@@ -21,7 +21,7 @@ class DryRunSpec extends Specification {
     def setup() {
         handler = Mock(Operations)
         Registry.instance[SessionHandlerFactory] = Mock(SessionHandlerFactory) {
-            1 * create(_, _, _) >> new SessionDelegate(handler)
+            1 * create(_) >> new SessionDelegate(handler)
         }
 
         project = ProjectBuilder.builder().build()

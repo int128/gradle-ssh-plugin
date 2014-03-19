@@ -17,11 +17,9 @@ interface ConnectionManager {
     Connection establish(Remote remote)
 
     /**
-     * Return if any connection is pending.
-     *
-     * @return true if at least one is pending
+     * Wait for pending sessions.
      */
-    boolean isAnyPending()
+    void waitForPending()
 
     /**
      * Return if any connection was error.

@@ -2,7 +2,8 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.session.Executor
+import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.api.session.SessionsFactory
 import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
@@ -47,7 +48,10 @@ class SshPluginConventionSpec extends Specification {
 
     def "sshexec delegates to executor"() {
         given:
-        def executor = Registry.instance[Executor] = Mock(Executor)
+        def sessions = Mock(Sessions)
+        Registry.instance[SessionsFactory] = Mock(SessionsFactory) {
+            1 * create() >> sessions
+        }
 
         def convention = new SshPluginConvention()
 
@@ -59,7 +63,7 @@ class SshPluginConventionSpec extends Specification {
         convention.sshexec({})
 
         then:
-        1 * executor.execute(mergedMock, [])
+        1 * sessions.execute(mergedMock)
     }
 
     def "sshexec must specify closure"() {

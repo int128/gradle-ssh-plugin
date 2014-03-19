@@ -105,8 +105,11 @@ class DefaultConnectionManager implements ConnectionManager {
     }
 
     @Override
-    boolean isAnyPending() {
-        connections*.anyPending.any()
+    void waitForPending() {
+        while (connections*.anyPending.any()) {
+            connections*.executeWhenClosedClosures()
+            sleep(100)
+        }
     }
 
     @Override

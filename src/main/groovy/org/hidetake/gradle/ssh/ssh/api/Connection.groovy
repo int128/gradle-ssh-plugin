@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.ssh.api
 
+import com.jcraft.jsch.Channel
 import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.ChannelShell
@@ -43,6 +44,21 @@ interface Connection {
      * @return a channel
      */
     ChannelSftp createSftpChannel()
+
+    /**
+     * Register a closure called when the channel is closed.
+     *
+     * @param channel the channel
+     * @param closure callback closure
+     */
+    void whenClosed(Channel channel, Closure closure)
+
+    /**
+     * Execute registered closures.
+     *
+     * @see #whenClosed(com.jcraft.jsch.Channel, groovy.lang.Closure)
+     */
+    void executeWhenClosedClosures()
 
     /**
      * Return if any channel is pending.

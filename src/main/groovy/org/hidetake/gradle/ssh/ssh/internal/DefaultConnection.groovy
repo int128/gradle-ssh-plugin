@@ -19,6 +19,7 @@ class DefaultConnection implements Connection {
     final Remote remote
     final Session session
     final List<Channel> channels = []
+    final List<Closure> whenClosedClosures = []
 
     @Override
     ChannelExec createExecutionChannel(String command, ExecutionSettings executionSettings) {
@@ -44,6 +45,22 @@ class DefaultConnection implements Connection {
     }
 
     @Override
+    void whenClosed(Channel channel, Closure closure) {
+        boolean executed = false
+        whenClosedClosures.add { ->
+            if (!executed && channel.closed) {
+                closure(channel)
+                executed = true
+            }
+        }
+    }
+
+    @Override
+    void executeWhenClosedClosures() {
+        whenClosedClosures*.call()
+    }
+
+    @Override
     boolean isAnyPending() {
         channels.any { channel -> !channel.closed }
     }
@@ -56,6 +73,7 @@ class DefaultConnection implements Connection {
 
     @Override
     void cleanup() {
+        whenClosedClosures*.call()
         channels*.disconnect()
         channels.clear()
     }

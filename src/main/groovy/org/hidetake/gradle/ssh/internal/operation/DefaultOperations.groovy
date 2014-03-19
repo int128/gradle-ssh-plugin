@@ -124,6 +124,11 @@ class DefaultOperations implements Operations {
 
         channel.connect()
         log.info("Channel #${channel.id} has been opened")
+
+        connection.whenClosed(channel) {
+            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            channel.disconnect()
+        }
     }
 
     @Override

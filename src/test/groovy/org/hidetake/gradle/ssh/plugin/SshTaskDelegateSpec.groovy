@@ -1,15 +1,25 @@
 package org.hidetake.gradle.ssh.plugin
 
+import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.api.session.SessionsFactory
+import org.hidetake.gradle.ssh.registry.Registry
+import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
 
+@ConfineRegistryChanges
 class SshTaskDelegateSpec extends Specification {
 
     SshTaskDelegate sshTaskDelegate
+    Sessions sessions
 
     def setup() {
+        sessions = Mock(Sessions)
+        Registry.instance[SessionsFactory] = Mock(SessionsFactory) {
+            create() >> sessions
+        }
         sshTaskDelegate = new SshTaskDelegate()
     }
 
@@ -21,11 +31,8 @@ class SshTaskDelegateSpec extends Specification {
         when:
         sshTaskDelegate.session(remote, operationClosure)
 
-
         then:
-        sshTaskDelegate.sessionSpecs.size() == 1
-        sshTaskDelegate.sessionSpecs[0].remote == remote
-        sshTaskDelegate.sessionSpecs[0].operationClosure == operationClosure
+        1 * sessions.add(remote, operationClosure)
     }
 
     @Unroll("add session with remote: #theRemote, user: #theUser, host: #theHost")
@@ -62,7 +69,8 @@ class SshTaskDelegateSpec extends Specification {
         sshTaskDelegate.session([remote1, remote2], closure)
 
         then:
-        sshTaskDelegate.sessionSpecs.size() == 2
+        1 * sessions.add(remote1, closure)
+        1 * sessions.add(remote2, closure)
     }
 
 
