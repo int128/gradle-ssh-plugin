@@ -1,8 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.session.Executor
-import org.hidetake.gradle.ssh.registry.Registry
 
 import static org.gradle.util.ConfigureUtil.configure
 
@@ -21,8 +19,6 @@ class SshPluginConvention {
      * Global settings.
      */
     final ssh = new SshSettings()
-
-    private final executor = Registry.instance[Executor]
 
     /**
      * Configure global settings.
@@ -44,6 +40,6 @@ class SshPluginConvention {
         def delegate = new SshTaskDelegate()
         configure(closure, delegate)
         def mergedSettings = SshSettings.computeMerged(delegate.sshSettings, ssh)
-        executor.execute(mergedSettings, delegate.sessionSpecs)
+        delegate.sessions.execute(mergedSettings)
     }
 }

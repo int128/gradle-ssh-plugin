@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.session
+package org.hidetake.gradle.ssh.ssh.internal
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -7,21 +7,24 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.ssh.api.Connection
+import org.hidetake.gradle.ssh.ssh.api.ConnectionManager
 
 import static org.hidetake.gradle.ssh.internal.session.Retry.retry
 
 /**
- * Factory and lifecycle manager class of JSch session.
+ * A default implementation of {@link ConnectionManager}.
  *
  * @author hidetake.org
  */
 @Slf4j
-class SessionManager {
+class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
 
     final SshSettings sshSettings
     final JSch jsch
     final List<Session> sessions = []
+    final List<Connection> connections = []
 
     /**
      * Constructor.
@@ -29,7 +32,7 @@ class SessionManager {
      * @param sshSettings1 ssh settings
      * @return a SessionManager instance
      */
-    def SessionManager(SshSettings sshSettings1) {
+    def DefaultConnectionManager(SshSettings sshSettings1) {
         sshSettings = sshSettings1
         jsch = new JSch()
 
@@ -43,13 +46,20 @@ class SessionManager {
         }
     }
 
+    @Override
+    Connection establish(Remote remote) {
+        def connection = new DefaultConnection(remote, create(remote))
+        connections.add(connection)
+        connection
+    }
+
     /**
      * Establish a JSch session.
      *
      * @param remote target remote host
      * @return a JSch session
      */
-    Session create(Remote remote) {
+    protected Session create(Remote remote) {
         if (remote.gateway) {
             def session = create(remote.gateway)
             def localPort = session.setPortForwardingL(0, remote.host, remote.port)
@@ -94,11 +104,26 @@ class SessionManager {
         }
     }
 
-    /**
-     * Disconnect all sessions.
-     */
-    void disconnect() {
+    @Override
+    void waitForPending() {
+        while (connections*.anyPending.any()) {
+            connections*.executeWhenClosedClosures()
+            sleep(100)
+        }
+    }
+
+    @Override
+    boolean isAnyError() {
+        connections*.anyError.any()
+    }
+
+    @Override
+    void cleanup() {
+        connections*.cleanup()
+        connections.clear()
+
         sessions*.disconnect()
+        sessions.clear()
     }
 
     @Lazy

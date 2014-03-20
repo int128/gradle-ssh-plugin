@@ -1,8 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SessionSpec
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.api.session.SessionsFactory
+import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * A delegate class of ssh task.
@@ -20,7 +22,7 @@ class SshTaskDelegate {
     /**
      * Sessions.
      */
-    final List<SessionSpec> sessionSpecs = []
+    final Sessions sessions = Registry.instance[SessionsFactory].create()
 
     /**
      * Add a session.
@@ -33,7 +35,7 @@ class SshTaskDelegate {
         assert remote.user, "user of remote ${remote.name} should be set"
         assert remote.host, "host of remote ${remote.name} should be set"
         assert closure, 'closure should be set'
-        sessionSpecs.add(new SessionSpec(remote, closure))
+        sessions.add(remote, closure)
     }
 
     /**
