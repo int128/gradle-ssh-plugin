@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.session.SessionsFactory
 import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
@@ -17,7 +16,7 @@ class SshTaskDelegateSpec extends Specification {
 
     def setup() {
         sessions = Mock(Sessions)
-        Registry.instance[SessionsFactory] = Mock(SessionsFactory) {
+        Registry.instance[Sessions.Factory] = Mock(Sessions.Factory) {
             create() >> sessions
         }
         sshTaskDelegate = new SshTaskDelegate()

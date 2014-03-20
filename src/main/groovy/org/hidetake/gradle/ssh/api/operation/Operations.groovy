@@ -1,6 +1,8 @@
 package org.hidetake.gradle.ssh.api.operation
 
 import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
  * Interface of operations.
@@ -8,6 +10,13 @@ import org.hidetake.gradle.ssh.api.Remote
  * @author hidetake.org
  */
 interface Operations {
+    /**
+     * A factory of {@link Operations}.
+     */
+    interface Factory {
+        Operations create(Connection connection, SshSettings sshSettings)
+    }
+
     Remote getRemote()
 
     void shell(ShellSettings settings, Closure closure)

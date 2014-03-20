@@ -10,6 +10,13 @@ import org.hidetake.gradle.ssh.api.SshSettings
  */
 interface Sessions {
     /**
+     * A factory of {@link Sessions}.
+     */
+    interface Factory {
+        Sessions create()
+    }
+
+    /**
      * Add a session.
      *
      * @param remote

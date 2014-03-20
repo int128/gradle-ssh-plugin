@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.session.SessionsFactory
 import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
@@ -49,7 +48,7 @@ class SshPluginConventionSpec extends Specification {
     def "sshexec delegates to executor"() {
         given:
         def sessions = Mock(Sessions)
-        Registry.instance[SessionsFactory] = Mock(SessionsFactory) {
+        Registry.instance[Sessions.Factory] = Mock(Sessions.Factory) {
             1 * create() >> sessions
         }
 
