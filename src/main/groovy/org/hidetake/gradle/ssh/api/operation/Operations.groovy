@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.api.operation
 
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
@@ -16,6 +17,8 @@ interface Operations {
     interface Factory {
         Operations create(Connection connection, SshSettings sshSettings)
     }
+
+    final factory = Registry.instance[Factory]
 
     Remote getRemote()
 

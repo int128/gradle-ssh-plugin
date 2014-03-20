@@ -9,13 +9,21 @@ import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.ssh.api.ConnectionManager
 import org.hidetake.gradle.ssh.ssh.internal.DefaultConnectionManager
 
+/**
+ * A component registry.
+ *
+ * @author hidetake.org
+ */
 @Singleton
-class Registry extends AbstractRegistry {
-    @Override
-    void wire() {
-        factory(Sessions.Factory, DefaultSessions)
-        factory(SessionHandler.Factory, SessionDelegate)
-        factory(Operations.Factory, DefaultOperations)
-        factory(ConnectionManager.Factory, DefaultConnectionManager)
+class Registry {
+    @SuppressWarnings("GroovyUnusedDeclaration")
+    @Delegate
+    private final RegistrySupport registrySupport = new RegistrySupport()
+
+    private Registry() {
+        factory(Sessions.Factory) >> DefaultSessions
+        factory(SessionHandler.Factory) >> SessionDelegate
+        factory(Operations.Factory) >> DefaultOperations
+        factory(ConnectionManager.Factory) >> DefaultConnectionManager
     }
 }

@@ -6,7 +6,6 @@ import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.registry.Registry
 import org.hidetake.gradle.ssh.ssh.api.ConnectionManager
 
 /**
@@ -32,7 +31,7 @@ class DefaultSessions implements Sessions {
                 new EstablishedSession(this)
             } else {
                 def connection = connectionManager.establish(remote)
-                def operations = Registry.instance[Operations.Factory].create(connection, sshSettings)
+                def operations = Operations.factory.create(connection, sshSettings)
                 new EstablishedSession(this, operations)
             }
         }
@@ -44,7 +43,7 @@ class DefaultSessions implements Sessions {
         final Operations operations
 
         void execute() {
-            session.closure.delegate = Registry.instance[SessionHandler.Factory].create(operations)
+            session.closure.delegate = SessionHandler.factory.create(operations)
             session.closure.resolveStrategy = Closure.DELEGATE_FIRST
             session.closure.call()
         }
@@ -59,7 +58,7 @@ class DefaultSessions implements Sessions {
 
     @Override
     void execute(SshSettings sshSettings) {
-        def connectionManager = Registry.instance[ConnectionManager.Factory].create(sshSettings)
+        def connectionManager = ConnectionManager.factory.create(sshSettings)
         try {
             sessions*.establish(connectionManager, sshSettings)*.execute()
 

@@ -3,11 +3,11 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.logging.LogLevel
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.registry.Registry
-import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineRegistryChanges
+import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
+
 class SshPluginConventionSpec extends Specification {
 
     def "configure ssh"() {
@@ -45,10 +45,11 @@ class SshPluginConventionSpec extends Specification {
     }
 
 
+    @ConfineMetaClassChanges(Sessions)
     def "sshexec delegates to executor"() {
         given:
         def sessions = Mock(Sessions)
-        Registry.instance[Sessions.Factory] = Mock(Sessions.Factory) {
+        factoryOf(Sessions) << Mock(Sessions.Factory) {
             1 * create() >> sessions
         }
 

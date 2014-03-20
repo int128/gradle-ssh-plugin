@@ -8,11 +8,12 @@ import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.registry.Registry
-import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineRegistryChanges
+import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
+
+@ConfineMetaClassChanges(SessionHandler)
 class DryRunSpec extends Specification {
 
     Project project
@@ -20,7 +21,7 @@ class DryRunSpec extends Specification {
 
     def setup() {
         handler = Mock(Operations)
-        Registry.instance[SessionHandler.Factory] = Mock(SessionHandler.Factory) {
+        factoryOf(SessionHandler) << Mock(SessionHandler.Factory) {
             1 * create(_) >> new SessionDelegate(handler)
         }
 

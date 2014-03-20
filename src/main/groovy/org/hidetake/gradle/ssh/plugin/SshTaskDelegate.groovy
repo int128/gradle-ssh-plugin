@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh.plugin
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * A delegate class of ssh task.
@@ -21,7 +20,7 @@ class SshTaskDelegate {
     /**
      * Sessions.
      */
-    final Sessions sessions = Registry.instance[Sessions.Factory].create()
+    final Sessions sessions = Sessions.factory.create()
 
     /**
      * Add a session.
