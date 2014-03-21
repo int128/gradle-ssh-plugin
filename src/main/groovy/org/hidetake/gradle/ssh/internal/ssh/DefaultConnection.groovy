@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.ssh.internal
+package org.hidetake.gradle.ssh.internal.ssh
 
 import com.jcraft.jsch.*
 import groovy.transform.TupleConstructor
@@ -6,7 +6,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.ssh.api.Connection
+import org.hidetake.gradle.ssh.api.ssh.Connection
 
 /**
  * A default implementation of SSH connection.

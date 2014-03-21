@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.ssh.internal
+package org.hidetake.gradle.ssh.internal.ssh
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
@@ -7,10 +7,10 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.ssh.api.Connection
-import org.hidetake.gradle.ssh.ssh.api.ConnectionManager
+import org.hidetake.gradle.ssh.api.ssh.Connection
+import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
 
-import static org.hidetake.gradle.ssh.internal.session.Retry.retry
+import static Retry.retry
 
 /**
  * A default implementation of {@link ConnectionManager}.

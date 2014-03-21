@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.ssh.api
+package org.hidetake.gradle.ssh.api.ssh
 
 import com.jcraft.jsch.Channel
 import com.jcraft.jsch.ChannelExec

@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.session
+package org.hidetake.gradle.ssh.internal.ssh
 
 import com.jcraft.jsch.JSchException
 import groovy.util.logging.Slf4j

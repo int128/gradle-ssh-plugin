@@ -6,7 +6,7 @@ import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.ssh.api.ConnectionManager
+import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
 
 /**
  * A default implementation of {@link Sessions}.

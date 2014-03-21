@@ -2,8 +2,8 @@ package org.hidetake.gradle.ssh.api.operation
 
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.registry.Registry
-import org.hidetake.gradle.ssh.ssh.api.Connection
 
 /**
  * Interface of operations.

@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.ssh.api
+package org.hidetake.gradle.ssh.api.ssh
 
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings

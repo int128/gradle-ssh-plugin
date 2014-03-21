@@ -9,7 +9,7 @@ import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.ssh.api.Connection
+import org.hidetake.gradle.ssh.api.ssh.Connection
 
 /**
  * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
