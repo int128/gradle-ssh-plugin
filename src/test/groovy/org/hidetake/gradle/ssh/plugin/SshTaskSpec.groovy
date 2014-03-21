@@ -3,12 +3,11 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.session.SessionsFactory
-import org.hidetake.gradle.ssh.registry.Registry
-import org.hidetake.gradle.ssh.test.ConfineRegistryChanges
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineRegistryChanges
+import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
+
 class SshTaskSpec extends Specification {
 
     static project() {
@@ -31,10 +30,11 @@ class SshTaskSpec extends Specification {
     }
 
 
+    @ConfineMetaClassChanges(Sessions)
     def "task action delegates to executor"() {
         given:
         def sessions = Mock(Sessions)
-        Registry.instance[SessionsFactory] = Mock(SessionsFactory) {
+        factoryOf(Sessions) << Mock(Sessions.Factory) {
             create() >> sessions
         }
         def mergedMock = Mock(SshSettings)

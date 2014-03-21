@@ -1,6 +1,8 @@
 package org.hidetake.gradle.ssh.api.session
 
 import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.operation.Operations
+import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * Handler of operations in a session closure.
@@ -8,6 +10,15 @@ import org.hidetake.gradle.ssh.api.Remote
  * @author hidetake.org
  */
 interface SessionHandler {
+    /**
+     * A factory of {@link SessionHandler}.
+     */
+    interface Factory {
+        SessionHandler create(Operations operations)
+    }
+
+    final factory = Registry.instance[Factory]
+
     /**
      * Returns remote host for current operation.
      *
