@@ -15,7 +15,22 @@ interface Operations {
      * A factory of {@link Operations}.
      */
     interface Factory {
+        /**
+         * Create an instance.
+         *
+         * @param connection
+         * @param sshSettings
+         * @return an instance for wet run
+         */
         Operations create(Connection connection, SshSettings sshSettings)
+
+        /**
+         * Create an instance for dry run.
+         *
+         * @param remote
+         * @return an instance for dry run
+         */
+        Operations create(Remote remote)
     }
 
     final factory = Registry.instance[Factory]
