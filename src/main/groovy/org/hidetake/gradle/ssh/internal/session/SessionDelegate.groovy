@@ -7,9 +7,16 @@ import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.api.session.SessionHandler
+import org.hidetake.gradle.ssh.internal.session.handler.DefaultSudoExecution
 
+/**
+ * A default implementation of {@link SessionHandler}.
+ *
+ * @author hidetake.org
+ */
 @TupleConstructor
 @Slf4j
+@Mixin(DefaultSudoExecution)
 class SessionDelegate implements SessionHandler {
     static final NULL_CLOSURE = {}
 
@@ -54,18 +61,6 @@ class SessionDelegate implements SessionHandler {
     String execute(HashMap settings, String command, Closure closure) {
         log.info("Execute a command ($command) with settings ($settings) and interactions")
         operations.execute(new ExecutionSettings(settings), command, closure)
-    }
-
-    @Override
-    String executeSudo(String command) {
-        log.info("Execute a command ($command) with sudo support")
-        operations.executeSudo(ExecutionSettings.DEFAULT, command)
-    }
-
-    @Override
-    String executeSudo(HashMap settings, String command) {
-        log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        operations.executeSudo(new ExecutionSettings(settings), command)
     }
 
     @Override

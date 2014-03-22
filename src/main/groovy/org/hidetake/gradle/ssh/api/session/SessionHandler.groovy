@@ -5,7 +5,7 @@ import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
- * Handler of operations in a session closure.
+ * A core handler for session closure.
  *
  * @author hidetake.org
  */
@@ -84,23 +84,6 @@ interface SessionHandler {
      * @return output value of the command
      */
     String execute(HashMap settings, String command, Closure closure)
-
-    /**
-     * Performs a sudo operation, explicitly providing password for the sudo user.
-     * This method blocks until channel is closed
-     *
-     * @param command
-     */
-    String executeSudo(String command)
-
-    /**
-     * Performs a sudo operation, explicitly providing password for the sudo user.
-     * This method blocks until channel is closed
-     *
-     * @param settings execution settings
-     * @param command
-     */
-    String executeSudo(HashMap settings, String command)
 
     /**
      * Performs an execution operation.

@@ -25,11 +25,6 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    String executeSudo(ExecutionSettings settings, String command) {
-        ''
-    }
-
-    @Override
     void executeBackground(ExecutionSettings settings, String command) {
     }
 

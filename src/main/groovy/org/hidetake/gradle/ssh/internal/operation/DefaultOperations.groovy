@@ -87,34 +87,6 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    String executeSudo(ExecutionSettings settings, String command) {
-        def prompt = UUID.randomUUID().toString()
-        def lines = [] as List<String>
-        execute(settings, "sudo -S -p '$prompt' $command") {
-            interaction {
-                when(partial: prompt, from: standardOutput) {
-                    log.info("Sending password for sudo authentication on channel #${channel.id}")
-                    standardInput << remote.password << '\n'
-
-                    when(nextLine: _, from: standardOutput) {
-                        when(nextLine: 'Sorry, try again.') {
-                            throw new RuntimeException("Sudo authentication failed on channel #${channel.id}")
-                        }
-                        when(line: _, from: standardOutput) {
-                            lines << it
-                        }
-                    }
-                }
-                when(line: _, from: standardOutput) {
-                    lines << it
-                }
-            }
-        }
-
-        lines.join(Utilities.eol())
-    }
-
-    @Override
     void executeBackground(ExecutionSettings settings, String command) {
         def channel = connection.createExecutionChannel(command, settings)
         def context = ExecutionDelegate.create(channel, sshSettings.encoding)

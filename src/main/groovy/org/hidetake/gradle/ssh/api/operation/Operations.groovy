@@ -41,8 +41,6 @@ interface Operations {
 
     String execute(ExecutionSettings settings, String command, Closure closure)
 
-    String executeSudo(ExecutionSettings settings, String command)
-
     void executeBackground(ExecutionSettings settings, String command)
 
     void get(String remote, String local)
