@@ -19,16 +19,10 @@ class DefaultSessions implements Sessions {
         final Remote remote
         final Closure closure
 
-        /**
-         * Establish a connection if dry run is turned off.
-         *
-         * @param connectionManager
-         * @param sshSettings
-         * @return
-         */
         EstablishedSession establish(ConnectionManager connectionManager, SshSettings sshSettings) {
             if (sshSettings.dryRun) {
-                new EstablishedSession(this)
+                def operations = Operations.factory.create(remote)
+                new EstablishedSession(this, operations)
             } else {
                 def connection = connectionManager.establish(remote)
                 def operations = Operations.factory.create(connection, sshSettings)

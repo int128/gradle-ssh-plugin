@@ -42,4 +42,21 @@ class RegistrySupport {
             map[factoryClass] = factoryProxy
         }] as FactoryHandler
     }
+
+    interface SingletonHandler<T> {
+        void rightShift(T singleton)
+    }
+
+    /**
+     * Sets a singleton object.
+     *
+     * @param factoryClass factory class
+     * @param instanceClass instance class
+     * @return an auto-generated factory
+     */
+    def <T> SingletonHandler singleton(Class<T> factoryClass) {
+        [rightShift: { T singleton ->
+            map[factoryClass] = singleton
+        }] as SingletonHandler<T>
+    }
 }

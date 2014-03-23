@@ -15,7 +15,22 @@ interface Operations {
      * A factory of {@link Operations}.
      */
     interface Factory {
+        /**
+         * Create an instance.
+         *
+         * @param connection
+         * @param sshSettings
+         * @return an instance for wet run
+         */
         Operations create(Connection connection, SshSettings sshSettings)
+
+        /**
+         * Create an instance for dry run.
+         *
+         * @param remote
+         * @return an instance for dry run
+         */
+        Operations create(Remote remote)
     }
 
     final factory = Registry.instance[Factory]
@@ -26,11 +41,12 @@ interface Operations {
 
     String execute(ExecutionSettings settings, String command, Closure closure)
 
-    String executeSudo(ExecutionSettings settings, String command)
-
     void executeBackground(ExecutionSettings settings, String command)
 
-    void get(String remote, String local)
-
-    void put(String local, String remote)
+    /**
+     * Perform SFTP operations.
+     *
+     * @param closure closure for {@link SftpHandler}
+     */
+    void sftp(Closure closure)
 }
