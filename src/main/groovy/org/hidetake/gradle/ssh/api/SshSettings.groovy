@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.api
 
-import groovy.util.logging.Slf4j
 import org.gradle.api.logging.LogLevel
 
 /**
@@ -9,7 +8,6 @@ import org.gradle.api.logging.LogLevel
  * @author hidetake.org
  *
  */
-@Slf4j
 class SshSettings {
     static final allowAnyHosts = new File(UUID.randomUUID().toString())
 
@@ -62,29 +60,39 @@ class SshSettings {
     String encoding = null
 
     /**
-     * Computes merged settings.
-     *
-     * @param specs list of {@link SshSettings}s in priority order (first item is highest priority)
-     * @return merged one
+     * Default settings.
      */
-    static SshSettings computeMerged(SshSettings... specs) {
-        def merged = new SshSettings()
+    static final DEFAULT = new SshSettings(
+            knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
+            dryRun: false,
+            retryCount: 0,
+            retryWaitSec: 0,
+            outputLogLevel: LogLevel.QUIET,
+            errorLogLevel: LogLevel.ERROR,
+            encoding: 'UTF-8'
+    )
 
-        specs.findResult { spec ->
-            spec.identity ? [identity: spec.identity, passphrase: spec.passphrase] : null
-        }?.with { Map map ->
-            merged.identity = map.identity
-            merged.passphrase = map.passphrase
-        }
+    /**
+     * Compute a merged settings.
+     * Properties of the right side overrides those of this object.
+     *
+     * @param right
+     * @return a merged one (right side is higher priority)
+     */
+    SshSettings plus(SshSettings right) {
+        def o = new SshSettings()
+        o.identity = right.identity ?: identity
 
-        merged.knownHosts = specs.findResult(
-                new File("${System.properties['user.home']}/.ssh/known_hosts")) { it.knownHosts } as File
-        merged.dryRun = specs.findResult(false) { it.dryRun } as boolean
-        merged.retryCount = specs.findResult(0) { it.retryCount } as int
-        merged.retryWaitSec = specs.findResult(0) { it.retryWaitSec } as int
-        merged.outputLogLevel = specs.findResult(LogLevel.QUIET) { it.outputLogLevel } as LogLevel
-        merged.errorLogLevel = specs.findResult(LogLevel.ERROR) { it.errorLogLevel } as LogLevel
-        merged.encoding = specs.findResult('UTF-8') { it.encoding } as String
-        merged
+        // identity and passphrase
+        o.passphrase = right.identity ? right.passphrase : passphrase
+
+        o.knownHosts = right.knownHosts ?: knownHosts
+        o.dryRun = right.dryRun ?: dryRun
+        o.retryCount = right.retryCount ?: retryCount
+        o.retryWaitSec = right.retryWaitSec ?: retryWaitSec
+        o.outputLogLevel = right.outputLogLevel ?: outputLogLevel
+        o.errorLogLevel = right.errorLogLevel ?: errorLogLevel
+        o.encoding = right.encoding ?: encoding
+        o
     }
 }
