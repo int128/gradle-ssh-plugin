@@ -13,12 +13,12 @@ class SftpDelegate implements SftpHandler {
     @Override
     void get(String remote, String local) {
         log.info("Get a remote file ($remote) to local ($local)")
-        channel.get(remote, local)
+        channel.get(remote, local, new FileTransferLogger())
     }
 
     @Override
     void put(String local, String remote) {
         log.info("Put a local file ($local) to remote ($remote)")
-        channel.put(local, remote, ChannelSftp.OVERWRITE)
+        channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
     }
 }

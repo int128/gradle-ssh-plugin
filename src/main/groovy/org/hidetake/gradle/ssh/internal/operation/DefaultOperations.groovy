@@ -109,13 +109,13 @@ class DefaultOperations implements Operations {
         def channel = connection.createSftpChannel()
         try {
             channel.connect()
-            log.info("Channel #${channel.id} has been opened")
+            log.info("SFTP Channel #${channel.id} has been opened")
 
             closure.delegate = Registry.instance[SftpHandler.Factory].create(channel)
             closure.resolveStrategy = Closure.DELEGATE_FIRST
             closure.call()
 
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
+            log.info("SFTP Channel #${channel.id} has been closed")
         } finally {
             channel.disconnect()
         }
