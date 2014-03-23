@@ -1,10 +1,12 @@
 package org.hidetake.gradle.ssh.registry
 
 import org.hidetake.gradle.ssh.api.operation.Operations
+import org.hidetake.gradle.ssh.api.operation.SftpHandler
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
 import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperationsFactory
+import org.hidetake.gradle.ssh.internal.operation.SftpDelegate
 import org.hidetake.gradle.ssh.internal.session.DefaultSessions
 import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.internal.ssh.DefaultConnectionManager
@@ -24,6 +26,8 @@ class Registry {
         factory(Sessions.Factory) >> DefaultSessions
         factory(SessionHandler.Factory) >> SessionDelegate
         factory(ConnectionManager.Factory) >> DefaultConnectionManager
+
+        factory(SftpHandler.Factory) >> SftpDelegate
 
         singleton(Operations.Factory) >> DefaultOperationsFactory.instance
     }

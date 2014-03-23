@@ -7,6 +7,7 @@ import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.api.session.SessionHandler
+import org.hidetake.gradle.ssh.internal.session.handler.DefaultFileTransfer
 import org.hidetake.gradle.ssh.internal.session.handler.DefaultSudoExecution
 
 /**
@@ -17,6 +18,7 @@ import org.hidetake.gradle.ssh.internal.session.handler.DefaultSudoExecution
 @TupleConstructor
 @Slf4j
 @Mixin(DefaultSudoExecution)
+@Mixin(DefaultFileTransfer)
 class SessionDelegate implements SessionHandler {
     static final NULL_CLOSURE = {}
 
@@ -73,17 +75,5 @@ class SessionDelegate implements SessionHandler {
     void executeBackground(HashMap settings, String command) {
         log.info("Execute a command ($command) with settings ($settings) in background")
         operations.executeBackground(new ExecutionSettings(settings), command)
-    }
-
-    @Override
-    void get(String remote, String local) {
-        log.info("Get a remote file ($remote) to local ($local)")
-        operations.get(remote, local)
-    }
-
-    @Override
-    void put(String local, String remote) {
-        log.info("Put a local file ($local) to remote ($remote)")
-        operations.put(local, remote)
     }
 }

@@ -101,22 +101,4 @@ interface SessionHandler {
      * @param command
      */
     void executeBackground(HashMap settings, String command)
-
-    /**
-     * Performs a GET operation.
-     * This method blocks until channel is closed.
-     *
-     * @param remote
-     * @param local
-     */
-    void get(String remote, String local)
-
-    /**
-     * Performs a PUT operation.
-     * This method blocks until channel is closed.
-     *
-     * @param local
-     * @param remote
-     */
-    void put(String local, String remote)
 }

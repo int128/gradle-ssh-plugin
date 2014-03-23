@@ -29,10 +29,6 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    void get(String remote, String local) {
-    }
-
-    @Override
-    void put(String local, String remote) {
+    void sftp(Closure closure) {
     }
 }

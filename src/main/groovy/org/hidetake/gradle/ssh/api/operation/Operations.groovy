@@ -43,7 +43,10 @@ interface Operations {
 
     void executeBackground(ExecutionSettings settings, String command)
 
-    void get(String remote, String local)
-
-    void put(String local, String remote)
+    /**
+     * Perform SFTP operations.
+     *
+     * @param closure closure for {@link SftpHandler}
+     */
+    void sftp(Closure closure)
 }

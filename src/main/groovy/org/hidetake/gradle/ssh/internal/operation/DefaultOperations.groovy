@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.operation
 
-import com.jcraft.jsch.ChannelSftp
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
@@ -8,8 +7,10 @@ import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
+import org.hidetake.gradle.ssh.api.operation.SftpHandler
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.api.ssh.Connection
+import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
@@ -104,25 +105,16 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    void get(String remote, String local) {
+    void sftp(Closure closure) {
         def channel = connection.createSftpChannel()
         try {
             channel.connect()
             log.info("Channel #${channel.id} has been opened")
-            channel.get(remote, local)
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-        } finally {
-            channel.disconnect()
-        }
-    }
 
-    @Override
-    void put(String local, String remote) {
-        def channel = connection.createSftpChannel()
-        try {
-            channel.connect()
-            log.info("Channel #${channel.id} has been opened")
-            channel.put(local, remote, ChannelSftp.OVERWRITE)
+            closure.delegate = Registry.instance[SftpHandler.Factory].create(channel)
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure.call()
+
             log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
         } finally {
             channel.disconnect()
