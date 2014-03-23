@@ -39,7 +39,6 @@ class SshPluginConvention {
         assert closure, 'closure should be set'
         def delegate = new SshTaskDelegate()
         configure(closure, delegate)
-        def mergedSettings = SshSettings.computeMerged(delegate.sshSettings, ssh)
-        delegate.sessions.execute(mergedSettings)
+        delegate.sessions.execute(SshSettings.DEFAULT + ssh + delegate.sshSettings)
     }
 }

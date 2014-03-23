@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
@@ -21,6 +22,8 @@ class SshTaskSpec extends Specification {
                 }
             }
             task(type: SshTask, 'testTask') {
+                dryRun = true
+                outputLogLevel = LogLevel.ERROR
                 session(remotes.webServer) {
                     execute 'ls'
                 }
@@ -37,7 +40,6 @@ class SshTaskSpec extends Specification {
         factoryOf(Sessions) << Mock(Sessions.Factory) {
             create() >> sessions
         }
-        def mergedMock = Mock(SshSettings)
 
         when:
         def project = project()
@@ -47,15 +49,13 @@ class SshTaskSpec extends Specification {
         1 * sessions.add(_, _)
 
         when:
-        def globalSshSettings = project.convention.getPlugin(SshPluginConvention).ssh
-        GroovySpy(SshSettings, global: true)
-        1 * SshSettings.computeMerged(task.sshSettings, globalSshSettings) >> mergedMock
-
-        and:
         task.perform()
 
         then:
-        1 * sessions.execute(mergedMock)
+        1 * sessions.execute(_) >> { SshSettings settings ->
+            settings.dryRun
+            settings.outputLogLevel == LogLevel.ERROR
+        }
     }
 
 }

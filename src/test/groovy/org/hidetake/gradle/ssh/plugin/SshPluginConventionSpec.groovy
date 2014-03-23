@@ -55,15 +55,17 @@ class SshPluginConventionSpec extends Specification {
 
         def convention = new SshPluginConvention()
 
-        def mergedMock = Mock(SshSettings)
-        GroovySpy(SshSettings, global: true)
-        1 * SshSettings.computeMerged(_, convention.ssh) >> mergedMock
-
         when:
-        convention.sshexec({})
+        convention.sshexec {
+            dryRun = true
+            outputLogLevel = LogLevel.ERROR
+        }
 
         then:
-        1 * sessions.execute(mergedMock)
+        1 * sessions.execute(_) >> { SshSettings settings ->
+            settings.dryRun
+            settings.outputLogLevel == LogLevel.ERROR
+        }
     }
 
     def "sshexec must specify closure"() {

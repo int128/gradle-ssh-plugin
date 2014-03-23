@@ -21,17 +21,6 @@ class SshSettingsSpec extends Specification {
     }
 
 
-    def "compute merged on one spec is a clone"() {
-        given:
-        def spec = createSpec()
-
-        when:
-        def merged = SshSettings.computeMerged(spec)
-
-        then:
-        assertEquals spec, merged
-    }
-
     def "compute merged adheres to priority order"() {
         given:
         def spec1 = createSpec()
@@ -48,7 +37,7 @@ class SshSettingsSpec extends Specification {
         }
 
         when:
-        def merged = SshSettings.computeMerged(spec2, spec1)
+        def merged = SshSettings.DEFAULT + spec1 + spec2
 
         then:
         merged.knownHosts == spec2.knownHosts
@@ -76,7 +65,7 @@ class SshSettingsSpec extends Specification {
         }
 
         when:
-        def merged = SshSettings.computeMerged(spec2, spec1)
+        def merged = SshSettings.DEFAULT + spec1 + spec2
 
         then:
         merged.identity == i0
@@ -93,19 +82,6 @@ class SshSettingsSpec extends Specification {
         identityA | "pA" | identityB | null || identityB | null
         identityA | null | identityB | "pB" || identityB | "pB"
         identityA | "pA" | identityB | "pB" || identityB | "pB"
-    }
-
-
-
-    private static assertEquals(SshSettings expected, SshSettings actual) {
-        assert expected.knownHosts == actual.knownHosts
-        assert expected.dryRun == actual.dryRun
-        assert expected.retryCount == actual.retryCount
-        assert expected.retryWaitSec == actual.retryWaitSec
-        assert expected.outputLogLevel == actual.outputLogLevel
-        assert expected.errorLogLevel == actual.errorLogLevel
-
-        true
     }
 
 }

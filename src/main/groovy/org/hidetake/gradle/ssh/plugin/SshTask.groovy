@@ -17,7 +17,6 @@ class SshTask extends DefaultTask {
     @TaskAction
     void perform() {
         def convention = project.convention.getPlugin(SshPluginConvention)
-        def mergedSettings = SshSettings.computeMerged(sshSettings, convention.ssh)
-        sessions.execute(mergedSettings)
+        sessions.execute(SshSettings.DEFAULT + convention.ssh + sshSettings)
     }
 }
