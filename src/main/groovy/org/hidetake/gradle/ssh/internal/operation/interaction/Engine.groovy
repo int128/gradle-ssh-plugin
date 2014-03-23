@@ -1,9 +1,9 @@
-package org.hidetake.gradle.ssh.internal.interaction
+package org.hidetake.gradle.ssh.internal.operation.interaction
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.interaction.Stream
-import org.hidetake.gradle.ssh.internal.interaction.InteractionRule.Event
+import org.hidetake.gradle.ssh.api.operation.interaction.Stream
+import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionRule.Event
 
 /**
  * A rule engine for processing stream events.

@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.api.interaction
+package org.hidetake.gradle.ssh.api.operation.interaction
 /**
  * Represents stream interaction with the server.
  *

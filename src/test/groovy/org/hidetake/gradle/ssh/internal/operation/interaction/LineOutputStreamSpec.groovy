@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.interaction
+package org.hidetake.gradle.ssh.internal.operation.interaction
 
 import spock.lang.Specification
 import spock.lang.Unroll

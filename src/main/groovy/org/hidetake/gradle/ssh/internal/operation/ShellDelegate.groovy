@@ -4,11 +4,11 @@ import com.jcraft.jsch.ChannelShell
 import groovy.transform.TupleConstructor
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
-import org.hidetake.gradle.ssh.api.interaction.Stream
 import org.hidetake.gradle.ssh.api.operation.ShellHandler
-import org.hidetake.gradle.ssh.internal.interaction.Engine
-import org.hidetake.gradle.ssh.internal.interaction.InteractionDelegate
-import org.hidetake.gradle.ssh.internal.interaction.LineOutputStream
+import org.hidetake.gradle.ssh.api.operation.interaction.Stream
+import org.hidetake.gradle.ssh.internal.operation.interaction.Engine
+import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionDelegate
+import org.hidetake.gradle.ssh.internal.operation.interaction.LineOutputStream
 
 @TupleConstructor
 class ShellDelegate implements ShellHandler {

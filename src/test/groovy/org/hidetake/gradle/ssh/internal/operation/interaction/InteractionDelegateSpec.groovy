@@ -1,7 +1,7 @@
-package org.hidetake.gradle.ssh.internal.interaction
+package org.hidetake.gradle.ssh.internal.operation.interaction
 
-import org.hidetake.gradle.ssh.api.interaction.Stream
-import org.hidetake.gradle.ssh.api.interaction.Wildcard
+import org.hidetake.gradle.ssh.api.operation.interaction.Stream
+import org.hidetake.gradle.ssh.api.operation.interaction.Wildcard
 import spock.lang.Specification
 
 class InteractionDelegateSpec extends Specification {
