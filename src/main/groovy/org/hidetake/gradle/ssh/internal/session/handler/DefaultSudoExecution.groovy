@@ -30,26 +30,26 @@ class DefaultSudoExecution implements SudoExecution {
 
         def prompt = UUID.randomUUID().toString()
         def lines = [] as List<String>
-        operations.execute(settings, "sudo -S -p '$prompt' $command") {
-            interaction {
-                when(partial: prompt, from: standardOutput) {
-                    log.info("Sending password for sudo authentication on channel #${channel.id}")
-                    standardInput << remote.password << '\n'
+        def interaction = {
+            when(partial: prompt, from: standardOutput) {
+                log.info("Sending password for sudo authentication")
+                standardInput << remote.password << '\n'
 
-                    when(nextLine: _, from: standardOutput) {
-                        when(nextLine: 'Sorry, try again.') {
-                            throw new RuntimeException("Sudo authentication failed on channel #${channel.id}")
-                        }
-                        when(line: _, from: standardOutput) {
-                            lines << it
-                        }
+                when(nextLine: _, from: standardOutput) {
+                    when(nextLine: 'Sorry, try again.') {
+                        throw new RuntimeException("Sudo authentication failed")
+                    }
+                    when(line: _, from: standardOutput) {
+                        lines << it
                     }
                 }
-                when(line: _, from: standardOutput) {
-                    lines << it
-                }
+            }
+            when(line: _, from: standardOutput) {
+                lines << it
             }
         }
+
+        operations.execute(settings + [interaction: interaction], "sudo -S -p '$prompt' $command")
 
         lines.join(Utilities.eol())
     }

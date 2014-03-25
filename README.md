@@ -145,7 +145,7 @@ In the `session` closure, following methods are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
   * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
-  * `shell` - Opens a shell. This method blocks until the shell is finished. Note that you should provide termination input such as `exit` or `quit` with the interaction closure.
+  * `shell` - Opens a shell. This method blocks until the shell is finished. You should provide interaction such as `exit` or `quit` in order to exit the shell.
 
 Also following property is available:
   * `remote` - Remote host of current session. (Read only)
@@ -156,6 +156,7 @@ Also following property is available:
 These methods accept following settings as map:
   * `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
   * `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
+  * `interaction` - Specifies interaction with the stream. Default is no interaction.
 
 Other settings are still available (directly passed to JSch) but will not be supported in v0.3.0.
 
@@ -175,18 +176,16 @@ These methods return value:
 
 #### Interact with the stream
 
-`execute` and `shell` method can take a closure for interaction.
+`execute` and `shell` method can take a setting for interaction with the stream.
 ```groovy
-execute('passwd', pty: true) {
-  interaction {
+execute('passwd', pty: true, interaction: {
+  when(partial: ~/.+[Pp]assowrd: */) {
+    standardInput << oldPassword << '\n'
     when(partial: ~/.+[Pp]assowrd: */) {
-      standardInput << oldPassword << '\n'
-      when(partial: ~/.+[Pp]assowrd: */) {
-        standardInput << newPassword << '\n'
-      }
+      standardInput << newPassword << '\n'
     }
   }
-}
+})
 ```
 
 In the `interaction` closure, use `when` methods to declare rules:

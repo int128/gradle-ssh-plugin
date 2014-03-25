@@ -37,9 +37,9 @@ interface Operations {
 
     Remote getRemote()
 
-    void shell(ShellSettings settings, Closure closure)
+    void shell(ShellSettings settings)
 
-    String execute(ExecutionSettings settings, String command, Closure closure)
+    String execute(ExecutionSettings settings, String command)
 
     void executeBackground(ExecutionSettings settings, String command)
 

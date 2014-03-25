@@ -3,13 +3,18 @@ package org.hidetake.gradle.ssh.internal.operation
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
+import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.SftpHandler
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.operation.interaction.Stream
 import org.hidetake.gradle.ssh.api.ssh.Connection
+import org.hidetake.gradle.ssh.internal.operation.interaction.Engine
+import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionDelegate
+import org.hidetake.gradle.ssh.internal.operation.interaction.LineOutputStream
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
@@ -29,16 +34,25 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    void shell(ShellSettings settings, Closure closure) {
+    void shell(ShellSettings settings) {
         def channel = connection.createShellChannel(settings)
-        def context = ShellDelegate.create(channel, sshSettings.encoding)
+
+        def standardInput = channel.outputStream
+        def standardOutput = new LineOutputStream(sshSettings.encoding)
+        channel.outputStream = standardOutput
+
         if (settings.logging) {
-            context.enableLogging(sshSettings.outputLogLevel)
+            def logger = Logging.getLogger(DefaultOperations)
+            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
         }
 
-        closure.delegate = context
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure()
+        if (settings.interaction) {
+            def delegate = new InteractionDelegate(standardInput)
+            def rules = delegate.evaluate(settings.interaction)
+            def engine = new Engine(delegate)
+            engine.alterInteractionRules(rules)
+            engine.attach(standardOutput, Stream.StandardOutput)
+        }
 
         try {
             channel.connect()
@@ -56,19 +70,32 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    String execute(ExecutionSettings settings, String command, Closure closure) {
+    String execute(ExecutionSettings settings, String command) {
         def channel = connection.createExecutionChannel(command, settings)
-        def context = ExecutionDelegate.create(channel, sshSettings.encoding)
+
+        def standardInput = channel.outputStream
+        def standardOutput = new LineOutputStream(sshSettings.encoding)
+        def standardError = new LineOutputStream(sshSettings.encoding)
+        channel.outputStream = standardOutput
+        channel.errStream = standardError
+
         if (settings.logging) {
-            context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
+            def logger = Logging.getLogger(DefaultOperations)
+            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+            standardError.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+        }
+
+        if (settings.interaction) {
+            def delegate = new InteractionDelegate(standardInput)
+            def rules = delegate.evaluate(settings.interaction)
+            def engine = new Engine(delegate)
+            engine.alterInteractionRules(rules)
+            engine.attach(standardOutput, Stream.StandardOutput)
+            engine.attach(standardError, Stream.StandardError)
         }
 
         def lines = [] as List<String>
-        context.standardOutput.lineListeners.add { String line -> lines << line }
-
-        closure.delegate = context
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure()
+        standardOutput.lineListeners.add { String line -> lines << line }
 
         try {
             channel.connect()
@@ -90,9 +117,26 @@ class DefaultOperations implements Operations {
     @Override
     void executeBackground(ExecutionSettings settings, String command) {
         def channel = connection.createExecutionChannel(command, settings)
-        def context = ExecutionDelegate.create(channel, sshSettings.encoding)
+
+        def standardInput = channel.outputStream
+        def standardOutput = new LineOutputStream(sshSettings.encoding)
+        def standardError = new LineOutputStream(sshSettings.encoding)
+        channel.outputStream = standardOutput
+        channel.errStream = standardError
+
         if (settings.logging) {
-            context.enableLogging(sshSettings.outputLogLevel, sshSettings.errorLogLevel)
+            def logger = Logging.getLogger(DefaultOperations)
+            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+            standardError.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+        }
+
+        if (settings.interaction) {
+            def delegate = new InteractionDelegate(standardInput)
+            def rules = delegate.evaluate(settings.interaction)
+            def engine = new Engine(delegate)
+            engine.alterInteractionRules(rules)
+            engine.attach(standardOutput, Stream.StandardOutput)
+            engine.attach(standardError, Stream.StandardError)
         }
 
         channel.connect()

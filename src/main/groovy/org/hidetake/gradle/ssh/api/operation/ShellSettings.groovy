@@ -11,5 +11,7 @@ import groovy.transform.Immutable
 class ShellSettings {
     boolean logging = true
 
+    Closure interaction = null
+
     static final DEFAULT = new ShellSettings([:])
 }

@@ -16,11 +16,11 @@ class DryRunOperations implements Operations {
     final Remote remote
 
     @Override
-    void shell(ShellSettings settings, Closure closure) {
+    void shell(ShellSettings settings) {
     }
 
     @Override
-    String execute(ExecutionSettings settings, String command, Closure closure) {
+    String execute(ExecutionSettings settings, String command) {
         ''
     }
 

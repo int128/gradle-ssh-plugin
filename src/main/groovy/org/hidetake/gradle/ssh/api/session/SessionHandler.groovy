@@ -31,19 +31,9 @@ interface SessionHandler {
      * This method blocks until channel is closed.
      *
      * @param settings shell settings
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ShellHandler}
      * @return output value of the command
      */
-    void shell(HashMap settings, Closure closure)
-
-    /**
-     * Performs a shell operation.
-     * This method blocks until channel is closed.
-     *
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ShellHandler}
-     * @return output value of the command
-     */
-    void shell(Closure closure)
+    void shell(HashMap settings)
 
     /**
      * Performs an execution operation.
@@ -58,32 +48,11 @@ interface SessionHandler {
      * Performs an execution operation.
      * This method blocks until channel is closed.
      *
-     * @param command
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ExecutionHandler}
-     * @return output value of the command
-     */
-    String execute(String command, Closure closure)
-
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
      * @param settings execution settings
      * @param command
      * @return output value of the command
      */
     String execute(HashMap settings, String command)
-
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
-     * @param settings execution settings
-     * @param command
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.operation.ExecutionHandler}
-     * @return output value of the command
-     */
-    String execute(HashMap settings, String command, Closure closure)
 
     /**
      * Performs an execution operation.
