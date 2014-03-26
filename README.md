@@ -157,8 +157,6 @@ These methods accept following settings as map:
   * `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
   * `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
 
-Other settings are still available (directly passed to JSch) but will not be supported in v0.3.0.
-
 
 #### Handle the result
 
