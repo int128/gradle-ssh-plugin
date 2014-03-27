@@ -108,7 +108,10 @@ class DefaultOperations implements Operations {
             if (exitStatus != 0) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
-            lines.join(Utilities.eol())
+
+            def result = lines.join(Utilities.eol())
+            settings.callback?.call(result)
+            result
         } finally {
             channel.disconnect()
         }
@@ -142,9 +145,18 @@ class DefaultOperations implements Operations {
         channel.connect()
         log.info("Channel #${channel.id} has been opened")
 
+        def lines = [] as List<String>
+        standardOutput.lineListeners.add { String line -> lines << line }
+
         connection.whenClosed(channel) {
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-            channel.disconnect()
+            int exitStatus = channel.exitStatus
+            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            if (exitStatus != 0) {
+                throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
+            }
+
+            def result = lines.join(Utilities.eol())
+            settings.callback?.call(result)
         }
     }
 

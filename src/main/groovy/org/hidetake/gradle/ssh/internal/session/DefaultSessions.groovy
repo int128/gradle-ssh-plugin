@@ -57,9 +57,6 @@ class DefaultSessions implements Sessions {
             sessions*.establish(connectionManager, sshSettings)*.execute()
 
             connectionManager.waitForPending()
-            if (connectionManager.anyError) {
-                throw new RuntimeException('At least one session finished with error')
-            }
         } finally {
             connectionManager.cleanup()
         }

@@ -40,9 +40,21 @@ class SessionDelegate implements SessionHandler {
     }
 
     @Override
+    void execute(String command, Closure callback) {
+        log.info("Execute a command ($command)")
+        operations.execute(new ExecutionSettings(callback: callback), command)
+    }
+
+    @Override
     String execute(HashMap settings, String command) {
         log.info("Execute a command ($command) with settings ($settings)")
         operations.execute(new ExecutionSettings(settings), command)
+    }
+
+    @Override
+    void execute(HashMap settings, String command, Closure callback) {
+        log.info("Execute a command ($command) with settings ($settings)")
+        operations.execute(new ExecutionSettings(settings) + [callback: callback], command)
     }
 
     @Override
@@ -52,8 +64,20 @@ class SessionDelegate implements SessionHandler {
     }
 
     @Override
+    void executeBackground(String command, Closure callback) {
+        log.info("Execute a command ($command) in background")
+        operations.executeBackground(new ExecutionSettings(callback: callback), command)
+    }
+
+    @Override
     void executeBackground(HashMap settings, String command) {
         log.info("Execute a command ($command) with settings ($settings) in background")
         operations.executeBackground(new ExecutionSettings(settings), command)
+    }
+
+    @Override
+    void executeBackground(HashMap settings, String command, Closure callback) {
+        log.info("Execute a command ($command) with settings ($settings) in background")
+        operations.executeBackground(new ExecutionSettings(settings) + [callback: callback], command)
     }
 }

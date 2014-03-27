@@ -16,6 +16,11 @@ class ExecutionSettings {
     Closure interaction = null
 
     /**
+     * A closure called with an output value of the command when it is finished.
+     */
+    Closure callback = null
+
+    /**
      * Compute a merged settings.
      *
      * @param map key(s) and value(s) to override

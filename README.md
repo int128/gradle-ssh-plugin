@@ -173,6 +173,13 @@ These methods return value:
   * `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
   * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
 
+`executeBackground` method accepts a callback closure. It will be called with the result when the command is finished.
+```groovy
+executeBackground('ping -c 3 server') { result ->
+  def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
+}
+```
+
 
 #### Interact with the stream
 

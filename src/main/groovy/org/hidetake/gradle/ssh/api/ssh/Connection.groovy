@@ -55,10 +55,11 @@ interface Connection {
 
     /**
      * Execute registered closures.
+     * This method throws a {@link BackgroundCommandException} if any closure returns an exception.
      *
      * @see #whenClosed(com.jcraft.jsch.Channel, groovy.lang.Closure)
      */
-    void executeWhenClosedClosures()
+    void executeCallbackForClosedChannels()
 
     /**
      * Return if any channel is pending.
@@ -66,13 +67,6 @@ interface Connection {
      * @return true if at least one is pending
      */
     boolean isAnyPending()
-
-    /**
-     * Return if any channel was error.
-     *
-     * @return true if at least one was error
-     */
-    boolean isAnyError()
 
     /**
      * Cleanup all channels.

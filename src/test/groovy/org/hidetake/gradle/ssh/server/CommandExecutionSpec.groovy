@@ -145,6 +145,60 @@ class CommandExecutionSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
     }
 
+    def "obtain a command result via callback"() {
+        given:
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    execute('somecommand') { result ->
+                        project.ext.resultActual = result
+                    }
+                }
+            }
+        }
+
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'something output' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        project.ext.resultActual == 'something output'
+    }
+
+    def "obtain a command result via callback with settings"() {
+        given:
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    execute('somecommand', pty: true) { result ->
+                        project.ext.resultActual = result
+                    }
+                }
+            }
+        }
+
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'something output' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        project.ext.resultActual == 'something output'
+    }
+
     @Unroll
     def "logging, #description"() {
         given:
