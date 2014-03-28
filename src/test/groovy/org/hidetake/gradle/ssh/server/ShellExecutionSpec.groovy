@@ -8,6 +8,7 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
@@ -95,7 +96,10 @@ class ShellExecutionSpec extends Specification {
 
         then:
         TaskExecutionException e = thrown()
-        e.cause.message.contains('exit status 1')
+
+        and:
+        BadExitStatusException cause = e.cause as BadExitStatusException
+        cause.exitStatus == 1
     }
 
     @Unroll

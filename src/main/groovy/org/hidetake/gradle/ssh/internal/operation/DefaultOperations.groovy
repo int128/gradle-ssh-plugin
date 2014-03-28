@@ -6,10 +6,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.operation.SftpHandler
-import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.operation.*
 import org.hidetake.gradle.ssh.api.operation.interaction.Stream
 import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.internal.operation.interaction.Engine
@@ -60,9 +57,11 @@ class DefaultOperations implements Operations {
             while (!channel.closed) {
                 sleep(100)
             }
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-            if (channel.exitStatus != 0) {
-                throw new RuntimeException("Shell session finished with exit status ${channel.exitStatus}")
+
+            int exitStatus = channel.exitStatus
+            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            if (exitStatus != 0) {
+                throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
             }
         } finally {
             channel.disconnect()
@@ -103,10 +102,11 @@ class DefaultOperations implements Operations {
             while (!channel.closed) {
                 sleep(100)
             }
-            log.info("Channel #${channel.id} has been closed with exit status ${channel.exitStatus}")
-            if (channel.exitStatus != 0) {
-                throw new RuntimeException(
-                    "Command ($command) execution session finished with exit status ${channel.exitStatus}")
+
+            int exitStatus = channel.exitStatus
+            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            if (exitStatus != 0) {
+                throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
             lines.join(Utilities.eol())
         } finally {
