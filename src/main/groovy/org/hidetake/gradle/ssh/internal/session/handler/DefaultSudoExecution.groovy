@@ -25,6 +25,20 @@ class DefaultSudoExecution implements SudoExecution {
         executeSudoInternal(new ExecutionSettings(settings), command)
     }
 
+    @Override
+    void executeSudo(String command, Closure callback) {
+        log.info("Execute a command ($command) with sudo support")
+        def result = executeSudoInternal(ExecutionSettings.DEFAULT, command)
+        callback(result)
+    }
+
+    @Override
+    void executeSudo(HashMap settings, String command, Closure callback) {
+        log.info("Execute a command ($command) with sudo support and settings ($settings)")
+        def result = executeSudoInternal(new ExecutionSettings(settings), command)
+        callback(result)
+    }
+
     private executeSudoInternal(ExecutionSettings settings, String command) {
         assert operations instanceof Operations
 
