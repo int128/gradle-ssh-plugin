@@ -22,8 +22,7 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
-Use [project template](https://github.com/int128/gradle-ssh) for quick start.
-See [release notes](https://github.com/int128/gradle-ssh-plugin/releases).
+Use [Gradle SSH Plugin Template Project](https://github.com/int128/gradle-ssh) for quick start.
 
 
 Features
@@ -91,7 +90,7 @@ remotes {
 Define a SSH task
 -----------------
 
-To define a SSH task, use `task(type: SshTask)` like:
+Define a SSH task to execute commands or transfer files.
 
 ```groovy
 task checkWebServer(type: SshTask) {
@@ -108,40 +107,27 @@ task reloadServers(type: SshTask) {
 }
 ```
 
-Note that closure of a task is called in **evaluation** phase on Gradle.
-
-
-### Task specific settings
-
-In the `SshTask` closure, following properties are available:
-  * `dryRun` - Dry run flag. If true, performs no action.
-  * `outputLogLevel` - Log level of standard output for executing commands.
-  * `errorLogLevel` - Log level of standard error for executing commands.
-  * `encoding` - Encoding of input and output for executing commands.
-
-Task specific setting overrides the global setting.
+The plugin runs task closures in **evaluation** phase of Gradle, but will run each session closure in **execution** phase of Gradle.
 
 
 ### Open a session
 
-In the `SshTask` closure, following methods are available:
+In a task closure, use following methods to open a session:
   * `session(remote)` - Adds a session to the remote host.
   * `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
-
-Note that closure of a session is called in **execution** phase on Gradle.
 
 
 #### Specify a remote host by name or role
 
-`session` method takes one or more remote hosts.
-  * `remotes.hostname` - Specifies the remote host.
+A session method takes one or more remote hosts.
+  * `remotes.name` - Specifies the remote host.
   * `remotes.role(A)` - Specifies remote hosts associated with A.
   * `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
 
 
 ### Execute a command or shell
 
-In the `session` closure, following methods are available:
+In a session closure, use following methods to execute a command or shell:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
   * `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
   * `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
@@ -167,6 +153,7 @@ Following methods return value:
 
 Also `execute`, `executeBackground` and `executeSudo` can take a callback closure _(since v0.3.1)_.
 It will be called with the result when the command is finished.
+
 ```groovy
 executeBackground('ping -c 3 server') { result ->
   def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
@@ -186,6 +173,7 @@ These methods raise an exception and stop Gradle if error occurs:
 #### Interact with the stream
 
 `execute`, `executeBackground` and `shell` can take a setting for interaction with the stream.
+
 ```groovy
 execute('passwd', pty: true, interaction: {
   when(partial: ~/.+[Pp]assowrd: */) {
@@ -197,7 +185,7 @@ execute('passwd', pty: true, interaction: {
 })
 ```
 
-In the `interaction` closure, use `when` methods to declare rules:
+In an interaction closure, use following methods to declare rules:
   * `when(nextLine: pattern, from: stream) { action }` - When next line from the `stream` matches to the `pattern`, the action will be called.
   * `when(line: pattern, from: stream) { action }` - When a line from the `stream` matches to the `pattern`, the action will be called.
   * `when(partial: pattern, from: stream) { action }` - Performs match when the stream is flushed. This is useful for answering to a prompt such as `yes or no?`.
@@ -214,13 +202,13 @@ In the `interaction` closure, use `when` methods to declare rules:
 
 Rules will be evaluated in order. First rule has the highest priority.
 
-In the action closure, following property is available:
+In an action closure, following property is available:
   * `standardInput` - Output stream to the remote command. (Read only)
 
 
 ### Transfer files
 
-In the `session` closure, following methods are available:
+In a session closure, use following methods to transfer files:
   * `get(remote, local)` - Fetches a file from remote host.
   * `put(local, remote)` - Sends a file to remote host.
 
@@ -230,10 +218,22 @@ In the `session` closure, following methods are available:
 These methods raise an exception and stop Gradle if error occurs.
 
 
+### Task specific settings
+
+In `SshTask` closure, following settings are available:
+  * `dryRun` - Dry run flag. If true, performs no action.
+  * `outputLogLevel` - Log level of standard output for executing commands.
+  * `errorLogLevel` - Log level of standard error for executing commands.
+  * `encoding` - Encoding of input and output for executing commands.
+
+Task specific setting overrides global setting.
+
+
 Use SSH in the task
 -------------------
 
-To execute SSH in the task, call `sshexec` method with a closure:
+`sshexec` method provides SSH execution in another task.
+In `sshexec` closure, same properties and methods as `SshTask` are available.
 
 ```groovy
 task reloadService << {
@@ -246,13 +246,12 @@ task reloadService << {
 }
 ```
 
-In `sshexec` closure, same properties and methods as `SshTask` are available.
-
 
 ### Manipulate the remotes container
 
 Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
 a remote host can be defined dynamically using `remotes.create(name)`:
+
 ```groovy
 remotes.create('dynamic1') {
   host = /* given in execution phase */
@@ -279,7 +278,7 @@ ssh {
 }
 ```
 
-Following properties are available:
+Following settings are available:
   * `identity` - Private key file for public-key authentication. This can be overridden by remote specific one.
   * `passphrase` - Pass phrase for the private key.
   * `knownHosts` - Known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
