@@ -4,8 +4,10 @@ import com.jcraft.jsch.*
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
 import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.ssh.BackgroundCommandException
 import org.hidetake.gradle.ssh.api.ssh.Connection
 
 /**
@@ -19,7 +21,7 @@ class DefaultConnection implements Connection {
     final Remote remote
     final Session session
     final List<Channel> channels = []
-    final List<Closure> whenClosedClosures = []
+    final List<Closure> callbackForClosedChannels = []
 
     @Override
     ChannelExec createExecutionChannel(String command, ExecutionSettings executionSettings) {
@@ -47,17 +49,32 @@ class DefaultConnection implements Connection {
     @Override
     void whenClosed(Channel channel, Closure closure) {
         boolean executed = false
-        whenClosedClosures.add { ->
+        callbackForClosedChannels.add { ->
             if (!executed && channel.closed) {
-                closure(channel)
                 executed = true
+                closure(channel)
             }
         }
     }
 
     @Override
-    void executeWhenClosedClosures() {
-        whenClosedClosures*.call()
+    void executeCallbackForClosedChannels() {
+        List<Exception> exceptions = []
+        callbackForClosedChannels.each { callback ->
+            try {
+                callback.call()
+            } catch (Exception e) {
+                exceptions.add(e)
+                if (e instanceof BadExitStatusException) {
+                    log.warn("${e.class.name}: ${e.localizedMessage}")
+                } else {
+                    log.warn('Error in background command execution', e)
+                }
+            }
+        }
+        if (!exceptions.empty) {
+            throw new BackgroundCommandException(exceptions)
+        }
     }
 
     @Override
@@ -66,14 +83,7 @@ class DefaultConnection implements Connection {
     }
 
     @Override
-    boolean isAnyError() {
-        channels.findAll { it instanceof ChannelExec || it instanceof ChannelShell }
-                .any { channel -> channel.exitStatus != 0 }
-    }
-
-    @Override
     void cleanup() {
-        whenClosedClosures*.call()
         channels*.disconnect()
         channels.clear()
     }

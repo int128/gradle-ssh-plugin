@@ -8,8 +8,9 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
+import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
@@ -53,7 +54,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell {}
+                    shell()
                 }
             }
         }
@@ -76,7 +77,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell {}
+                    shell()
                 }
             }
         }
@@ -95,7 +96,10 @@ class ShellExecutionSpec extends Specification {
 
         then:
         TaskExecutionException e = thrown()
-        e.cause.message.contains('exit status 1')
+
+        and:
+        BadExitStatusException cause = e.cause as BadExitStatusException
+        cause.exitStatus == 1
     }
 
     @Unroll
@@ -111,7 +115,7 @@ class ShellExecutionSpec extends Specification {
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell {}
+                    shell()
                 }
             }
         }
@@ -148,7 +152,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell(logging: logging) {}
+                    shell(logging: logging)
                 }
             }
         }
