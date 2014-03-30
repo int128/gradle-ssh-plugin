@@ -139,7 +139,7 @@ Note that closure of a session is called in **execution** phase on Gradle.
   * `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
 
 
-### Execute a command
+### Execute a command or shell
 
 In the `session` closure, following methods are available:
   * `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
@@ -161,17 +161,12 @@ These methods accept following settings as map:
 
 #### Handle the result
 
-These methods raise an exception and stop the Gradle if error occurs:
-  * `execute` throws an exception if exit status of the remote command is not zero.
-  * `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
-  * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
-  * `shell` throws an exception if exit status of the shell is not zero.
-
-These methods return value:
+Following methods return value:
   * `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
   * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
 
-Also execute methods accept a callback closure. It will be called with the result when the command is finished.
+Also `execute`, `executeBackground` and `executeSudo` can take a callback closure.
+It will be called with the result when the command is finished.
 ```groovy
 executeBackground('ping -c 3 server') { result ->
   def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
@@ -179,9 +174,18 @@ executeBackground('ping -c 3 server') { result ->
 ```
 
 
+#### Handle the error
+
+These methods raise an exception and stop Gradle if error occurs:
+  * `execute` throws an exception if exit status of the remote command is not zero.
+  * `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
+  * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
+  * `shell` throws an exception if exit status of the shell is not zero.
+
+
 #### Interact with the stream
 
-`execute` and `shell` method can take a setting for interaction with the stream.
+`execute`, `executeBackground` and `shell` can take a setting for interaction with the stream.
 ```groovy
 execute('passwd', pty: true, interaction: {
   when(partial: ~/.+[Pp]assowrd: */) {
@@ -221,7 +225,7 @@ In the `session` closure, following methods are available:
   * `put(local, remote)` - Sends a file to remote host.
 
 
-#### Handle the result
+#### Handle the error
 
 These methods raise an exception and stop Gradle if error occurs.
 
