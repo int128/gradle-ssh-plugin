@@ -7,6 +7,7 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.ssh.BackgroundCommandException
 import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
 
@@ -106,15 +107,28 @@ class DefaultConnectionManager implements ConnectionManager {
 
     @Override
     void waitForPending() {
+        List<Exception> exceptions = []
         while (connections*.anyPending.any()) {
-            connections*.executeWhenClosedClosures()
+            connections.each { connection ->
+                try {
+                    connection.executeCallbackForClosedChannels()
+                } catch (BackgroundCommandException e) {
+                    exceptions.addAll(e.exceptionsOfBackgroundExecution)
+                }
+            }
             sleep(100)
         }
-    }
+        connections.each { connection ->
+            try {
+                connection.executeCallbackForClosedChannels()
+            } catch (BackgroundCommandException e) {
+                exceptions.addAll(e.exceptionsOfBackgroundExecution)
+            }
+        }
 
-    @Override
-    boolean isAnyError() {
-        connections*.anyError.any()
+        if (!exceptions.empty) {
+            throw new BackgroundCommandException(exceptions)
+        }
     }
 
     @Override

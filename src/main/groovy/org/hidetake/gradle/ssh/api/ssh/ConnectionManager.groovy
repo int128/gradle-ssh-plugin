@@ -29,15 +29,9 @@ interface ConnectionManager {
 
     /**
      * Wait for pending sessions.
+     * This method throws a {@link BackgroundCommandException} if any error occurs.
      */
     void waitForPending()
-
-    /**
-     * Return if any connection was error.
-     *
-     * @return true if at least one was error
-     */
-    boolean isAnyError()
 
     /**
      * Cleanup all connections.

@@ -13,5 +13,22 @@ class ExecutionSettings {
 
     boolean logging = true
 
+    Closure interaction = null
+
+    /**
+     * A closure called with an output value of the command when it is finished.
+     */
+    Closure callback = null
+
+    /**
+     * Compute a merged settings.
+     *
+     * @param map key(s) and value(s) to override
+     * @return a merged settings
+     */
+    ExecutionSettings plus(Map map) {
+        new ExecutionSettings((properties + map) as HashMap)
+    }
+
     static final DEFAULT = new ExecutionSettings([:])
 }

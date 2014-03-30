@@ -9,8 +9,8 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
+import org.hidetake.gradle.ssh.plugin.SshTask
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
@@ -207,6 +207,84 @@ class SudoCommandExecutionSpec extends Specification {
         'a line with line sep' | 'some result\n'              | 'some result'
         'lines'                | 'some result\nsecond line'   | "some result${NL}second line"
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
+    }
+
+    def "obtain a command result via callback"() {
+        given:
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    executeSudo('somecommand') { result ->
+                        project.ext.resultActual = result
+                    }
+                }
+            }
+        }
+
+        def recorder = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') {
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << 'something output'
+                    }
+                    c.exitCallback.onExit(0)
+                }
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * recorder.call('somecommand')
+
+        then:
+        project.ext.resultActual == 'something output'
+    }
+
+    def "obtain a command result via callback with settings"() {
+        given:
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    executeSudo('somecommand', pty: true) { result ->
+                        project.ext.resultActual = result
+                    }
+                }
+            }
+        }
+
+        def recorder = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') {
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << 'something output'
+                    }
+                    c.exitCallback.onExit(0)
+                }
+            }
+        }
+        server.start()
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * recorder.call('somecommand')
+
+        then:
+        project.ext.resultActual == 'something output'
     }
 
     @Unroll

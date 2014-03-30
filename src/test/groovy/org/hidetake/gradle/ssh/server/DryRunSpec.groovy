@@ -48,10 +48,7 @@ class DryRunSpec extends Specification {
         given:
         project.tasks.testTask.with {
             session(project.remotes.testServer) {
-                shell {
-                    interaction {
-                    }
-                }
+                shell()
             }
         }
 
@@ -59,7 +56,22 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell(ShellSettings.DEFAULT, _)
+        1 * handler.shell(ShellSettings.DEFAULT)
+    }
+
+    def "invoke a shell with options"() {
+        given:
+        project.tasks.testTask.with {
+            session(project.remotes.testServer) {
+                shell(logging: false)
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * handler.shell(new ShellSettings(logging: false))
     }
 
     def "execute a command"() {
@@ -74,7 +86,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', SessionDelegate.NULL_CLOSURE)
+        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l')
     }
 
     def "execute a command with options"() {
@@ -89,43 +101,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', SessionDelegate.NULL_CLOSURE)
-    }
-
-    def "execute a command with an interaction closure"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
-                execute('ls -l') {
-                    interaction {
-                    }
-                }
-            }
-        }
-
-        when:
-        project.tasks.testTask.execute()
-
-        then:
-        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l', _)
-    }
-
-    def "execute a command with options and an interaction closure"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
-                execute('ls -l', pty: true) {
-                    interaction {
-                    }
-                }
-            }
-        }
-
-        when:
-        project.tasks.testTask.execute()
-
-        then:
-        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l', _)
+        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l')
     }
 
     def "execute a command in background"() {

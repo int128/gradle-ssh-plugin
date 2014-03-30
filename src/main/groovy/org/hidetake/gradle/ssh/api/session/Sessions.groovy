@@ -28,7 +28,8 @@ interface Sessions {
     void add(Remote remote, Closure closure)
 
     /**
-     * Execute sessions.
+     * Execute all sessions.
+     * This method should wait until all sessions are finished.
      *
      * @param sshSettings
      */
