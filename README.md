@@ -156,7 +156,7 @@ Also following property is available:
 These methods accept following settings as map:
   * `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
   * `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
-  * `interaction` - Specifies interaction with the stream. Default is no interaction.
+  * `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
 
 
 #### Handle the result
@@ -165,7 +165,7 @@ Following methods return value:
   * `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
   * `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
 
-Also `execute`, `executeBackground` and `executeSudo` can take a callback closure.
+Also `execute`, `executeBackground` and `executeSudo` can take a callback closure _(since v0.3.1)_.
 It will be called with the result when the command is finished.
 ```groovy
 executeBackground('ping -c 3 server') { result ->
