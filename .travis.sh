@@ -10,10 +10,9 @@ function acceptance_test () {
 
     ssh -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=~/.ssh/known_hosts \
-        -o HashKnownHosts=no \
         -o HostKeyAlgorithms=ssh-rsa \
         -i ~/.ssh/id_rsa localhost true
-    grep localhost ~/.ssh/known_hosts
+    ssh-keygen -H -F localhost
 
     ./gradlew -i -s -p acceptance-test test aggressiveTest
     ./gradlew -i -s -p acceptance-test testGateway
