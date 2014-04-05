@@ -57,8 +57,9 @@ class FileTransferSpec extends Specification {
 
     def "put a file"() {
         given:
-        def sourceFile = temporaryFolder.newFile()
-        def destinationFile = temporaryFolder.newFile() << uuidgen()
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
 
         project.with {
             task(type: SshTask, 'testTask') {
@@ -72,14 +73,40 @@ class FileTransferSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        destinationFile.exists()
-        destinationFile.text == sourceFile.text
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "put a file to a directory"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationDir = temporaryFolder.newFolder()
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    put(sourceFile.path, destinationDir.path)
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        sourceFile.text == text
+
+        and:
+        def destinationFile = new File(destinationDir, sourceFile.name)
+        destinationFile.text == text
     }
 
     def "get a file"() {
         given:
-        def sourceFile = temporaryFolder.newFile()
-        def destinationFile = temporaryFolder.newFile() << uuidgen()
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
 
         project.with {
             task(type: SshTask, 'testTask') {
@@ -93,8 +120,33 @@ class FileTransferSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        destinationFile.exists()
-        destinationFile.text == sourceFile.text
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "get a file to a directory"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationDir = temporaryFolder.newFolder()
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    get(sourceFile.path, destinationDir.path)
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        sourceFile.text == text
+
+        and:
+        def destinationFile = new File(destinationDir, sourceFile.name)
+        destinationFile.text == text
     }
 
 
