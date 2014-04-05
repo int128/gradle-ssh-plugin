@@ -206,11 +206,13 @@ In an action closure, following property is available:
   * `standardInput` - Output stream to the remote command. (Read only)
 
 
-### Transfer files
+### Transfer a file or directory
 
 In a session closure, use following methods to transfer files:
-  * `get(remote, local)` - Fetches a file from remote host.
-  * `put(local, remote)` - Sends a file to remote host.
+  * `get(remote, local)` - Fetches a file or directory from remote host.
+  * `put(local, remote)` - Sends a file or directory to remote host.
+
+It is strongly recommended to pack files into a archive and transfer it for performance reason.
 
 
 #### Handle the error

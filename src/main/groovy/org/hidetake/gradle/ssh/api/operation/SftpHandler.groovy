@@ -33,4 +33,26 @@ interface SftpHandler {
      * @param remote
      */
     void putFile(String local, String remote)
+
+    /**
+     * Create a directory.
+     *
+     * @param path
+     */
+    void mkdir(String path)
+
+    /**
+     * Get a directory listing.
+     *
+     * @param path
+     * @return list of files or directories
+     */
+    List<ChannelSftp.LsEntry> ls(String path)
+
+    /**
+     * Change current directory.
+     *
+     * @param path
+     */
+    void cd(String path)
 }

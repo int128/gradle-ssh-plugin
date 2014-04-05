@@ -21,4 +21,22 @@ class SftpDelegate implements SftpHandler {
         log.info("Put a local file ($local) to remote ($remote)")
         channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
     }
+
+    @Override
+    void mkdir(String path) {
+        log.info("Create a directory ($path)")
+        channel.mkdir(path)
+    }
+
+    @Override
+    List<ChannelSftp.LsEntry> ls(String path) {
+        log.info("Get a directory listing of ($path)")
+        channel.ls(path).toList()
+    }
+
+    @Override
+    void cd(String path) {
+        log.info("Change current directory to ($path)")
+        channel.cd(path)
+    }
 }
