@@ -24,7 +24,7 @@ interface SftpHandler {
      * @param remote
      * @param local
      */
-    void get(String remote, String local)
+    void getFile(String remote, String local)
 
     /**
      * Put a file to the remote host.
@@ -32,5 +32,5 @@ interface SftpHandler {
      * @param local
      * @param remote
      */
-    void put(String local, String remote)
+    void putFile(String local, String remote)
 }

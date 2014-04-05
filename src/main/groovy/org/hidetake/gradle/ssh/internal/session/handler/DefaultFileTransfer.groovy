@@ -13,7 +13,7 @@ class DefaultFileTransfer implements FileTransfer {
     void get(String remote, String local) {
         assert operations instanceof Operations
         operations.sftp {
-            get(remote, local)
+            getFile(remote, local)
         }
     }
 
@@ -21,7 +21,7 @@ class DefaultFileTransfer implements FileTransfer {
     void put(String local, String remote) {
         assert operations instanceof Operations
         operations.sftp {
-            put(local, remote)
+            putFile(local, remote)
         }
     }
 }
