@@ -32,6 +32,7 @@ class DefaultFileTransfer implements FileTransfer {
                     switch (it.filename) {
                         case '.':
                         case '..':
+                            log.debug("Ignored a directory entry: ${it.longname}")
                             break
                         default:
                             getDirectory(it.filename, localChildDir)
@@ -44,6 +45,8 @@ class DefaultFileTransfer implements FileTransfer {
                 getFile(givenRemote, givenLocal)
             } catch (SftpException e) {
                 if (e.message.startsWith('not supported to get directory')) {
+                    log.debug(e.localizedMessage)
+                    log.debug('Starting to get a directory recursively')
                     getDirectory(givenRemote, new File(givenLocal))
                 } else {
                     throw new RuntimeException(e)
