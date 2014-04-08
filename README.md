@@ -15,7 +15,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:0.3.1'
+    classpath 'org.hidetake:gradle-ssh-plugin:0.3.2'
   }
 }
 
