@@ -32,15 +32,15 @@ function publish_report () {
 
         git config --global user.email 'travis@travis-ci.org'
         git config --global user.name 'travis'
-        git clone --quiet --branch=gh-pages "https://github.com/$GH_REPO.git" gh-pages
+        git clone --quiet --branch=gh-pages "https://github.com/$GH_BUILD_REPORT.git" gh-pages
         cd gh-pages
 
-        git rm -r "build/$TRAVIS_BRANCH" || true
-        mkdir -p "build/$TRAVIS_BRANCH"
-        cp -a ../build/reports "build/$TRAVIS_BRANCH"
-        cp -a ../build/docs    "build/$TRAVIS_BRANCH"
-        git add "build/$TRAVIS_BRANCH"
-        git commit -m "Automatically updated (Travis build $TRAVIS_BUILD_NUMBER)"
+        git rm -r "$TRAVIS_BRANCH" || true
+        mkdir -p "$TRAVIS_BRANCH"
+        cp -a ../build/reports "$TRAVIS_BRANCH"
+        cp -a ../build/docs    "$TRAVIS_BRANCH"
+        git add "$TRAVIS_BRANCH"
+        git commit -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
         git push origin gh-pages
 
         rm -v ~/.netrc
