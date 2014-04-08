@@ -24,6 +24,12 @@ signing {
     sign configurations.archives
 }
 
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
 uploadArchives {
     repositories.mavenDeployer {
         repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
