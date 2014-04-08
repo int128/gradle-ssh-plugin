@@ -1,7 +1,6 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.gradle.ssh.api
 
 import org.gradle.api.logging.LogLevel
-import org.hidetake.gradle.ssh.api.SshSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
