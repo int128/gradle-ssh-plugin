@@ -12,12 +12,7 @@ import spock.lang.Specification
 
 import java.security.PublicKey
 
-/**
- * Authentication tests with the SSH server.
- *
- * @author hidetake.org
- *
- */
+@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class AuthenticationSpec extends Specification {
 
     SshServer server

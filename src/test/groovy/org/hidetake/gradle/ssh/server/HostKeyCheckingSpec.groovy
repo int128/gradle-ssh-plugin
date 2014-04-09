@@ -19,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec
 
 import static org.hidetake.gradle.ssh.test.SshServerMock.commandWithExit
 
+@org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
 

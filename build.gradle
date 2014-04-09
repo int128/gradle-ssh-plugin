@@ -21,6 +21,22 @@ sourceSets.all {
     runtimeClasspath -= runtimeClasspath.filter { it.name in bundled }
 }
 
+test {
+    useJUnit {
+        excludeCategories 'org.hidetake.gradle.ssh.server.ServerIntegrationTest'
+    }
+}
+
+task serverIntegrationTest(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.gradle.ssh.server.ServerIntegrationTest'
+    }
+    reports {
+        html.destination = file("$buildDir/reports/server-integration-tests")
+    }
+}
+check.dependsOn serverIntegrationTest
+
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
     classifier = 'javadoc'

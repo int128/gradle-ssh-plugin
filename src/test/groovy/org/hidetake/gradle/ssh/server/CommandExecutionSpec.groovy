@@ -17,6 +17,7 @@ import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class CommandExecutionSpec extends Specification {
 
     private static final NL = Utilities.eol()

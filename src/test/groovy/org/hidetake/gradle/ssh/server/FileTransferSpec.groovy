@@ -13,6 +13,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.Use
 
+@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class FileTransferSpec extends Specification {
 
     @Shared

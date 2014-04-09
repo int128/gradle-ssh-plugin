@@ -12,6 +12,7 @@ import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification
 
+@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class PortForwardingSpec extends Specification {
 
     SshServer targetServer
