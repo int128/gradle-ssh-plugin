@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal.session
 
-import org.hidetake.gradle.ssh.internal.operation.Operations
 import org.hidetake.gradle.ssh.plugin.OperationSettings
+import org.hidetake.gradle.ssh.plugin.operation.Operations
 import spock.lang.Specification
 
 class DefaultSessionHandlerSpec extends Specification {

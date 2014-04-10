@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.operation
+package org.hidetake.gradle.ssh.plugin.operation
 
 import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote

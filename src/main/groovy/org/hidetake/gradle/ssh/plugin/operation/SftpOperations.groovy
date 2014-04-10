@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal.operation
+package org.hidetake.gradle.ssh.plugin.operation
 
 import com.jcraft.jsch.ChannelSftp
 

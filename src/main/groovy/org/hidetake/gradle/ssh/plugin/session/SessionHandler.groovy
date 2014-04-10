@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.plugin.session
 
 import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.operation.Operations
 
 /**
  * A core handler for session closure.
@@ -99,4 +100,13 @@ interface SessionHandler {
      * @param callback closure called with an output value of the command
      */
     void executeBackground(HashMap settings, String command, Closure callback)
+
+    /**
+     * Access to the {@link org.hidetake.gradle.ssh.plugin.operation.Operations} object.
+     * This method should be called internally by extension classes.
+     * Build script should not access to the operations object.
+     *
+     * @return the operations object
+     */
+    Operations getOperations()
 }

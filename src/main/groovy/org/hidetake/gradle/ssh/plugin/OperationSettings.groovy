@@ -3,6 +3,8 @@ package org.hidetake.gradle.ssh.plugin
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.gradle.api.logging.LogLevel
+import org.hidetake.gradle.ssh.extension.FileTransfer
+import org.hidetake.gradle.ssh.extension.SudoExecution
 
 @EqualsAndHashCode
 @ToString
@@ -46,13 +48,19 @@ class OperationSettings extends Settings<OperationSettings> {
      */
     Closure interaction
 
+    /**
+     * Extension classes to mixin to {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler}.
+     */
+    List<Class> extensions = []
+
     static final DEFAULT = new OperationSettings(
             dryRun: false,
             pty: false,
             logging: true,
             outputLogLevel: LogLevel.QUIET,
             errorLogLevel: LogLevel.ERROR,
-            encoding: 'UTF-8'
+            encoding: 'UTF-8',
+            extensions: [SudoExecution, FileTransfer]
     )
 
     OperationSettings plus(OperationSettings right) {
@@ -63,7 +71,8 @@ class OperationSettings extends Settings<OperationSettings> {
                 outputLogLevel: findNotNull(right.outputLogLevel, outputLogLevel),
                 errorLogLevel:  findNotNull(right.errorLogLevel, errorLogLevel),
                 encoding:       findNotNull(right.encoding, encoding),
-                interaction:    findNotNull(right.interaction, interaction)
+                interaction:    findNotNull(right.interaction, interaction),
+                extensions:     extensions + right.extensions
         )
     }
 }

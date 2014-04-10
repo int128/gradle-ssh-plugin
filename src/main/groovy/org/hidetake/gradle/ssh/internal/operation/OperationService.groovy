@@ -3,6 +3,7 @@ package org.hidetake.gradle.ssh.internal.operation
 import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
 import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.operation.Operations
 
 @Singleton(lazy = true)
 class OperationService {
