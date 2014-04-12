@@ -19,7 +19,7 @@ import org.hidetake.gradle.ssh.internal.session.handler.DefaultSudoExecution
 @Slf4j
 @Mixin(DefaultSudoExecution)
 @Mixin(DefaultFileTransfer)
-class SessionDelegate implements SessionHandler {
+class DefaultSessionHandler implements SessionHandler {
     final Operations operations
 
     @Override

@@ -6,7 +6,7 @@ import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.operation.ShellSettings
 import org.hidetake.gradle.ssh.api.session.SessionHandler
-import org.hidetake.gradle.ssh.internal.session.SessionDelegate
+import org.hidetake.gradle.ssh.internal.session.DefaultSessionHandler
 import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
@@ -22,7 +22,7 @@ class DryRunSpec extends Specification {
     def setup() {
         handler = Mock(Operations)
         factoryOf(SessionHandler) << Mock(SessionHandler.Factory) {
-            1 * create(_) >> new SessionDelegate(handler)
+            1 * create(_) >> new DefaultSessionHandler(handler)
         }
 
         project = ProjectBuilder.builder().build()

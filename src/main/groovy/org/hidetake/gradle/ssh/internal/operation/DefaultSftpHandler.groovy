@@ -7,7 +7,7 @@ import org.hidetake.gradle.ssh.api.operation.SftpHandler
 
 @TupleConstructor
 @Slf4j
-class SftpDelegate implements SftpHandler {
+class DefaultSftpHandler implements SftpHandler {
     final ChannelSftp channel
 
     @Override

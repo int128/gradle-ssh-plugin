@@ -6,9 +6,9 @@ import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
 import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperationsFactory
-import org.hidetake.gradle.ssh.internal.operation.SftpDelegate
+import org.hidetake.gradle.ssh.internal.operation.DefaultSftpHandler
+import org.hidetake.gradle.ssh.internal.session.DefaultSessionHandler
 import org.hidetake.gradle.ssh.internal.session.DefaultSessions
-import org.hidetake.gradle.ssh.internal.session.SessionDelegate
 import org.hidetake.gradle.ssh.internal.ssh.DefaultConnectionManager
 
 /**
@@ -24,10 +24,10 @@ class Registry {
 
     private Registry() {
         factory(Sessions.Factory) >> DefaultSessions
-        factory(SessionHandler.Factory) >> SessionDelegate
+        factory(SessionHandler.Factory) >> DefaultSessionHandler
         factory(ConnectionManager.Factory) >> DefaultConnectionManager
 
-        factory(SftpHandler.Factory) >> SftpDelegate
+        factory(SftpHandler.Factory) >> DefaultSftpHandler
 
         singleton(Operations.Factory) >> DefaultOperationsFactory.instance
     }
