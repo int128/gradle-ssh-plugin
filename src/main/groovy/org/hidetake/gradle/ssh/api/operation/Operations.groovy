@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.api.operation
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.registry.Registry
 
@@ -19,10 +18,10 @@ interface Operations {
          * Create an instance.
          *
          * @param connection
-         * @param sshSettings
+         * @param settings
          * @return an instance for wet run
          */
-        Operations create(Connection connection, SshSettings sshSettings)
+        Operations create(Connection connection, OperationSettings settings)
 
         /**
          * Create an instance for dry run.

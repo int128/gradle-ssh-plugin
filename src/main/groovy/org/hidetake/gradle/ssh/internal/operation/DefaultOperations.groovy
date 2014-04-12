@@ -5,7 +5,6 @@ import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.logging.Logging
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.*
 import org.hidetake.gradle.ssh.api.operation.interaction.Stream
 import org.hidetake.gradle.ssh.api.ssh.Connection
@@ -23,7 +22,7 @@ import org.hidetake.gradle.ssh.registry.Registry
 @Slf4j
 class DefaultOperations implements Operations {
     final Connection connection
-    final SshSettings sshSettings
+    final OperationSettings operationSettings
 
     @Override
     Remote getRemote() {
@@ -35,12 +34,12 @@ class DefaultOperations implements Operations {
         def channel = connection.createShellChannel(settings)
 
         def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(sshSettings.encoding)
+        def standardOutput = new LineOutputStream(operationSettings.encoding)
         channel.outputStream = standardOutput
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+            standardOutput.loggingListeners.add { String m -> logger.log(operationSettings.outputLogLevel, m) }
         }
 
         if (settings.interaction) {
@@ -73,15 +72,15 @@ class DefaultOperations implements Operations {
         def channel = connection.createExecutionChannel(command, settings)
 
         def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(sshSettings.encoding)
-        def standardError = new LineOutputStream(sshSettings.encoding)
+        def standardOutput = new LineOutputStream(operationSettings.encoding)
+        def standardError = new LineOutputStream(operationSettings.encoding)
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
-            standardError.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+            standardOutput.loggingListeners.add { String m -> logger.log(operationSettings.outputLogLevel, m) }
+            standardError.loggingListeners.add { String m -> logger.log(operationSettings.outputLogLevel, m) }
         }
 
         if (settings.interaction) {
@@ -122,15 +121,15 @@ class DefaultOperations implements Operations {
         def channel = connection.createExecutionChannel(command, settings)
 
         def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(sshSettings.encoding)
-        def standardError = new LineOutputStream(sshSettings.encoding)
+        def standardOutput = new LineOutputStream(operationSettings.encoding)
+        def standardError = new LineOutputStream(operationSettings.encoding)
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
-            standardError.loggingListeners.add { String m -> logger.log(sshSettings.outputLogLevel, m) }
+            standardOutput.loggingListeners.add { String m -> logger.log(operationSettings.outputLogLevel, m) }
+            standardError.loggingListeners.add { String m -> logger.log(operationSettings.outputLogLevel, m) }
         }
 
         if (settings.interaction) {

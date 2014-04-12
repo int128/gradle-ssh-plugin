@@ -1,8 +1,10 @@
 package org.hidetake.gradle.ssh.internal.session
 
 import groovy.transform.TupleConstructor
+import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
@@ -13,19 +15,20 @@ import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
  *
  * @author hidetake.org
  */
+@Slf4j
 class DefaultSessions implements Sessions {
     @TupleConstructor
     static class Session {
         final Remote remote
         final Closure closure
 
-        EstablishedSession establish(ConnectionManager connectionManager, SshSettings sshSettings) {
-            if (sshSettings.dryRun) {
+        EstablishedSession establish(ConnectionManager connectionManager, OperationSettings settings) {
+            if (settings.dryRun) {
                 def operations = Operations.factory.create(remote)
                 new EstablishedSession(this, operations)
             } else {
                 def connection = connectionManager.establish(remote)
-                def operations = Operations.factory.create(connection, sshSettings)
+                def operations = Operations.factory.create(connection, settings)
                 new EstablishedSession(this, operations)
             }
         }
@@ -52,9 +55,11 @@ class DefaultSessions implements Sessions {
 
     @Override
     void execute(SshSettings sshSettings) {
-        def connectionManager = ConnectionManager.factory.create(sshSettings)
+        log.debug("Executing sessions with $sshSettings")
+
+        def connectionManager = ConnectionManager.factory.create(sshSettings.connectionSettings)
         try {
-            sessions*.establish(connectionManager, sshSettings)*.execute()
+            sessions*.establish(connectionManager, sshSettings.operationSettings)*.execute()
 
             connectionManager.waitForPending()
         } finally {

@@ -4,12 +4,13 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
+import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.ssh.BackgroundCommandException
 import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 import static Retry.retry
 
@@ -18,38 +19,20 @@ import static Retry.retry
  *
  * @author hidetake.org
  */
+@TupleConstructor
 @Slf4j
 class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
 
-    final SshSettings sshSettings
-    final JSch jsch
-    final List<Session> sessions = []
-    final List<Connection> connections = []
+    private final JSch jsch = new JSch()
+    private final List<Session> sessions = []
+    private final List<Connection> connections = []
 
-    /**
-     * Constructor.
-     *
-     * @param sshSettings1 ssh settings
-     * @return a SessionManager instance
-     */
-    def DefaultConnectionManager(SshSettings sshSettings1) {
-        sshSettings = sshSettings1
-        jsch = new JSch()
-
-        if (sshSettings.knownHosts == SshSettings.allowAnyHosts) {
-            jsch.setConfig('StrictHostKeyChecking', 'no')
-            log.info('Strict host key checking is turned off. Use only for testing purpose.')
-        } else {
-            jsch.setKnownHosts(sshSettings.knownHosts.path)
-            jsch.setConfig('StrictHostKeyChecking', 'yes')
-            log.debug("Using known-hosts file: ${sshSettings.knownHosts.path}")
-        }
-    }
+    final ConnectionSettings globalSettings
 
     @Override
     Connection establish(Remote remote) {
-        def connection = new DefaultConnection(remote, create(remote))
+        def connection = new DefaultConnection(remote, establishViaGateway(remote))
         connections.add(connection)
         connection
     }
@@ -60,14 +43,14 @@ class DefaultConnectionManager implements ConnectionManager {
      * @param remote target remote host
      * @return a JSch session
      */
-    protected Session create(Remote remote) {
+    private Session establishViaGateway(Remote remote) {
         if (remote.gateway) {
-            def session = create(remote.gateway)
+            def session = establishViaGateway(remote.gateway)
             def localPort = session.setPortForwardingL(0, remote.host, remote.port)
             log.info("Enabled local port forwarding from $localPort to ${remote.host}:${remote.port}")
-            createVia(remote, LOCALHOST, localPort)
+            establishSession(remote, LOCALHOST, localPort)
         } else {
-            createVia(remote, remote.host, remote.port)
+            establishSession(remote, remote.host, remote.port)
         }
     }
 
@@ -79,22 +62,31 @@ class DefaultConnectionManager implements ConnectionManager {
      * @param port endpoint port (usually <code>remote.port</code>)
      * @return a JSch session
      */
-    protected Session createVia(Remote remote, String host, int port) {
-        retry(sshSettings.retryCount, sshSettings.retryWaitSec) {
-            def session = jsch.getSession(remote.user, host, port)
-            if (remote.password) {
-                session.password = remote.password
+    private Session establishSession(Remote remote, String host, int port) {
+        def settings = globalSettings + remote.connectionSettings
+
+        if (settings.knownHosts == ConnectionSettings.allowAnyHosts) {
+            jsch.setConfig('StrictHostKeyChecking', 'no')
+            log.info('Strict host key checking is turned off. Use only for testing purpose.')
+        } else {
+            jsch.setKnownHosts(settings.knownHosts.path)
+            jsch.setConfig('StrictHostKeyChecking', 'yes')
+            log.debug("Using known-hosts file: ${settings.knownHosts.path}")
+        }
+
+        retry(settings.retryCount, settings.retryWaitSec) {
+            def session = jsch.getSession(settings.user, host, port)
+            if (settings.password) {
+                session.password = settings.password
             }
 
-            if (remote.agent) {
+            if (settings.agent) {
                 jsch.identityRepository = remoteIdentityRepository
             } else {
                 jsch.identityRepository = null    /* null means the default repository */
                 jsch.removeAllIdentity()
-                if (remote.identity) {
-                    jsch.addIdentity(remote.identity.path, remote.passphrase as String)
-                } else if (sshSettings.identity) {
-                    jsch.addIdentity(sshSettings.identity.path, sshSettings.passphrase as String)
+                if (settings.identity) {
+                    jsch.addIdentity(settings.identity.path, settings.passphrase as String)
                 }
             }
 
