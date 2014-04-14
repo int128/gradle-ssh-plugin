@@ -2,9 +2,8 @@ package org.hidetake.gradle.ssh.internal.operation
 
 import groovy.transform.TupleConstructor
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.operation.ShellSettings
 
 /**
  * Dry-run implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
@@ -16,16 +15,18 @@ class DryRunOperations implements Operations {
     final Remote remote
 
     @Override
-    void shell(ShellSettings settings) {
+    void shell(OperationSettings settings) {
     }
 
     @Override
-    String execute(ExecutionSettings settings, String command) {
+    String execute(OperationSettings settings, String command, Closure callback) {
+        callback?.call('')
         ''
     }
 
     @Override
-    void executeBackground(ExecutionSettings settings, String command) {
+    void executeBackground(OperationSettings settings, String command, Closure callback) {
+        callback?.call('')
     }
 
     @Override

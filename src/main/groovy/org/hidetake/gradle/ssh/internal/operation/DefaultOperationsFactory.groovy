@@ -13,8 +13,8 @@ import org.hidetake.gradle.ssh.api.ssh.Connection
 @Singleton
 class DefaultOperationsFactory implements Operations.Factory {
     @Override
-    Operations create(Connection connection, OperationSettings settings) {
-        new DefaultOperations(connection, settings)
+    Operations create(Connection connection) {
+        new DefaultOperations(connection)
     }
 
     @Override

@@ -28,7 +28,7 @@ class DefaultSessions implements Sessions {
                 new EstablishedSession(this, operations)
             } else {
                 def connection = connectionManager.establish(remote)
-                def operations = Operations.factory.create(connection, settings)
+                def operations = Operations.factory.create(connection)
                 new EstablishedSession(this, operations)
             }
         }
@@ -39,8 +39,8 @@ class DefaultSessions implements Sessions {
         final Session session
         final Operations operations
 
-        void execute() {
-            session.closure.delegate = SessionHandler.factory.create(operations)
+        void execute(OperationSettings settings) {
+            session.closure.delegate = SessionHandler.factory.create(operations, settings)
             session.closure.resolveStrategy = Closure.DELEGATE_FIRST
             session.closure.call()
         }
@@ -59,7 +59,7 @@ class DefaultSessions implements Sessions {
 
         def connectionManager = ConnectionManager.factory.create(sshSettings.connectionSettings)
         try {
-            sessions*.establish(connectionManager, sshSettings.operationSettings)*.execute()
+            sessions*.establish(connectionManager, sshSettings.operationSettings)*.execute(sshSettings.operationSettings)
 
             connectionManager.waitForPending()
         } finally {

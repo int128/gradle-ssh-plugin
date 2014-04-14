@@ -18,10 +18,9 @@ interface Operations {
          * Create an instance.
          *
          * @param connection
-         * @param settings
          * @return an instance for wet run
          */
-        Operations create(Connection connection, OperationSettings settings)
+        Operations create(Connection connection)
 
         /**
          * Create an instance for dry run.
@@ -36,11 +35,11 @@ interface Operations {
 
     Remote getRemote()
 
-    void shell(ShellSettings settings)
+    void shell(OperationSettings settings)
 
-    String execute(ExecutionSettings settings, String command)
+    String execute(OperationSettings settings, String command, Closure callback)
 
-    void executeBackground(ExecutionSettings settings, String command)
+    void executeBackground(OperationSettings settings, String command, Closure callback)
 
     /**
      * Perform SFTP operations.

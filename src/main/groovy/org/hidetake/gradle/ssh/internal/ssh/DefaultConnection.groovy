@@ -5,8 +5,7 @@ import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
-import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.ssh.BackgroundCommandException
 import org.hidetake.gradle.ssh.api.ssh.Connection
 
@@ -24,16 +23,16 @@ class DefaultConnection implements Connection {
     final List<Closure> callbackForClosedChannels = []
 
     @Override
-    ChannelExec createExecutionChannel(String command, ExecutionSettings executionSettings) {
+    ChannelExec createExecutionChannel(String command, OperationSettings operationSettings) {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
-        channel.pty = executionSettings.pty
+        channel.pty = operationSettings.pty
         channels.add(channel)
         channel
     }
 
     @Override
-    ChannelShell createShellChannel(ShellSettings shellSettings) {
+    ChannelShell createShellChannel(OperationSettings operationSettings) {
         def channel = session.openChannel('shell') as ChannelShell
         channels.add(channel)
         channel

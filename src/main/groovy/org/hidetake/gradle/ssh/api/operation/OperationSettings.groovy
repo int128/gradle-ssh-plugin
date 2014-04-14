@@ -15,6 +15,18 @@ class OperationSettings extends Settings<OperationSettings> {
     Boolean dryRun
 
     /**
+     * PTY allocation flag.
+     * If <code>true</code>, PTY will be allocated on command execution.
+     */
+    Boolean pty
+
+    /**
+     * Logging flag.
+     * If <code>false</code>, performs no logging.
+     */
+    Boolean logging
+
+    /**
      * Log level for standard output of commands.
      */
     LogLevel outputLogLevel
@@ -29,8 +41,16 @@ class OperationSettings extends Settings<OperationSettings> {
      */
     String encoding
 
+    /**
+     * Stream interaction.
+     * @see org.hidetake.gradle.ssh.api.operation.interaction.InteractionHandler
+     */
+    Closure interaction
+
     static final DEFAULT = new OperationSettings(
             dryRun: false,
+            pty: false,
+            logging: true,
             outputLogLevel: LogLevel.QUIET,
             errorLogLevel: LogLevel.ERROR,
             encoding: 'UTF-8'
@@ -39,9 +59,12 @@ class OperationSettings extends Settings<OperationSettings> {
     OperationSettings plus(OperationSettings right) {
         new OperationSettings(
                 dryRun:         findNotNull(right.dryRun, dryRun),
+                pty:            findNotNull(right.pty, pty),
+                logging:        findNotNull(right.logging, logging),
                 outputLogLevel: findNotNull(right.outputLogLevel, outputLogLevel),
                 errorLogLevel:  findNotNull(right.errorLogLevel, errorLogLevel),
-                encoding:       findNotNull(right.encoding, encoding)
+                encoding:       findNotNull(right.encoding, encoding),
+                interaction:    findNotNull(right.interaction, interaction)
         )
     }
 }
