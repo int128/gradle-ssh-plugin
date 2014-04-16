@@ -37,8 +37,11 @@ function publish_report () {
 
         git rm -r "$TRAVIS_BRANCH" || true
         mkdir -p "$TRAVIS_BRANCH"
-        cp -a ../build/reports "$TRAVIS_BRANCH"
-        cp -a ../build/docs    "$TRAVIS_BRANCH"
+
+        for source in ../build/reports ../build/docs; do
+            [ -d "$source" ] && cp -a "$source" "$TRAVIS_BRANCH"
+        done
+
         git add "$TRAVIS_BRANCH"
         git commit -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
         git push origin gh-pages

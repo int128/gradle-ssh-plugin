@@ -6,6 +6,7 @@ script:
   - ./gradlew check
   - ./.travis.sh acceptance_test
 after_script:
+  - ./gradlew groovydoc
   - ./.travis.sh publish_report
 
 env:
