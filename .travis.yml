@@ -1,12 +1,12 @@
 language: java
 jdk: oraclejdk7
 install:
-  - ./gradlew --daemon uploadArchives
+  - ./gradlew uploadArchives
 script:
-  - ./gradlew --daemon check
+  - ./gradlew check
   - ./.travis.sh acceptance_test
 after_script:
-  - ./gradlew --daemon groovydoc
+  - ./gradlew groovydoc
   - ./.travis.sh publish_report
 
 env:

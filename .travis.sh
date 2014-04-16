@@ -14,12 +14,12 @@ function acceptance_test () {
         -i ~/.ssh/id_rsa localhost true
     ssh-keygen -H -F localhost
 
-    ./gradlew --daemon -i -s -p acceptance-test test aggressiveTest
-    ./gradlew --daemon -i -s -p acceptance-test testGateway
+    ./gradlew -i -s -p acceptance-test test aggressiveTest
+    ./gradlew -i -s -p acceptance-test testGateway
 
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa
-    ./gradlew --daemon -i -s -p acceptance-test testWithAgent
+    ./gradlew -i -s -p acceptance-test testWithAgent
 }
 
 function publish_report () {
