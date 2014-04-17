@@ -13,7 +13,9 @@ class SshPluginConventionSpec extends Specification {
     def "configure ssh"() {
         given:
         def convention = new SshPluginConvention()
-        def configClosure = {
+
+        when:
+        convention.ssh {
             dryRun = true
             retryCount = 1
             retryWaitSec = 1
@@ -21,17 +23,12 @@ class SshPluginConventionSpec extends Specification {
             errorLogLevel = LogLevel.INFO
         }
 
-        when:
-        convention.ssh(configClosure)
-
         then:
-        convention.ssh.with {
-            dryRun
-            retryCount == 1
-            retryWaitSec == 1
-            outputLogLevel == LogLevel.DEBUG
-            errorLogLevel == LogLevel.INFO
-        }
+        convention.ssh.dryRun
+        convention.ssh.retryCount == 1
+        convention.ssh.retryWaitSec == 1
+        convention.ssh.outputLogLevel == LogLevel.DEBUG
+        convention.ssh.errorLogLevel == LogLevel.INFO
     }
 
     def "configure ssh closure must be seg"() {
@@ -63,8 +60,8 @@ class SshPluginConventionSpec extends Specification {
 
         then:
         1 * sessions.execute(_) >> { SshSettings settings ->
-            settings.dryRun
-            settings.outputLogLevel == LogLevel.ERROR
+            assert settings.dryRun
+            assert settings.outputLogLevel == LogLevel.ERROR
         }
     }
 

@@ -53,8 +53,8 @@ class SshTaskSpec extends Specification {
 
         then:
         1 * sessions.execute(_) >> { SshSettings settings ->
-            settings.dryRun
-            settings.outputLogLevel == LogLevel.ERROR
+            assert settings.dryRun
+            assert settings.outputLogLevel == LogLevel.ERROR
         }
     }
 
