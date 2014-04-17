@@ -1,8 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
@@ -10,7 +12,7 @@ import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
 
 class SshPluginConventionSpec extends Specification {
 
-    def "configure ssh"() {
+    def "apply global settings"() {
         given:
         def convention = new SshPluginConvention()
 
@@ -24,14 +26,14 @@ class SshPluginConventionSpec extends Specification {
         }
 
         then:
-        convention.ssh.dryRun
-        convention.ssh.retryCount == 1
-        convention.ssh.retryWaitSec == 1
-        convention.ssh.outputLogLevel == LogLevel.DEBUG
-        convention.ssh.errorLogLevel == LogLevel.INFO
+        convention.globalSettings.dryRun
+        convention.globalSettings.retryCount == 1
+        convention.globalSettings.retryWaitSec == 1
+        convention.globalSettings.outputLogLevel == LogLevel.DEBUG
+        convention.globalSettings.errorLogLevel == LogLevel.INFO
     }
 
-    def "configure ssh closure must be seg"() {
+    def "apply global settings but null"() {
         when:
         def convention = new SshPluginConvention()
         convention.ssh(null)
@@ -43,29 +45,53 @@ class SshPluginConventionSpec extends Specification {
 
 
     @ConfineMetaClassChanges(Sessions)
-    def "sshexec delegates to executor"() {
+    def "apply task specific settings"() {
         given:
-        def sessions = Mock(Sessions)
-        factoryOf(Sessions) << Mock(Sessions.Factory) {
-            1 * create() >> sessions
-        }
-
+        def sessionsFactory = Mock(Sessions.Factory)
+        factoryOf(Sessions) << sessionsFactory
+        def sessions1 = Mock(Sessions)
+        def sessions2 = Mock(Sessions)
         def convention = new SshPluginConvention()
+
+        def remoteMock = Mock(Remote)
+        remoteMock.name >> 'name'
+        remoteMock.user >> 'user'
+        remoteMock.host >> 'host'
 
         when:
         convention.sshexec {
-            dryRun = true
-            outputLogLevel = LogLevel.ERROR
+            ssh {
+                knownHosts = allowAnyHosts
+                dryRun = true
+                outputLogLevel = LogLevel.ERROR
+            }
+            session(remoteMock) {
+                execute 'ls'
+            }
         }
 
+        then: 1 * sessionsFactory.create() >> sessions1
+        then: 1 * sessions1.add(_, _)
         then:
-        1 * sessions.execute(_) >> { SshSettings settings ->
-            assert settings.dryRun
-            assert settings.outputLogLevel == LogLevel.ERROR
+        1 * sessions1.execute(
+                ConnectionSettings.DEFAULT + new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts),
+                OperationSettings.DEFAULT + new OperationSettings(dryRun: true, outputLogLevel: LogLevel.ERROR)
+        )
+
+        when:
+        convention.sshexec {
+            session(remoteMock) {
+                execute 'ls'
+            }
         }
+
+        then: 1 * sessionsFactory.create() >> sessions2
+        then: 1 * sessions2.add(_, _)
+        then:
+        1 * sessions2.execute(ConnectionSettings.DEFAULT, OperationSettings.DEFAULT)
     }
 
-    def "sshexec must specify closure"() {
+    def "apply task specific settings but null"() {
         when:
         def convention = new SshPluginConvention()
         convention.sshexec(null)

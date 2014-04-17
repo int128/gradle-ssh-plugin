@@ -26,7 +26,7 @@ class SshPluginSpec extends Specification {
     def "apply the full monty"() {
         when:
         def project = createProject()
-        def globalSettings = project.convention.getPlugin(SshPluginConvention).ssh
+        def globalSettings = project.convention.getPlugin(SshPluginConvention).globalSettings
 
         then:
         globalSettings.knownHosts == ConnectionSettings.allowAnyHosts

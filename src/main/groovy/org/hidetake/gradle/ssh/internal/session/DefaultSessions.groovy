@@ -3,12 +3,12 @@ package org.hidetake.gradle.ssh.internal.session
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.session.SessionHandler
 import org.hidetake.gradle.ssh.api.session.Sessions
 import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 /**
  * A default implementation of {@link Sessions}.
@@ -54,12 +54,10 @@ class DefaultSessions implements Sessions {
     }
 
     @Override
-    void execute(SshSettings sshSettings) {
-        log.debug("Executing sessions with $sshSettings")
-
-        def connectionManager = ConnectionManager.factory.create(sshSettings.connectionSettings)
+    void execute(ConnectionSettings connectionSettings, OperationSettings operationSettings) {
+        def connectionManager = ConnectionManager.factory.create(connectionSettings)
         try {
-            sessions*.establish(connectionManager, sshSettings.operationSettings)*.execute(sshSettings.operationSettings)
+            sessions*.establish(connectionManager, operationSettings)*.execute(operationSettings)
 
             connectionManager.waitForPending()
         } finally {

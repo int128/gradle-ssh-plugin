@@ -1,7 +1,8 @@
 package org.hidetake.gradle.ssh.api.session
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
@@ -31,7 +32,8 @@ interface Sessions {
      * Execute all sessions.
      * This method should wait until all sessions are finished.
      *
-     * @param sshSettings
+     * @param connectionSettings
+     * @param operationSettings
      */
-    void execute(SshSettings sshSettings)
+    void execute(ConnectionSettings connectionSettings, OperationSettings operationSettings)
 }

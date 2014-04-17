@@ -1,8 +1,9 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
+
+import static org.gradle.util.ConfigureUtil.configure
 
 /**
  * A delegate class of ssh task.
@@ -11,16 +12,25 @@ import org.hidetake.gradle.ssh.api.session.Sessions
  */
 class SshTaskDelegate {
     /**
-     * Delegate of task specific settings.
+     * Task specific settings.
      * This overrides global settings.
      */
-    @Delegate
-    final SshSettings sshSettings = new SshSettings()
+    protected final GlobalSettings globalSettings = new GlobalSettings()
+
+    /**
+     * Configure task specific settings.
+     *
+     * @param closure closure for {@link GlobalSettings}
+     */
+    void ssh(Closure closure) {
+        assert closure, 'closure should be set'
+        configure(closure, globalSettings)
+    }
 
     /**
      * Sessions.
      */
-    final Sessions sessions = Sessions.factory.create()
+    protected final Sessions sessions = Sessions.factory.create()
 
     /**
      * Add a session.

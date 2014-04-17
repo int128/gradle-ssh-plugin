@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 import static org.gradle.util.ConfigureUtil.configure
 
@@ -18,16 +19,16 @@ class SshPluginConvention {
     /**
      * Global settings.
      */
-    final ssh = new SshSettings()
+    protected final globalSettings = new GlobalSettings()
 
     /**
      * Configure global settings.
      *
-     * @param closure closure for {@link SshSettings}
+     * @param closure closure for {@link GlobalSettings}
      */
     void ssh(Closure closure) {
         assert closure, 'closure should be set'
-        configure(closure, ssh)
+        configure(closure, globalSettings)
     }
 
     /**
@@ -39,6 +40,13 @@ class SshPluginConvention {
         assert closure, 'closure should be set'
         def delegate = new SshTaskDelegate()
         configure(closure, delegate)
-        delegate.sessions.execute(SshSettings.DEFAULT + ssh + delegate.sshSettings)
+        delegate.sessions.execute(
+                ConnectionSettings.DEFAULT
+                        + globalSettings.connectionSettings
+                        + delegate.globalSettings.connectionSettings,
+                OperationSettings.DEFAULT
+                        + globalSettings.operationSettings
+                        + delegate.globalSettings.operationSettings
+        )
     }
 }
