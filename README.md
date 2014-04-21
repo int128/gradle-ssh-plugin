@@ -22,7 +22,7 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
-Use [Gradle SSH Plugin Template Project](https://github.com/int128/gradle-ssh) for quick start.
+Use [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
 
 
 Features
