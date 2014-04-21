@@ -1,7 +1,51 @@
-Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.png?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
+Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.svg?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
 =================
 
-This plugin provides remote command execution and file transfer capabilities.
+Gradle SSH Plugin provides remote command execution and file transfer on Gradle.
+
+
+Features
+--------
+
+### Integrated with Gradle
+
+Seamlessly integrated with Gradle DSL.
+
+
+### Remote command execution
+
+```groovy
+task reloadServers(type: SshTask) {
+  session(remotes.role('webServers')) {
+    execute 'sudo service httpd reload'
+  }
+}
+```
+
+
+### File transfer
+
+```groovy
+task deployApp(type: SshTask) {
+  session(remotes.role('webServers')) {
+    put("$buildDir/libs/hello.war", '/webapps')
+    execute('sudo service tomcat restart')
+  }
+}
+```
+
+
+### Authentication and security
+
+* Password authentication
+* Public key authentication
+* Host key verification with an OpenSSH compatible `known_hosts` file
+
+
+### Stream interaction
+
+* Providing a password for sudo prompt
+* Interaction with shell such as bash or Cisco IOS
 
 
 How to use
@@ -23,17 +67,6 @@ apply plugin: 'ssh'
 ```
 
 Use [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
-
-
-Features
---------
-
-  * Remote command execution
-  * Providing a pass-phrase for the sudo prompt
-  * Stream interaction with a remote command or shell
-  * File transfer via SFTP
-  * Password and public key authentication
-  * Strict host key checking with a known-hosts file
 
 
 Define a remote host
@@ -335,5 +368,4 @@ execute('sudo service httpd reload', logging: false)
 Contributions
 -------------
 
-Thanks for contributions.
-Please send me your issue reports or pull requests.
+Send your issue or pull request to [GitHub repository](https://github.com/int128/gradle-ssh-plugin).
