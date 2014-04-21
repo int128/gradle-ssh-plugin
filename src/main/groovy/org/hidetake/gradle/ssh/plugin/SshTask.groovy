@@ -2,7 +2,8 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 /**
  * A SSH task for Gradle.
@@ -17,6 +18,13 @@ class SshTask extends DefaultTask {
     @TaskAction
     void perform() {
         def convention = project.convention.getPlugin(SshPluginConvention)
-        sessions.execute(SshSettings.DEFAULT + convention.ssh + sshSettings)
+        sshTaskDelegate.sessions.execute(
+                ConnectionSettings.DEFAULT
+                        + convention.globalSettings.connectionSettings
+                        + sshTaskDelegate.globalSettings.connectionSettings,
+                OperationSettings.DEFAULT
+                        + convention.globalSettings.operationSettings
+                        + sshTaskDelegate.globalSettings.operationSettings
+        )
     }
 }

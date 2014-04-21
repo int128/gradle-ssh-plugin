@@ -55,17 +55,26 @@ remotes {
 }
 ```
 
-A remote host object has following properties:
-  * `host` - Hostname or IP address
-  * `port` - Port. Default is 22. (Optional)
-  * `user` - User name.
-  * `password` - Password for password authentication. (Optional)
-  * `identity` - Private key file for public-key authentication. This overrides global identity. (Optional)
-  * `passphrase` - Pass phrase for the private key. (Optional)
-  * `agent` - If this flag is set, Putty Agent or ssh-agent will be used to authentication. (Optional)
-  * `gateway` - Gateway remote host. If this is set, port-forwarding tunnel will be used to connect. (Optional)
+Following settings can be set in a remote closure.
+  * `host` - Hostname or IP address. (Mandatory)
+  * `port` - Port. Default is 22.
+  * `gateway` - Gateway remote host. If this is set, port-forwarding tunnel will be used to connect.
 
-Use `role(name)` to associate the host with roles. A remote host can be associated with multiple roles.
+Use `role` method to associate the host with roles. A remote host can be associated with multiple roles.
+
+
+### Connection settings
+
+Also following settings are available in a remote closure.
+These settings can be set globally, see [global settings section](#global-settings).
+  * `user` - User name. (Mandatory)
+  * `password` - Password for password authentication.
+  * `identity` - Private key file for public-key authentication. This overrides global identity.
+  * `passphrase` - Pass phrase for the private key.
+  * `agent` - If this flag is set, Putty Agent or ssh-agent will be used to authentication.
+  * `knownHosts` - Known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+  * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
+  * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
 
 
 ### Access through gateway servers
@@ -135,14 +144,6 @@ In a session closure, use following methods to execute a command or shell:
 
 Also following property is available:
   * `remote` - Remote host of current session. (Read only)
-
-
-#### Execution settings
-
-These methods accept following settings as map:
-  * `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
-  * `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
-  * `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
 
 
 #### Handle the result
@@ -220,15 +221,16 @@ It is strongly recommended to pack files into a archive and transfer it for perf
 These methods raise an exception and stop Gradle if error occurs.
 
 
-### Task specific settings
+### Operation settings
 
-In `SshTask` closure, following settings are available:
-  * `dryRun` - Dry run flag. If true, performs no action.
-  * `outputLogLevel` - Log level of standard output for executing commands.
-  * `errorLogLevel` - Log level of standard error for executing commands.
-  * `encoding` - Encoding of input and output for executing commands.
-
-Task specific setting overrides global setting.
+Following settings can be passed to operation methods such as `execute` or `shell`.
+  * `dryRun` - Dry run flag. If true, performs no action. Default is false.
+  * `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
+  * `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
+  * `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
+  * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
+  * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
+  * `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
 
 
 Use SSH in the task
@@ -270,26 +272,64 @@ sshexec {
 Global settings
 ---------------
 
-Global settings can be defined in the `ssh` closure:
+[Connection settings](#connection-settings) and [operation settings](#operation-settings)
+can be set globally and overridden by each remote hosts, tasks or operation methods.
 
+
+Category            | Global | Per task | Per remote | Per operation
+--------------------|--------|----------|------------|--------------
+Connection settings | x      | x        | x          | -
+Operation settings  | x      | x        | -          | x
+
+
+Connection settings and operation settings can be set globally in the `ssh` closure.
 ```groovy
 ssh {
-  dryRun = true
-  identity = file('config/identity.key')
   knownHosts = allowAnyHosts
+  dryRun = true
 }
 ```
 
-Following settings are available:
-  * `identity` - Private key file for public-key authentication. This can be overridden by remote specific one.
-  * `passphrase` - Pass phrase for the private key.
-  * `knownHosts` - Known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
-  * `dryRun` - Dry run flag. If true, performs no action. Default is false.
-  * `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
-  * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
-  * `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
-  * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
-  * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
+Connection settings and operation settings can be overridden in a task.
+```groovy
+task reloadServers(type: SshTask) {
+  ssh {
+    pty = true
+  }
+  session(remotes.role('webServers')) {
+    executeBackground('sudo service httpd reload')
+  }
+}
+```
+
+Same in a `sshexec` closure.
+```groovy
+sshexec {
+  ssh {
+    pty = true
+  }
+  session(remotes.role('webServers')) {
+    executeBackground('sudo service httpd reload')
+  }
+}
+```
+
+Connection settings can be overridden in a remote host closure.
+```groovy
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa_jenkins')
+  }
+}
+```
+
+Operation settings can be overridden on an operation method.
+```groovy
+execute('sudo service httpd reload', pty: false)
+execute('sudo service httpd reload', logging: false)
+```
 
 
 Contributions

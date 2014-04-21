@@ -2,8 +2,9 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
@@ -21,9 +22,17 @@ class SshTaskSpec extends Specification {
                     identity = file('id_rsa')
                 }
             }
-            task(type: SshTask, 'testTask') {
-                dryRun = true
-                outputLogLevel = LogLevel.ERROR
+            task(type: SshTask, 'testTask1') {
+                ssh {
+                    knownHosts = allowAnyHosts
+                    dryRun = true
+                    outputLogLevel = LogLevel.ERROR
+                }
+                session(remotes.webServer) {
+                    execute 'ls'
+                }
+            }
+            task(type: SshTask, 'testTask2') {
                 session(remotes.webServer) {
                     execute 'ls'
                 }
@@ -36,26 +45,35 @@ class SshTaskSpec extends Specification {
     @ConfineMetaClassChanges(Sessions)
     def "task action delegates to executor"() {
         given:
-        def sessions = Mock(Sessions)
-        factoryOf(Sessions) << Mock(Sessions.Factory) {
-            create() >> sessions
-        }
+        def sessionsFactory = Mock(Sessions.Factory)
+        factoryOf(Sessions) << sessionsFactory
+        def sessions1 = Mock(Sessions)
+        def sessions2 = Mock(Sessions)
 
         when:
         def project = project()
-        def task = project.tasks.testTask as SshTask
+        def task1 = project.tasks.testTask1 as SshTask
+        def task2 = project.tasks.testTask2 as SshTask
 
-        then:
-        1 * sessions.add(_, _)
+        then: 1 * sessionsFactory.create() >> sessions1
+        then: 1 * sessions1.add(_, _)
+        then: 1 * sessionsFactory.create() >> sessions2
+        then: 1 * sessions2.add(_, _)
 
         when:
-        task.perform()
+        task1.perform()
 
         then:
-        1 * sessions.execute(_) >> { SshSettings settings ->
-            assert settings.dryRun
-            assert settings.outputLogLevel == LogLevel.ERROR
-        }
+        1 * sessions1.execute(
+                ConnectionSettings.DEFAULT + new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts),
+                OperationSettings.DEFAULT + new OperationSettings(dryRun: true, outputLogLevel: LogLevel.ERROR)
+        )
+
+        when:
+        task2.perform()
+
+        then:
+        1 * sessions2.execute(ConnectionSettings.DEFAULT, OperationSettings.DEFAULT)
     }
 
 }

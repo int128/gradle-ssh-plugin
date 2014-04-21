@@ -2,29 +2,18 @@ package org.hidetake.gradle.ssh.server
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.operation.ShellSettings
-import org.hidetake.gradle.ssh.api.session.SessionHandler
-import org.hidetake.gradle.ssh.internal.session.DefaultSessionHandler
+import org.hidetake.gradle.ssh.internal.operation.DryRunOperations
 import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
-import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
-
-@ConfineMetaClassChanges(SessionHandler)
 class DryRunSpec extends Specification {
 
     Project project
     Operations handler
 
     def setup() {
-        handler = Mock(Operations)
-        factoryOf(SessionHandler) << Mock(SessionHandler.Factory) {
-            1 * create(_) >> new DefaultSessionHandler(handler)
-        }
-
         project = ProjectBuilder.builder().build()
         project.with {
             apply plugin: 'ssh'
@@ -41,6 +30,7 @@ class DryRunSpec extends Specification {
             task(type: SshTask, 'testTask') {
             }
         }
+        handler = GroovySpy(DryRunOperations, global: true)
     }
 
 
@@ -56,7 +46,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell(ShellSettings.DEFAULT)
+        1 * handler.shell(OperationSettings.DEFAULT + new OperationSettings(dryRun: true))
     }
 
     def "invoke a shell with options"() {
@@ -71,7 +61,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell(new ShellSettings(logging: false))
+        1 * handler.shell(OperationSettings.DEFAULT + new OperationSettings(logging: false, dryRun: true))
     }
 
     def "execute a command"() {
@@ -86,7 +76,25 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(ExecutionSettings.DEFAULT, 'ls -l')
+        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', null)
+    }
+
+    def "execute a command with callback"() {
+        given:
+        project.tasks.testTask.with {
+            session(project.remotes.testServer) {
+                execute('ls -l') {
+                    project.ext.callbackExecuted = true
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', _)
+        project.ext.callbackExecuted == true
     }
 
     def "execute a command with options"() {
@@ -101,7 +109,25 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(new ExecutionSettings(pty: true), 'ls -l')
+        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', null)
+    }
+
+    def "execute a command with options and callback"() {
+        given:
+        project.tasks.testTask.with {
+            session(project.remotes.testServer) {
+                execute('ls -l', pty: true) {
+                    project.ext.callbackExecuted = true
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', _)
+        project.ext.callbackExecuted == true
     }
 
     def "execute a command in background"() {
@@ -116,7 +142,25 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(ExecutionSettings.DEFAULT, 'ls -l')
+        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', null)
+    }
+
+    def "execute a command in background with callback"() {
+        given:
+        project.tasks.testTask.with {
+            session(project.remotes.testServer) {
+                executeBackground('ls -l') {
+                    project.ext.callbackExecuted = true
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', _)
+        project.ext.callbackExecuted == true
     }
 
     def "execute a command with options in background"() {
@@ -131,7 +175,25 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(new ExecutionSettings(pty: true), 'ls -l')
+        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', null)
+    }
+
+    def "execute a command with options and callback in background"() {
+        given:
+        project.tasks.testTask.with {
+            session(project.remotes.testServer) {
+                executeBackground('ls -l', pty: true) {
+                    project.ext.callbackExecuted = true
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', _)
+        project.ext.callbackExecuted == true
     }
 
 }

@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh.internal.session.handler
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
 import org.hidetake.gradle.ssh.api.session.handler.SudoExecution
 
@@ -16,30 +16,37 @@ class DefaultSudoExecution implements SudoExecution {
     @Override
     String executeSudo(String command) {
         log.info("Execute a command ($command) with sudo support")
-        executeSudoInternal(ExecutionSettings.DEFAULT, command)
+        assert operationSettings instanceof OperationSettings
+        executeSudoInternal(command, operationSettings)
     }
 
     @Override
     String executeSudo(HashMap settings, String command) {
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        executeSudoInternal(new ExecutionSettings(settings), command)
+        assert operationSettings instanceof OperationSettings
+        executeSudoInternal(command, operationSettings + new OperationSettings(settings))
     }
 
     @Override
     void executeSudo(String command, Closure callback) {
         log.info("Execute a command ($command) with sudo support")
-        def result = executeSudoInternal(ExecutionSettings.DEFAULT, command)
+        assert operationSettings instanceof OperationSettings
+        def result = executeSudoInternal(command, operationSettings)
         callback(result)
+        result
     }
 
     @Override
     void executeSudo(HashMap settings, String command, Closure callback) {
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        def result = executeSudoInternal(new ExecutionSettings(settings), command)
+        assert operationSettings instanceof OperationSettings
+        def result = executeSudoInternal(command, operationSettings + new OperationSettings(settings))
         callback(result)
+        result
     }
 
-    private executeSudoInternal(ExecutionSettings settings, String command) {
+    private executeSudoInternal(String command, OperationSettings settings) {
+        log.debug("Executing sudo ($command) with $settings")
         assert operations instanceof Operations
 
         def prompt = UUID.randomUUID().toString()
@@ -63,7 +70,8 @@ class DefaultSudoExecution implements SudoExecution {
             }
         }
 
-        operations.execute(settings + [interaction: interaction], "sudo -S -p '$prompt' $command")
+        operations.execute(settings + new OperationSettings(interaction: interaction),
+                "sudo -S -p '$prompt' $command", null)
 
         lines.join(Utilities.eol())
     }

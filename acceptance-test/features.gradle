@@ -105,10 +105,10 @@ feature('connect via a gateway host') {
 }
 
 task connectViaGateway(type: SshTask) {
+    ssh {
+        knownHosts = allowAnyHosts
+    }
     doFirst {
-        // FIXME: this affects global settings
-        ssh { knownHosts = allowAnyHosts }
-
         ext.x = randomInt()
         ext.y = randomInt()
     }

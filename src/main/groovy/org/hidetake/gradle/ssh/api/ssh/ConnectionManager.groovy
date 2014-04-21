@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.api.ssh
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
@@ -14,7 +13,7 @@ interface ConnectionManager {
      * A factory of {@link ConnectionManager}.
      */
     interface Factory {
-        ConnectionManager create(SshSettings sshSettings)
+        ConnectionManager create(ConnectionSettings connectionSettings)
     }
 
     final factory = Registry.instance[Factory]
