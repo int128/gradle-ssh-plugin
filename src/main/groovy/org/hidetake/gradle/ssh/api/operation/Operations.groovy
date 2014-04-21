@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.api.operation
 
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
 import org.hidetake.gradle.ssh.api.ssh.Connection
 import org.hidetake.gradle.ssh.registry.Registry
 
@@ -19,10 +18,9 @@ interface Operations {
          * Create an instance.
          *
          * @param connection
-         * @param sshSettings
          * @return an instance for wet run
          */
-        Operations create(Connection connection, SshSettings sshSettings)
+        Operations create(Connection connection)
 
         /**
          * Create an instance for dry run.
@@ -37,11 +35,11 @@ interface Operations {
 
     Remote getRemote()
 
-    void shell(ShellSettings settings)
+    void shell(OperationSettings settings)
 
-    String execute(ExecutionSettings settings, String command)
+    String execute(OperationSettings settings, String command, Closure callback)
 
-    void executeBackground(ExecutionSettings settings, String command)
+    void executeBackground(OperationSettings settings, String command, Closure callback)
 
     /**
      * Perform SFTP operations.

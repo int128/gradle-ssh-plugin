@@ -2,14 +2,14 @@ package org.hidetake.gradle.ssh.api.operation
 
 import spock.lang.Specification
 
-class ExecutionSettingsSpec extends Specification {
+class OperationSettingsSpec extends Specification {
 
     def "merge with empty"() {
         given:
-        def settings = new ExecutionSettings(pty: true)
+        def settings = new OperationSettings(pty: true)
 
         when:
-        def merged = settings + [:]
+        def merged = settings + new OperationSettings()
 
         then:
         merged == settings
@@ -17,28 +17,28 @@ class ExecutionSettingsSpec extends Specification {
 
     def "merge 1 key"() {
         given:
-        def settings = new ExecutionSettings(pty: true)
+        def settings = new OperationSettings(pty: true)
 
         when:
-        def merged = settings + [pty: false]
+        def merged = settings + new OperationSettings(pty: false)
 
         then:
         !merged.pty
-        merged.logging
+        merged.logging == null
         merged.interaction == null
     }
 
     def "merge 2 keys"() {
         given:
-        def settings = new ExecutionSettings(pty: true)
+        def settings = new OperationSettings(pty: true)
         final closure = { x, y -> x + y }
 
         when:
-        def merged = settings + [pty: false, interaction: closure]
+        def merged = settings + new OperationSettings(pty: false, interaction: closure)
 
         then:
         !merged.pty
-        merged.logging
+        merged.logging == null
         merged.interaction(-3, 5) == 2
     }
 

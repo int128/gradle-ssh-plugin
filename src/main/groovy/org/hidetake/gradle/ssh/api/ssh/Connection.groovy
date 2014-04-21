@@ -5,8 +5,7 @@ import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.ChannelShell
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.ExecutionSettings
-import org.hidetake.gradle.ssh.api.operation.ShellSettings
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
 
 /**
  * A SSH connection.
@@ -25,18 +24,18 @@ interface Connection {
      * Create an execution channel.
      *
      * @param command
-     * @param executionSettings
+     * @param operationSettings
      * @return a channel
      */
-    ChannelExec createExecutionChannel(String command, ExecutionSettings executionSettings)
+    ChannelExec createExecutionChannel(String command, OperationSettings operationSettings)
 
     /**
      * Create a shell channel.
      *
-     * @param shellSettings
+     * @param operationSettings
      * @return a channel
      */
-    ChannelShell createShellChannel(ShellSettings shellSettings)
+    ChannelShell createShellChannel(OperationSettings operationSettings)
 
     /**
      * Create a SFTP channel.

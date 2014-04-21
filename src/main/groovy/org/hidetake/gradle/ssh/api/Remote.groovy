@@ -1,6 +1,7 @@
 package org.hidetake.gradle.ssh.api
 
 import groovy.transform.TupleConstructor
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 /**
  * Represents a remote host.
@@ -14,11 +15,6 @@ class Remote {
      * Name of this instance.
      */
     final String name
-
-    /**
-     * Remote user.
-     */
-    String user
 
     /**
      * Port.
@@ -37,32 +33,12 @@ class Remote {
     Remote gateway
 
     /**
-     * Password.
-     * Leave as null if public key authentication.
-     */
-    String password
-
-    /**
-     * Identity key file for public-key authentication.
-     */
-    File identity
-
-    /**
-     * Pass-phrase for the identity key.
-     * This may be null.
-     */
-    String passphrase
-
-    /**
-     * Use agent flag.
-     * If <code>true</code>, Putty Agent or ssh-agent will be used to authenticate.
-     */
-    boolean agent
-
-    /**
      * Roles.
      */
     final roles = [] as List<String>
+
+    @Delegate
+    ConnectionSettings connectionSettings = new ConnectionSettings()
 
     /**
      * Add a role to this remote.

@@ -3,7 +3,7 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.SshSettings
+import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -26,10 +26,10 @@ class SshPluginSpec extends Specification {
     def "apply the full monty"() {
         when:
         def project = createProject()
-        def globalSettings = project.convention.getPlugin(SshPluginConvention).ssh
+        def globalSettings = project.convention.getPlugin(SshPluginConvention).globalSettings
 
         then:
-        globalSettings.knownHosts == SshSettings.allowAnyHosts
+        globalSettings.knownHosts == ConnectionSettings.allowAnyHosts
         project.remotes.size() == 4
     }
 
