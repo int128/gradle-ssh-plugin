@@ -3,10 +3,9 @@ layout: default
 title: Home
 ---
 
-Gradle SSH Plugin provides remote command execution and file transfer.
+Gradle SSH Plugin provides remote command execution and file transfer features for continuous delivery.
 
-
-[![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.svg?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
+An open source software developed on [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
 
 Features
@@ -14,26 +13,26 @@ Features
 
 ### Integrated with Gradle
 
-Seamlessly integrated with Gradle DSL.
-
-
-### Remote command execution
+Build and deploy seamlessly on Gradle.
 
 ```groovy
-task reloadServers(type: SshTask) {
-  session(remotes.role('webServers')) {
-    execute 'sudo service httpd reload'
-  }
+apply plugin: 'war'
+apply plugin: 'ssh'
+
+task deploy(type: SshTask, dependsOn: war) {
+  // TODO: put a WAR file and reload server
 }
 ```
 
 
-### File transfer
+### Simple DSL
+
+Intuitive syntax for command execution and file transfer.
 
 ```groovy
-task deployApp(type: SshTask) {
-  session(remotes.role('webServers')) {
-    put("$buildDir/libs/hello.war", '/webapps')
+task deploy(type: SshTask, dependsOn: war) {
+  session(remotes.webServer) {
+    put(war.archivePath, '/webapps')
     execute('sudo service tomcat restart')
   }
 }
@@ -43,18 +42,20 @@ task deployApp(type: SshTask) {
 ### Authentication and security
 
 * Password authentication
-* Public key authentication
+* Public key authentication with an OpenSSH compatible key file
 * Host key verification with an OpenSSH compatible `known_hosts` file
 
 
 ### Stream interaction
 
 * Providing a password for sudo prompt
-* Interaction with shell such as bash or Cisco IOS
+* Interaction with the shell such as bash or Cisco IOS
 
 
 Getting Started
 ---------------
+
+### Add a dependency
 
 Add the plugin dependency in your build.gradle:
 
@@ -71,37 +72,38 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
-Get the [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
+[Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
 
 
-### Add a remote host
+### Add a task
+
+Here is an example for trivial deployment scenario.
 
 ```groovy
+// Global settings
 ssh {
-  identity = file('id_rsa')     // Enables public key authentication
-  knownHosts = allowAnyHosts    // Disables host key verification
+  identity = file('id_rsa')     // Enable public key authentication
+  knownHosts = allowAnyHosts    // Disable host key verification
 }
 
+// Add a remote host
 remotes {
   webServer {
     host = '192.168.1.101'
     user = 'jenkins'
   }
 }
-```
 
-### Add a deployment task
-
-```groovy
-task deployApp(type: SshTask, dependsOn: war) {
+task deploy(type: SshTask, dependsOn: war) {
+  description = 'Deploys an application to the server.'
   ssh {
-    // Enables PTY allocation for sudo
+    // Enable PTY allocation for sudo
     pty = true
   }
-  session(remotes.role('webServers')) {
-    // Puts built WAR to server
+  session(remotes.webServer) {
+    // Put a built WAR to the server
     put(war.archivePath, '/webapps')
-    // Restarts the application server
+    // Restart the application server
     execute('sudo service tomcat restart')
   }
 }
@@ -130,4 +132,4 @@ User Guide
 Contribution
 ------------
 
-Send your issue or pull request to [GitHub repository](https://github.com/int128/gradle-ssh-plugin).
+Please send your issue report or pull request via [GitHub project](https://github.com/int128/gradle-ssh-plugin).
