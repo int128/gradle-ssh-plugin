@@ -7,6 +7,8 @@ Gradle SSH Plugin provides remote command execution and file transfer features f
 
 An open source software developed on [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
+See also [User Guide](user-guide.html).
+
 
 Features
 --------
@@ -108,25 +110,6 @@ task deploy(type: SshTask, dependsOn: war) {
   }
 }
 ```
-
-
-User Guide
-----------
-
-* Overview
-* Using SSH task
-* Using SSH in the task
-* Defining remote hosts
-  * Adding a remote host
-  * Adding a remote host in execution phase
-* Operations
-  * Command execution
-  * Shell execution
-  * File transfer
-  * Stream interaction
-* Global settings
-  * Connection settings
-  * Operation settings
 
 
 Contribution
