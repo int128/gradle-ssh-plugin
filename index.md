@@ -3,11 +3,15 @@ layout: default
 title: Home
 ---
 
-Gradle SSH Plugin provides remote command execution and file transfer features for continuous delivery.
+
+Gradle SSH Plugin is
+--------------------
+
+A Gradle plugin which provides remote execution and file transfer features for continuous delivery.
 
 An open source software developed on [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
-See also [User Guide](user-guide.html).
+See also [User Guide](user-guide.html) for details.
 
 
 Features
@@ -27,9 +31,11 @@ task deploy(type: SshTask, dependsOn: war) {
 ```
 
 
-### Simple DSL
+### Simple and intuitive DSL
 
-Intuitive syntax for command execution and file transfer.
+* Command execution
+* Shell execution
+* File transfer
 
 ```groovy
 task deploy(type: SshTask, dependsOn: war) {
@@ -44,22 +50,24 @@ task deploy(type: SshTask, dependsOn: war) {
 ### Authentication and security
 
 * Password authentication
-* Public key authentication with an OpenSSH compatible key file
-* Host key verification with an OpenSSH compatible `known_hosts` file
+* Public key authentication with an OpenSSH key pair
+* Authentication with Putty Agent or ssh-agent
+* Host key verification with an OpenSSH style `known_hosts` file
 
 
-### Stream interaction
+### Also supports
 
-* Providing a password for sudo prompt
+* Connection via gateways
+* Providing a password for `sudo` command
 * Interaction with the shell such as bash or Cisco IOS
 
 
 Getting Started
 ---------------
 
-### Add a dependency
+### Set up
 
-Add the plugin dependency in your build.gradle:
+Add the plugin in your build.gradle:
 
 ```groovy
 buildscript {
@@ -74,12 +82,12 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
-[Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
+[Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) is available for quick start.
 
 
-### Add a task
+### Create a task
 
-Here is an example for trivial deployment scenario.
+Here is an example for typical deployment scenario.
 
 ```groovy
 // Global settings
@@ -116,3 +124,5 @@ Contribution
 ------------
 
 Please send your issue report or pull request via [GitHub project](https://github.com/int128/gradle-ssh-plugin).
+
+Latest release is [version {{ site.product.version }}](https://github.com/int128/gradle-ssh-plugin/releases).
