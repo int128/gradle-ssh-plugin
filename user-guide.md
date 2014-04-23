@@ -96,7 +96,7 @@ task syncKernelParams << {
       paramValue = execute("sysctl '$paramKey' | sed -e 's/ //g'")
     }
   }
-  assert (paramValue as int) > 0
+  assert paramValue.contains(paramKey)
   sshexec {
     session(remotes.web02) {
       execute("sysctl -w '$paramValue'")
