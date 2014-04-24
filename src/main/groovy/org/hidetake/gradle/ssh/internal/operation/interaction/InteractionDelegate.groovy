@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.operation.interaction
 
-import groovy.transform.TupleConstructor
 import org.hidetake.gradle.ssh.api.operation.interaction.InteractionHandler
 
 /**
@@ -8,11 +7,15 @@ import org.hidetake.gradle.ssh.api.operation.interaction.InteractionHandler
  *
  * @author hidetake.org
  */
-@TupleConstructor
 class InteractionDelegate implements InteractionHandler {
     final OutputStream standardInput
 
     private final List<InteractionRule> interactionRules = []
+
+    def InteractionDelegate(OutputStream standardInput1) {
+        standardInput = standardInput1
+        assert standardInput
+    }
 
     @Override
     void when(Map condition, Closure action) {

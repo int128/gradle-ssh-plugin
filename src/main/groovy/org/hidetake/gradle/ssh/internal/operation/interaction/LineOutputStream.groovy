@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.operation.interaction
 
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 
 /**
@@ -8,21 +7,38 @@ import groovy.util.logging.Slf4j
  *
  * @author hidetake.org
  */
-@TupleConstructor
 @Slf4j
 class LineOutputStream extends OutputStream {
-    final String charset = 'UTF-8'
+    private static final LINE_SEPARATOR = ~/\r\n|[\n\r\u2028\u2029\u0085]/
+
+    private final String charset
+
+    private final List<Closure> lineListeners = []
+    private final List<Closure<Boolean>> partialListeners = []
+    private final List<Closure> loggingListeners = []
+
+    private final byteBuffer = new ByteArrayOutputStream(512)
+    private lineBuffer = ''
+
+    def LineOutputStream(String charset1 = 'UTF-8') {
+        charset = charset1
+        assert charset
+    }
 
     /**
-     * Listeners for line processing.
+     * Add a listener for line processing.
      *
      * Called when the stream received a line.
      * The stream must call this when received an new-line character or closed.
+     *
+     * @param closure
      */
-    final List<Closure> lineListeners = []
+    void listenLine(Closure closure) {
+        lineListeners.add(closure)
+    }
 
     /**
-     * Listeners for partial matching to the line buffer.
+     * Add a listener for partial matching to the line buffer.
      *
      * Called when the stream is flushed.
      * This method may be called several times until the stream receives a complete line.
@@ -30,20 +46,24 @@ class LineOutputStream extends OutputStream {
      * If at least one of closures returned true,
      * line buffer will be cleared and logging listeners (see below) will be called.
      * Otherwise, it will be preserved until new-line appears.
+     *
+     * @param closure
      */
-    final List<Closure<Boolean>> partialListeners = []
+    void listenPartial(Closure<Boolean> closure) {
+        partialListeners.add(closure)
+    }
 
     /**
-     * Listeners for logging output.
+     * Add a listeners for logging output.
      *
      * Called when the stream received a line or
      * at least one of partial listeners returned true.
+     *
+     * @param closure
      */
-    final List<Closure> loggingListeners = []
-
-    private static final LINE_SEPARATOR = ~/\r\n|[\n\r\u2028\u2029\u0085]/
-    private final byteBuffer = new ByteArrayOutputStream(512)
-    private lineBuffer = ''
+    void listenLogging(Closure closure) {
+        loggingListeners.add(closure)
+    }
 
     void write(int b) {
         withTryCatch {

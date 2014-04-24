@@ -12,7 +12,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def action1 = Mock(Closure)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, { action1() })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         when:
@@ -29,7 +29,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def action1 = Mock(Closure)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, { action1() })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         when:
@@ -49,7 +49,7 @@ class EngineSpec extends Specification {
             action1()
             when(key: 'rule2') {}
         })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         GroovyMock(InteractionRule, global: true)
@@ -70,7 +70,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def action1 = Mock(Closure)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, { action1() })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         when:
@@ -88,7 +88,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def action1 = Mock(Closure)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, { action1() })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         when:
@@ -109,7 +109,7 @@ class EngineSpec extends Specification {
             action1()
             when(key: 'rule2') {}
         })
-        def engine = new Engine(new InteractionDelegate())
+        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
         engine.alterInteractionRules([rule1])
 
         GroovyMock(InteractionRule, global: true)

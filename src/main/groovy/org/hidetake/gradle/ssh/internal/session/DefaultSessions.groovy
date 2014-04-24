@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.session
 
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.OperationSettings
@@ -17,36 +16,33 @@ import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
  */
 @Slf4j
 class DefaultSessions implements Sessions {
-    @TupleConstructor
-    static class Session {
-        final Remote remote
-        final Closure closure
+    private static class Session {
+        private final Remote remote
+        private final Closure closure
 
-        EstablishedSession establish(ConnectionManager connectionManager, OperationSettings settings) {
-            if (settings.dryRun) {
-                def operations = Operations.factory.create(remote)
-                new EstablishedSession(this, operations)
+        def Session(Remote remote1, Closure closure1) {
+            remote = remote1
+            closure = closure1
+        }
+
+        def establish(ConnectionManager connectionManager, OperationSettings operationSettings) {
+            assert operationSettings.dryRun != null
+            def operations = establishInternal(operationSettings.dryRun, connectionManager)
+            closure.delegate = SessionHandler.factory.create(operations, operationSettings)
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure
+        }
+
+        private establishInternal(boolean dryRun, ConnectionManager connectionManager) {
+            if (dryRun) {
+                Operations.factory.create(remote)
             } else {
-                def connection = connectionManager.establish(remote)
-                def operations = Operations.factory.create(connection)
-                new EstablishedSession(this, operations)
+                Operations.factory.create(connectionManager.establish(remote))
             }
         }
     }
 
-    @TupleConstructor
-    static class EstablishedSession {
-        final Session session
-        final Operations operations
-
-        void execute(OperationSettings settings) {
-            session.closure.delegate = SessionHandler.factory.create(operations, settings)
-            session.closure.resolveStrategy = Closure.DELEGATE_FIRST
-            session.closure.call()
-        }
-    }
-
-    final List<Session> sessions = []
+    private final List<Session> sessions = []
 
     @Override
     void add(Remote remote, Closure closure) {
@@ -57,7 +53,7 @@ class DefaultSessions implements Sessions {
     void execute(ConnectionSettings connectionSettings, OperationSettings operationSettings) {
         def connectionManager = ConnectionManager.factory.create(connectionSettings)
         try {
-            sessions*.establish(connectionManager, operationSettings)*.execute(operationSettings)
+            sessions*.establish(connectionManager, operationSettings)*.call()
 
             connectionManager.waitForPending()
         } finally {

@@ -4,7 +4,6 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.ssh.BackgroundCommandException
@@ -19,7 +18,6 @@ import static Retry.retry
  *
  * @author hidetake.org
  */
-@TupleConstructor
 @Slf4j
 class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
@@ -27,8 +25,12 @@ class DefaultConnectionManager implements ConnectionManager {
     private final JSch jsch = new JSch()
     private final List<Session> sessions = []
     private final List<Connection> connections = []
+    private final ConnectionSettings globalSettings
 
-    final ConnectionSettings globalSettings
+    def DefaultConnectionManager(ConnectionSettings globalSettings1) {
+        globalSettings = globalSettings1
+        assert globalSettings
+    }
 
     @Override
     Connection establish(Remote remote) {

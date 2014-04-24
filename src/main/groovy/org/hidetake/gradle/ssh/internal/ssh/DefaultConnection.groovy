@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.internal.ssh
 
 import com.jcraft.jsch.*
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
@@ -14,13 +13,20 @@ import org.hidetake.gradle.ssh.api.ssh.Connection
  *
  * @author hidetake.org
  */
-@TupleConstructor
 @Slf4j
 class DefaultConnection implements Connection {
     final Remote remote
-    final Session session
-    final List<Channel> channels = []
-    final List<Closure> callbackForClosedChannels = []
+
+    private final Session session
+    private final List<Channel> channels = []
+    private final List<Closure> callbackForClosedChannels = []
+
+    def DefaultConnection(Remote remote1, Session session1) {
+        remote = remote1
+        session = session1
+        assert remote
+        assert session
+    }
 
     @Override
     ChannelExec createExecutionChannel(String command, OperationSettings operationSettings) {

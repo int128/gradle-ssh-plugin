@@ -23,8 +23,7 @@ class InteractionDelegateSpec extends Specification {
 
     def 'standard input constant'() {
         given:
-        def standardInputMock = Mock(OutputStream)
-        def interactionDelegate = new InteractionDelegate(standardInputMock)
+        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
         expect:
         interactionDelegate.standardInput == standardInputMock
@@ -32,7 +31,7 @@ class InteractionDelegateSpec extends Specification {
 
     def 'evaluate() returns an empty list'() {
         given:
-        def interactionDelegate = new InteractionDelegate()
+        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
         when:
         def interactionRules = interactionDelegate.evaluate {
@@ -44,7 +43,7 @@ class InteractionDelegateSpec extends Specification {
 
     def 'when() adds an interaction rule'() {
         given:
-        def interactionDelegate = new InteractionDelegate()
+        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
         def interactionRule = new InteractionRule(key: 'value', {true}, {})
         GroovyMock(InteractionRule, global: true)
@@ -61,7 +60,7 @@ class InteractionDelegateSpec extends Specification {
 
     def 'multiple when()'() {
         given:
-        def interactionDelegate = new InteractionDelegate()
+        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
         GroovyMock(InteractionRule, global: true)
         InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }
@@ -83,7 +82,7 @@ class InteractionDelegateSpec extends Specification {
 
     def 'results of evaluate() are dependent'() {
         given:
-        def interactionDelegate = new InteractionDelegate()
+        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
         GroovyMock(InteractionRule, global: true)
         InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }

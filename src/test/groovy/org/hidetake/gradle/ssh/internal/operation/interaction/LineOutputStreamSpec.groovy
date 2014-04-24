@@ -16,9 +16,9 @@ class LineOutputStreamSpec extends Specification {
         loggingListener = Mock(Closure)
 
         stream = new LineOutputStream()
-        stream.partialListeners << partialListener
-        stream.lineListeners << lineListener
-        stream.loggingListeners << loggingListener
+        stream.listenPartial(partialListener)
+        stream.listenLine(lineListener)
+        stream.listenLogging(loggingListener)
     }
 
     def teardown() {
@@ -448,8 +448,7 @@ class LineOutputStreamSpec extends Specification {
     def "explicit charset"() {
         given:
         stream = new LineOutputStream('Shift_JIS')
-        stream.lineListeners << lineListener
-        stream.partialListeners << partialListener
+        stream.listenLine(lineListener)
 
         when:
         stream.withWriter('Shift_JIS') {
