@@ -90,6 +90,8 @@ class DefaultConnectionManager implements ConnectionManager {
                 }
             }
 
+            session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
+
             session.connect()
             log.info("Established a session to $remote via $host:$port")
             sessions.add(session)
