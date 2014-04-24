@@ -7,7 +7,7 @@ title: Home
 Gradle SSH Plugin is
 --------------------
 
-A Gradle plugin which provides remote execution and file transfer features for continuous delivery.
+A [Gradle](http://www.gradle.org) plugin which provides remote execution and file transfer features for continuous delivery.
 
 An open source software developed on [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
