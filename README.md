@@ -3,21 +3,21 @@ Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugi
 
 Gradle SSH Plugin is a Gradle plugin providing remote command execution and file transfer features for continuous delivery.
 
-Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/) for details such as getting started or user guide.
+Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/) for getting started or user guide.
 
 
 Contribution
 ------------
 
-Please send me your issue or pull request.
+Please open your issue or pull request. Any issue is welcome.
 
 
-How to Build
-------------
+Build
+-----
 
 Run Gradle wrapper.
 
-```groovy
+```bash
 ./gradlew build
 ```
 
@@ -31,7 +31,7 @@ Acceptance Test
 
 We can run acceptance tests to verify behavior of the plugin on Gradle environment.
 
-Prerequiste of acceptance tests:
+Prerequisite:
 
 * SSH service must be started on localhost port 22
 * Current user must be able to log in with a private key placed at `~/.ssh/id_rsa` without any passphrase
@@ -39,7 +39,7 @@ Prerequiste of acceptance tests:
 
 Upload a built JAR into the local repository and invoke a test.
 
-```groovy
+```bash
 ./gradlew uploadArchives
 ./gradlew -p acceptance-tests -i test
 ```
@@ -50,8 +50,37 @@ Above does not contain aggressive tests such as creating users or changing syste
 Invoke with aggressiveTest to run aggressive tests.
 It is strongly recommended to run on a disposable instance such as Travis CI.
 
-```groovy
+```bash
 ./gradlew -p acceptance-tests -i aggressiveTest
 ```
+
+
+Publish to Maven Central
+------------------------
+
+Prerequisite:
+
+* `~/.gradle/gradle.properties` must contain 
+  * signing.keyId
+  * signing.secretKeyRingFile
+  * sonatypeUsername
+  * sonatypeFullname
+* PGP key must be placed at signing.secretKeyRingFile
+* Passphrase of key pair must be known
+* Password of Sonatype must be known
+
+Invoke the publishing task:
+
+```bash
+./gradlew publishMavenCentral
+```
+
+
+Related repositories
+--------------------
+
+* [Gradle SSH Plugin web site](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io)
+* [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template)
+
 
 
