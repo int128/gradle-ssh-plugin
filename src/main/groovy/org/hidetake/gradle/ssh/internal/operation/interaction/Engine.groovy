@@ -3,7 +3,7 @@ package org.hidetake.gradle.ssh.internal.operation.interaction
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.operation.interaction.Stream
-import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionRule.Event
+import org.hidetake.gradle.ssh.internal.operation.interaction.Matcher.Event
 
 /**
  * A rule engine for processing stream events.
@@ -14,7 +14,8 @@ import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionRule.Ev
 class Engine {
     private final InteractionDelegate interactionDelegate
 
-    private List<InteractionRule> interactionRules = []
+    protected List<InteractionRule> interactionRules = []
+
     private depth = new Counter()
 
     def Engine(InteractionDelegate interactionDelegate1) {

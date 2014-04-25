@@ -19,7 +19,7 @@ class InteractionDelegate implements InteractionHandler {
 
     @Override
     void when(Map condition, Closure action) {
-        interactionRules << InteractionRule.create(condition, action)
+        interactionRules << new InteractionRule(condition, Matcher.generate(condition), action)
     }
 
     /**

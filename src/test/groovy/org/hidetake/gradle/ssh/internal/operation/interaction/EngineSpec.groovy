@@ -4,22 +4,21 @@ import org.hidetake.gradle.ssh.api.operation.interaction.Stream
 import org.hidetake.gradle.ssh.internal.operation.interaction.Engine.Counter
 import spock.lang.Specification
 
-@SuppressWarnings('GroovyAccessibility')
 class EngineSpec extends Specification {
 
     def 'received a line, no rule matched'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, { action1() })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
         when:
         engine.processLine(Stream.StandardOutput, counter, 'unknownLine')
 
         then:
-        0 * action1.call()
+        0 * interactionDelegate.evaluate(_)
         0 * counter.reset()
         engine.interactionRules == [rule1]
     }
@@ -27,16 +26,18 @@ class EngineSpec extends Specification {
     def 'received a line, rule matched, action has no rule'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, { action1() })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
         when:
         engine.processLine(Stream.StandardOutput, counter, 'someLine')
 
         then:
-        1 * action1.call()
+        1 * interactionDelegate.evaluate(_) >> []
+
+        then:
         0 * counter.reset()
         engine.interactionRules == [rule1]
     }
@@ -44,85 +45,86 @@ class EngineSpec extends Specification {
     def 'received a line, rule matched, action declares new rules'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {
-            action1()
-            when(key: 'rule2') {}
-        })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
+        def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
-
-        GroovyMock(InteractionRule, global: true)
-        1 * InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }
 
         when:
         engine.processLine(Stream.StandardOutput, counter, 'someLine')
 
         then:
-        1 * action1.call()
+        1 * interactionDelegate.evaluate(_) >> [rule2]
+
+        then:
         1 * counter.reset()
-        engine.interactionRules == [new InteractionRule(key: 'rule2', null, null)]
+        engine.interactionRules.size() == 1
+        engine.interactionRules[0].condition == [key: 'rule2']
     }
 
 
     def 'offered partial block, no rule matched'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, { action1() })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
         when:
         boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'unknownLine')
 
         then:
-        !matched
-        0 * action1.call()
+        0 * interactionDelegate.evaluate(_)
         0 * counter.reset()
+
+        !matched
         engine.interactionRules == [rule1]
     }
 
     def 'offered partial block, rule matched, action has no rule'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, { action1() })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
         when:
         boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'someLine')
 
         then:
-        matched
-        1 * action1.call()
+        1 * interactionDelegate.evaluate(_) >> []
+
+        then:
         0 * counter.reset()
+
+        matched
         engine.interactionRules == [rule1]
     }
 
     def 'offered partial block, rule matched, action declares new rules'() {
         given:
         def counter = Spy(Counter)
-        def action1 = Mock(Closure)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {
-            action1()
-            when(key: 'rule2') {}
-        })
-        def engine = new Engine(new InteractionDelegate(Mock(OutputStream)))
+        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
+        def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
+        def interactionDelegate = Mock(InteractionDelegate)
+        def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
-
-        GroovyMock(InteractionRule, global: true)
-        1 * InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }
 
         when:
         boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'someLine')
 
         then:
-        matched
-        1 * action1.call()
+        1 * interactionDelegate.evaluate(_) >> [rule2]
+
+        then:
         1 * counter.reset()
-        engine.interactionRules == [new InteractionRule(key: 'rule2', null, null)]
+
+        matched
+        engine.interactionRules.size() == 1
+        engine.interactionRules[0].condition == [key: 'rule2']
     }
 
 }

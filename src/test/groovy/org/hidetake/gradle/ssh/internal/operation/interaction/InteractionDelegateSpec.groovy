@@ -23,7 +23,8 @@ class InteractionDelegateSpec extends Specification {
 
     def 'standard input constant'() {
         given:
-        def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
+        def standardInputMock = Mock(OutputStream)
+        def interactionDelegate = new InteractionDelegate(standardInputMock)
 
         expect:
         interactionDelegate.standardInput == standardInputMock
@@ -45,65 +46,54 @@ class InteractionDelegateSpec extends Specification {
         given:
         def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
-        def interactionRule = new InteractionRule(key: 'value', {true}, {})
-        GroovyMock(InteractionRule, global: true)
-        1 * InteractionRule.create(_ as Map, _) >> interactionRule
-
         when:
         def interactionRules = interactionDelegate.evaluate {
-            when(key: 'value') {}
+            when(line: 'value') {}
         }
 
         then:
-        interactionRules == [interactionRule]
+        interactionRules.size() == 1
+        interactionRules[0].condition == [line: 'value']
     }
 
     def 'multiple when()'() {
         given:
         def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
-        GroovyMock(InteractionRule, global: true)
-        InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }
-
         when:
         def interactionRules = interactionDelegate.evaluate {
-            when(key1: 'value1') {}
-            when(key2: 'value2') {}
-            when(key3: 'value3') {}
+            when(line: 'value1') {}
+            when(nextLine: 'value2') {}
+            when(partial: 'value3') {}
         }
 
         then:
-        interactionRules == [
-                new InteractionRule(key1: 'value1', null, null),
-                new InteractionRule(key2: 'value2', null, null),
-                new InteractionRule(key3: 'value3', null, null),
-        ]
+        interactionRules.size() == 3
+        interactionRules[0].condition == [line: 'value1']
+        interactionRules[1].condition == [nextLine: 'value2']
+        interactionRules[2].condition == [partial: 'value3']
     }
 
     def 'results of evaluate() are dependent'() {
         given:
         def interactionDelegate = new InteractionDelegate(Mock(OutputStream))
 
-        GroovyMock(InteractionRule, global: true)
-        InteractionRule.create(_ as Map, _) >> { Map c, a -> new InteractionRule(c, null, null) }
-
         when:
         def interactionRules1 = interactionDelegate.evaluate {
-            when(key1: 'value1') {}
-            when(key2: 'value2') {}
+            when(line: 'value1') {}
+            when(nextLine: 'value2') {}
         }
         def interactionRules2 = interactionDelegate.evaluate {
-            when(key3: 'value3') {}
+            when(partial: 'value3') {}
         }
 
         then:
-        interactionRules1 == [
-                new InteractionRule(key1: 'value1', null, null),
-                new InteractionRule(key2: 'value2', null, null),
-        ]
-        interactionRules2 == [
-                new InteractionRule(key3: 'value3', null, null),
-        ]
+        interactionRules1.size() == 2
+        interactionRules1[0].condition == [line: 'value1']
+        interactionRules1[1].condition == [nextLine: 'value2']
+
+        interactionRules2.size() == 1
+        interactionRules2[0].condition == [partial: 'value3']
     }
 
 }
