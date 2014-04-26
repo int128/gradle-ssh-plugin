@@ -1,12 +1,12 @@
 package org.hidetake.gradle.ssh.plugin
 
+import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.session.Sessions
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
-import static org.hidetake.gradle.ssh.test.TestDataHelper.createRemote
 
 @ConfineMetaClassChanges(Sessions)
 class SshTaskDelegateSpec extends Specification {
@@ -22,10 +22,12 @@ class SshTaskDelegateSpec extends Specification {
         sshTaskDelegate = new SshTaskDelegate()
     }
 
-    def "add session"() {
+    def "add a session"() {
         given:
-        def remote = createRemote()
-        def operationClosure = {-> println "whatever" }
+        def remote = new Remote('myRemote')
+        remote.user = 'myUser'
+        remote.host = 'myHost'
+        def operationClosure = { assert false }
 
         when:
         sshTaskDelegate.session(remote, operationClosure)
@@ -34,35 +36,50 @@ class SshTaskDelegateSpec extends Specification {
         1 * sessions.add(remote, operationClosure)
     }
 
-    @Unroll("add session with remote: #theRemote, user: #theUser, host: #theHost")
-    def "add session with invalid params throws assertion error"() {
+    def "add a session with null remote throws assertion error"() {
         given:
-        def remote
+        def operationClosure = { assert false }
 
         when:
-        remote = theRemote ? createRemote([user: theUser, host: theHost]) : null
+        sshTaskDelegate.session(null as Remote, operationClosure)
+
+        then:
+        AssertionError e = thrown()
+        e.message.contains('remote')
+    }
+
+    @Unroll("add a session with remote user: #theUser, host: #theHost")
+    def "add session with invalid params throws assertion error"() {
+        given:
+        def remote = new Remote('myRemote')
+        remote.user = theUser
+        remote.host = theHost
+
+        when:
         sshTaskDelegate.session(remote, theOperationClosure)
 
         then:
         AssertionError e = thrown()
         e.message.contains(errorContains)
 
-
         where:
-        theRemote  | theUser  | theHost          | theOperationClosure | errorContains
-        null       | "myUser" | "www.myhost.com" | {-> println it }    | "remote"
-        "myRemote" | null     | "www.myhost.com" | {-> println it }    | "user"
-        "myRemote" | "myUser" | null             | {-> println it }    | "host"
-        "myRemote" | "myUser" | "www.myhost.com" | null                | "closure"
+        theUser  | theHost          | theOperationClosure | errorContains
+        null     | "www.myhost.com" | { assert false }    | "user"
+        "myUser" | null             | { assert false }    | "host"
+        "myUser" | "www.myhost.com" | null                | "closure"
     }
 
 
 
     def "add session for multiple remotes"() {
         given:
-        def remote1 = createRemote([name: "remote1"])
-        def remote2 = createRemote([name: "remote2"])
-        def closure = {-> println "whatever" }
+        def remote1 = new Remote('myRemote1')
+        remote1.user = 'myUser1'
+        remote1.host = 'myHost1'
+        def remote2 = new Remote('myRemote2')
+        remote2.user = 'myUser2'
+        remote2.host = 'myHost2'
+        def closure = { assert false }
 
         when:
         sshTaskDelegate.session([remote1, remote2], closure)
@@ -72,17 +89,23 @@ class SshTaskDelegateSpec extends Specification {
         1 * sessions.add(remote2, closure)
     }
 
-
-    def "add session for multiple remotes with illegal args throws assertion error"() {
+    def "add session for empty remotes throws assertion error"() {
         given:
-        def remote = createRemote()
+        def closure = { assert false }
 
         when:
-        sshTaskDelegate.session([], {-> println "whatever" })
+        sshTaskDelegate.session([], closure)
 
         then:
         AssertionError ex = thrown()
         ex.message.contains("remotes")
+    }
+
+    def "add session for multiple remotes with null closure throws assertion error"() {
+        given:
+        def remote = new Remote('myRemote')
+        remote.user = 'myUser'
+        remote.host = 'myHost'
 
         when:
         sshTaskDelegate.session([remote], null)
@@ -90,7 +113,6 @@ class SshTaskDelegateSpec extends Specification {
         then:
         AssertionError ex2 = thrown()
         ex2.message.contains("closure")
-
     }
 
 }

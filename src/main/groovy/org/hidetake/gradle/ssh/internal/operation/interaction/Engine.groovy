@@ -3,25 +3,30 @@ package org.hidetake.gradle.ssh.internal.operation.interaction
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.operation.interaction.Stream
-import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionRule.Event
+import org.hidetake.gradle.ssh.internal.operation.interaction.Matcher.Event
 
 /**
  * A rule engine for processing stream events.
  *
  * @author hidetake.org
  */
-@TupleConstructor
 @Slf4j
 class Engine {
-    final InteractionDelegate interactionDelegate
+    private final InteractionDelegate interactionDelegate
 
-    private List<InteractionRule> interactionRules
+    protected List<InteractionRule> interactionRules = []
+
     private depth = new Counter()
+
+    def Engine(InteractionDelegate interactionDelegate1) {
+        interactionDelegate = interactionDelegate1
+        assert interactionDelegate
+    }
 
     void attach(LineOutputStream lineOutputStream, Stream stream) {
         def counter = new Counter()
-        lineOutputStream.lineListeners.add { String line -> processLine(stream, counter, line) }
-        lineOutputStream.partialListeners.add { String block -> processPartial(stream, counter, block) }
+        lineOutputStream.listenLine { String line -> processLine(stream, counter, line) }
+        lineOutputStream.listenPartial { String block -> processPartial(stream, counter, block) }
     }
 
     void alterInteractionRules(List<InteractionRule> alternative) {

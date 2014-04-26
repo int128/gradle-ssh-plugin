@@ -1,6 +1,6 @@
 package org.hidetake.gradle.ssh.api
 
-import groovy.transform.TupleConstructor
+import groovy.transform.ToString
 import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 
 /**
@@ -9,12 +9,17 @@ import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
  * @author hidetake.org
  *
  */
-@TupleConstructor
+@ToString
 class Remote {
     /**
      * Name of this instance.
      */
     final String name
+
+    def Remote(String name1) {
+        name = name1
+        assert name
+    }
 
     /**
      * Port.
@@ -35,26 +40,13 @@ class Remote {
     /**
      * Roles.
      */
-    final roles = [] as List<String>
+    final List<String> roles = []
 
     @Delegate
     ConnectionSettings connectionSettings = new ConnectionSettings()
 
-    /**
-     * Add a role to this remote.
-     *
-     * @param role
-     */
     void role(String role) {
         assert role != null, 'role should be set'
         roles.add(role)
-    }
-
-    /**
-     * Returns a string representation of this remote host.
-     */
-    @Override
-    String toString() {
-        "remote '${name}'"
     }
 }

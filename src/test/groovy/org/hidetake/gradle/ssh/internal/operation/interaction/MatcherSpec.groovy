@@ -2,17 +2,17 @@ package org.hidetake.gradle.ssh.internal.operation.interaction
 
 import org.hidetake.gradle.ssh.api.operation.interaction.Stream
 import org.hidetake.gradle.ssh.api.operation.interaction.Wildcard
-import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionRule.Event
+import org.hidetake.gradle.ssh.internal.operation.interaction.Matcher.Event
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class InteractionRuleSpec extends Specification {
+class MatcherSpec extends Specification {
 
     static final WILDCARD = Wildcard.instance
 
     def "event parameter required"() {
         when:
-        InteractionRule.create(condition, {})
+        Matcher.generate(condition)
 
         then:
         AssertionError e = thrown()
@@ -25,11 +25,10 @@ class InteractionRuleSpec extends Specification {
     @Unroll
     def "line match"() {
         given:
-        def rule = InteractionRule.create(line: expected, {})
-        def stream = Stream.StandardOutput
+        def matcher = Matcher.generate(line: expected)
 
         expect:
-        rule.matcher(stream, event, lineNumber, actual) == matched
+        matcher(Stream.StandardOutput, event, lineNumber, actual) == matched
 
         where:
         expected | actual | event         | lineNumber | matched
@@ -50,7 +49,7 @@ class InteractionRuleSpec extends Specification {
 
     def "line match requires non-null"() {
         when:
-        InteractionRule.create(line: null, {})
+        Matcher.generate(line: null)
 
         then:
         thrown(IllegalArgumentException)
@@ -59,11 +58,10 @@ class InteractionRuleSpec extends Specification {
     @Unroll
     def "next line match"() {
         given:
-        def rule = InteractionRule.create(nextLine: expected, {})
-        def stream = Stream.StandardOutput
+        def matcher = Matcher.generate(nextLine: expected)
 
         expect:
-        rule.matcher(stream, event, lineNumber, actual) == matched
+        matcher(Stream.StandardOutput, event, lineNumber, actual) == matched
 
         where:
         expected | actual | event         | lineNumber | matched
@@ -87,7 +85,7 @@ class InteractionRuleSpec extends Specification {
 
     def "next line match requires non-null"() {
         when:
-        InteractionRule.create(nextLine: null, {})
+        Matcher.generate(nextLine: null)
 
         then:
         thrown(IllegalArgumentException)
@@ -96,11 +94,10 @@ class InteractionRuleSpec extends Specification {
     @Unroll
     def "partial match"() {
         given:
-        def rule = InteractionRule.create(partial: expected, {})
-        def stream = Stream.StandardOutput
+        def matcher = Matcher.generate(partial: expected)
 
         expect:
-        rule.matcher(stream, event, lineNumber, actual) == matched
+        matcher(Stream.StandardOutput, event, lineNumber, actual) == matched
 
         where:
         expected | actual | event         | lineNumber | matched
@@ -121,7 +118,7 @@ class InteractionRuleSpec extends Specification {
 
     def "partial match requires non-null"() {
         when:
-        InteractionRule.create(line: null, {})
+        Matcher.generate(line: null)
 
         then:
         thrown(IllegalArgumentException)
@@ -129,10 +126,10 @@ class InteractionRuleSpec extends Specification {
 
     def "stream match"() {
         given:
-        def rule = InteractionRule.create(line: WILDCARD, from: expected, {})
+        def matcher = Matcher.generate(line: WILDCARD, from: expected)
 
         expect:
-        rule.matcher(actual, Event.Line, 1, 'something') == matched
+        matcher(actual, Event.Line, 1, 'something') == matched
 
         where:
         expected              | actual                | matched

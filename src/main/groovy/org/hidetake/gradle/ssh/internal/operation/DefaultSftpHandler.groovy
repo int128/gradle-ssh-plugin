@@ -1,14 +1,17 @@
 package org.hidetake.gradle.ssh.internal.operation
 
 import com.jcraft.jsch.ChannelSftp
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.api.operation.SftpHandler
 
-@TupleConstructor
 @Slf4j
 class DefaultSftpHandler implements SftpHandler {
-    final ChannelSftp channel
+    private final ChannelSftp channel
+
+    def DefaultSftpHandler(ChannelSftp channel1) {
+        channel = channel1
+        assert channel
+    }
 
     @Override
     void getFile(String remote, String local) {

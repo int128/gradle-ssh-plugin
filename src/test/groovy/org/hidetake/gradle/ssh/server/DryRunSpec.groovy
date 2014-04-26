@@ -2,16 +2,12 @@ package org.hidetake.gradle.ssh.server
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.internal.operation.DryRunOperations
 import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
 
 class DryRunSpec extends Specification {
 
     Project project
-    Operations handler
 
     def setup() {
         project = ProjectBuilder.builder().build()
@@ -30,7 +26,6 @@ class DryRunSpec extends Specification {
             task(type: SshTask, 'testTask') {
             }
         }
-        handler = GroovySpy(DryRunOperations, global: true)
     }
 
 
@@ -46,7 +41,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell(OperationSettings.DEFAULT + new OperationSettings(dryRun: true))
+        project.tasks.testTask.didWork
     }
 
     def "invoke a shell with options"() {
@@ -61,7 +56,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.shell(OperationSettings.DEFAULT + new OperationSettings(logging: false, dryRun: true))
+        project.tasks.testTask.didWork
     }
 
     def "execute a command"() {
@@ -76,7 +71,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', null)
+        project.tasks.testTask.didWork
     }
 
     def "execute a command with callback"() {
@@ -93,7 +88,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', _)
+        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
@@ -109,7 +104,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', null)
+        project.tasks.testTask.didWork
     }
 
     def "execute a command with options and callback"() {
@@ -126,7 +121,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', _)
+        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
@@ -142,7 +137,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', null)
+        project.tasks.testTask.didWork
     }
 
     def "execute a command in background with callback"() {
@@ -159,7 +154,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', _)
+        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
@@ -175,7 +170,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', null)
+        project.tasks.testTask.didWork
     }
 
     def "execute a command with options and callback in background"() {
@@ -192,7 +187,7 @@ class DryRunSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        1 * handler.executeBackground(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', _)
+        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 

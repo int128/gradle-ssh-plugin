@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.operation
 
-import groovy.transform.TupleConstructor
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.operation.OperationSettings
 import org.hidetake.gradle.ssh.api.operation.Operations
@@ -10,9 +9,13 @@ import org.hidetake.gradle.ssh.api.operation.Operations
  *
  * @author hidetake.org
  */
-@TupleConstructor
 class DryRunOperations implements Operations {
     final Remote remote
+
+    def DryRunOperations(Remote remote1) {
+        remote = remote1
+        assert remote
+    }
 
     @Override
     void shell(OperationSettings settings) {

@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.internal.operation
 
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.logging.Logging
@@ -21,14 +20,17 @@ import org.hidetake.gradle.ssh.registry.Registry
  *
  * @author hidetake.org
  */
-@TupleConstructor
 @Slf4j
 class DefaultOperations implements Operations {
-    final Connection connection
+    final Remote remote
 
-    @Override
-    Remote getRemote() {
-        connection.remote
+    private final Connection connection
+
+    def DefaultOperations(Connection connection1) {
+        connection = connection1
+        remote = connection.remote
+        assert connection
+        assert remote
     }
 
     @Override
@@ -42,7 +44,7 @@ class DefaultOperations implements Operations {
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(settings.outputLogLevel, m) }
+            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
         }
 
         if (settings.interaction) {
@@ -83,8 +85,8 @@ class DefaultOperations implements Operations {
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(settings.outputLogLevel, m) }
-            standardError.loggingListeners.add { String m -> logger.log(settings.errorLogLevel, m) }
+            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
+            standardError.listenLogging { String m -> logger.log(settings.errorLogLevel, m) }
         }
 
         if (settings.interaction) {
@@ -97,7 +99,7 @@ class DefaultOperations implements Operations {
         }
 
         def lines = [] as List<String>
-        standardOutput.lineListeners.add { String line -> lines << line }
+        standardOutput.listenLine { String line -> lines << line }
 
         try {
             channel.connect()
@@ -133,8 +135,8 @@ class DefaultOperations implements Operations {
 
         if (settings.logging) {
             def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.loggingListeners.add { String m -> logger.log(settings.outputLogLevel, m) }
-            standardError.loggingListeners.add { String m -> logger.log(settings.errorLogLevel, m) }
+            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
+            standardError.listenLogging { String m -> logger.log(settings.errorLogLevel, m) }
         }
 
         if (settings.interaction) {
@@ -150,7 +152,7 @@ class DefaultOperations implements Operations {
         log.info("Channel #${channel.id} has been opened")
 
         def lines = [] as List<String>
-        standardOutput.lineListeners.add { String line -> lines << line }
+        standardOutput.listenLine { String line -> lines << line }
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
