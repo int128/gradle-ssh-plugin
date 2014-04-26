@@ -15,36 +15,7 @@ buildscript {
     }
 }
 
-class FeatureDelegate {
-    String task = null
-    final List<String> categories = []
-
-    void task(String path) {
-        assert task == null, 'feature task is already set'
-        task = path
-    }
-
-    void category(String name) {
-        categories << name
-    }
-}
-
-def feature(String name, Closure featureClosure) {
-    def feature = new FeatureDelegate()
-    featureClosure.delegate = feature
-    featureClosure.resolveStrategy = Closure.DELEGATE_FIRST
-    featureClosure.call()
-
-    if (feature.task) {
-        logger.info("Added feature: $name")
-        feature.categories.each { project.tasks.getByName(it).dependsOn(feature.task) }
-        if (feature.categories.empty) {
-            logger.warn "Warning: feature `$name` does not belong to any category"
-        }
-    } else {
-        logger.warn "Warning: empty feature `$name`"
-    }
-}
+project.metaClass.mixin(FeatureSupport as Class)
 
 task test {
     description = 'Run tests'
