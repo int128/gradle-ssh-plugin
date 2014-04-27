@@ -1,0 +1,70 @@
+
+remotes {
+    dedicatedIdentity {
+        host = 'localhost'
+        user = "user${randomInt()}n"
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa_pass")
+        passphrase = 'pass_phrase'
+    }
+    usingAgent {
+        host = 'localhost'
+        user = System.properties['user.name']
+        agent = true
+    }
+}
+
+
+feature('using remote specific identity') {
+    task 'useRemoteSpecificIdentity'
+    category 'aggressiveTest'
+}
+
+task useRemoteSpecificIdentity(type: SshTask) {
+    dependsOn   'createUserWithAuthorizedKey'
+    finalizedBy 'deleteUserWithAuthorizedKey'
+
+    session(remotes.dedicatedIdentity) {
+        ext.whoami = execute('whoami')
+    }
+    doLast {
+        assert whoami == remotes.dedicatedIdentity.user
+    }
+}
+
+task createUserWithAuthorizedKey(type: SshTask) {
+    finalizedBy 'deleteUserWithAuthorizedKey'
+
+    session(remotes.localhost) {
+        def username = remotes.dedicatedIdentity.user
+        execute("sudo useradd -m $username")
+        execute("sudo -u $username mkdir ~$username/.ssh")
+        execute("sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub")
+    }
+}
+
+task deleteUserWithAuthorizedKey(type: SshTask) {
+    session(remotes.localhost) {
+        def username = remotes.dedicatedIdentity.user
+        execute("sudo userdel -r $username")
+    }
+}
+
+
+feature('authenticate with the ssh agent') {
+    task 'authenticateWithSshAgent'
+    category 'testWithAgent'
+}
+
+task authenticateWithSshAgent(type: SshTask) {
+    doFirst {
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.usingAgent) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+

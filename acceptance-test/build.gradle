@@ -15,22 +15,62 @@ buildscript {
     }
 }
 
+apply plugin: 'ssh'
+
+remotes {
+    localhost {
+        role 'testServers'
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+}
+
+task test           { description = 'Run tests' }
+task testWithAgent  { description = 'Run tests which require ssh-agent' }
+task aggressiveTest { description = 'Run tests which require environment modification' }
+
+
+/*
+ * Test helper tasks and methods.
+ */
+
+task setupBuildDir(type: Delete) {
+    delete buildDir
+    doLast {
+        buildDir.mkdir()
+    }
+}
+
+task cleanBuildDir(type: Delete) {
+    delete buildDir
+}
+
+ext {
+    remoteTempPrefix = "/tmp/fixture-${randomInt()}"
+}
+
+task cleanRemoteTemp(type: SshTask) {
+    session(remotes.localhost) {
+        assert remoteTempPrefix
+        execute("rm -vr ${remoteTempPrefix}*")
+    }
+}
+
+def remoteTempPath(String name = '') {
+    "$remoteTempPrefix-$name"
+}
+
+def randomInt(int max = 10000) {
+    (Math.random() * max) as int
+}
+
 project.metaClass.mixin(FeatureSupport as Class)
 
-task test {
-    description = 'Run tests'
-}
 
-task testWithAgent {
-    description = 'Run tests which require ssh-agent'
+fileTree(projectDir) {
+    include '*.gradle'
+    exclude 'build.gradle'
+}.each {
+    apply from: it
 }
-
-task testGateway {
-    description = 'Run tests of gateway (separate to turn off host key checking)'
-}
-
-task aggressiveTest {
-    description = 'Run tests which may cause modification of the environment'
-}
-
-apply from: 'features.gradle'

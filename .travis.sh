@@ -15,7 +15,6 @@ function acceptance_test () {
     ssh-keygen -H -F localhost
 
     ./gradlew -i -s -p acceptance-test test aggressiveTest
-    ./gradlew -i -s -p acceptance-test testGateway
 
     eval $(ssh-agent)
     ssh-add ~/.ssh/id_rsa

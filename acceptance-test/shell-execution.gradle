@@ -1,0 +1,16 @@
+
+feature('executing a shell') {
+    task 'executeShell'
+    category 'test'
+}
+
+task executeShell(type: SshTask) {
+    session(remotes.localhost) {
+        shell(interaction: {
+            when(partial: ~/.*$/) {
+                standardInput << 'exit 0' << '\n'
+            }
+        })
+    }
+}
+
