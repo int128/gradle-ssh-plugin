@@ -15,51 +15,62 @@ buildscript {
     }
 }
 
-class FeatureDelegate {
-    String task = null
-    final List<String> categories = []
+apply plugin: 'ssh'
 
-    void task(String path) {
-        assert task == null, 'feature task is already set'
-        task = path
-    }
-
-    void category(String name) {
-        categories << name
+remotes {
+    localhost {
+        role 'testServers'
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
     }
 }
 
-def feature(String name, Closure featureClosure) {
-    def feature = new FeatureDelegate()
-    featureClosure.delegate = feature
-    featureClosure.resolveStrategy = Closure.DELEGATE_FIRST
-    featureClosure.call()
+task test           { description = 'Run tests' }
+task testWithAgent  { description = 'Run tests which require ssh-agent' }
+task aggressiveTest { description = 'Run tests which require environment modification' }
 
-    if (feature.task) {
-        logger.info("Added feature: $name")
-        feature.categories.each { project.tasks.getByName(it).dependsOn(feature.task) }
-        if (feature.categories.empty) {
-            logger.warn "Warning: feature `$name` does not belong to any category"
-        }
-    } else {
-        logger.warn "Warning: empty feature `$name`"
+
+/*
+ * Test helper tasks and methods.
+ */
+
+task setupBuildDir(type: Delete) {
+    delete buildDir
+    doLast {
+        buildDir.mkdir()
     }
 }
 
-task test {
-    description = 'Run tests'
+task cleanBuildDir(type: Delete) {
+    delete buildDir
 }
 
-task testWithAgent {
-    description = 'Run tests which require ssh-agent'
+ext {
+    remoteTempPrefix = "/tmp/fixture-${randomInt()}"
 }
 
-task testGateway {
-    description = 'Run tests of gateway (separate to turn off host key checking)'
+task cleanRemoteTemp(type: SshTask) {
+    session(remotes.localhost) {
+        assert remoteTempPrefix
+        execute("rm -vr ${remoteTempPrefix}*")
+    }
 }
 
-task aggressiveTest {
-    description = 'Run tests which may cause modification of the environment'
+def remoteTempPath(String name = '') {
+    "$remoteTempPrefix-$name"
 }
 
-apply from: 'features.gradle'
+def randomInt(int max = 10000) {
+    (Math.random() * max) as int
+}
+
+project.metaClass.mixin(FeatureSupport as Class)
+
+
+fileTree(projectDir) {
+    include '*.gradle'
+    exclude 'build.gradle'
+}.each {
+    apply from: it
+}

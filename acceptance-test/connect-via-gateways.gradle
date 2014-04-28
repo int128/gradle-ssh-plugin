@@ -1,0 +1,41 @@
+
+remotes {
+    gw1 {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+    }
+    gw2 {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+        gateway = remotes.gw1
+    }
+    viaGateway {
+        host = 'localhost'
+        user = System.properties['user.name']
+        identity = file("${System.properties['user.home']}/.ssh/id_rsa")
+        gateway = remotes.gw2
+    }
+}
+
+feature('connect via a gateway host') {
+    task 'connectViaGateway'
+    category 'test'
+}
+
+task connectViaGateway(type: SshTask) {
+    ssh {
+        knownHosts = allowAnyHosts
+    }
+    doFirst {
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.viaGateway) {
+        ext.a = execute "expr $x + $y"
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
