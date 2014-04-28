@@ -5,7 +5,7 @@ import groovy.transform.ToString
 import org.hidetake.gradle.ssh.api.Settings
 
 @EqualsAndHashCode
-@ToString
+@ToString(excludes = 'password, passphrase')
 class ConnectionSettings extends Settings<ConnectionSettings> {
     static final allowAnyHosts = new File(UUID.randomUUID().toString())
 

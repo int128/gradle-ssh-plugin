@@ -74,4 +74,21 @@ class ConnectionSettingsSpec extends Specification {
         new File('idX') | 'pwX' | new File('idY') | 'pwY' || new File('idY') | 'pwY'
     }
 
+    def "result of ToString() does not contain any credential"() {
+        given:
+        def settings = new ConnectionSettings(
+                user: 'theUser', password: 'thePassword',
+                identity: new File('theIdentity'), passphrase: 'thePassphrase'
+        )
+
+        when:
+        def result = settings.toString()
+
+        then:
+        result.contains('theUser')
+        !result.contains('thePassword')
+        result.contains('theIdentity')
+        !result.contains('thePassphrase')
+    }
+
 }
