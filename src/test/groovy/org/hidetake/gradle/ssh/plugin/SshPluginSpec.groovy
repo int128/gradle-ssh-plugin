@@ -1,37 +1,63 @@
 package org.hidetake.gradle.ssh.plugin
 
+import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.gradle.ssh.api.Remote
+import org.hidetake.gradle.ssh.api.operation.OperationSettings
+import org.hidetake.gradle.ssh.api.session.Sessions
 import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.mop.ConfineMetaClassChanges
+
+import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
 
 class SshPluginSpec extends Specification {
 
-    def "apply with no config just adds plugin"() {
+    def "apply the plugin"() {
         given:
         def project = ProjectBuilder.builder().build()
-        def plugin = new SshPlugin()
-
 
         when:
-        plugin.apply(project)
+        project.apply plugin: 'ssh'
 
         then:
-        project.container(Remote).size() == 0
-        project.convention.plugins.ssh
+        project.ssh
+        project.remotes.size() == 0
+        project.SshTask == SshTask
+    }
+
+
+    def "apply global settings"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+        project.apply plugin: 'ssh'
+
+        when:
+        project.ssh {
+            dryRun = true
+            retryCount = 1
+            retryWaitSec = 1
+            outputLogLevel = LogLevel.DEBUG
+            errorLogLevel = LogLevel.INFO
+        }
+
+        then:
+        project.ssh.dryRun
+        project.ssh.retryCount == 1
+        project.ssh.retryWaitSec == 1
+        project.ssh.outputLogLevel == LogLevel.DEBUG
+        project.ssh.errorLogLevel == LogLevel.INFO
     }
 
     def "apply the full monty"() {
         when:
         def project = createProject()
-        def globalSettings = project.convention.getPlugin(SshPluginConvention).globalSettings
 
         then:
-        globalSettings.knownHosts == ConnectionSettings.allowAnyHosts
+        project.ssh.knownHosts == ConnectionSettings.allowAnyHosts
         project.remotes.size() == 4
     }
-
 
     @Unroll
     def "filter remotes by role: #roles"() {
@@ -52,6 +78,64 @@ class SshPluginSpec extends Specification {
         'serversB'                           | ['appServer', 'managementServer']
         ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
     }
+
+
+    @ConfineMetaClassChanges(Sessions)
+    def "apply task specific settings"() {
+        given:
+        def project = createProject()
+        def sessionsFactory = Mock(Sessions.Factory)
+        factoryOf(Sessions) << sessionsFactory
+        def sessions = Mock(Sessions)
+        sessionsFactory.create() >> sessions
+
+        when:
+        project.with {
+            sshexec {
+                ssh {
+                    retryCount = 100
+                    outputLogLevel = LogLevel.ERROR
+                }
+                session(remotes.webServer) {
+                    execute 'ls'
+                }
+            }
+        }
+
+        then: 1 * sessions.add(project.remotes.webServer, _)
+        then: 1 * sessions.execute(
+                ConnectionSettings.DEFAULT + new ConnectionSettings(retryCount: 100, knownHosts: ConnectionSettings.allowAnyHosts),
+                OperationSettings.DEFAULT + new OperationSettings(outputLogLevel: LogLevel.ERROR)
+        )
+
+        when:
+        project.with {
+            sshexec {
+                session(remotes.appServer) {
+                    execute 'ls'
+                }
+            }
+        }
+
+        then: 1 * sessions.add(project.remotes.appServer, _)
+        then: 1 * sessions.execute(
+                ConnectionSettings.DEFAULT + new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts),
+                OperationSettings.DEFAULT
+        )
+    }
+
+    def "apply task specific settings but null"() {
+        given:
+        def project = createProject()
+
+        when:
+        project.sshexec(null)
+
+        then:
+        AssertionError err = thrown()
+        err.message.contains("closure")
+    }
+
 
 
     private static createProject() {

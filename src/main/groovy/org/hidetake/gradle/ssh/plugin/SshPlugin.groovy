@@ -5,19 +5,21 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.hidetake.gradle.ssh.api.Remote
 
+import static org.gradle.util.ConfigureUtil.configure
+
 /**
  * Gradle SSH plugin.
  * This class adds project extension and convention properties.
  *
- * @see SshPluginConvention
  * @author hidetake.org
- *
  */
 class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
+        project.extensions.ssh = new GlobalSettings()
         project.extensions.remotes = createRemoteContainer(project)
-        project.convention.plugins.put('ssh', new SshPluginConvention())
+
+        project.convention.plugins.ssh = new Convention(project)
     }
 
     private static createRemoteContainer(Project project) {
@@ -30,5 +32,31 @@ class SshPlugin implements Plugin<Project> {
             }
         }
         remotes
+    }
+
+    @SuppressWarnings("GroovyUnusedDeclaration")
+    static class Convention {
+        private final Project project
+        private Convention(Project project1) {
+            project = project1
+            assert project
+        }
+
+        /**
+         * Alias to omit import in build script.
+         */
+        final Class SshTask = org.hidetake.gradle.ssh.plugin.SshTask
+
+        /**
+         * Execute a SSH closure.
+         *
+         * @param closure closure for {@link SshTaskDelegate}
+         */
+        void sshexec(Closure closure) {
+            assert closure, 'closure must be given'
+            def delegate = new SshTaskDelegate()
+            configure(closure, delegate)
+            delegate.execute(project.extensions.ssh)
+        }
     }
 }
