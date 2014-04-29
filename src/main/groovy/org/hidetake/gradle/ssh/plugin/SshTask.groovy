@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.hidetake.gradle.ssh.internal.SshTaskService
 
 /**
  * A SSH task for Gradle.
@@ -10,10 +11,10 @@ import org.gradle.api.tasks.TaskAction
  */
 class SshTask extends DefaultTask {
     @Delegate
-    private final SshTaskHandler sshTaskHandler = factory.create()
+    private final SshTaskHandler sshTaskHandler = SshTaskService.instance.createDelegate()
 
     @TaskAction
     void perform() {
-        sshTaskHandler.execute(project.extensions.ssh)
+        sshTaskHandler.execute(project.extensions.ssh as GlobalSettings)
     }
 }

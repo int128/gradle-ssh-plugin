@@ -2,12 +2,10 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.session.Sessions
+import org.hidetake.gradle.ssh.internal.SshTaskService
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
-
-import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
 
 class SshPluginSpec extends Specification {
 
@@ -77,21 +75,19 @@ class SshPluginSpec extends Specification {
     }
 
 
-    @ConfineMetaClassChanges(Sessions)
-    def "apply task specific settings"() {
+    @ConfineMetaClassChanges(SshTaskService)
+    def "invoke sshexec"() {
         given:
+        def service = Mock(SshTaskService)
+        SshTaskService.metaClass.static.getInstance = { -> service }
+
         def project = createProject()
-        def sessionsFactory = Mock(Sessions.Factory)
-        factoryOf(Sessions) << sessionsFactory
-        def sessions = Mock(Sessions)
-        sessionsFactory.create() >> sessions
 
         when:
         project.with {
             sshexec {
                 ssh {
-                    retryCount = 100
-                    outputLogLevel = LogLevel.ERROR
+                    knownHosts = file('my_known_hosts')
                 }
                 session(remotes.webServer) {
                     execute 'ls'
@@ -99,29 +95,12 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * sessions.add(project.remotes.webServer, _)
-        then: 1 * sessions.execute(
-                ConnectionSettings.DEFAULT + new ConnectionSettings(retryCount: 100, knownHosts: ConnectionSettings.allowAnyHosts),
-                OperationSettings.DEFAULT + new OperationSettings(outputLogLevel: LogLevel.ERROR)
-        )
-
-        when:
-        project.with {
-            sshexec {
-                session(remotes.appServer) {
-                    execute 'ls'
-                }
-            }
-        }
-
-        then: 1 * sessions.add(project.remotes.appServer, _)
-        then: 1 * sessions.execute(
-                ConnectionSettings.DEFAULT + new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts),
-                OperationSettings.DEFAULT
-        )
+        then: 1 * service.execute(new GlobalSettings(
+                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts)
+        ), _)
     }
 
-    def "apply task specific settings but null"() {
+    def "invoke sshexec with null"() {
         given:
         def project = createProject()
 
@@ -163,12 +142,6 @@ class SshPluginSpec extends Specification {
                     role 'serversB'
                     host = 'mng'
                     user = 'mnguser'
-                }
-            }
-
-            task(type: SshTask, 'testTask') {
-                session(remotes.webServer) {
-                    execute "ls -l"
                 }
             }
 

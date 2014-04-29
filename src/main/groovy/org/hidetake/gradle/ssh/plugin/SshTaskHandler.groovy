@@ -1,22 +1,11 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.hidetake.gradle.ssh.registry.Registry
-
 /**
  * An interface delegating into {@link SshTask}.
  *
  * @author hidetake.org
  */
 interface SshTaskHandler {
-    /**
-     * A factory of {@link SshTaskHandler}.
-     */
-    interface Factory {
-        SshTaskHandler create()
-    }
-
-    final factory = Registry.instance[Factory]
-
     /**
      * Configure task specific settings.
      *

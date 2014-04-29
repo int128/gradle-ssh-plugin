@@ -1,7 +1,11 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.internal.session.Sessions
-import org.hidetake.gradle.ssh.plugin.*
+import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
+import org.hidetake.gradle.ssh.internal.connection.ConnectionService
+import org.hidetake.gradle.ssh.internal.session.SessionService
+import org.hidetake.gradle.ssh.plugin.GlobalSettings
+import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 
 import static org.gradle.util.ConfigureUtil.configure
 
@@ -17,10 +21,7 @@ class DefaultSshTaskHandler implements SshTaskHandler {
      */
     private final GlobalSettings taskSpecificSettings = new GlobalSettings()
 
-    /**
-     * Sessions.
-     */
-    private final Sessions sessions = Sessions.factory.create()
+    private final List<Map> sessions = []
 
     void ssh(Closure closure) {
         assert closure, 'closure must be given'
@@ -31,7 +32,7 @@ class DefaultSshTaskHandler implements SshTaskHandler {
         assert remote, 'remote must be given'
         assert remote.host, "host must be given for the remote ${remote.name}"
         assert closure, 'closure must be given'
-        sessions.add(remote, closure)
+        sessions.add(remote: remote, closure: closure)
     }
 
     void session(Collection<Remote> remotes, Closure closure) {
@@ -40,13 +41,19 @@ class DefaultSshTaskHandler implements SshTaskHandler {
     }
 
     void execute(GlobalSettings globalSettings) {
-        sessions.execute(
-                ConnectionSettings.DEFAULT
-                        + globalSettings.connectionSettings
-                        + taskSpecificSettings.connectionSettings,
-                OperationSettings.DEFAULT
-                        + globalSettings.operationSettings
-                        + taskSpecificSettings.operationSettings
-        )
+        def merged = GlobalSettings.DEFAULT + globalSettings + taskSpecificSettings
+
+        def connectionService = ConnectionService.instance
+        def sessionService = SessionService.instance
+
+        connectionService.withManager(merged.connectionSettings) { ConnectionManager manager ->
+            sessions.each { session ->
+                session.delegate = sessionService.createDelegate(
+                        session.remote as Remote, merged.operationSettings, manager)
+            }
+            sessions.each { session ->
+                configure(session.closure as Closure, session.delegate)
+            }
+        }
     }
 }

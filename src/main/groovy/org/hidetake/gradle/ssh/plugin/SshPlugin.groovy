@@ -3,8 +3,7 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
-import static org.gradle.util.ConfigureUtil.configure
+import org.hidetake.gradle.ssh.internal.SshTaskService
 
 /**
  * Gradle SSH plugin.
@@ -33,9 +32,9 @@ class SshPlugin implements Plugin<Project> {
         remotes
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
     static class Convention {
         private final Project project
+
         private Convention(Project project1) {
             project = project1
             assert project
@@ -53,9 +52,7 @@ class SshPlugin implements Plugin<Project> {
          */
         void sshexec(Closure closure) {
             assert closure, 'closure must be given'
-            def handler = SshTaskHandler.factory.create()
-            configure(closure, handler)
-            handler.execute(project.extensions.ssh)
+            SshTaskService.instance.execute(project.extensions.ssh as GlobalSettings, closure)
         }
     }
 }

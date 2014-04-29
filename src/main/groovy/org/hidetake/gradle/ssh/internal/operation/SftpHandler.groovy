@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.internal.operation
 
 import com.jcraft.jsch.ChannelSftp
-import org.hidetake.gradle.ssh.registry.Registry
 
 /**
  * Handler for closure of file transfer.
@@ -9,15 +8,6 @@ import org.hidetake.gradle.ssh.registry.Registry
  * @author hidetake.org
  */
 interface SftpHandler {
-    /**
-     * A factory of {@link SftpHandler}.
-     */
-    interface Factory {
-        SftpHandler create(ChannelSftp channel)
-    }
-
-    final factory = Registry.instance[Factory]
-
     /**
      * Get a file from the remote host.
      *

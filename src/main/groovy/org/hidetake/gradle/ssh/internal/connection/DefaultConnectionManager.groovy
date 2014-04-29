@@ -20,18 +20,24 @@ import static Retry.retry
 class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
 
+    private final ConnectionSettings connectionSettings
     private final JSch jsch = new JSch()
-    private final List<Session> sessions = []
     private final List<Connection> connections = []
-    private final ConnectionSettings globalSettings
 
-    def DefaultConnectionManager(ConnectionSettings globalSettings1) {
-        globalSettings = globalSettings1
-        assert globalSettings
+    @Lazy
+    protected remoteIdentityRepository = {
+        def connectorFactory = ConnectorFactory.getDefault()
+        def connector = connectorFactory.createConnector()
+        new RemoteIdentityRepository(connector)
+    }()
+
+    def DefaultConnectionManager(ConnectionSettings connectionSettings1) {
+        connectionSettings = connectionSettings1
+        assert connectionSettings
     }
 
     @Override
-    Connection establish(Remote remote) {
+    Connection connect(Remote remote) {
         def connection = new DefaultConnection(remote, establishViaGateway(remote))
         connections.add(connection)
         connection
@@ -63,7 +69,7 @@ class DefaultConnectionManager implements ConnectionManager {
      * @return a JSch session
      */
     private Session establishSession(Remote remote, String host, int port) {
-        def settings = globalSettings + remote.connectionSettings
+        def settings = connectionSettings + remote.connectionSettings
 
         assert settings.user, "user must be given (remote ${remote.name})"
         assert settings.knownHosts   != null, 'knownHosts must not be null'
@@ -101,13 +107,21 @@ class DefaultConnectionManager implements ConnectionManager {
 
             session.connect()
             log.info("Established a session to $remote via $host:$port")
-            sessions.add(session)
             session
         }
     }
 
     @Override
-    void waitForPending() {
+    void waitAndClose() {
+        try {
+            waitForPending()
+        } finally {
+            connections*.close()
+            connections.clear()
+        }
+    }
+
+    private void waitForPending() {
         List<Exception> exceptions = []
         while (connections*.anyPending.any()) {
             connections.each { connection ->
@@ -131,20 +145,4 @@ class DefaultConnectionManager implements ConnectionManager {
             throw new BackgroundCommandException(exceptions)
         }
     }
-
-    @Override
-    void cleanup() {
-        connections*.cleanup()
-        connections.clear()
-
-        sessions*.disconnect()
-        sessions.clear()
-    }
-
-    @Lazy
-    protected remoteIdentityRepository = {
-        def connectorFactory = ConnectorFactory.getDefault()
-        def connector = connectorFactory.createConnector()
-        new RemoteIdentityRepository(connector)
-    }()
 }

@@ -87,8 +87,12 @@ class DefaultConnection implements Connection {
     }
 
     @Override
-    void cleanup() {
-        channels*.disconnect()
-        channels.clear()
+    void close() {
+        try {
+            channels*.disconnect()
+            channels.clear()
+        } finally {
+            session.disconnect()
+        }
     }
 }

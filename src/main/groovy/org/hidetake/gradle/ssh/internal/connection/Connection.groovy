@@ -68,7 +68,7 @@ interface Connection {
     boolean isAnyPending()
 
     /**
-     * Cleanup all channels.
+     * Cleanup the connection and all channels.
      */
-    void cleanup()
+    void close()
 }
