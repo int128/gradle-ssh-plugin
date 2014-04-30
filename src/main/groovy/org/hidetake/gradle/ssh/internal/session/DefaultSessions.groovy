@@ -26,7 +26,6 @@ class DefaultSessions implements Sessions {
         }
 
         def establish(ConnectionManager connectionManager, OperationSettings operationSettings) {
-            assert operationSettings.dryRun != null
             def operations = establishInternal(operationSettings.dryRun, connectionManager)
             closure.delegate = SessionHandler.factory.create(operations, operationSettings)
             closure.resolveStrategy = Closure.DELEGATE_FIRST

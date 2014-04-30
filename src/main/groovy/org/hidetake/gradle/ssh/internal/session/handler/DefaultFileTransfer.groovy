@@ -15,6 +15,8 @@ import org.hidetake.gradle.ssh.api.session.handler.FileTransfer
 class DefaultFileTransfer implements FileTransfer {
     @Override
     void get(String givenRemote, String givenLocal) {
+        assert givenRemote, 'remote path must be given'
+        assert givenLocal,  'local path must be given'
         assert operations instanceof Operations
         operations.sftp {
             final Closure getDirectory
@@ -57,6 +59,8 @@ class DefaultFileTransfer implements FileTransfer {
 
     @Override
     void put(String givenLocal, String givenRemote) {
+        assert givenRemote, 'remote path must be given'
+        assert givenLocal,  'local path must be given'
         assert operations instanceof Operations
         operations.sftp {
             final Closure putInternal

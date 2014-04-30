@@ -23,7 +23,7 @@ class SshTaskDelegate {
      * @param closure closure for {@link GlobalSettings}
      */
     void ssh(Closure closure) {
-        assert closure, 'closure should be set'
+        assert closure, 'closure must be given'
         configure(closure, globalSettings)
     }
 
@@ -39,9 +39,9 @@ class SshTaskDelegate {
      * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
      */
     void session(Remote remote, Closure closure) {
-        assert remote, 'remote should be set'
-        assert remote.host, "host of remote ${remote.name} should be set"
-        assert closure, 'closure should be set'
+        assert remote, 'remote must be given'
+        assert remote.host, "host must be given for the remote ${remote.name}"
+        assert closure, 'closure must be given'
         sessions.add(remote, closure)
     }
 
@@ -52,8 +52,7 @@ class SshTaskDelegate {
      * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
      */
     void session(Collection<Remote> remotes, Closure closure) {
-        assert remotes, 'remotes should contain at least one'
-        assert closure, 'closure should be set'
-        remotes.each { Remote remote -> session(remote, closure) }
+        assert remotes, 'at least one remote must be given'
+        remotes.each { remote -> session(remote, closure) }
     }
 }
