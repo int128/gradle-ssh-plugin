@@ -40,7 +40,6 @@ class SshTaskDelegate {
      */
     void session(Remote remote, Closure closure) {
         assert remote, 'remote should be set'
-        assert remote.user, "user of remote ${remote.name} should be set"
         assert remote.host, "host of remote ${remote.name} should be set"
         assert closure, 'closure should be set'
         sessions.add(remote, closure)
