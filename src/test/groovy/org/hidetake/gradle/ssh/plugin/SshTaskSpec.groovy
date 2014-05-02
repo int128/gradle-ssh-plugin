@@ -2,9 +2,7 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
+import org.hidetake.gradle.ssh.internal.session.Sessions
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 

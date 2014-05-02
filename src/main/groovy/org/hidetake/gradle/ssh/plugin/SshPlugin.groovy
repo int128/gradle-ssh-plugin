@@ -3,7 +3,6 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.hidetake.gradle.ssh.api.Remote
 
 import static org.gradle.util.ConfigureUtil.configure
 

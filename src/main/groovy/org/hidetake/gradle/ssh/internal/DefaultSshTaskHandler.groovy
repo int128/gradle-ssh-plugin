@@ -1,11 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
-import org.hidetake.gradle.ssh.plugin.GlobalSettings
-import org.hidetake.gradle.ssh.plugin.SshTaskHandler
+import org.hidetake.gradle.ssh.internal.session.Sessions
+import org.hidetake.gradle.ssh.plugin.*
 
 import static org.gradle.util.ConfigureUtil.configure
 

@@ -1,13 +1,12 @@
 package org.hidetake.gradle.ssh.internal.session
 
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.session.SessionHandler
-import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.ssh.ConnectionManager
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
+import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
+import org.hidetake.gradle.ssh.internal.operation.Operations
+import org.hidetake.gradle.ssh.plugin.ConnectionSettings
+import org.hidetake.gradle.ssh.plugin.OperationSettings
+import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.session.SessionHandler
 
 /**
  * A default implementation of {@link Sessions}.

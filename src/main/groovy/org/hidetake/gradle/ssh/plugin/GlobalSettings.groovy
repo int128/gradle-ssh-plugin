@@ -1,8 +1,4 @@
 package org.hidetake.gradle.ssh.plugin
-
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
-
 /**
  * Represents global settings or task specific settings.
  *

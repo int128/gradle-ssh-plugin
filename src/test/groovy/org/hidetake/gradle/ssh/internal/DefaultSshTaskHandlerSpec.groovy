@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.session.Sessions
+import org.hidetake.gradle.ssh.internal.session.Sessions
+import org.hidetake.gradle.ssh.plugin.Remote
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges

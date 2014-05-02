@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.registry.Registry
 
 /**
@@ -21,15 +20,15 @@ interface SshTaskHandler {
     /**
      * Configure task specific settings.
      *
-     * @param closure closure for {@link GlobalSettings}
+     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.GlobalSettings}
      */
     void ssh(Closure closure)
 
     /**
      * Add a session.
      *
-     * @param remote the {@link org.hidetake.gradle.ssh.api.Remote}
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
+     * @param remote the {@link org.hidetake.gradle.ssh.plugin.Remote}
+     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler} (run in execution phase)
      */
     void session(Remote remote, Closure closure)
 
@@ -37,7 +36,7 @@ interface SshTaskHandler {
      * Add sessions.
      *
      * @param remotes collection of {@link Remote}s
-     * @param closure closure for {@link org.hidetake.gradle.ssh.api.session.SessionHandler} (run in execution phase)
+     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler} (run in execution phase)
      */
     void session(Collection<Remote> remotes, Closure closure)
 
