@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.plugin
+package org.hidetake.gradle.ssh.internal
 
 import org.hidetake.gradle.ssh.api.Remote
 import org.hidetake.gradle.ssh.api.session.Sessions
@@ -9,9 +9,9 @@ import spock.util.mop.ConfineMetaClassChanges
 import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
 
 @ConfineMetaClassChanges(Sessions)
-class SshTaskDelegateSpec extends Specification {
+class DefaultSshTaskHandlerSpec extends Specification {
 
-    SshTaskDelegate sshTaskDelegate
+    DefaultSshTaskHandler sshTaskDelegate
     Sessions sessions
 
     def setup() {
@@ -19,7 +19,7 @@ class SshTaskDelegateSpec extends Specification {
         factoryOf(Sessions) << Mock(Sessions.Factory) {
             create() >> sessions
         }
-        sshTaskDelegate = new SshTaskDelegate()
+        sshTaskDelegate = new DefaultSshTaskHandler()
     }
 
     def "add a session"() {

@@ -50,13 +50,13 @@ class SshPlugin implements Plugin<Project> {
         /**
          * Execute a SSH closure.
          *
-         * @param closure closure for {@link SshTaskDelegate}
+         * @param closure closure for {@link org.hidetake.gradle.ssh.internal.DefaultSshTaskHandler}
          */
         void sshexec(Closure closure) {
             assert closure, 'closure must be given'
-            def delegate = new SshTaskDelegate()
-            configure(closure, delegate)
-            delegate.execute(project.extensions.ssh)
+            def handler = SshTaskHandler.factory.create()
+            configure(closure, handler)
+            handler.execute(project.extensions.ssh)
         }
     }
 }

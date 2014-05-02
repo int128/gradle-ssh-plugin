@@ -9,12 +9,11 @@ import org.gradle.api.tasks.TaskAction
  * @author hidetake.org
  */
 class SshTask extends DefaultTask {
-    @SuppressWarnings("GroovyUnusedDeclaration")
     @Delegate
-    protected final SshTaskDelegate sshTaskDelegate = new SshTaskDelegate()
+    private final SshTaskHandler sshTaskHandler = factory.create()
 
     @TaskAction
     void perform() {
-        sshTaskDelegate.execute(project.extensions.ssh)
+        sshTaskHandler.execute(project.extensions.ssh)
     }
 }
