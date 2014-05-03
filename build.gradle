@@ -60,3 +60,13 @@ if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
 task wrapper(type: Wrapper) {
     gradleVersion = '1.10'
 }
+
+task archiveDependencies(type: Zip, dependsOn: jar) {
+    classifier = 'all'
+    final excludeLibs = ['jsch-0.1.46.jar']
+    runtimeLibs = configurations.runtime - configurations.runtime.filter{ it.name in excludeLibs }
+    into('dep-libs') {
+        from runtimeLibs
+        from 'build/libs'
+    }
+}
