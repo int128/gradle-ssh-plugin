@@ -48,11 +48,10 @@ class SshTaskDelegateSpec extends Specification {
         e.message.contains('remote')
     }
 
-    @Unroll("add a session with remote user: #theUser, host: #theHost")
+    @Unroll
     def "add session with invalid params throws assertion error"() {
         given:
         def remote = new Remote('myRemote')
-        remote.user = theUser
         remote.host = theHost
 
         when:
@@ -63,10 +62,9 @@ class SshTaskDelegateSpec extends Specification {
         e.message.contains(errorContains)
 
         where:
-        theUser  | theHost          | theOperationClosure | errorContains
-        null     | "www.myhost.com" | { assert false }    | "user"
-        "myUser" | null             | { assert false }    | "host"
-        "myUser" | "www.myhost.com" | null                | "closure"
+        theHost          | theOperationClosure | errorContains
+        null             | { assert false }    | "host"
+        "www.myhost.com" | null                | "closure"
     }
 
 

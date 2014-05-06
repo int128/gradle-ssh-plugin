@@ -19,6 +19,8 @@ class InteractionDelegate implements InteractionHandler {
 
     @Override
     void when(Map condition, Closure action) {
+        assert condition, 'at least one rule must be given'
+        assert action, 'closure must be given'
         interactionRules << new InteractionRule(condition, Matcher.generate(condition), action)
     }
 

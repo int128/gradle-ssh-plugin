@@ -15,6 +15,7 @@ import org.hidetake.gradle.ssh.api.session.handler.SudoExecution
 class DefaultSudoExecution implements SudoExecution {
     @Override
     String executeSudo(String command) {
+        assert command, 'command must be given'
         log.info("Execute a command ($command) with sudo support")
         assert operationSettings instanceof OperationSettings
         executeSudoInternal(command, operationSettings)
@@ -22,6 +23,8 @@ class DefaultSudoExecution implements SudoExecution {
 
     @Override
     String executeSudo(HashMap settings, String command) {
+        assert command, 'command must be given'
+        assert settings != null, 'settings must not be null'
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
         assert operationSettings instanceof OperationSettings
         executeSudoInternal(command, operationSettings + new OperationSettings(settings))
@@ -29,6 +32,8 @@ class DefaultSudoExecution implements SudoExecution {
 
     @Override
     void executeSudo(String command, Closure callback) {
+        assert command, 'command must be given'
+        assert callback, 'callback must be given'
         log.info("Execute a command ($command) with sudo support")
         assert operationSettings instanceof OperationSettings
         def result = executeSudoInternal(command, operationSettings)
@@ -38,6 +43,9 @@ class DefaultSudoExecution implements SudoExecution {
 
     @Override
     void executeSudo(HashMap settings, String command, Closure callback) {
+        assert command, 'command must be given'
+        assert callback, 'callback must be given'
+        assert settings != null, 'settings must not be null'
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
         assert operationSettings instanceof OperationSettings
         def result = executeSudoInternal(command, operationSettings + new OperationSettings(settings))

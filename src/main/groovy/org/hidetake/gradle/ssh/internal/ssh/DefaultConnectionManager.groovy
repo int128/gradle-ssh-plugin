@@ -67,6 +67,13 @@ class DefaultConnectionManager implements ConnectionManager {
     private Session establishSession(Remote remote, String host, int port) {
         def settings = globalSettings + remote.connectionSettings
 
+        assert settings.user, "user must be given (remote ${remote.name})"
+        assert settings.knownHosts   != null, 'knownHosts must not be null'
+        assert settings.retryCount   != null, 'retryCount must not be null'
+        assert settings.retryWaitSec != null, 'retryWaitSec must not be null'
+        assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
+        assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
+
         if (settings.knownHosts == ConnectionSettings.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
             log.info('Strict host key checking is turned off. Use only for testing purpose.')
