@@ -1,15 +1,22 @@
 package org.hidetake.gradle.ssh.internal.connection
 
 import com.jcraft.jsch.JSch
+
+import com.jcraft.jsch.Proxy as JschProxy
+import com.jcraft.jsch.ProxyHTTP
+import com.jcraft.jsch.ProxySOCKS4
+import com.jcraft.jsch.ProxySOCKS5
 import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.plugin.ConnectionSettings
+import org.hidetake.gradle.ssh.plugin.Proxy
 import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.session.BackgroundCommandException
 
 import static Retry.retry
+import static org.hidetake.gradle.ssh.plugin.ProxyType.*
 
 /**
  * A default implementation of {@link ConnectionManager}.
@@ -19,7 +26,7 @@ import static Retry.retry
 @Slf4j
 class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
-
+	
     private final ConnectionSettings connectionSettings
     private final JSch jsch = new JSch()
     private final List<Connection> connections = []
@@ -102,7 +109,12 @@ class DefaultConnectionManager implements ConnectionManager {
                     jsch.addIdentity(settings.identity.path, settings.passphrase as String)
                 }
             }
-
+            
+            if (settings.proxy) {
+				validate(settings.proxy)
+                session.setProxy(asJschProxy(settings.proxy))
+            }
+            
             session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
 
             session.connect()
@@ -145,4 +157,25 @@ class DefaultConnectionManager implements ConnectionManager {
             throw new BackgroundCommandException(exceptions)
         }
     }
+    
+    private JschProxy asJschProxy(Proxy proxy) {
+        JschProxy jschProxy = null
+		if(proxy.type == SOCKS) {
+			jschProxy = proxy.socksVersion == 5 ? new ProxySOCKS5(proxy.host, proxy.port) : new ProxySOCKS4(proxy.host, proxy.port)
+        } else {
+			jschProxy = new ProxyHTTP(proxy.host, proxy.port)
+        }
+		jschProxy.setUserPasswd(proxy.user, proxy.password)
+        jschProxy
+    }	
+	
+	private void validate(Proxy proxy) {
+		def validator = new DefaultProxyValidator(proxy)
+		if(validator.error()) {
+			throw new IllegalArgumentException(validator.error())
+		}
+		if(validator.warnings()) {
+			validator.warnings().each { warning -> log.info(warning) }
+		}
+	}	
 }

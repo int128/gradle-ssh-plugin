@@ -54,6 +54,12 @@ class ConnectionSettings extends Settings<ConnectionSettings> {
      * Retry count for connecting to a host.
      */
     Integer retryCount
+    
+    /**
+     * Proxy configuration for connecting to a host.
+     * This may be null. 
+     */
+    Proxy proxy
 
     /**
      * Interval time in seconds between retries.
@@ -80,7 +86,8 @@ class ConnectionSettings extends Settings<ConnectionSettings> {
                 agent:        findNotNull(right.agent, agent),
                 knownHosts:   findNotNull(right.knownHosts, knownHosts),
                 retryCount:   findNotNull(right.retryCount, retryCount),
-                retryWaitSec: findNotNull(right.retryWaitSec, retryWaitSec)
+                retryWaitSec: findNotNull(right.retryWaitSec, retryWaitSec),
+                proxy:        findNotNull(right.proxy, proxy)
         )
     }
 

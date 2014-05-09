@@ -16,6 +16,7 @@ class SshPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.ssh = new CompositeSettings()
         project.extensions.remotes = createRemoteContainer(project)
+        project.extensions.proxies = createProxyContainer(project)
 
         project.convention.plugins.ssh = new Convention(project)
     }
@@ -28,6 +29,16 @@ class SshPlugin implements Plugin<Project> {
             remotes.addAll(parentRemotes)
         }
         remotes
+    }
+
+    private static createProxyContainer(Project project) {
+		def proxies = project.container(Proxy)
+		def parentProxies = project.parent?.extensions?.findByName('proxies')
+		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
+			proxies.addAll(parentProxies)
+		}
+
+		proxies
     }
 
     static class Convention {

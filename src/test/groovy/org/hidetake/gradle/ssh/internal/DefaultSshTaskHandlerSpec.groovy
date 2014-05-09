@@ -1,13 +1,16 @@
 package org.hidetake.gradle.ssh.internal
 
+import org.hidetake.gradle.ssh.internal.DefaultSshTaskHandler;
 import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
 import org.hidetake.gradle.ssh.internal.connection.ConnectionService
 import org.hidetake.gradle.ssh.internal.session.SessionService
 import org.hidetake.gradle.ssh.plugin.CompositeSettings
 import org.hidetake.gradle.ssh.plugin.ConnectionSettings
 import org.hidetake.gradle.ssh.plugin.OperationSettings
+import org.hidetake.gradle.ssh.plugin.Proxy
 import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.session.SessionHandler
+
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
@@ -84,6 +87,24 @@ class DefaultSshTaskHandlerSpec extends Specification {
         noExceptionThrown()
     }
 
+    def "add session for remote with proxy"() {
+        given:
+        def proxy = new Proxy('myProxy')
+        def remote = new Remote('myRemote')
+        remote.user = 'myUser'
+        remote.host = 'myHost'
+        remote.proxy = proxy
+        def closure = { assert false }
+
+        when:
+        sshTaskDelegate.session(remote, closure)
+
+        then:
+        noExceptionThrown()
+    }
+
+
+    
     def "add session for empty remotes throws assertion error"() {
         given:
         def closure = { assert false }
