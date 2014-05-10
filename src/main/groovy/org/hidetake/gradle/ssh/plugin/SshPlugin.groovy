@@ -14,7 +14,7 @@ import org.hidetake.gradle.ssh.internal.SshTaskService
 class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.extensions.ssh = new GlobalSettings()
+        project.extensions.ssh = new CompositeSettings()
         project.extensions.remotes = createRemoteContainer(project)
 
         project.convention.plugins.ssh = new Convention(project)
@@ -52,7 +52,7 @@ class SshPlugin implements Plugin<Project> {
          */
         void sshexec(Closure closure) {
             assert closure, 'closure must be given'
-            SshTaskService.instance.execute(project.extensions.ssh as GlobalSettings, closure)
+            SshTaskService.instance.execute(project.extensions.ssh as CompositeSettings, closure)
         }
     }
 }

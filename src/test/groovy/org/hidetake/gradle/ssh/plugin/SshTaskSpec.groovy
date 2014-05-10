@@ -58,12 +58,12 @@ class SshTaskSpec extends Specification {
         then: 1 * taskHandler2.session(_ as Remote, _ as Closure)
 
         when: project.tasks.testTask1.execute()
-        then: 1 * taskHandler1.execute(new GlobalSettings(
+        then: 1 * taskHandler1.execute(new CompositeSettings(
                 operationSettings: new OperationSettings(dryRun: false)
         ))
 
         when: project.tasks.testTask2.execute()
-        then: 1 * taskHandler2.execute(new GlobalSettings(
+        then: 1 * taskHandler2.execute(new CompositeSettings(
                 operationSettings: new OperationSettings(dryRun: false)
         ))
     }

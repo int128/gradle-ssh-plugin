@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.util.ConfigureUtil
-import org.hidetake.gradle.ssh.plugin.GlobalSettings
+import org.hidetake.gradle.ssh.plugin.CompositeSettings
 import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 
 /**
@@ -26,7 +26,7 @@ class SshTaskService {
      * @param globalSettings
      * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler}
      */
-    void execute(GlobalSettings globalSettings, Closure closure) {
+    void execute(CompositeSettings globalSettings, Closure closure) {
         def handler = createDelegate()
         ConfigureUtil.configure(closure, handler)
         handler.execute(globalSettings)

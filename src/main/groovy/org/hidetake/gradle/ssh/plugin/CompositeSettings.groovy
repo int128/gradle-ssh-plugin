@@ -4,14 +4,13 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 /**
- * Represents global settings or task specific settings.
+ * Represents overall settings configurable in global or task.
  *
  * @author hidetake.org
- *
  */
 @EqualsAndHashCode
 @ToString
-class GlobalSettings extends Settings<GlobalSettings> {
+class CompositeSettings extends Settings<CompositeSettings> {
     static final allowAnyHosts = ConnectionSettings.allowAnyHosts
 
     @Delegate
@@ -20,14 +19,14 @@ class GlobalSettings extends Settings<GlobalSettings> {
     @Delegate
     OperationSettings operationSettings = new OperationSettings()
 
-    static final DEFAULT = new GlobalSettings(
+    static final DEFAULT = new CompositeSettings(
             connectionSettings: ConnectionSettings.DEFAULT,
             operationSettings: OperationSettings.DEFAULT
     )
 
     @Override
-    GlobalSettings plus(GlobalSettings right) {
-        new GlobalSettings(
+    CompositeSettings plus(CompositeSettings right) {
+        new CompositeSettings(
                 connectionSettings: connectionSettings + right.connectionSettings,
                 operationSettings: operationSettings + right.operationSettings
         )

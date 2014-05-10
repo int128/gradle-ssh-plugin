@@ -3,8 +3,8 @@ package org.hidetake.gradle.ssh.internal
 import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
 import org.hidetake.gradle.ssh.internal.connection.ConnectionService
 import org.hidetake.gradle.ssh.internal.session.SessionService
+import org.hidetake.gradle.ssh.plugin.CompositeSettings
 import org.hidetake.gradle.ssh.plugin.ConnectionSettings
-import org.hidetake.gradle.ssh.plugin.GlobalSettings
 import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.session.SessionHandler
@@ -139,7 +139,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
 
         when:
         sshTaskDelegate.session([remote1, remote2], closure)
-        sshTaskDelegate.execute(new GlobalSettings())
+        sshTaskDelegate.execute(new CompositeSettings())
 
         then: 1 * sessionService.createDelegate(remote1, OperationSettings.DEFAULT, _) >> sessionHandler1
         then: 1 * sessionService.createDelegate(remote2, OperationSettings.DEFAULT, _) >> sessionHandler2

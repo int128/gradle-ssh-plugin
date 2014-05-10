@@ -9,7 +9,7 @@ interface SshTaskHandler {
     /**
      * Configure task specific settings.
      *
-     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.GlobalSettings}
+     * @param closure closure for {@link CompositeSettings}
      */
     void ssh(Closure closure)
 
@@ -35,5 +35,5 @@ interface SshTaskHandler {
      *
      * @param globalSettings
      */
-    void execute(GlobalSettings globalSettings)
+    void execute(CompositeSettings globalSettings)
 }

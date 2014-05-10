@@ -95,7 +95,7 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * service.execute(new GlobalSettings(
+        then: 1 * service.execute(new CompositeSettings(
                 connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts)
         ), _)
     }

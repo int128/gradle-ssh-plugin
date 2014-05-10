@@ -3,7 +3,7 @@ package org.hidetake.gradle.ssh.internal
 import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
 import org.hidetake.gradle.ssh.internal.connection.ConnectionService
 import org.hidetake.gradle.ssh.internal.session.SessionService
-import org.hidetake.gradle.ssh.plugin.GlobalSettings
+import org.hidetake.gradle.ssh.plugin.CompositeSettings
 import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 
@@ -19,7 +19,7 @@ class DefaultSshTaskHandler implements SshTaskHandler {
      * Task specific settings.
      * This overrides global settings.
      */
-    private final GlobalSettings taskSpecificSettings = new GlobalSettings()
+    private final CompositeSettings taskSpecificSettings = new CompositeSettings()
 
     private final List<Map> sessions = []
 
@@ -40,8 +40,8 @@ class DefaultSshTaskHandler implements SshTaskHandler {
         remotes.each { remote -> session(remote, closure) }
     }
 
-    void execute(GlobalSettings globalSettings) {
-        def merged = GlobalSettings.DEFAULT + globalSettings + taskSpecificSettings
+    void execute(CompositeSettings globalSettings) {
+        def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
 
         def connectionService = ConnectionService.instance
         def sessionService = SessionService.instance

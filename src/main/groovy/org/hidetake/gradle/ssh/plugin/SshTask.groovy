@@ -15,6 +15,6 @@ class SshTask extends DefaultTask {
 
     @TaskAction
     void perform() {
-        sshTaskHandler.execute(project.extensions.ssh as GlobalSettings)
+        sshTaskHandler.execute(project.extensions.ssh as CompositeSettings)
     }
 }
