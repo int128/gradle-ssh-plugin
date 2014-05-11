@@ -10,10 +10,11 @@ import org.hidetake.gradle.ssh.internal.interaction.LineOutputStream
 import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.interaction.Stream
+import org.hidetake.gradle.ssh.plugin.operation.Operations
 import org.hidetake.gradle.ssh.plugin.session.BadExitStatusException
 
 /**
- * Default implementation of {@link Operations}.
+ * Default implementation of {@link org.hidetake.gradle.ssh.plugin.operation.Operations}.
  *
  * @author hidetake.org
  */

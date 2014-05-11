@@ -1,0 +1,25 @@
+
+feature('adding remote file assertion feature') {
+    task 'extendRemoteFileAssertion'
+    category 'test'
+}
+
+class RemoteFileAssertion {
+    def assertFileContains(String path, String regexp) {
+        execute("egrep '$regexp' '$path'")
+    }
+}
+
+task extendRemoteFileAssertion(type: SshTask) {
+    ssh {
+        extensions.add RemoteFileAssertion
+    }
+    doFirst {
+        ext.x = randomInt()
+        ext.pathX = remoteTempPath('X')
+    }
+    session(remotes.localhost) {
+        execute "echo 'port $x' > $pathX"
+        assertFileContains pathX, "port $x"
+    }
+}

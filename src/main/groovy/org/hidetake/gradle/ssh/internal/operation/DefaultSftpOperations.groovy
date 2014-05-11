@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.internal.operation
 
 import com.jcraft.jsch.ChannelSftp
 import groovy.util.logging.Slf4j
+import org.hidetake.gradle.ssh.plugin.operation.SftpOperations
 
 @Slf4j
 class DefaultSftpOperations implements SftpOperations {
