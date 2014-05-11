@@ -1,11 +1,9 @@
 package org.hidetake.gradle.ssh.internal.session
 
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.internal.operation.Operations
-import org.hidetake.gradle.ssh.internal.session.handler.DefaultFileTransfer
-import org.hidetake.gradle.ssh.internal.session.handler.DefaultSudoExecution
 import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.operation.Operations
 import org.hidetake.gradle.ssh.plugin.session.SessionHandler
 
 /**
@@ -14,10 +12,9 @@ import org.hidetake.gradle.ssh.plugin.session.SessionHandler
  * @author hidetake.org
  */
 @Slf4j
-@Mixin(DefaultSudoExecution)
-@Mixin(DefaultFileTransfer)
 class DefaultSessionHandler implements SessionHandler {
-    private final Operations operations
+    final Operations operations
+
     private final OperationSettings operationSettings
 
     def DefaultSessionHandler(Operations operations1, OperationSettings operationSettings1) {
