@@ -29,8 +29,8 @@ apply plugin: 'ssh'
 ```
 
 
-Creating a SSH task
--------------------
+Create a SSH task
+-----------------
 
 Use `SshTask` type to create a SSH task.
 
@@ -81,10 +81,10 @@ Use following methods to perform operations. See below for details.
 Also `remote` property is available to access current remote host in the session.
 
 
-Using SSH in the task
----------------------
+Invoke SSH in another task
+--------------------------
 
-`sshexec` method provides SSH execution in another task.
+`sshexec` method provides SSH invocation in another task.
 Same properties and methods as SSH task are available.
 
 ```groovy
@@ -106,10 +106,10 @@ task syncKernelParams << {
 ```
 
 
-Defining remote hosts
----------------------
+Remote hosts
+------------
 
-### Adding a remote host
+### Add a remote host
 
 Use `remotes` closure to add a remote host.
 
@@ -150,7 +150,7 @@ Also following settings can be set in a remote closure. These can be set globall
 * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
 
 
-### Adding a remote host in execution phase
+### Add a remote host in execution phase
 
 Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
 a remote host can be defined dynamically by `remotes.create(name)`.
@@ -171,7 +171,7 @@ task something << {
 ```
 
 
-### Access through gateway servers
+### Connect through gateway servers
 
 A remote host can be accessed through one or more gateway servers.
 
@@ -200,7 +200,7 @@ Following operations are available in the session.
   * File transfer
 
 
-### Command execution
+### Execute a command
 
 Use following methods to execute a command in the session closure.
 
@@ -235,14 +235,14 @@ These methods raise an exception and stop Gradle if error occurs:
 * `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
 
 
-### Shell execution
+### Execute a shell
 
 Use `shell` method to execute a shell in the session closure.
 This method blocks until the shell is finished and will throw an exception if exit status of the shell is not zero.
 Stream interaction setting should be given in order to exit the shell.
 
 
-### File transfer
+### Transfer a file or directory
 
 Use following methods to transfer files in the session closure.
 
@@ -254,7 +254,21 @@ These methods raise an exception and stop Gradle if error occurs.
 It is strongly recommended to pack files into a archive and transfer it for performance reason.
 
 
-### Stream interaction
+### Operation settings
+
+Following settings can be passed to operation methods.
+
+* `dryRun` - Dry run flag. If true, performs no action. Default is false.
+* `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
+* `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
+* `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
+* `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
+* `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
+* `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
+
+
+Stream interaction
+------------------
 
 `execute`, `executeBackground` and `shell` can take a setting for interaction with the stream.
 
@@ -270,6 +284,9 @@ execute('passwd', pty: true, interaction: {
 ```
 
 We can write a string to the `standardInput` to interact with the command.
+
+
+### Declare interaction rules
 
 Use following methods to declare rules in the interaction closure.
 
@@ -290,19 +307,6 @@ Use following methods to declare rules in the interaction closure.
 * If stream is omitted, it means any.
 
 Rules will be evaluated in order. First rule has the highest priority.
-
-
-### Operation settings
-
-Following settings can be passed to operation methods.
-
-* `dryRun` - Dry run flag. If true, performs no action. Default is false.
-* `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
-* `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
-* `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
-* `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
-* `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
-* `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
 
 
 Global settings
