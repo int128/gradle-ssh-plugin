@@ -4,10 +4,10 @@ import com.jcraft.jsch.ChannelSftp
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class DefaultSftpHandler implements SftpHandler {
+class DefaultSftpOperations implements SftpOperations {
     private final ChannelSftp channel
 
-    def DefaultSftpHandler(ChannelSftp channel1) {
+    def DefaultSftpOperations(ChannelSftp channel1) {
         channel = channel1
         assert channel
     }

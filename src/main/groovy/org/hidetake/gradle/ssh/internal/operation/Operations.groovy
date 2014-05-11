@@ -4,7 +4,7 @@ import org.hidetake.gradle.ssh.plugin.OperationSettings
 import org.hidetake.gradle.ssh.plugin.Remote
 
 /**
- * Interface of operations.
+ * An aggregate of core SSH operations.
  *
  * @author hidetake.org
  */
@@ -20,7 +20,7 @@ interface Operations {
     /**
      * Perform SFTP operations.
      *
-     * @param closure closure for {@link SftpHandler}
+     * @param closure closure for {@link SftpOperations}
      */
     void sftp(Closure closure)
 }

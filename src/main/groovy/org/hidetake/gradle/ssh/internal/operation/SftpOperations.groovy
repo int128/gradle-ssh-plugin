@@ -3,11 +3,11 @@ package org.hidetake.gradle.ssh.internal.operation
 import com.jcraft.jsch.ChannelSftp
 
 /**
- * Handler for closure of file transfer.
+ * An aggregate of file transfer operations.
  *
  * @author hidetake.org
  */
-interface SftpHandler {
+interface SftpOperations {
     /**
      * Get a file from the remote host.
      *

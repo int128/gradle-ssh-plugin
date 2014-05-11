@@ -170,7 +170,7 @@ class DefaultOperations implements Operations {
             channel.connect()
             log.info("SFTP Channel #${channel.id} has been opened")
 
-            closure.delegate = new DefaultSftpHandler(channel)
+            closure.delegate = new DefaultSftpOperations(channel)
             closure.resolveStrategy = Closure.DELEGATE_FIRST
             closure.call()
 
