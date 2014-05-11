@@ -2,9 +2,8 @@ package org.hidetake.gradle.ssh.internal.session.handler
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.session.handler.SudoExecution
+import org.hidetake.gradle.ssh.internal.operation.Operations
+import org.hidetake.gradle.ssh.plugin.OperationSettings
 
 /**
  * A default implementation of {@link SudoExecution}.

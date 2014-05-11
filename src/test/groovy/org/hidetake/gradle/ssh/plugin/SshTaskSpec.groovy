@@ -1,14 +1,9 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.session.Sessions
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
+import org.hidetake.gradle.ssh.internal.SshTaskService
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
-
-import static org.hidetake.gradle.ssh.test.RegistryHelper.factoryOf
 
 class SshTaskSpec extends Specification {
 
@@ -22,11 +17,12 @@ class SshTaskSpec extends Specification {
                     identity = file('id_rsa')
                 }
             }
+            ssh {
+                dryRun = false
+            }
             task(type: SshTask, 'testTask1') {
                 ssh {
-                    knownHosts = allowAnyHosts
                     dryRun = true
-                    outputLogLevel = LogLevel.ERROR
                 }
                 session(remotes.webServer) {
                     execute 'ls'
@@ -42,38 +38,34 @@ class SshTaskSpec extends Specification {
     }
 
 
-    @ConfineMetaClassChanges(Sessions)
+    @ConfineMetaClassChanges(SshTaskService)
     def "task action delegates to executor"() {
         given:
-        def sessionsFactory = Mock(Sessions.Factory)
-        factoryOf(Sessions) << sessionsFactory
-        def sessions1 = Mock(Sessions)
-        def sessions2 = Mock(Sessions)
+        def service = Mock(SshTaskService)
+        SshTaskService.metaClass.static.getInstance = { -> service }
+
+        def taskHandler1 = Mock(SshTaskHandler)
+        def taskHandler2 = Mock(SshTaskHandler)
 
         when:
         def project = project()
-        def task1 = project.tasks.testTask1 as SshTask
-        def task2 = project.tasks.testTask2 as SshTask
 
-        then: 1 * sessionsFactory.create() >> sessions1
-        then: 1 * sessions1.add(_, _)
-        then: 1 * sessionsFactory.create() >> sessions2
-        then: 1 * sessions2.add(_, _)
+        then: 1 * service.createDelegate() >> taskHandler1
+        then: 1 * taskHandler1.ssh(_)
+        then: 1 * taskHandler1.session(_ as Remote, _ as Closure)
 
-        when:
-        task1.perform()
+        then: 1 * service.createDelegate() >> taskHandler2
+        then: 1 * taskHandler2.session(_ as Remote, _ as Closure)
 
-        then:
-        1 * sessions1.execute(
-                ConnectionSettings.DEFAULT + new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts),
-                OperationSettings.DEFAULT + new OperationSettings(dryRun: true, outputLogLevel: LogLevel.ERROR)
-        )
+        when: project.tasks.testTask1.execute()
+        then: 1 * taskHandler1.execute(new CompositeSettings(
+                operationSettings: new OperationSettings(dryRun: false)
+        ))
 
-        when:
-        task2.perform()
-
-        then:
-        1 * sessions2.execute(ConnectionSettings.DEFAULT, OperationSettings.DEFAULT)
+        when: project.tasks.testTask2.execute()
+        then: 1 * taskHandler2.execute(new CompositeSettings(
+                operationSettings: new OperationSettings(dryRun: false)
+        ))
     }
 
 }

@@ -1,11 +1,10 @@
 package org.hidetake.gradle.ssh.internal.operation
 
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
+import org.hidetake.gradle.ssh.plugin.OperationSettings
+import org.hidetake.gradle.ssh.plugin.Remote
 
 /**
- * Dry-run implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
+ * Dry-run implementation of {@link Operations}.
  *
  * @author hidetake.org
  */

@@ -1,77 +1,120 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.ssh.ConnectionSettings
+import org.hidetake.gradle.ssh.internal.SshTaskService
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.mop.ConfineMetaClassChanges
 
 class SshPluginSpec extends Specification {
 
-    def "apply with no config just adds plugin"() {
+    def "apply the plugin"() {
         given:
         def project = ProjectBuilder.builder().build()
-        def plugin = new SshPlugin()
-
 
         when:
-        plugin.apply(project)
+        project.apply plugin: 'ssh'
 
         then:
-        project.container(Remote).size() == 0
-        project.convention.plugins.ssh
+        project.ssh
+        project.remotes.size() == 0
+        project.SshTask == SshTask
+    }
+
+
+    def "apply global settings"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+        project.apply plugin: 'ssh'
+
+        when:
+        project.ssh {
+            dryRun = true
+            retryCount = 1
+            retryWaitSec = 1
+            outputLogLevel = LogLevel.DEBUG
+            errorLogLevel = LogLevel.INFO
+        }
+
+        then:
+        project.ssh.dryRun
+        project.ssh.retryCount == 1
+        project.ssh.retryWaitSec == 1
+        project.ssh.outputLogLevel == LogLevel.DEBUG
+        project.ssh.errorLogLevel == LogLevel.INFO
     }
 
     def "apply the full monty"() {
         when:
         def project = createProject()
-        def globalSettings = project.convention.getPlugin(SshPluginConvention).globalSettings
 
         then:
-        globalSettings.knownHosts == ConnectionSettings.allowAnyHosts
+        project.ssh.knownHosts == ConnectionSettings.allowAnyHosts
         project.remotes.size() == 4
     }
 
-    @Unroll("Filter remotes by roles: #roles")
-    def "filter remotes by role"() {
+    @Unroll
+    def "filter remotes by role: #roles"() {
         given:
         def project = createProject()
 
         when:
-        Collection<Remote> remotes = project.remotes.role(roles)
+        Collection<Remote> associated = project.remotes.role(roles)
+        def actualRemoteNames = associated.collect { it.name }
 
         then:
-        contains(remotes, expectedRemoteNames)
+        actualRemoteNames.toSet() == expectedRemoteNames.toSet()
 
         where:
         roles                                | expectedRemoteNames
-        'serversA'                           | ['webServer', 'managementServer']
         'noSuchRole'                         | []
+        'serversA'                           | ['webServer', 'managementServer']
+        'serversB'                           | ['appServer', 'managementServer']
         ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
     }
 
-    private def contains(Collection<Remote> remotes, List<String> expectedNames) {
-        assert remotes.size() == expectedNames.size()
 
-        expectedNames.each { name ->
-            assert remotes.find { it.name == name }, "Expected remote: $name not found in remotes"
+    @ConfineMetaClassChanges(SshTaskService)
+    def "invoke sshexec"() {
+        given:
+        def service = Mock(SshTaskService)
+        SshTaskService.metaClass.static.getInstance = { -> service }
+
+        def project = createProject()
+
+        when:
+        project.with {
+            sshexec {
+                ssh {
+                    knownHosts = file('my_known_hosts')
+                }
+                session(remotes.webServer) {
+                    execute 'ls'
+                }
+            }
         }
 
+        then: 1 * service.execute(new CompositeSettings(
+                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts)
+        ), _)
+    }
 
-        return true
+    def "invoke sshexec with null"() {
+        given:
+        def project = createProject()
+
+        when:
+        project.sshexec(null)
+
+        then:
+        AssertionError err = thrown()
+        err.message.contains("closure")
     }
 
 
 
-
-
-
-
-
-
-
-    private Project createProject() {
+    private static createProject() {
         ProjectBuilder.builder().build().with {
             apply plugin: 'ssh'
 
@@ -102,16 +145,8 @@ class SshPluginSpec extends Specification {
                 }
             }
 
-            task(type: SshTask, 'testTask') {
-                session(remotes.webServer) {
-                    execute "ls -l"
-                }
-            }
-
             it
         }
-
     }
-
 
 }

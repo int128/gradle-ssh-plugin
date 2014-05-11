@@ -3,20 +3,17 @@ package org.hidetake.gradle.ssh.internal.operation
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.gradle.api.logging.Logging
-import org.hidetake.gradle.ssh.api.Remote
-import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
-import org.hidetake.gradle.ssh.api.operation.OperationSettings
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.operation.SftpHandler
-import org.hidetake.gradle.ssh.api.operation.interaction.Stream
-import org.hidetake.gradle.ssh.api.ssh.Connection
-import org.hidetake.gradle.ssh.internal.operation.interaction.Engine
-import org.hidetake.gradle.ssh.internal.operation.interaction.InteractionDelegate
-import org.hidetake.gradle.ssh.internal.operation.interaction.LineOutputStream
-import org.hidetake.gradle.ssh.registry.Registry
+import org.hidetake.gradle.ssh.internal.connection.Connection
+import org.hidetake.gradle.ssh.internal.interaction.Engine
+import org.hidetake.gradle.ssh.internal.interaction.InteractionDelegate
+import org.hidetake.gradle.ssh.internal.interaction.LineOutputStream
+import org.hidetake.gradle.ssh.plugin.OperationSettings
+import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.gradle.ssh.plugin.interaction.Stream
+import org.hidetake.gradle.ssh.plugin.session.BadExitStatusException
 
 /**
- * Default implementation of {@link org.hidetake.gradle.ssh.api.operation.Operations}.
+ * Default implementation of {@link Operations}.
  *
  * @author hidetake.org
  */
@@ -173,7 +170,7 @@ class DefaultOperations implements Operations {
             channel.connect()
             log.info("SFTP Channel #${channel.id} has been opened")
 
-            closure.delegate = Registry.instance[SftpHandler.Factory].create(channel)
+            closure.delegate = new DefaultSftpOperations(channel)
             closure.resolveStrategy = Closure.DELEGATE_FIRST
             closure.call()
 

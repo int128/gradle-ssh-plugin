@@ -8,9 +8,9 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.api.operation.BadExitStatusException
 import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.plugin.SshTask
+import org.hidetake.gradle.ssh.plugin.session.BadExitStatusException
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import spock.lang.Specification

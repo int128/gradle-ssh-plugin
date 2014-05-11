@@ -3,8 +3,7 @@ package org.hidetake.gradle.ssh.internal.session.handler
 import com.jcraft.jsch.ChannelSftp.LsEntry
 import com.jcraft.jsch.SftpException
 import groovy.util.logging.Slf4j
-import org.hidetake.gradle.ssh.api.operation.Operations
-import org.hidetake.gradle.ssh.api.session.handler.FileTransfer
+import org.hidetake.gradle.ssh.internal.operation.Operations
 
 /**
  * A default implementation of {@link FileTransfer}.
