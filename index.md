@@ -62,12 +62,10 @@ task deploy(type: SshTask, dependsOn: war) {
 * Interaction with the shell such as bash or Cisco IOS
 
 
-Getting Started
----------------
+Example
+-------
 
-### Set up
-
-Add the plugin in your build.gradle:
+Here is an example for typical deployment scenario.
 
 ```groovy
 buildscript {
@@ -80,16 +78,8 @@ buildscript {
 }
 
 apply plugin: 'ssh'
-```
-
-[Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) is available for quick start.
 
 
-### Create a task
-
-Here is an example for typical deployment scenario.
-
-```groovy
 // Global settings
 ssh {
   identity = file('id_rsa')     // Enable public key authentication
@@ -118,6 +108,8 @@ task deploy(type: SshTask, dependsOn: war) {
   }
 }
 ```
+
+See also [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template).
 
 
 Contribution

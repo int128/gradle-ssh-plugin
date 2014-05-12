@@ -7,13 +7,30 @@ title: User Guide
 Overview
 --------
 
-Gradle SSH Plugin is a Gradle plugin designated for performing SSH operations.
+Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
 
-Apply the plugin
-----------------
+Getting Started
+---------------
 
-Add the plugin dependency into your build.gradle:
+1. Create a script
+2. Add the plugin dependency
+3. Add a remote host
+4. Create a task
+5. Describe SSH operations in the task
+
+
+### Create a script
+
+Create an empty file and save as `build.gradle`.
+
+If you do not have installed Gradle, get the [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
+This project contains Gradle wrapper so Gradle installation is not needed.
+
+
+### Add the plugin dependency
+
+Add the plugin dependency to the script:
 
 ```groovy
 buildscript {
@@ -28,11 +45,52 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
+The plugin is available on Maven Central repository so no installation is needed.
+Gradle will fetch the plugin from Internet.
 
-Create a SSH task
------------------
 
-Use `SshTask` type to create a SSH task.
+### Add a remote host
+
+The plugin adds a container of remote hosts to the project.
+One or more remote hosts can be added in the `remotes` closure.
+
+Following code adds a remote host to the remote hosts container:
+
+```groovy
+remotes {
+  web01 {
+    role 'masterNode'
+    host = '192.168.1.101'
+    user = 'jenkins'
+  }
+  web02 {
+    host = '192.168.1.102'
+    user = 'jenkins'
+  }
+}
+```
+
+Now we can access the remote host by `remotes.web01` or `remotes.web02`.
+
+A remote host can be associated with one or more roles.
+See below section for details.
+
+
+### Create a task
+
+There are two ways to use SSH facility.
+
+1. Create a SSH task and invoke Gradle with it
+2. Call SSH method in the task
+
+
+#### Create a SSH task
+
+This may be main usage.
+The plugin provides type of a SSH task as `SshTask`.
+It is a Gradle task so provides general features such as `dependsOn: task`, `doFirst` or `doLast`.
+
+Create a SSH task in the script:
 
 ```groovy
 task checkWebServer(type: SshTask) {
@@ -41,51 +99,22 @@ task checkWebServer(type: SshTask) {
     assert pids.length > 1
   }
 }
-
-task reloadServers(type: SshTask) {
-  session(remotes.role('webServers', 'cacheServers')) {
-    executeBackground 'sudo service httpd reload'
-  }
-}
 ```
 
-The plugin runs task closures in **evaluation** phase of Gradle,
-but will run each session closure in **execution** phase of Gradle.
+Invoke Gradle with name of the task.
+
+```bash
+./gradlew checkWebServer
+```
+
+Gradle will execute the task.
+The SSH task will connect to remote hosts declared on `session` and will evaluate each closure in order.
 
 
-### Add a session
+#### Call SSH method in the task
 
-Use following methods to open a session in the task closure.
-
-* `session(remote)` - Adds a session to the remote host.
-* `session(remotes)` - Adds each session of remote hosts. If a list is given, sessions will be executed in order. Otherwise, order is not defined.
-
-A session method takes one or more remote hosts.
-
-* `remotes.name` - Specifies the remote host.
-* `remotes.role(A)` - Specifies remote hosts associated with A.
-* `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
-
-
-### Perform operations
-
-Use following methods to perform operations. See below for details.
-
-* `execute`
-* `executeBackground`
-* `executeSudo`
-* `shell`
-* `put`
-* `get`
-
-Also `remote` property is available to access current remote host in the session.
-
-
-Invoke SSH in another task
---------------------------
-
-`sshexec` method provides SSH invocation in another task.
-Same properties and methods as SSH task are available.
+Also calling SSH in the task is supported.
+This may be useful when more complex scenario is needed.
 
 ```groovy
 task syncKernelParams << {
@@ -105,29 +134,74 @@ task syncKernelParams << {
 }
 ```
 
+There is no functional difference between creating a SSH task and calling SSH method.
+Exactly same syntax is available on both cases.
 
-Remote hosts
-------------
+
+### Describe SSH operations
+
+Now describe SSH operations in the SSH task or method.
+
+
+#### Declare a session
+
+A session consists of a remote host to connect and a closure.
+Following code declares a session which connects to the remote host `web01` and executes a command.
+
+```groovy
+session(remotes.web01) {
+  execute 'sudo service httpd reload'
+}
+```
+
+If more than one remote hosts are given, the plugin will connect to the remote host and execute the closure in order.
+For instance,
+
+```groovy
+session(remotes.web01, remotes.web02) {
+  execute 'sudo service httpd reload'
+}
+```
+
+is equivalent to:
+
+```groovy
+session(remotes.web01) {
+  execute 'sudo service httpd reload'
+}
+session(remotes.web02) {
+  execute 'sudo service httpd reload'
+}
+```
+
+
+#### Describe operations in the closure
+
+Following methods are available to perform operations. See below section for details.
+
+* `execute`
+* `executeBackground`
+* `executeSudo`
+* `shell`
+* `put`
+* `get`
+
+
+Manage remote hosts
+-------------------
+
+The plugin adds a container of remote hosts to the project.
+It is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
+
 
 ### Add a remote host
-
-Use `remotes` closure to add a remote host.
 
 ```groovy
 remotes {
   web01 {
-    role('masterNode')
-    host = '192.168.1.101'
-    user = 'jenkins'
-  }
-  web02 {
-    host = '192.168.1.102'
-    user = 'jenkins'
   }
 }
 ```
-
-Use `role` method to associate the host with roles. A remote host can be associated with multiple roles.
 
 Following settings can be set in a remote closure.
 
@@ -136,7 +210,7 @@ Following settings can be set in a remote closure.
 * `gateway` - Gateway remote host. If this is set, port-forwarding tunnel will be used to connect.
 
 
-#### Connection settings
+#### Set connection settings
 
 Also following settings can be set in a remote closure. These can be set globally.
 
@@ -150,28 +224,7 @@ Also following settings can be set in a remote closure. These can be set globall
 * `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
 
 
-### Add a remote host in execution phase
-
-Since `remotes` is a [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html),
-a remote host can be defined dynamically by `remotes.create(name)`.
-
-```groovy
-remotes.create('dynamic1') {
-  host = /* given in execution phase */
-  user = /* given in execution phase */
-}
-
-task something << {
-  sshexec {
-    session(remotes.dynamic1) {
-      execute('...')
-    }
-  }
-}
-```
-
-
-### Connect through gateway servers
+#### Connect through gateway servers
 
 A remote host can be accessed through one or more gateway servers.
 
@@ -190,8 +243,37 @@ remotes {
 ```
 
 
-Operations
-----------
+### Access remote hosts in the container
+
+Use `role` method to associate the host with roles. A remote host can be associated with multiple roles.
+
+* `remotes.name` - Specifies the remote host.
+* `remotes.role(A)` - Specifies remote hosts associated with A.
+* `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
+
+
+### Manipulate on execution phase
+
+A remote host can be defined dynamically by `remotes.create(name)`.
+
+```groovy
+remotes.create('dynamic1') {
+  host = /* given in execution phase */
+  user = /* given in execution phase */
+}
+
+task something << {
+  sshexec {
+    session(remotes.dynamic1) {
+      execute('...')
+    }
+  }
+}
+```
+
+
+Perform operations
+------------------
 
 Following operations are available in the session.
 
@@ -254,7 +336,7 @@ These methods raise an exception and stop Gradle if error occurs.
 It is strongly recommended to pack files into a archive and transfer it for performance reason.
 
 
-### Operation settings
+### Set operation settings
 
 Following settings can be passed to operation methods.
 
@@ -268,8 +350,8 @@ Following settings can be passed to operation methods.
 * `extensions` - List of extension classes. If given, classes will be mixin on session execution.
 
 
-Stream interaction
-------------------
+Declare stream interaction
+--------------------------
 
 `execute`, `executeBackground` and `shell` can take a setting for interaction with the stream.
 
@@ -310,8 +392,8 @@ Use following methods to declare rules in the interaction closure.
 Rules will be evaluated in order. First rule has the highest priority.
 
 
-Global settings
----------------
+Override settings
+-----------------
 
 Connection settings and operation settings can be set globally
 and overridden by each remote hosts, tasks or operation methods.
@@ -378,8 +460,8 @@ execute('sudo service httpd reload', logging: false)
 ```
 
 
-Add a DSL extension
--------------------
+Add custom DSL
+--------------
 
 We can extend DSL syntax.
 
