@@ -1,15 +1,26 @@
 Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.svg?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin)
 =================
 
-Gradle SSH Plugin is a Gradle plugin providing remote command execution and file transfer features for continuous delivery.
+Gradle SSH Plugin is a Gradle plugin which provides remote command execution and file transfer features.
 
-Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/) for getting started or user guide.
+
+Getting Started and User Guide
+------------------------------
+
+Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/).
 
 
 Contribution
 ------------
 
 Please open your issue or pull request. Any issue is welcome.
+
+
+Related repositories
+--------------------
+
+* [Gradle SSH Plugin web site repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io)
+* [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template)
 
 
 Build
@@ -21,9 +32,7 @@ Run Gradle wrapper.
 ./gradlew build
 ```
 
-### Known issues
-
-Currently 1 test will be failed on Mac due to lack of support hashed known hosts. See #69.
+Known issues: Currently 1 test will be failed on Mac due to lack of support hashed known hosts.
 
 
 Acceptance Test
@@ -74,13 +83,5 @@ Invoke the publishing task:
 ```bash
 ./gradlew publishMavenCentral
 ```
-
-
-Related repositories
---------------------
-
-* [Gradle SSH Plugin web site](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io)
-* [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template)
-
 
 
