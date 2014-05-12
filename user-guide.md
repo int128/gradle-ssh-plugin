@@ -265,6 +265,7 @@ Following settings can be passed to operation methods.
 * `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
 * `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
 * `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
+* `extensions` - List of extension classes. If given, classes will be mixin on session execution.
 
 
 Stream interaction
@@ -375,3 +376,31 @@ Operation settings can be overridden on an operation method.
 execute('sudo service httpd reload', pty: false)
 execute('sudo service httpd reload', logging: false)
 ```
+
+
+Add a DSL extension
+-------------------
+
+We can extend DSL syntax.
+
+Declare an extension class and add it to global or task specific settings.
+All methods in the class will be available in the session closure.
+
+```groovy
+class RemoteFileAssertion {
+  def assertFileContains(String path, String regexp) {
+    execute("egrep '$regexp' '$path'")
+  }
+}
+
+ssh {
+  extensions.add RemoteFileAssertion
+}
+
+task checkApacheConfig(type: SshTask) {
+  session(remotes.webServer) {
+    assertFileContains '/etc/httpd/conf/httpd.conf', 'listen 80'
+  }
+}
+```
+
