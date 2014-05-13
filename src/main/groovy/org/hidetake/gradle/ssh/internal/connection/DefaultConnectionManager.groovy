@@ -78,7 +78,7 @@ class DefaultConnectionManager implements ConnectionManager {
         assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
         assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
 
-        if (settings.knownHosts == ConnectionSettings.allowAnyHosts) {
+        if (settings.knownHosts == ConnectionSettings.DEFAULT.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
             log.info('Strict host key checking is turned off. Use only for testing purpose.')
         } else {

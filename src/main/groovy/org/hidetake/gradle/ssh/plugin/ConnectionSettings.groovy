@@ -4,10 +4,8 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString(excludes = 'password, passphrase')
+@ToString(excludes = 'password, passphrase, allowAnyHosts')
 class ConnectionSettings extends Settings<ConnectionSettings> {
-    static final allowAnyHosts = new File(UUID.randomUUID().toString())
-
     /**
      * Remote user.
      */
@@ -38,9 +36,15 @@ class ConnectionSettings extends Settings<ConnectionSettings> {
 
     /**
      * Known hosts file.
-     * If {@link #allowAnyHosts}, strict host key checking is turned off.
+     * If {@link #allowAnyHosts} is set, strict host key checking is turned off.
      */
     File knownHosts
+
+    /**
+     * Represents that strict host key checking is turned off and any host is allowed.
+     * @see ConnectionSettings#knownHosts
+     */
+    final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
 
     /**
      * Retry count for connecting to a host.
