@@ -13,6 +13,8 @@ Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/).
 Contribution
 ------------
 
+Gradle SSH Plugin is a open source software developed on GitHub and licensed under the Apache License Version 2.0.
+
 Please open your issue or pull request. Any issue is welcome.
 
 
