@@ -6,6 +6,10 @@ import groovy.transform.ToString
 @EqualsAndHashCode
 @ToString(excludes = 'password, passphrase, allowAnyHosts')
 class ConnectionSettings extends Settings<ConnectionSettings> {
+    static class Constants {
+        static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
+    }
+
     /**
      * Remote user.
      */
@@ -44,7 +48,7 @@ class ConnectionSettings extends Settings<ConnectionSettings> {
      * Represents that strict host key checking is turned off and any host is allowed.
      * @see ConnectionSettings#knownHosts
      */
-    final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
+    final allowAnyHosts = Constants.allowAnyHosts
 
     /**
      * Retry count for connecting to a host.
