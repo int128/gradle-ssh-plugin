@@ -42,8 +42,8 @@ function publish_report () {
         done
 
         git add "$TRAVIS_BRANCH"
-        git commit -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
-        git push origin gh-pages
+        git commit --amend -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
+        git push origin gh-pages -f
 
         rm -v ~/.netrc
     fi
