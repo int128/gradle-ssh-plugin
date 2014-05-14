@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'jacoco'
 
 repositories {
     mavenCentral()
@@ -35,7 +36,20 @@ task serverIntegrationTest(type: Test) {
         html.destination = file("$buildDir/reports/server-integration-tests")
     }
 }
+
+jacoco {
+    toolVersion = '0.7.1.201405082137'
+}
+
+task jacocoServerIntegrationTestReport(type: JacocoReport) {
+    executionData serverIntegrationTest
+    sourceSets sourceSets.main
+    reports.html.destination "$buildDir/reports/jacoco/server-integration-tests"
+}
+
 check.dependsOn serverIntegrationTest
+check.dependsOn jacocoTestReport
+check.dependsOn jacocoServerIntegrationTestReport
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
