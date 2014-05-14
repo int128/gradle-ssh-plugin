@@ -40,7 +40,7 @@ task deploy(type: SshTask, dependsOn: war) {
 ```groovy
 task deploy(type: SshTask, dependsOn: war) {
   session(remotes.webServer) {
-    put(war.archivePath, '/webapps')
+    put(war.archivePath.path, '/webapps')
     execute('sudo service tomcat restart')
   }
 }
@@ -102,7 +102,7 @@ task deploy(type: SshTask, dependsOn: war) {
   }
   session(remotes.webServer) {
     // Put a built WAR to the server
-    put(war.archivePath, '/webapps')
+    put(war.archivePath.path, '/webapps')
     // Restart the application server
     execute('sudo service tomcat restart')
   }
