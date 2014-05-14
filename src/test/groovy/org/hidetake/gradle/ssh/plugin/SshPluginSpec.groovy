@@ -50,7 +50,7 @@ class SshPluginSpec extends Specification {
         def project = createProject()
 
         then:
-        project.ssh.knownHosts == ConnectionSettings.allowAnyHosts
+        project.ssh.knownHosts == ConnectionSettings.Constants.allowAnyHosts
         project.remotes.size() == 4
     }
 
@@ -96,7 +96,7 @@ class SshPluginSpec extends Specification {
         }
 
         then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.allowAnyHosts)
+                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
         ), _)
     }
 

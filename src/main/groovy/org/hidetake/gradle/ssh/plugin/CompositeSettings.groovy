@@ -11,8 +11,6 @@ import groovy.transform.ToString
 @EqualsAndHashCode
 @ToString
 class CompositeSettings extends Settings<CompositeSettings> {
-    static final allowAnyHosts = ConnectionSettings.allowAnyHosts
-
     @Delegate
     ConnectionSettings connectionSettings = new ConnectionSettings()
 

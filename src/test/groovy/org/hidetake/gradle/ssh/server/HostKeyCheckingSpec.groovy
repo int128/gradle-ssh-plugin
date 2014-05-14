@@ -75,6 +75,24 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
     }
 
+    def "turn off strict host key checking by per remote settings"() {
+        given:
+        project.with {
+            remotes {
+                testServer {
+                    knownHosts = allowAnyHosts
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+    }
+
     def "strict host key checking with a valid known-hosts"() {
         given:
         def hostKey = HostKeyCheckingSpec.getResourceAsStream('/hostkey.pub').text
