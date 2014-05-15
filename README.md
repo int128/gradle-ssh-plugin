@@ -4,37 +4,43 @@ Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugi
 Gradle SSH Plugin is a Gradle plugin which provides remote command execution and file transfer features.
 
 
-Getting Started and User Guide
-------------------------------
+User Guide
+----------
 
-Please see [Gradle SSH Plugin web site](http://gradle-ssh-plugin.github.io/).
+Please visit [gradle-ssh-plugin.github.io](http://gradle-ssh-plugin.github.io/).
 
 
-Contribution
-------------
+Contributions
+-------------
 
 Gradle SSH Plugin is a open source software developed on GitHub and licensed under the Apache License Version 2.0.
 
-Please open your issue or pull request. Any issue is welcome.
+
+### Bug report and feature request
+
+Please open an issue or pull request. Any issue is welcome.
 
 
-Related repositories
---------------------
+### Documentation
 
-* [Gradle SSH Plugin web site repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io)
-* [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template)
+The user guide is maintained on the [GitHub Pages repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io).
+
+
+### Example scripts
+
+TODO
+
+Please open a pull request on the [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template).
 
 
 Build
 -----
 
-Run Gradle wrapper.
+Just run Gradle wrapper.
 
 ```bash
 ./gradlew build
 ```
-
-Known issues: Currently 1 test will be failed on Mac due to lack of support hashed known hosts.
 
 
 Acceptance Test
