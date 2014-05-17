@@ -33,15 +33,14 @@ function publish_report () {
         git clone --quiet --branch=gh-pages "https://github.com/$GH_BUILD_REPORT.git" gh-pages
         cd gh-pages
 
-        git rm -r "$TRAVIS_BRANCH" || true
+        git rm -q -r "$TRAVIS_BRANCH" || true
         mkdir -p "$TRAVIS_BRANCH"
 
-        for source in ../build/reports ../build/docs; do
-            [ -d "$source" ] && cp -a "$source" "$TRAVIS_BRANCH"
-        done
+        [ -d ../build/reports ] && cp -a ../build/reports "$TRAVIS_BRANCH"
+        [ -d ../build/docs    ] && cp -a ../build/docs    "$TRAVIS_BRANCH"
 
         git add "$TRAVIS_BRANCH"
-        git commit -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
+        git commit -q -m "Automatically updated by Travis build $TRAVIS_BUILD_NUMBER"
         git push origin gh-pages
 
         rm -v ~/.netrc
