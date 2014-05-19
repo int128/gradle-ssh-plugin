@@ -22,12 +22,12 @@ task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
         ext.pathB = remoteTempPath('B')
     }
     session(remotes.localhost) {
-        put(localX.path, pathX)
-        put(localY.path, pathY)
+        put localX, pathX
+        put localY, pathY
         execute("expr `cat $pathX` + `cat $pathY` > $pathA")
         execute("expr `cat $pathX` - `cat $pathY` > $pathB")
-        get(pathA, localA.path)
-        get(pathB, localB.path)
+        get pathA, localA
+        get pathB, localB
     }
     doLast {
         assert localA.text as int == (x + y)
@@ -64,7 +64,7 @@ task putDirectory(type: SshTask, dependsOn: 'setupBuildDir') {
     }
     session(remotes.localhost) {
         execute "mkdir -vp $remoteBase"
-        put(localX.path, remoteBase)
+        put localX, remoteBase
     }
     doLast {
         sshexec {
@@ -101,7 +101,7 @@ task getDirectory(type: SshTask, dependsOn: 'setupBuildDir') {
         execute "echo $x1 > $remoteBase/$x/$x1"
         execute "echo $y1 > $remoteBase/$x/$y/$y1"
         execute "echo $z1 > $remoteBase/$x/$y/$z/$z1"
-        get remoteBase, buildDir.path
+        get remoteBase, buildDir
     }
     doLast {
         assert file("$buildDir/$remoteBaseName/$x/$x1").text as int == x1
@@ -128,9 +128,9 @@ task getAndPutLargeFile(type: SshTask, dependsOn: 'setupBuildDir') {
     }
     session(remotes.localhost) {
         execute("dd if=/dev/zero of=$pathX bs=1024 count=$sizeX")
-        get(pathX, localX.path)
+        get pathX, localX
 
-        put(localX.path, pathY)
+        put localX, pathY
         ext.sizeY = execute("wc -c < $pathY") as int
     }
     doLast {
