@@ -6,15 +6,27 @@ import groovy.util.logging.Slf4j
 import org.hidetake.gradle.ssh.plugin.session.SessionHandler
 
 /**
- * An extension class of file transfer.
+ * An extension class to get a file or directory via SFTP.
  *
  * @author hidetake.org
  */
 @Category(SessionHandler)
 @Slf4j
-class FileTransfer {
+class SftpGet {
     /**
-     * Get a file from the remote host.
+     * Get a file or directory from the remote host.
+     *
+     * @param remote
+     * @param local
+     */
+    void get(String remote, File local) {
+        assert remote, 'remote path must be given'
+        assert local,  'local file must be given'
+        operations.sftp(sftpGetRecursive.curry(remote, local))
+    }
+
+    /**
+     * Get a file or directory from the remote host.
      *
      * @param remote
      * @param local
@@ -22,10 +34,10 @@ class FileTransfer {
     void get(String remote, String local) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        operations.sftp(sftpGetRecursive.curry(remote, local))
+        operations.sftp(sftpGetRecursive.curry(remote, new File(local)))
     }
 
-    private static final sftpGetRecursive = { String givenRemote, String givenLocal ->
+    private static final sftpGetRecursive = { String remoteFile, File localFile ->
         final Closure getDirectory
         getDirectory = { String remoteDir, File localDir ->
             def remoteDirName = remoteDir.find(~'[^/]+/?$')
@@ -51,42 +63,15 @@ class FileTransfer {
         }
 
         try {
-            getFile(givenRemote, givenLocal)
+            getFile(remoteFile, localFile.path)
         } catch (SftpException e) {
             if (e.message.startsWith('not supported to get directory')) {
                 log.debug(e.localizedMessage)
                 log.debug('Starting to get a directory recursively')
-                getDirectory(givenRemote, new File(givenLocal))
+                getDirectory(remoteFile, localFile)
             } else {
                 throw new RuntimeException(e)
             }
         }
-    }
-
-    /**
-     * Put a file to the remote host.
-     *
-     * @param local
-     * @param remote
-     */
-    void put(String local, String remote) {
-        assert remote, 'remote path must be given'
-        assert local,  'local path must be given'
-        operations.sftp(sftpPutRecursive.curry(local, remote))
-    }
-
-    private static final sftpPutRecursive = { String givenLocal, String givenRemote ->
-        final Closure putInternal
-        putInternal = { File localPath, String remotePath ->
-            if (localPath.directory) {
-                def remoteDir = "$remotePath/${localPath.name}"
-                mkdir(remoteDir)
-                localPath.eachFile(putInternal.rcurry(remoteDir))
-            } else {
-                putFile(localPath.path, remotePath)
-            }
-        }
-
-        putInternal(new File(givenLocal), givenRemote)
     }
 }

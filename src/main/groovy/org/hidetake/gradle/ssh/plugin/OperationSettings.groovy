@@ -3,7 +3,8 @@ package org.hidetake.gradle.ssh.plugin
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.gradle.api.logging.LogLevel
-import org.hidetake.gradle.ssh.extension.FileTransfer
+import org.hidetake.gradle.ssh.extension.SftpGet
+import org.hidetake.gradle.ssh.extension.SftpPut
 import org.hidetake.gradle.ssh.extension.SudoExecution
 
 @EqualsAndHashCode
@@ -60,7 +61,7 @@ class OperationSettings extends Settings<OperationSettings> {
             outputLogLevel: LogLevel.QUIET,
             errorLogLevel: LogLevel.ERROR,
             encoding: 'UTF-8',
-            extensions: [SudoExecution, FileTransfer]
+            extensions: [SudoExecution, SftpGet, SftpPut]
     )
 
     OperationSettings plus(OperationSettings right) {
