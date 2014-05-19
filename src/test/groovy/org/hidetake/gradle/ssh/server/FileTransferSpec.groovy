@@ -14,6 +14,7 @@ import spock.lang.Specification
 import spock.util.mop.Use
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
+@Use(FileDivCategory)
 class FileTransferSpec extends Specification {
 
     @Shared
@@ -57,7 +58,7 @@ class FileTransferSpec extends Specification {
     }
 
 
-    def "put a file"() {
+    def "put a file given by path"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -79,16 +80,16 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "put a file to a directory"() {
+    def "put a file given by a File object"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
-        def destinationDir = temporaryFolder.newFolder()
+        def destinationFile = temporaryFolder.newFile()
 
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    put(sourceFile.path, destinationDir.path)
+                    put(sourceFile, destinationFile.path)
                 }
             }
         }
@@ -98,13 +99,54 @@ class FileTransferSpec extends Specification {
 
         then:
         sourceFile.text == text
-
-        and:
-        def destinationFile = new File(destinationDir, sourceFile.name)
         destinationFile.text == text
     }
 
-    @Use(FileDivCategory)
+    def "put files given by a collection of File object"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        def sourceFile1 = sourceDir / uuidgen() << uuidgen()
+        def sourceFile2 = sourceDir / uuidgen() << uuidgen()
+        def destinationDir = temporaryFolder.newFolder()
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    put(files(sourceFile1, sourceFile2), destinationDir.path)
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        (destinationDir / sourceFile1.name).text == sourceFile1.text
+        (destinationDir / sourceFile2.name).text == sourceFile2.text
+    }
+
+    def "put a file to a directory"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationDir = temporaryFolder.newFolder()
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    put(sourceFile, destinationDir.path)
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        sourceFile.text == text
+        (destinationDir / sourceFile.name).text == text
+    }
+
     def "put a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
@@ -119,7 +161,7 @@ class FileTransferSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    put(source1Dir.path, destinationDir.path)
+                    put(source1Dir, destinationDir.path)
                 }
             }
         }
@@ -135,13 +177,13 @@ class FileTransferSpec extends Specification {
 
     def "put an empty directory"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
+        def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
 
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    put(source1Dir.path, destinationDir.path)
+                    put(sourceDir, destinationDir.path)
                 }
             }
         }
@@ -150,10 +192,11 @@ class FileTransferSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        new File(destinationDir, source1Dir.name).list() == []
+        (destinationDir / sourceDir.name).list() == []
     }
 
-    def "get a file"() {
+
+    def "get a remote file to local given by path"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -175,6 +218,28 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
+    def "get a remote file to local given by a File object"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
+
+        project.with {
+            task(type: SshTask, 'testTask') {
+                session(remotes.testServer) {
+                    get(sourceFile.path, destinationFile)
+                }
+            }
+        }
+
+        when:
+        project.tasks.testTask.execute()
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
     def "get a file to a directory"() {
         given:
         def text = uuidgen()
@@ -184,7 +249,7 @@ class FileTransferSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    get(sourceFile.path, destinationDir.path)
+                    get(sourceFile.path, destinationDir)
                 }
             }
         }
@@ -196,11 +261,9 @@ class FileTransferSpec extends Specification {
         sourceFile.text == text
 
         and:
-        def destinationFile = new File(destinationDir, sourceFile.name)
-        destinationFile.text == text
+        (destinationDir / sourceFile.name).text == text
     }
 
-    @Use(FileDivCategory)
     def "get a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
@@ -215,7 +278,7 @@ class FileTransferSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    get(source1Dir.path, destinationDir.path)
+                    get(source1Dir.path, destinationDir)
                 }
             }
         }
@@ -231,13 +294,13 @@ class FileTransferSpec extends Specification {
 
     def "get an empty directory"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
+        def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
 
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    get(source1Dir.path, destinationDir.path)
+                    get(sourceDir.path, destinationDir)
                 }
             }
         }
@@ -246,7 +309,7 @@ class FileTransferSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        new File(destinationDir, source1Dir.name).list() == []
+        (destinationDir / sourceDir.name).list() == []
     }
 
     @Category(File)
