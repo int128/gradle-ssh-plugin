@@ -25,12 +25,12 @@ Getting Started
 Create an empty file and save as `build.gradle`.
 
 If you do not have installed Gradle, get the [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
-This project contains Gradle wrapper so Gradle installation is not needed.
+The project contains Gradle wrapper and Gradle installation is not needed.
 
 
 ### Add the plugin dependency
 
-Add the plugin dependency to the script:
+Add Gradle SSH plugin to the script:
 
 ```groovy
 buildscript {
@@ -45,7 +45,7 @@ buildscript {
 apply plugin: 'ssh'
 ```
 
-The plugin is available on Maven Central repository so no installation is needed.
+The plugin is available on Maven Central repository.
 Gradle will fetch the plugin from Internet.
 
 
@@ -53,8 +53,9 @@ Gradle will fetch the plugin from Internet.
 
 The plugin adds a container of remote hosts to the project.
 One or more remote hosts can be added in the `remotes` closure.
+A remote host can be associated with one or more roles.
 
-Following code adds a remote host to the remote hosts container:
+Following code adds remote hosts to the remote hosts container:
 
 ```groovy
 remotes {
@@ -70,54 +71,57 @@ remotes {
 }
 ```
 
-Now we can access the remote host by `remotes.web01` or `remotes.web02`.
-
-A remote host can be associated with one or more roles.
-See below section for details.
+Now we can specify each remote host by `remotes.web01` or `remotes.web02`.
+Also we can specify the web01 by `remotes.role('masterNode')`.
 
 
-### Create a task
+### Declare a SSH session
 
 There are two ways to use SSH facility.
 
-1. Create a SSH task and invoke Gradle with it
+1. Create a SSH task
 2. Call SSH method in the task
 
 
 #### Create a SSH task
 
-This may be main usage.
+This may be mostly used.
 The plugin provides type of a SSH task as `SshTask`.
-It is a Gradle task so provides general features such as `dependsOn: task`, `doFirst` or `doLast`.
+It is a generic Gradle task and provides trivial features such as `dependsOn: task`, `doFirst` or `doLast`.
 
-Create a SSH task in the script:
+Following code creates a SSH task in the script:
 
 ```groovy
 task checkWebServer(type: SshTask) {
   session(remotes.web01) {
-    def pids = execute('pidof nginx').split(/ /)
-    assert pids.length > 1
+    //execute ...
+  }
+  session(remotes.web02) {
+    //execute ...
   }
 }
 ```
 
-Invoke Gradle with name of the task.
+Invoke Gradle with name of the task to execute it.
 
 ```bash
 ./gradlew checkWebServer
 ```
 
-Gradle will execute the task.
-The SSH task will connect to remote hosts declared on `session` and will evaluate each closure in order.
+The SSH task will connect to all remote hosts of sessions, i.e. web01 and web02.
+And it will evaluate each closure of sessions in order.
 
 
-#### Call SSH method in the task
+#### Call sshexec method in a task
 
-Also calling SSH in the task is supported.
-This may be useful when more complex scenario is needed.
+The plugin also supports calling `sshexec` in a task.
+This may be useful if more complex scenario is needed.
+
+There is no functional difference between creating a SSH task and calling SSH method.
+Exactly same syntax is available on both cases.
 
 ```groovy
-task syncKernelParams << {
+task syncKernelParam << {
   def paramKey = 'net.core.wmem_max'
   def paramValue = null
   sshexec {
@@ -134,32 +138,24 @@ task syncKernelParams << {
 }
 ```
 
-There is no functional difference between creating a SSH task and calling SSH method.
-Exactly same syntax is available on both cases.
 
-
-### Describe SSH operations
-
-Now describe SSH operations in the SSH task or method.
-
-
-#### Declare a session
+#### More sessions
 
 A session consists of a remote host to connect and a closure.
-Following code declares a session which connects to the remote host `web01` and executes a command.
+Following code declares a session which connects to web01 and executes a command.
 
 ```groovy
 session(remotes.web01) {
-  execute 'sudo service httpd reload'
+  //execute ...
 }
 ```
 
-If more than one remote hosts are given, the plugin will connect to the remote host and execute the closure in order.
+If more than one remote hosts are given, the plugin will connect to all remote hosts at once and execute closures in order.
 For instance,
 
 ```groovy
 session(remotes.web01, remotes.web02) {
-  execute 'sudo service httpd reload'
+  //execute ...
 }
 ```
 
@@ -167,66 +163,90 @@ is equivalent to:
 
 ```groovy
 session(remotes.web01) {
-  execute 'sudo service httpd reload'
+  //execute ...
 }
 session(remotes.web02) {
-  execute 'sudo service httpd reload'
+  //execute ...
 }
 ```
 
 
-#### Describe operations in the closure
+### Describe SSH operations
 
-Following methods are available to perform operations. See below section for details.
+Now describe SSH operations in the session closure.
+SSH operation methods and any Groovy or Gradle methods can be used.
 
-* `execute`
-* `executeBackground`
-* `executeSudo`
-* `shell`
-* `put`
-* `get`
+```groovy
+session(remotes.web01) {
+  // Execute a command
+  def result = execute 'uptime'
+
+  // Any Gradle methods or properties can be used in a session closure
+  copy {
+    from "src/main/resources/example"
+    into "$buildDir/tmp"
+  }
+
+  // Also Groovy methods or properties can be used in a session closure
+  println result
+}
+```
+
+Following operations are available. See later section for details.
+
+* Command execution
+* Shell execution
+* File transfer
 
 
 Manage remote hosts
 -------------------
 
 The plugin adds a container of remote hosts to the project.
-It is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
+The remote hosts conianer is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
 
 
 ### Add a remote host
 
+Following code adds a remote host to the remote hosts container:
+
 ```groovy
 remotes {
   web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
   }
 }
 ```
 
 Following settings can be set in a remote closure.
 
-* `host` - Hostname or IP address. (Mandatory)
-* `port` - Port. Default is 22.
-* `gateway` - Gateway remote host. If this is set, port-forwarding tunnel will be used to connect.
+Key       | Type              | Description
+----------|-------------------|------------
+`host`    | String, Mandatory | Hostname or IP address.
+`port`    | Integer           | Port. Default is 22.
+`gateway` | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection.
 
 
 #### Set connection settings
 
-Also following settings can be set in a remote closure. These can be set globally.
+Also following settings can be set in a remote closure. These can be set globally in the project.
 
-* `user` - User name. (Mandatory)
-* `password` - Password for password authentication.
-* `identity` - Private key file for public-key authentication. This overrides global identity.
-* `passphrase` - Pass phrase for the private key.
-* `agent` - If this flag is set, Putty Agent or ssh-agent will be used to authentication.
-* `knownHosts` - Known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
-* `retryCount` - Retrying count to establish connection. Default is 0 (no retry).
-* `retryWaitSec` - Time in seconds between each retries. Default is 0 (immediately).
+Key            | Type              | Description
+---------------|-------------------|------------
+`user`         | String, Mandatory | User name.
+`password`     | String            | A password for password authentication.
+`identity`     | File              | A private key file for public-key authentication.
+`passphrase`   | String            | A pass-phrase of the private key. This can be null.
+`agent`        | Boolean           | If this is set, Putty Agent or ssh-agent will be used on authentication.
+`knownHosts`   | File              | A known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+`retryCount`   | Integer           | Retry count to establish connection. Default is 0 (no retry).
+`retryWaitSec` | Integer (seconds) | Interval time between each retries. Default is 0 (immediately).
 
 
 #### Connect through gateway servers
 
-A remote host can be accessed through one or more gateway servers.
+A remote host can be connected through one or more gateway servers.
 
 ```groovy
 remotes {
@@ -243,29 +263,57 @@ remotes {
 ```
 
 
-### Access remote hosts in the container
+### Associate with roles
 
-Use `role` method to associate the host with roles. A remote host can be associated with multiple roles.
+Call `role` method to associate the host with one or more roles.
 
-* `remotes.name` - Specifies the remote host.
-* `remotes.role(A)` - Specifies remote hosts associated with A.
-* `remotes.role(A, B)` - Specifies remote hosts associated with A _or_ B.
+```groovy
+remotes {
+  web01 {
+    role('webServers')
+    role('all')
+    host = '192.168.1.101'
+    user = 'jenkins'
+  }
+}
+```
+
+We can specify one or mote roles on a session.
+
+```groovy
+session(remotes.role('all')) {
+  //execute ...
+}
+
+session(remotes.role('webServer', 'appServer')) {
+  //execute ...
+}
+```
 
 
 ### Manipulate on execution phase
 
-A remote host can be defined dynamically by `remotes.create(name)`.
+A remote host can be defined on execution phase by `remotes.create(name)`.
 
 ```groovy
-remotes.create('dynamic1') {
-  host = /* given in execution phase */
-  user = /* given in execution phase */
+task setupRemote << {
+  sshexec {
+    session(remotes.web01) {
+      def targetHost = execute 'cat settings/hostname'
+      def targetUser = execute 'cat settings/username'
+      // Define a remote host dynamically
+      remotes.create('dynamic1') {
+        host = targetHost
+        user = targetUser
+      }
+    }
+  }
 }
 
-task something << {
+task something(dependsOn: setupRemote) << {
   sshexec {
     session(remotes.dynamic1) {
-      execute('...')
+      //execute ...
     }
   }
 }
@@ -275,31 +323,78 @@ task something << {
 Perform operations
 ------------------
 
-Following operations are available in the session.
+Following methods are available in a session closure.
 
-  * Command execution
-  * Shell execution
-  * File transfer
+* `execute` - Execute a command.
+* `executeBackground` - Execute a command in background.
+* `executeSudo` - Execute a command with sudo support.
+* `shell` - Execute a shell.
+* `put` - Put a file or directory into the remote host.
+* `get` - Get a file or directory from the remote host.
 
 
 ### Execute a command
 
-Use following methods to execute a command in the session closure.
+Call the `execute` method with a command to execute.
 
-* `execute(command)` - Executes a command. This method blocks until the command is completed and returns output of the command.
-* `executeSudo(command)` - Executes a command as sudo (prepends sudo -S -p). Used to support sudo commands requiring password. This method blocks until the command is completed and returns output of the command.
-* `executeBackground(command)` - Executes a command in background. Other operations will be performed concurrently.
+```groovy
+execute 'sudo service httpd reload'
+```
+
+The method can be called with operation settings.
+
+```groovy
+execute 'sudo service httpd reload', pty: true
+```
+
+The method waits until the command is completed and returns a result from standard output of the command.
+Line separators are converted to the platform native.
+
+```groovy
+def result = execute 'uname -a'
+println result
+```
+
+A result can be retrieved as an argument if a closure is given.
+
+```groovy
+execute('uname -a') { result ->
+  println result
+}
+```
+
+The method throws an exception if an exit status of the command was not zero.
 
 
-#### Handle the result
+### Execute a command in background
 
-Following methods return value:
+Call the `executeBackground` method with a command to execute in background.
 
-* `execute` returns a string from standard output of the remote command. Line separators are converted to platform native.
-* `executeSudo` returns a string from standard output of the remote command, excluding sudo interactions. Line separators are same as above.
+```groovy
+executeBackground 'sudo service httpd reload'
 
-Also `execute`, `executeBackground` and `executeSudo` can take a callback closure _(since v0.3.1)_.
-It will be called with the result when the command is finished.
+// also can be called with operation settings
+executeBackground 'sudo service httpd reload', pty: true
+```
+
+The method does not wait for the command.
+Other commands are executed concurrently.
+
+```groovy
+// httpd processes on all web servers will be reloaded concurrently
+session(remotes.role('webServers')) {
+  executeBackground 'sudo service httpd reload'
+}
+
+// ping to many hosts concurrently
+session(remotes.web01) {
+  (1..127).each { lastOctet ->
+    executeBackground "ping -c 1 -w 1 192.168.1.$lastOctet"
+  }
+}
+```
+
+A result can be retrieved as an argument if a closure is given.
 
 ```groovy
 executeBackground('ping -c 3 server') { result ->
@@ -307,53 +402,223 @@ executeBackground('ping -c 3 server') { result ->
 }
 ```
 
+The method throws an exception if an exit status of the command is not zero.
+If a background command returned an error, the task or sshexec method waits for any other commands and throws an exception finally.
 
-#### Handle the error
 
-These methods raise an exception and stop Gradle if error occurs:
+### Execute a command with the sudo support
 
-* `execute` throws an exception if exit status of the remote command is not zero.
-* `executeSudo` throws an exception if exit status of the remote command is not zero, including sudo authentication failure.
-* `executeBackground` throws an exception if exit status of the remote command is not zero, but does not interrupt any other background operations. If any command cause error, the task will be failed.
+Call the `executeSudo` method with a command to execute with the sudo support.
+The method prepends `sudo -S -p` to the command and will provide a password for sudo prompt.
+
+```groovy
+executeSudo 'service httpd reload'
+
+// also can be called with operation settings
+executeSudo 'service httpd reload', pty: true
+```
+
+The method waits until the command is completed and returns a result from standard output of the command, excluding sudo interactions.
+Line separators are converted to the platform native.
+
+```groovy
+def result = executeSudo 'service httpd status'
+println result
+```
+
+A result can be retrieved as an argument if a closure is given.
+
+```groovy
+executeSudo('service httpd status') { result ->
+  println result
+}
+```
+
+The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure.
+
+The sudo support is achieved by the stream interaction support. So the method does not accept an `interaction` setting.
 
 
 ### Execute a shell
 
-Use `shell` method to execute a shell in the session closure.
-This method blocks until the shell is finished and will throw an exception if exit status of the shell is not zero.
-Stream interaction setting should be given in order to exit the shell.
+Call the `shell` method to execute a shell.
+The method is useful for a limited environment which supports only a shell such as Cisco IOS.
+
+A stream interaction setting should be given in order to exit the shell.
+
+```groovy
+session(remotes.web01) {
+  shell interaction: {
+    when(partial: ~/.*$/) {
+      standardInput << 'exit 0' << '\n'
+    }
+  }
+}
+```
+
+The method throws an exception if an exit status of the shell was not zero.
 
 
 ### Transfer a file or directory
 
-Use following methods to transfer files in the session closure.
+Call the `get` method to get a file or directory from the remote host.
 
-* `get(remote, local)` - Fetches a file or directory from remote host.
-* `put(local, remote)` - Sends a file or directory to remote host.
+```groovy
+get '/remote/file', 'local_file'
 
-These methods raise an exception and stop Gradle if error occurs.
+// also accepts a File object
+get '/remote/file', buildDir
+```
 
-It is strongly recommended to pack files into a archive and transfer it for performance reason.
+Call the `put` method to put a file or directory into the remote host.
+
+```groovy
+put 'local_file', '/remote/file'
+
+// also accepts a File object
+put buildDir, '/remote/folder'
+
+// also accepts an Iterable<File>
+put files('local_file1', 'local_file2'), '/remote/folder'
+```
+
+The method throws an exception if an error occurred while the file transfer.
 
 
-### Set operation settings
+### Operation settings
 
-Following settings can be passed to operation methods.
+Following settings can be given to operation methods.
 
-* `dryRun` - Dry run flag. If true, performs no action. Default is false.
-* `pty` - Requests PTY allocation if true. Default is false. Only valid for command execution.
-* `logging` -  Turns off logging of standard output and error if false. e.g. hiding credential. Default is true.
-* `outputLogLevel` - Log level of standard output while command execution. Default is `LogLevel.QUIET`.
-* `errorLogLevel` - Log level of standard error while command execution. Default is `LogLevel.ERROR`.
-* `encoding` - Encoding of input and output for executing commands. Default is UTF-8.
-* `interaction` - Specifies interaction with the stream _(since v0.3.1)_. Default is no interaction.
-* `extensions` - List of extension classes. If given, classes will be mixin on session execution.
+Key              | Type     | Description
+-----------------|----------|------------
+`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
+`pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
+`logging`        | Boolean  | If this is false, the logging of standard output and error is turned off, for such as hiding credential. Default is true.
+`outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
+`errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
+`encoding`       | String   | Encoding of input and output on the command or shell execution. Default is `UTF-8`.
+`interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Default is no interaction.
+`extensions`     | List of classes | List of extension classes. If this is set, classes will be mixed in.
 
 
-Declare stream interaction
---------------------------
+### The stream interaction support
 
-`execute`, `executeBackground` and `shell` can take a setting for interaction with the stream.
+The execute method can interact with the stream of command executed on the remote host.
+The shell method can do same.
+This feature is useful for providing a password or yes/no answer.
+
+
+#### Declare interaction rules
+
+Call the execute or shell method with an `interaction` setting which contains one or more interaction rules.
+Interaction rules will be evaluated in order.
+If any rule has been matched, others are not evaluated more.
+
+The following example declares 2 rules.
+
+```groovy
+interaction: {
+  // Declare a rule
+  when(/* a pattern match */) {
+    /* an action closure */
+  }
+
+  // Below rule will be evaluated only if above is not matched
+  when(/* a pattern match */) {
+    /* an action closure */
+  }
+}
+```
+
+
+#### An interaction rule is
+
+An interaction rule consists of a pattern match and an action closure.
+The action closure will be executed if the pattern match is satisfied.
+
+A pattern match is one of the following.
+
+* `when(partial: pattern, from: stream)`
+  Declares if a partial string from the stream is matched to the pattern.
+* `when(line: pattern, from: stream)`
+  Declares if a line from the stream is matched to the pattern.
+* `when(nextLine: pattern, from: stream)`
+  Declares if an next line from the stream is matched to the pattern.
+
+`partial` is evaluated when the stream is flushed.
+But `line` and `nextLine` is evaluated when the stream gives a line separator.
+
+The pattern is one of the following.
+
+* If the pattern is a string, it performs exact match.
+* If the pattern is a regular expression, it performs regular expression match. Groovy provides pretty notation such as `~/pattern/`.
+* If the pattern is `_`, it matches to any line even if empty.
+
+The stream is one of the following.
+
+* `standardOutput` - Standard output of the command.
+* `standardError` - Standard error of the command.
+* If the stream is omitted, it means any.
+
+Now explaining another one of an interaction rule, an action closure.
+
+An action closure is a generic Groovy closure executed if the pattern match is satisfied.
+It can write a string to the `standardInput`.
+
+```groovy
+interaction: {
+  when(partial: ~/.*#/) {
+    standardInput << 'exit' << '\n'
+  }
+}
+```
+
+If an action closure contains one or more interaction rules, surrounding rules are discarded and inner rules are activated.
+In the following case, at first, A and B are evaluated for an each line or partial string,
+but C is evaluated after A has been matched.
+
+```groovy
+interaction: {
+  when(/* rule A */) {
+    when(/* rule C */) {
+    }
+  }
+  when(/* rule B */) {
+  }
+}
+```
+
+
+#### Example: handle the prompt
+
+Let's take a look at the following example.
+
+```groovy
+// Execute a shell with the interaction support
+shell interaction: {
+  // Declare a rule if the stream gives a string terminated with $
+  when(partial: ~/.*$/) {
+    // If the rule is matched, provides the exit to the shell
+    standardInput << 'exit 0' << '\n'
+  }
+}
+```
+
+The example will execute a shell and provide the exit if the prompt appears.
+
+If the shell prompt is `sh$`, pattern matching will work as follows.
+
+1. The stream gives `s` and the line buffer becomes `s`.
+2. The pattern match is evaluated but not matched.
+3. The stream gives `h` and the line buffer becomes `sh`.
+4. The pattern match is evaluated but not matched.
+5. The stream gives `$` and the line buffer becomes `sh$`..
+6. The pattern match is evaluated and matched. The closure is executed.
+
+
+#### Example: handle more prompts
+
+TODO
 
 ```groovy
 execute('passwd', pty: true, interaction: {
@@ -365,31 +630,6 @@ execute('passwd', pty: true, interaction: {
   }
 })
 ```
-
-We can write a string to the `standardInput` to interact with the command.
-
-
-### Declare interaction rules
-
-Use following methods to declare rules in the interaction closure.
-
-* `when(nextLine: pattern, from: stream) { action }` - When next line from the `stream` matches to the `pattern`, the action will be called.
-* `when(line: pattern, from: stream) { action }` - When a line from the `stream` matches to the `pattern`, the action will be called.
-* `when(partial: pattern, from: stream) { action }` - Performs match when the stream is flushed. This is useful for answering to a prompt such as `yes or no?`.
-
-`pattern` is one of following:
-
-* If pattern is a string, it performs exact match.
-* If pattern is a regular expression, it performs regular expression match. Groovy provides pretty notation such as `~/pattern/`.
-* If pattern is `_`, it matches to any line even if empty.
-
-`stream` is one of following:
-
-* `standardOutput` - Standard output of the command.
-* `standardError` - Standard error of the command.
-* If stream is omitted, it means any.
-
-Rules will be evaluated in order. First rule has the highest priority.
 
 
 Override settings
