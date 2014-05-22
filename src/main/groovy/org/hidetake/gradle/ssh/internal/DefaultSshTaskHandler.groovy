@@ -53,7 +53,7 @@ class DefaultSshTaskHandler implements SshTaskHandler {
     }
 
     @Override
-    void execute(CompositeSettings globalSettings) {
+    Object execute(CompositeSettings globalSettings) {
         def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
 
         def connectionService = ConnectionService.instance
@@ -64,9 +64,12 @@ class DefaultSshTaskHandler implements SshTaskHandler {
                 session.delegate = sessionService.createDelegate(
                         session.remote as Remote, merged.operationSettings, manager)
             }
-            sessions.each { session ->
-                configure(session.closure as Closure, session.delegate)
-            }
+            sessions.collect { session ->
+                def closure = (session.closure as Closure).clone()
+                closure.resolveStrategy = Closure.DELEGATE_FIRST
+                closure.delegate = session.delegate
+                closure.call()
+            }.last()
         }
     }
 }
