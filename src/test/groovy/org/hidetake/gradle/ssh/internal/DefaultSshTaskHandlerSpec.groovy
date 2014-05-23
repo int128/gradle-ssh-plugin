@@ -111,6 +111,35 @@ class DefaultSshTaskHandlerSpec extends Specification {
     }
 
 
+    def "add a session with remote properties"() {
+        when:
+        sshTaskDelegate.session(host: 'myHost', user: 'myUser') {
+            assert false
+        }
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "add a session with remote properties and null closure throws an error"() {
+        when:
+        sshTaskDelegate.session(host: 'myHost', user: 'myUser', null)
+
+        then:
+        AssertionError ex = thrown()
+        ex.message.contains("closure")
+    }
+
+    def "add a session with remote properties but without host throws an error"() {
+        when:
+        sshTaskDelegate.session(user: 'myUser', null)
+
+        then:
+        AssertionError ex = thrown()
+        ex.message.contains("host")
+    }
+
+
     @ConfineMetaClassChanges([ConnectionService, SessionService])
     def "execute sessions"() {
         given:

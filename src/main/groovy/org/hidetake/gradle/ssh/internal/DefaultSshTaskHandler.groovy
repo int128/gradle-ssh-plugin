@@ -40,6 +40,15 @@ class DefaultSshTaskHandler implements SshTaskHandler {
         remotes.each { remote -> session(remote, closure) }
     }
 
+    @Override
+    void session(Map remoteProperties, Closure closure) {
+        assert remoteProperties, 'properties of a remote must be given'
+        assert remoteProperties.host, 'host must be given for the remote'
+        def remote = new Remote(remoteProperties.host as String)
+        remoteProperties.each { String k, Object v -> remote[k] = v }
+        session(remote, closure)
+    }
+
     void execute(CompositeSettings globalSettings) {
         def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
 
