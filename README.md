@@ -43,6 +43,13 @@ Just run Gradle wrapper.
 ```
 
 
+### Known issues
+
+1 test will be failed on Mac OS X, due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
+
+2 tests will be failed on Windows, because Apache sshd server does not support SFTP operations on Windows.
+
+
 Acceptance Test
 ---------------
 
