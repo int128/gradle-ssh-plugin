@@ -35,6 +35,15 @@ task aggressiveTest { description = 'Run tests which require environment modific
  * Test helper tasks and methods.
  */
 
+ext {
+    randomInt = { int max = 10000 -> (Math.random() * max) as int }
+
+    remoteTempPrefix = "/tmp/fixture-${randomInt()}"
+    remoteTempPath = { String name = '' -> "$remoteTempPrefix-$name" }
+}
+
+project.metaClass.mixin(FeatureSupport as Class)
+
 task setupBuildDir(type: Delete) {
     delete buildDir
     doLast {
@@ -46,26 +55,12 @@ task cleanBuildDir(type: Delete) {
     delete buildDir
 }
 
-ext {
-    remoteTempPrefix = "/tmp/fixture-${randomInt()}"
-}
-
 task cleanRemoteTemp(type: SshTask) {
     session(remotes.localhost) {
         assert remoteTempPrefix
         execute("rm -vr ${remoteTempPrefix}*")
     }
 }
-
-def remoteTempPath(String name = '') {
-    "$remoteTempPrefix-$name"
-}
-
-def randomInt(int max = 10000) {
-    (Math.random() * max) as int
-}
-
-project.metaClass.mixin(FeatureSupport as Class)
 
 
 fileTree(projectDir) {
