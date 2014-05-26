@@ -30,6 +30,15 @@ interface SshTaskHandler {
     void session(Collection<Remote> remotes, Closure closure)
 
     /**
+     * Add a session.
+     * This method creates a {@link Remote} instance and add a session with it.
+     *
+     * @param remoteProperties properties of a {@link org.hidetake.gradle.ssh.plugin.Remote}
+     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler} (run in execution phase)
+     */
+    void session(Map remoteProperties, Closure closure)
+
+    /**
      * Execute the task.
      * This method should be called by plugin internally.
      *

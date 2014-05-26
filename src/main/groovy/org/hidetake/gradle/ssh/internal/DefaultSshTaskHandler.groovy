@@ -23,11 +23,13 @@ class DefaultSshTaskHandler implements SshTaskHandler {
 
     private final List<Map> sessions = []
 
+    @Override
     void ssh(Closure closure) {
         assert closure, 'closure must be given'
         configure(closure, taskSpecificSettings)
     }
 
+    @Override
     void session(Remote remote, Closure closure) {
         assert remote, 'remote must be given'
         assert remote.host, "host must be given for the remote ${remote.name}"
@@ -35,11 +37,22 @@ class DefaultSshTaskHandler implements SshTaskHandler {
         sessions.add(remote: remote, closure: closure)
     }
 
+    @Override
     void session(Collection<Remote> remotes, Closure closure) {
         assert remotes, 'at least one remote must be given'
         remotes.each { remote -> session(remote, closure) }
     }
 
+    @Override
+    void session(Map remoteProperties, Closure closure) {
+        assert remoteProperties, 'properties of a remote must be given'
+        assert remoteProperties.host, 'host must be given for the remote'
+        def remote = new Remote(remoteProperties.host as String)
+        remoteProperties.each { String k, Object v -> remote[k] = v }
+        session(remote, closure)
+    }
+
+    @Override
     void execute(CompositeSettings globalSettings) {
         def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
 
