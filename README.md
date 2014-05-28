@@ -42,6 +42,8 @@ Just run Gradle wrapper.
 ./gradlew build
 ```
 
+The build and acceptance test will be performed when the branch is pushed. See the [build report](http://gradle-ssh-plugin.github.io/build-report.html) of every branches.
+
 
 ### Known issues
 
