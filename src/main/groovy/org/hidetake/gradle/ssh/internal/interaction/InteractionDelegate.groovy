@@ -2,6 +2,8 @@ package org.hidetake.gradle.ssh.internal.interaction
 
 import org.hidetake.gradle.ssh.plugin.interaction.InteractionHandler
 
+import static org.hidetake.gradle.ssh.util.ClosureUtil.callWithDelegate
+
 /**
  * A delegate class for interaction closure.
  *
@@ -32,9 +34,7 @@ class InteractionDelegate implements InteractionHandler {
      */
     def evaluate(Closure closure) {
         interactionRules.clear()
-        closure.delegate = this
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure()
+        callWithDelegate(closure, this)
 
         List<InteractionRule> snapshot = []
         snapshot.addAll(interactionRules)
