@@ -168,13 +168,15 @@ class DefaultSshTaskHandlerSpec extends Specification {
 
         when:
         sshTaskDelegate.session([remote1, remote2], closure)
-        sshTaskDelegate.execute(new CompositeSettings())
+        def result = sshTaskDelegate.execute(new CompositeSettings())
 
         then: 1 * sessionService.createDelegate(remote1, OperationSettings.DEFAULT, _) >> sessionHandler1
         then: 1 * sessionService.createDelegate(remote2, OperationSettings.DEFAULT, _) >> sessionHandler2
 
-        then: 1 * sessionHandler1.execute('something')
-        then: 1 * sessionHandler2.execute('something')
+        then: 1 * sessionHandler1.execute('something') >> 'result1'
+        then: 1 * sessionHandler2.execute('something') >> 'result2'
+
+        then: result == 'result2'
     }
 
 }

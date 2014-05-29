@@ -49,8 +49,9 @@ class SshPlugin implements Plugin<Project> {
          * Execute a SSH closure.
          *
          * @param closure closure for {@link org.hidetake.gradle.ssh.internal.DefaultSshTaskHandler}
+         * @return returned value of the last session
          */
-        void sshexec(Closure closure) {
+        Object sshexec(Closure closure) {
             assert closure, 'closure must be given'
             SshTaskService.instance.execute(project.extensions.ssh as CompositeSettings, closure)
         }

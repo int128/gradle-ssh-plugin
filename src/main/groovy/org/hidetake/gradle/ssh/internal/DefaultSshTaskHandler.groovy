@@ -8,6 +8,7 @@ import org.hidetake.gradle.ssh.plugin.Remote
 import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 
 import static org.gradle.util.ConfigureUtil.configure
+import static org.hidetake.gradle.ssh.util.ClosureUtil.callWithDelegate
 
 /**
  * A delegate class of ssh task.
@@ -53,7 +54,7 @@ class DefaultSshTaskHandler implements SshTaskHandler {
     }
 
     @Override
-    void execute(CompositeSettings globalSettings) {
+    Object execute(CompositeSettings globalSettings) {
         def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
 
         def connectionService = ConnectionService.instance
@@ -64,9 +65,9 @@ class DefaultSshTaskHandler implements SshTaskHandler {
                 session.delegate = sessionService.createDelegate(
                         session.remote as Remote, merged.operationSettings, manager)
             }
-            sessions.each { session ->
-                configure(session.closure as Closure, session.delegate)
-            }
+            sessions.collect { session ->
+                callWithDelegate(session.closure as Closure, session.delegate)
+            }.last()
         }
     }
 }

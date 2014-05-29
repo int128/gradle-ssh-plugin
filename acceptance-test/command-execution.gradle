@@ -18,6 +18,26 @@ task executeCommand(type: SshTask) {
 }
 
 
+feature('executing a command by the sshexec method') {
+    task 'executeCommandBySshexec'
+    category 'test'
+}
+
+task executeCommandBySshexec << {
+    def x = randomInt()
+    def y = randomInt()
+    def a = sshexec {
+        session(remotes.localhost) {
+            execute "expr $x + $y"
+        }
+        session(remotes.localhost) {
+            execute "expr $x - $y"
+        }
+    }
+    assert a as int == (x - y)
+}
+
+
 feature('filter hosts by role') {
     task 'executeCommandByRole'
     category 'test'
@@ -119,9 +139,9 @@ task executeConcurrently(type: SshTask) {
     }
     doLast {
         // all commands should be completed at this point
-        sshexec {
+        def result = sshexec {
             session(remotes.localhost) {
-                ext.result = execute("cat $tempPath")
+                execute("cat $tempPath")
             }
         }
         assert result.readLines() == ['0', '1', '2', '3']

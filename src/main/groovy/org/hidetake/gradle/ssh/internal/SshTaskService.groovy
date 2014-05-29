@@ -25,8 +25,9 @@ class SshTaskService {
      *
      * @param globalSettings
      * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler}
+     * @return returned value of the last session
      */
-    void execute(CompositeSettings globalSettings, Closure closure) {
+    Object execute(CompositeSettings globalSettings, Closure closure) {
         def handler = createDelegate()
         ConfigureUtil.configure(closure, handler)
         handler.execute(globalSettings)

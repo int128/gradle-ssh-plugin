@@ -100,6 +100,30 @@ class SshPluginSpec extends Specification {
         ), _)
     }
 
+    @ConfineMetaClassChanges(SshTaskService)
+    def "sshexec() returns a result of the closure"() {
+        given:
+        def service = Mock(SshTaskService)
+        SshTaskService.metaClass.static.getInstance = { -> service }
+
+        def project = createProject()
+
+        when:
+        project.with {
+            project.ext.actualResult = sshexec {
+                session(remotes.webServer) {
+                    execute 'ls'
+                }
+            }
+        }
+
+        then: 1 * service.execute(new CompositeSettings(
+                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        ), _) >> 'ls-result'
+
+        then: project.ext.actualResult == 'ls-result'
+    }
+
     def "invoke sshexec with null"() {
         given:
         def project = createProject()

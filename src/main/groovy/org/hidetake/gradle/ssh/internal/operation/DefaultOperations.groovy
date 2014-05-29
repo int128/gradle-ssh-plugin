@@ -13,6 +13,8 @@ import org.hidetake.gradle.ssh.plugin.interaction.Stream
 import org.hidetake.gradle.ssh.plugin.operation.Operations
 import org.hidetake.gradle.ssh.plugin.session.BadExitStatusException
 
+import static org.hidetake.gradle.ssh.util.ClosureUtil.callWithDelegate
+
 /**
  * Default implementation of {@link org.hidetake.gradle.ssh.plugin.operation.Operations}.
  *
@@ -171,9 +173,7 @@ class DefaultOperations implements Operations {
             channel.connect()
             log.info("SFTP Channel #${channel.id} has been opened")
 
-            closure.delegate = new DefaultSftpOperations(channel)
-            closure.resolveStrategy = Closure.DELEGATE_FIRST
-            closure.call()
+            callWithDelegate(closure, new DefaultSftpOperations(channel))
 
             log.info("SFTP Channel #${channel.id} has been closed")
         } finally {

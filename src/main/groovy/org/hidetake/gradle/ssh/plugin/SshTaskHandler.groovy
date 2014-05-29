@@ -43,6 +43,7 @@ interface SshTaskHandler {
      * This method should be called by plugin internally.
      *
      * @param globalSettings
+     * @return returned value of the last session
      */
-    void execute(CompositeSettings globalSettings)
+    Object execute(CompositeSettings globalSettings)
 }
