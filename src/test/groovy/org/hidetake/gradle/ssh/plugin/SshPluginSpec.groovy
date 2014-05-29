@@ -60,8 +60,7 @@ class SshPluginSpec extends Specification {
         def project = createProject()
 
         when:
-        Collection<Remote> associated = project.remotes.role(roles)
-        def actualRemoteNames = associated.collect { it.name }
+        def actualRemoteNames = remoteNameSet(project.remotes.role(roles))
 
         then:
         actualRemoteNames.toSet() == expectedRemoteNames.toSet()
@@ -72,6 +71,86 @@ class SshPluginSpec extends Specification {
         'serversA'                           | ['webServer', 'managementServer']
         'serversB'                           | ['appServer', 'managementServer']
         ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
+    }
+
+
+    def "remotes on the parent project should be inherited to children"() {
+        when:
+        def parentProject = ProjectBuilder.builder().build()
+        parentProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                webServer {}
+            }
+        }
+
+        def childProject = ProjectBuilder.builder().withParent(parentProject).build()
+        childProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                appServer {}
+            }
+        }
+
+        then:
+        remoteNameSet(parentProject.remotes) == ['webServer'].toSet()
+        remoteNameSet(childProject.remotes) == ['webServer', 'appServer'].toSet()
+    }
+
+    def "role can be applied for remotes on the parent project"() {
+        when:
+        def parentProject = ProjectBuilder.builder().build()
+        parentProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                webServer { role 'roleA' }
+            }
+        }
+
+        def childProject = ProjectBuilder.builder().withParent(parentProject).build()
+        childProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                appServer { role 'roleB' }
+            }
+        }
+
+        then:
+        remoteNameSet(childProject.remotes.role('roleA')) == ['webServer'].toSet()
+        remoteNameSet(childProject.remotes.role('roleB')) == ['appServer'].toSet()
+    }
+
+    def "the parent project without the plugin is ignored"() {
+        when:
+        def parentProject = ProjectBuilder.builder().build()
+
+        def childProject = ProjectBuilder.builder().withParent(parentProject).build()
+        childProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                appServer {}
+            }
+        }
+
+        then:
+        remoteNameSet(childProject.remotes) == ['appServer'].toSet()
+    }
+
+    def "the child project without the plugin is ignored"() {
+        when:
+        def parentProject = ProjectBuilder.builder().build()
+        parentProject.with {
+            apply plugin: 'ssh'
+            remotes {
+                webServer {}
+            }
+        }
+
+        and: 'create the child project'
+        ProjectBuilder.builder().withParent(parentProject).build()
+
+        then:
+        remoteNameSet(parentProject.remotes) == ['webServer'].toSet()
     }
 
 
@@ -171,6 +250,10 @@ class SshPluginSpec extends Specification {
 
             it
         }
+    }
+
+    private static remoteNameSet(Collection<Remote> remotes) {
+        remotes.collect { it.name }.toSet()
     }
 
 }
