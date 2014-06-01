@@ -203,7 +203,7 @@ Manage remote hosts
 -------------------
 
 The plugin adds a container of remote hosts to the project.
-The remote hosts conianer is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
+The remote hosts contianer is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
 
 
 ### Add a remote host
@@ -226,6 +226,7 @@ Key       | Type              | Description
 `host`    | String, Mandatory | Hostname or IP address.
 `port`    | Integer           | Port. Default is 22.
 `gateway` | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection.
+`proxy`   | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host.
 
 
 #### Set connection settings
@@ -259,6 +260,92 @@ remotes {
     user = 'jenkins'
     gateway = remotes.gw01
   }
+}
+```
+
+
+#### Connect through a proxy server
+
+A remote host can specify that connections should be made through a proxy server. Individual proxy server connections are configured in the `proxies` container provided by the plugin. 
+
+The following code adds a proxy server to the `proxies` container:
+
+```groovy
+proxies {
+  socks01 {
+    host = '192.168.1.112'
+    port = 1080
+    type = SOCKS
+  }
+}
+```
+
+The following settings are used to configure how a proxied connection is established within a proxy closure.
+
+Key            | Type                 | Description
+---------------|----------------------|------------
+`host`         | String, Mandatory    | Hostname or IP address.
+`port`         | Integer, Mandatory   | Port.
+`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`. 
+`user`         | String               | Proxy server user name.
+`password`     | String               | Proxy server password.
+`socksVersion` | Integer              | Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
+
+Once a proxy server is defined in the `proxies` container, it can be referenced per-remote, per-task or globally. Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied. 
+
+The following code shows how remote hosts can use different proxy servers.
+
+```groovy
+proxies {
+  socks {
+    host = '192.168.1.112'
+    port = 1080
+    user = 'admin'
+    password = '0t1s'
+    type = SOCKS
+    socksVersion = 5
+  }
+  
+  http {
+    host = '192.168.1.113'
+    port = 8080
+    type = HTTP
+  }
+}
+
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    proxy = proxies.http
+  }
+  
+  web02 {
+    host = '192.168.1.102'
+    user = 'jenkins'
+    proxy = proxies.socks
+  }
+}
+```
+
+The following shows how to set a global proxy server.
+
+```groovy
+ssh {
+  // All remotes will use this proxy by default.
+  // Each remote can override this configuration.
+  proxy = proxies.socks01
+}
+```
+
+The following shows how to set a proxy server on a particular task.
+
+```groovy
+task jarSearch(type: SshTask) {
+  ssh {
+    proxy = proxies.http01
+  }
+  session(remotes.role('mavenRepo')) { ... }
 }
 ```
 
