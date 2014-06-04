@@ -170,6 +170,14 @@ session(remotes.web02) {
 }
 ```
 
+Also the session method accepts properties of a remote host without having to declare it on the remote host container.
+
+```groovy
+session(host: '192.168.1.101', user: 'jenkins') {
+  //execute ...
+}
+```
+
 
 ### Describe SSH operations
 
