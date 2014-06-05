@@ -117,16 +117,17 @@ And it will evaluate each closure of sessions in order.
 The plugin also supports calling `sshexec` in a task.
 This may be useful if more complex scenario is needed.
 
-There is no functional difference between creating a SSH task and calling SSH method.
-Exactly same syntax is available on both cases.
+Exactly same syntax is available in a SSH task and the sshexec method,
+but the sshexec method returns a value of the last session closure.
+
+Here is an example.
 
 ```groovy
 task syncKernelParam << {
   def paramKey = 'net.core.wmem_max'
-  def paramValue = null
-  sshexec {
+  def paramValue = sshexec {
     session(remotes.web01) {
-      paramValue = execute("sysctl '$paramKey' | sed -e 's/ //g'")
+      execute("sysctl '$paramKey' | sed -e 's/ //g'")
     }
   }
   assert paramValue.contains(paramKey)
