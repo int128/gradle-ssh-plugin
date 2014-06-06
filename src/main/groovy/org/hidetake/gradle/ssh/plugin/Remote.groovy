@@ -36,6 +36,12 @@ class Remote {
      */
     Remote gateway
 
+	/**
+	 * Proxy to use when establishing a connection.
+	 * This may be null.
+	 */
+	Proxy proxy
+
     /**
      * Roles.
      */

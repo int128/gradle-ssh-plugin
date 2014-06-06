@@ -1,10 +1,17 @@
 package org.hidetake.gradle.ssh.plugin
 
+import spock.lang.Shared;
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class ConnectionSettingsSpec extends Specification {
 
+    @Shared
+    Proxy proxyDefault = new Proxy("proxyDefault")
+    
+    @Shared
+    Proxy proxyOverride =  new Proxy("proxyOverride")
+    
     def "merge with empty"() {
         given:
         def settings = new ConnectionSettings(identity: new File('id_rsa'))

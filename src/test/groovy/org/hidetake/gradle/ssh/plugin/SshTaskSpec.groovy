@@ -10,6 +10,10 @@ class SshTaskSpec extends Specification {
     static project() {
         ProjectBuilder.builder().build().with {
             apply plugin: 'ssh'
+            proxies {
+                globalProxy { host = 'globalPrx' }
+                overrideProxy { host = 'overridePrx' }
+            }
             remotes {
                 webServer {
                     host = 'web'
@@ -19,10 +23,12 @@ class SshTaskSpec extends Specification {
             }
             ssh {
                 dryRun = false
+                proxy = proxies.globalProxy
             }
             task(type: SshTask, 'testTask1') {
                 ssh {
                     dryRun = true
+                    proxy = proxies.overrideProxy
                 }
                 session(remotes.webServer) {
                     execute 'ls'
@@ -49,6 +55,7 @@ class SshTaskSpec extends Specification {
 
         when:
         def project = project()
+        def globalProxy = project.proxies.globalProxy
 
         then: 1 * service.createDelegate() >> taskHandler1
         then: 1 * taskHandler1.ssh(_)
@@ -59,12 +66,14 @@ class SshTaskSpec extends Specification {
 
         when: project.tasks.testTask1.execute()
         then: 1 * taskHandler1.execute(new CompositeSettings(
-                operationSettings: new OperationSettings(dryRun: false)
+                operationSettings: new OperationSettings(dryRun: false),
+                connectionSettings: new ConnectionSettings(proxy: globalProxy)
         ))
 
         when: project.tasks.testTask2.execute()
         then: 1 * taskHandler2.execute(new CompositeSettings(
-                operationSettings: new OperationSettings(dryRun: false)
+                operationSettings: new OperationSettings(dryRun: false),
+                connectionSettings: new ConnectionSettings(proxy: globalProxy)
         ))
     }
 

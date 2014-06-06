@@ -19,6 +19,7 @@ class SshPluginSpec extends Specification {
         then:
         project.ssh
         project.remotes.size() == 0
+        project.proxies.size() == 0
         project.SshTask == SshTask
     }
 
@@ -27,6 +28,7 @@ class SshPluginSpec extends Specification {
         given:
         def project = ProjectBuilder.builder().build()
         project.apply plugin: 'ssh'
+        def globalProxy = new Proxy('globalProxy')
 
         when:
         project.ssh {
@@ -35,6 +37,7 @@ class SshPluginSpec extends Specification {
             retryWaitSec = 1
             outputLogLevel = LogLevel.DEBUG
             errorLogLevel = LogLevel.INFO
+            proxy = globalProxy
         }
 
         then:
@@ -43,6 +46,7 @@ class SshPluginSpec extends Specification {
         project.ssh.retryWaitSec == 1
         project.ssh.outputLogLevel == LogLevel.DEBUG
         project.ssh.errorLogLevel == LogLevel.INFO
+        project.ssh.proxy == globalProxy
     }
 
     def "apply the full monty"() {
@@ -52,6 +56,7 @@ class SshPluginSpec extends Specification {
         then:
         project.ssh.knownHosts == ConnectionSettings.Constants.allowAnyHosts
         project.remotes.size() == 4
+        project.proxies.size() == 2
     }
 
     @Unroll
@@ -73,6 +78,25 @@ class SshPluginSpec extends Specification {
         ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
     }
 
+    @Unroll
+    def "remote #remoteName is configured with expected proxy"() {
+        given:
+        def project = createProject()
+
+        when:
+        def associated = project.remotes[remoteName]
+        def actualProxyName = associated.proxy?.name
+        
+        then:
+        actualProxyName == expectedProxyName
+        
+        where:
+        remoteName          | expectedProxyName
+        'webServer'         | null
+        'appServer'         | 'socks'
+        'dbServer'          | null
+        'managementServer'  | 'http'
+    }
 
     def "remotes on the parent project should be inherited to children"() {
         when:
@@ -153,6 +177,48 @@ class SshPluginSpec extends Specification {
         remoteNameSet(parentProject.remotes) == ['webServer'].toSet()
     }
 
+    def "proxies on the parent project should be inherited to children"() {
+        when:
+        def parentProject = ProjectBuilder.builder().build()
+        parentProject.with {
+            apply plugin: 'ssh'
+            proxies {
+                socks {}
+            }
+        }
+
+        def childProject = ProjectBuilder.builder().withParent(parentProject).build()
+        childProject.with {
+            apply plugin: 'ssh'
+            proxies {
+                http {}
+            }
+        }
+
+        then:
+        proxyNameSet(parentProject.proxies) == ['socks'].toSet()
+        proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
+    }
+
+    @Unroll
+    def "remote #remoteName is configured with expected proxy"() {
+        given:
+        def project = createProject()
+
+        when:
+        def associated = project.remotes[remoteName]
+        def actualProxyName = associated.proxy?.name
+        
+        then:
+        actualProxyName == expectedProxyName
+        
+        where:
+        remoteName          | expectedProxyName
+        'webServer'         | null
+        'appServer'         | 'socks'
+        'dbServer'          | null
+        'managementServer'  | 'http'
+    }
 
     @ConfineMetaClassChanges(SshTaskService)
     def "invoke sshexec"() {
@@ -215,14 +281,17 @@ class SshPluginSpec extends Specification {
         err.message.contains("closure")
     }
 
-
-
     private static createProject() {
         ProjectBuilder.builder().build().with {
             apply plugin: 'ssh'
 
             ssh {
                 knownHosts = allowAnyHosts
+            }
+
+            proxies {
+                http { type = HTTP }
+                socks { type = SOCKS }
             }
 
             remotes {
@@ -235,6 +304,7 @@ class SshPluginSpec extends Specification {
                     role 'serversB'
                     host = 'app'
                     user = 'appuser'
+                    proxy = proxies.socks
                 }
                 dbServer {
                     host = 'db'
@@ -245,6 +315,7 @@ class SshPluginSpec extends Specification {
                     role 'serversB'
                     host = 'mng'
                     user = 'mnguser'
+                    proxy = proxies.http
                 }
             }
 
@@ -254,6 +325,10 @@ class SshPluginSpec extends Specification {
 
     private static remoteNameSet(Collection<Remote> remotes) {
         remotes.collect { it.name }.toSet()
+    }
+
+    private static proxyNameSet(Collection<Proxy> proxies) {
+        proxies.collect { it.name }.toSet()
     }
 
 }
