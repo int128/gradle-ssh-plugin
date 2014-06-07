@@ -15,13 +15,6 @@ dependencies {
     testCompile 'org.apache.sshd:sshd-core:0.9.0'
 }
 
-sourceSets.all {
-    // Exclude old JSch to avoid test with it.
-    final bundled = ['jsch-0.1.46.jar']
-    compileClasspath -= compileClasspath.filter { it.name in bundled }
-    runtimeClasspath -= runtimeClasspath.filter { it.name in bundled }
-}
-
 test {
     useJUnit {
         excludeCategories 'org.hidetake.gradle.ssh.server.ServerIntegrationTest'
@@ -77,10 +70,8 @@ task wrapper(type: Wrapper) {
 
 task archiveDependencies(type: Zip, dependsOn: jar) {
     classifier = 'all'
-    final excludeLibs = ['jsch-0.1.46.jar']
-    final runtimeLibs = configurations.runtime - configurations.runtime.filter { it.name in excludeLibs }
     into('dep-libs') {
-        from runtimeLibs
+        from configurations.runtime
         from 'build/libs'
     }
 }
