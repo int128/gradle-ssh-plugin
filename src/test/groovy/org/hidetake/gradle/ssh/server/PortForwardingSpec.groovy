@@ -74,7 +74,7 @@ class PortForwardingSpec extends Specification {
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.target) {
-                    shell()
+                    shell(interaction: {})
                 }
             }
         }
@@ -122,7 +122,7 @@ class PortForwardingSpec extends Specification {
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.target) {
-                    shell()
+                    shell(interaction: {})
                 }
             }
         }

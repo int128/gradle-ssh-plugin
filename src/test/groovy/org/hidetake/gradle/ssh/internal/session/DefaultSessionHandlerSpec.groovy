@@ -24,7 +24,8 @@ class DefaultSessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.shell(OperationSettings.DEFAULT + new OperationSettings(dryRun: true))
+        AssertionError e = thrown()
+        e.message.contains('settings')
     }
 
     def "invoke a shell with options"() {

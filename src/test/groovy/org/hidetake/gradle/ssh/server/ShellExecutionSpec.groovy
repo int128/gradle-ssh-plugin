@@ -55,7 +55,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell()
+                    shell(interaction: {})
                 }
             }
         }
@@ -78,7 +78,7 @@ class ShellExecutionSpec extends Specification {
         project.with {
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell()
+                    shell(interaction: {})
                 }
             }
         }
@@ -116,7 +116,7 @@ class ShellExecutionSpec extends Specification {
             }
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
-                    shell()
+                    shell(interaction: {})
                 }
             }
         }
