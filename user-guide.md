@@ -212,7 +212,7 @@ Manage remote hosts
 -------------------
 
 The plugin adds a container of remote hosts to the project.
-The remote hosts contianer is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
+The remote hosts container is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
 
 
 ### Add a remote host
