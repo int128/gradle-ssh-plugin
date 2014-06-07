@@ -72,7 +72,7 @@ if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
+    gradleVersion = '2.0'
 }
 
 task archiveDependencies(type: Zip, dependsOn: jar) {
