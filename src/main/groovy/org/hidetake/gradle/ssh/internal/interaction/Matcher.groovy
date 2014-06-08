@@ -30,15 +30,15 @@ class Matcher {
         partial  ({ Event e, long n -> e == Event.Partial })
 
         final Closure<Boolean> closure
-        @Lazy private static names = { values()*.name() }()
 
         private EventMatcher(Closure<Boolean> closure1) {
             closure = closure1
         }
 
         static Closure<Boolean> generate(Map condition) {
-            def eventKeys = names.intersect(condition.keySet())
-            assert eventKeys.size() == 1, "Key should be one of $names but found $eventKeys"
+            def supportedKeys = values()*.name()
+            def eventKeys = supportedKeys.intersect(condition.keySet())
+            assert eventKeys.size() == 1, "Key should be one of $supportedKeys but found $eventKeys"
             def eventKey = eventKeys.first()
 
             def eventMatcher = valueOf(eventKey).closure
