@@ -34,7 +34,7 @@ class FileTransferSpec extends Specification {
         server.start()
     }
 
-    def teardownSpec() {
+    def cleanupSpec() {
         server.stop(true)
     }
 
