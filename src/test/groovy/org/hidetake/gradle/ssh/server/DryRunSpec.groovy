@@ -33,7 +33,7 @@ class DryRunSpec extends Specification {
         given:
         project.tasks.testTask.with {
             session(project.remotes.testServer) {
-                shell()
+                shell(interaction: {})
             }
         }
 

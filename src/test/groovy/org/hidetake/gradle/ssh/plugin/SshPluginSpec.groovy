@@ -200,26 +200,6 @@ class SshPluginSpec extends Specification {
         proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
     }
 
-    @Unroll
-    def "remote #remoteName is configured with expected proxy"() {
-        given:
-        def project = createProject()
-
-        when:
-        def associated = project.remotes[remoteName]
-        def actualProxyName = associated.proxy?.name
-        
-        then:
-        actualProxyName == expectedProxyName
-        
-        where:
-        remoteName          | expectedProxyName
-        'webServer'         | null
-        'appServer'         | 'socks'
-        'dbServer'          | null
-        'managementServer'  | 'http'
-    }
-
     @ConfineMetaClassChanges(SshTaskService)
     def "invoke sshexec"() {
         given:

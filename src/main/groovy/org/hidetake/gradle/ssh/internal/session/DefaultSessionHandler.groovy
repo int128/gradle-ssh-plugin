@@ -28,7 +28,7 @@ class DefaultSessionHandler implements SessionHandler {
     }
 
     @Override
-    void shell(HashMap settings = [:]) {
+    void shell(HashMap settings) {
         assert settings != null, 'settings must not be null'
         log.info("Execute a shell with settings ($settings)")
         operations.shell(operationSettings + new OperationSettings(settings))
