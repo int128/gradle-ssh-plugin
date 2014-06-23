@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.internal.connection
 
 import com.jcraft.jsch.JSch
-
 import com.jcraft.jsch.Proxy as JschProxy
 import com.jcraft.jsch.ProxyHTTP
 import com.jcraft.jsch.ProxySOCKS4
@@ -28,7 +27,6 @@ class DefaultConnectionManager implements ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
 	
     private final ConnectionSettings connectionSettings
-    private final JSch jsch = new JSch()
     private final List<Connection> connections = []
 
     @Lazy
@@ -84,6 +82,9 @@ class DefaultConnectionManager implements ConnectionManager {
         assert settings.retryWaitSec != null, 'retryWaitSec must not be null'
         assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
         assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
+
+        JSch.logger = JSchLogger.instance
+        def jsch = new JSch()
 
         if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
