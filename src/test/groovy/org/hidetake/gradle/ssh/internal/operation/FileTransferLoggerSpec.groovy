@@ -177,4 +177,17 @@ class FileTransferLoggerSpec extends Specification {
         then: status.kiloBytesPerSecond == (9.0 /* kB */ / 5 /* sec */)
     }
 
+    @ConfineMetaClassChanges(FileTransferLogger.Status)
+    def "kiloBytesPerSecond should be zero if no time is elapsed"() {
+        given:
+        FileTransferLogger.Status.metaClass.static.currentTime = { -> 1000 }
+        def status = new FileTransferLogger.Status(10000)
+
+        when: null
+        then: status.kiloBytesPerSecond == 0
+
+        when: status << 5000 /* bytes */
+        then: status.kiloBytesPerSecond == 0
+    }
+
 }

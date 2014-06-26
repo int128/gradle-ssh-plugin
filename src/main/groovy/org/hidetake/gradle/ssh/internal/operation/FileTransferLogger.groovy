@@ -112,7 +112,7 @@ class FileTransferLogger implements SftpProgressMonitor {
          * @return transfer rate in kbps
          */
         double getKiloBytesPerSecond() {
-            transferredSize / elapsedTime
+            elapsedTime ? transferredSize / elapsedTime : 0
         }
 
         /**
