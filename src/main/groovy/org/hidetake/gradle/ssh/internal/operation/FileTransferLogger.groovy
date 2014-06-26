@@ -7,7 +7,12 @@ import groovy.util.logging.Slf4j
 import java.text.NumberFormat
 
 /**
- * Logger for file transfer.
+ * A logger for monitoring progress of the file transfer.
+ * This class shows following messages:
+ * <ul>
+ * <li>Start of transferring</li>
+ * <li>Transferred bytes in each {@link FileTransferLogger#LOG_INTERVAL_MILLIS}</li>
+ * <li>End of transferring</li>
  *
  * @author hidetake.org
  */
@@ -49,35 +54,81 @@ class FileTransferLogger implements SftpProgressMonitor {
                  "Took ${timeFormat.format(status.elapsedTime / 1000.0)} secs.")
     }
 
+    /**
+     * Represents transferred bytes and elapsed time.
+     */
     @TupleConstructor
     static class Status {
+        /**
+         * Estimated bytes to transfer.
+         */
         final long maxSize = 0
+
+        /**
+         * Actually transferred bytes.
+         */
         long transferredSize = 0
 
+        /**
+         * Timestamp in milliseconds when transfer is started.
+         */
         final long startedTime = currentTime()
+
+        /**
+         * Timestamp in milliseconds when the last checkpoint is committed.
+         */
         long lastCheckPointTime = currentTime()
 
+        /**
+         * Report the progress that data has been transferred.
+         *
+         * @param size transferred size in bytes
+         * @return this instance
+         */
         Status leftShift(long size) {
             transferredSize += size
             this
         }
 
-        double getPercent() {
-            maxSize ? transferredSize / maxSize : 0
-        }
-
-        double getKiloBytesPerSecond() {
-            transferredSize / elapsedTime
-        }
-
-        long getElapsedTime() {
-            currentTime() - startedTime
-        }
-
+        /**
+         * Commit a checkpoint.
+         */
         void checkPoint() {
             lastCheckPointTime = currentTime()
         }
 
+        /**
+         * Return percent of transferred data.
+         *
+         * @return percent of transferred data
+         */
+        double getPercent() {
+            maxSize ? transferredSize / maxSize : 0
+        }
+
+        /**
+         * Return transfer rate in kbps.
+         *
+         * @return transfer rate in kbps
+         */
+        double getKiloBytesPerSecond() {
+            transferredSize / elapsedTime
+        }
+
+        /**
+         * Return elapsed time in milliseconds from started
+         *
+         * @return elapsed time in milliseconds from started
+         */
+        long getElapsedTime() {
+            currentTime() - startedTime
+        }
+
+        /**
+         * Return elapsed time in milliseconds from the last checkpoint
+         *
+         * @return elapsed time in milliseconds from the last checkpoint
+         */
         long getElapsedTimeFromCheckPoint() {
             currentTime() - lastCheckPointTime
         }
