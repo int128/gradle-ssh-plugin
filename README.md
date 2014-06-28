@@ -18,7 +18,7 @@ Gradle SSH Plugin is a open source software developed on GitHub and licensed und
 
 ### Bug report and feature request
 
-Please open an issue or pull request. Any issue is welcome.
+Please open an issue or pull request. Any issue is welcome. 日本語もOKです.
 
 
 ### Documentation
