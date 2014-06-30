@@ -44,7 +44,7 @@ class PortForwardingSpec extends Specification {
         server
     }
 
-    def teardown() {
+    def cleanup() {
         targetServer.stop(true)
         gateway1Server.stop(true)
         gateway2Server.stop(true)

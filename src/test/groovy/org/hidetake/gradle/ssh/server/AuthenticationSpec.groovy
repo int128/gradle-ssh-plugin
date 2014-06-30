@@ -36,7 +36,7 @@ class AuthenticationSpec extends Specification {
         }
     }
 
-    def teardown() {
+    def cleanup() {
         server.stop(true)
     }
 
