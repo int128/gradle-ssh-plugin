@@ -49,7 +49,7 @@ class BackgroundCommandExecutionSpec extends Specification {
         }
     }
 
-    def teardown() {
+    def cleanup() {
         server.stop(true)
     }
 

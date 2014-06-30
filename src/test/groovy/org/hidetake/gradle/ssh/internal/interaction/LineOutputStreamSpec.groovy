@@ -21,7 +21,7 @@ class LineOutputStreamSpec extends Specification {
         stream.listenLogging(loggingListener)
     }
 
-    def teardown() {
+    def cleanup() {
         stream.close()
     }
 
