@@ -57,7 +57,7 @@ task deploy(type: SshTask, dependsOn: war) {
 
 ### Also supports
 
-* Connection via gateways
+* Connection via gateways or proxy
 * Providing a password for `sudo` command
 * Interaction with the shell such as bash or Cisco IOS
 
