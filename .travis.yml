@@ -6,6 +6,9 @@ install:
   - ./gradlew uploadArchives
 script:
   - ./gradlew check
+  - sed -i -e "s/gradleVersion = '1.12'/gradleVersion = '2.0'/" build.gradle
+  - ./gradlew wrapper
+  - ./gradlew wrapper
   - ./.travis.sh acceptance_test
 after_script:
   - ./gradlew groovydoc
