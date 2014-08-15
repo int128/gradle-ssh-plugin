@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.internal.operation
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.gradle.api.logging.Logging
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.interaction.Stream
@@ -43,8 +42,7 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
 
         if (settings.logging) {
-            def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
+            standardOutput.listenLogging { String m -> log.info(m) }
         }
 
         if (settings.interaction) {
@@ -84,9 +82,8 @@ class DefaultOperations implements Operations {
         channel.errStream = standardError
 
         if (settings.logging) {
-            def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
-            standardError.listenLogging { String m -> logger.log(settings.errorLogLevel, m) }
+            standardOutput.listenLogging { String m -> log.info(m) }
+            standardError.listenLogging { String m -> log.error(m) }
         }
 
         if (settings.interaction) {
@@ -134,9 +131,8 @@ class DefaultOperations implements Operations {
         channel.errStream = standardError
 
         if (settings.logging) {
-            def logger = Logging.getLogger(DefaultOperations)
-            standardOutput.listenLogging { String m -> logger.log(settings.outputLogLevel, m) }
-            standardError.listenLogging { String m -> logger.log(settings.errorLogLevel, m) }
+            standardOutput.listenLogging { String m -> log.info(m) }
+            standardError.listenLogging { String m -> log.error(m) }
         }
 
         if (settings.interaction) {

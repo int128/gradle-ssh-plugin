@@ -1,6 +1,5 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.ConnectionSettings
@@ -38,8 +37,6 @@ class SshPluginSpec extends Specification {
             dryRun = true
             retryCount = 1
             retryWaitSec = 1
-            outputLogLevel = LogLevel.DEBUG
-            errorLogLevel = LogLevel.INFO
             proxy = globalProxy
         }
 
@@ -47,8 +44,6 @@ class SshPluginSpec extends Specification {
         project.ssh.dryRun
         project.ssh.retryCount == 1
         project.ssh.retryWaitSec == 1
-        project.ssh.outputLogLevel == LogLevel.DEBUG
-        project.ssh.errorLogLevel == LogLevel.INFO
         project.ssh.proxy == globalProxy
     }
 

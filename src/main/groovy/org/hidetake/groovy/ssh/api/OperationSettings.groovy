@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.api
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
-import org.gradle.api.logging.LogLevel
 import org.hidetake.groovy.ssh.extension.SftpGet
 import org.hidetake.groovy.ssh.extension.SftpPut
 import org.hidetake.groovy.ssh.extension.SudoExecution
@@ -29,16 +28,6 @@ class OperationSettings extends Settings<OperationSettings> {
     Boolean logging
 
     /**
-     * Log level for standard output of commands.
-     */
-    LogLevel outputLogLevel
-
-    /**
-     * Log level for standard error of commands.
-     */
-    LogLevel errorLogLevel
-
-    /**
      * Encoding of input and output stream.
      */
     String encoding
@@ -58,8 +47,6 @@ class OperationSettings extends Settings<OperationSettings> {
             dryRun: false,
             pty: false,
             logging: true,
-            outputLogLevel: LogLevel.QUIET,
-            errorLogLevel: LogLevel.ERROR,
             encoding: 'UTF-8',
             extensions: [SudoExecution, SftpGet, SftpPut]
     )
@@ -69,8 +56,6 @@ class OperationSettings extends Settings<OperationSettings> {
                 dryRun:         findNotNull(right.dryRun, dryRun),
                 pty:            findNotNull(right.pty, pty),
                 logging:        findNotNull(right.logging, logging),
-                outputLogLevel: findNotNull(right.outputLogLevel, outputLogLevel),
-                errorLogLevel:  findNotNull(right.errorLogLevel, errorLogLevel),
                 encoding:       findNotNull(right.encoding, encoding),
                 interaction:    findNotNull(right.interaction, interaction),
                 extensions:     extensions + right.extensions
