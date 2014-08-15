@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.internal
 
 import org.gradle.util.ConfigureUtil
-import org.hidetake.gradle.ssh.plugin.CompositeSettings
+import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 
 /**
@@ -24,7 +24,7 @@ class SshTaskService {
      * Execute a closure.
      *
      * @param globalSettings
-     * @param closure closure for {@link org.hidetake.gradle.ssh.plugin.session.SessionHandler}
+     * @param closure closure for {@link org.hidetake.groovy.ssh.api.session.SessionHandler}
      * @return returned value of the last session
      */
     Object execute(CompositeSettings globalSettings, Closure closure) {

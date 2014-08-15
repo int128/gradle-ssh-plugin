@@ -3,6 +3,9 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.RemoteContainerExtension
 import org.hidetake.gradle.ssh.internal.SshTaskService
 
 /**
@@ -32,9 +35,9 @@ class SshPlugin implements Plugin<Project> {
     }
 
     private static createProxyContainer(Project project) {
-		def proxies = project.container(Proxy)
+		def proxies = project.container(org.hidetake.groovy.ssh.api.Proxy)
 		def parentProxies = project.parent?.extensions?.findByName('proxies')
-		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
+		if (parentProxies instanceof NamedDomainObjectContainer<org.hidetake.groovy.ssh.api.Proxy>) {
 			proxies.addAll(parentProxies)
 		}
 

@@ -1,14 +1,14 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
-import org.hidetake.gradle.ssh.internal.connection.ConnectionService
-import org.hidetake.gradle.ssh.internal.session.SessionService
-import org.hidetake.gradle.ssh.plugin.CompositeSettings
-import org.hidetake.gradle.ssh.plugin.Remote
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.gradle.ssh.plugin.SshTaskHandler
+import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
+import org.hidetake.groovy.ssh.internal.connection.ConnectionService
+import org.hidetake.groovy.ssh.internal.session.SessionService
 
 import static org.gradle.util.ConfigureUtil.configure
-import static org.hidetake.gradle.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 
 /**
  * A delegate class of ssh task.

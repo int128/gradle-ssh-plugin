@@ -1,16 +1,14 @@
 package org.hidetake.gradle.ssh.internal
 
-import org.hidetake.gradle.ssh.internal.DefaultSshTaskHandler;
-import org.hidetake.gradle.ssh.internal.connection.ConnectionManager
-import org.hidetake.gradle.ssh.internal.connection.ConnectionService
-import org.hidetake.gradle.ssh.internal.session.SessionService
-import org.hidetake.gradle.ssh.plugin.CompositeSettings
-import org.hidetake.gradle.ssh.plugin.ConnectionSettings
-import org.hidetake.gradle.ssh.plugin.OperationSettings
-import org.hidetake.gradle.ssh.plugin.Proxy
-import org.hidetake.gradle.ssh.plugin.Remote
-import org.hidetake.gradle.ssh.plugin.session.SessionHandler
-
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.ConnectionSettings
+import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.api.Proxy
+import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.session.SessionHandler
+import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
+import org.hidetake.groovy.ssh.internal.connection.ConnectionService
+import org.hidetake.groovy.ssh.internal.session.SessionService
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges

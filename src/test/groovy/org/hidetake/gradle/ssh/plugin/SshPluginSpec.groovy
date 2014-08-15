@@ -2,6 +2,9 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.ConnectionSettings
+import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.gradle.ssh.internal.SshTaskService
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -28,7 +31,7 @@ class SshPluginSpec extends Specification {
         given:
         def project = ProjectBuilder.builder().build()
         project.apply plugin: 'ssh'
-        def globalProxy = new Proxy('globalProxy')
+        def globalProxy = new org.hidetake.groovy.ssh.api.Proxy('globalProxy')
 
         when:
         project.ssh {
@@ -307,7 +310,7 @@ class SshPluginSpec extends Specification {
         remotes.collect { it.name }.toSet()
     }
 
-    private static proxyNameSet(Collection<Proxy> proxies) {
+    private static proxyNameSet(Collection<org.hidetake.groovy.ssh.api.Proxy> proxies) {
         proxies.collect { it.name }.toSet()
     }
 

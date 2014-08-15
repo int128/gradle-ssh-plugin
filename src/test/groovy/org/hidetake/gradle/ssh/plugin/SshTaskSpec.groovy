@@ -1,6 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.ConnectionSettings
+import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.gradle.ssh.internal.SshTaskService
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges

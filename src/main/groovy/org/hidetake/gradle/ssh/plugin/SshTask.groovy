@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.gradle.ssh.internal.SshTaskService
 
 /**
