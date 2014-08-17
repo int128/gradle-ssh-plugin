@@ -1,7 +1,5 @@
 package org.hidetake.gradle.ssh.plugin
 
-import groovy.transform.ToString
-
 /**
  * Represents a connection proxy to use when establishing a {@link Session}. An instance
  * of this class be shared by multiple {@link Remote}s.
@@ -9,7 +7,6 @@ import groovy.transform.ToString
  * @author mlipper
  *
  */
-@ToString(excludes = 'password')
 class Proxy {
     /**
      * Adds all type of the {@link ProxyType},
@@ -63,4 +60,8 @@ class Proxy {
      * This may be null.
      */
     String password
+
+    String toString() {
+        "Proxy $name [$host:$port]"
+    }
 }
