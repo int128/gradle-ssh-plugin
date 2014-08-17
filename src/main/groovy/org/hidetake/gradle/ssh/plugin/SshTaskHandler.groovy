@@ -2,6 +2,7 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.session.SessionHandler
 
 /**
  * An interface delegating into {@link SshTask}.
@@ -14,7 +15,7 @@ interface SshTaskHandler {
      *
      * @param closure closure for {@link org.hidetake.groovy.ssh.api.CompositeSettings}
      */
-    void ssh(Closure closure)
+    void ssh(@DelegatesTo(CompositeSettings) Closure closure)
 
     /**
      * Add a session.
@@ -22,7 +23,7 @@ interface SshTaskHandler {
      * @param remote the {@link org.hidetake.groovy.ssh.api.Remote}
      * @param closure closure for {@link org.hidetake.groovy.ssh.api.session.SessionHandler} (run in execution phase)
      */
-    void session(Remote remote, Closure closure)
+    void session(Remote remote, @DelegatesTo(SessionHandler) Closure closure)
 
     /**
      * Add sessions.
@@ -30,7 +31,7 @@ interface SshTaskHandler {
      * @param remotes collection of {@link Remote}s
      * @param closure closure for {@link org.hidetake.groovy.ssh.api.session.SessionHandler} (run in execution phase)
      */
-    void session(Collection<Remote> remotes, Closure closure)
+    void session(Collection<Remote> remotes, @DelegatesTo(SessionHandler) Closure closure)
 
     /**
      * Add a session.
@@ -39,7 +40,7 @@ interface SshTaskHandler {
      * @param remoteProperties properties of a {@link org.hidetake.groovy.ssh.api.Remote}
      * @param closure closure for {@link org.hidetake.groovy.ssh.api.session.SessionHandler} (run in execution phase)
      */
-    void session(Map remoteProperties, Closure closure)
+    void session(Map remoteProperties, @DelegatesTo(SessionHandler) Closure closure)
 
     /**
      * Execute the task.

@@ -1,5 +1,6 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.gradle.ssh.plugin
 
+import org.hidetake.groovy.ssh.api.Remote
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.Use

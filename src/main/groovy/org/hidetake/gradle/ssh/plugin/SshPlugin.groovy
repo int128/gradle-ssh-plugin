@@ -3,10 +3,9 @@ package org.hidetake.gradle.ssh.plugin
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.hidetake.gradle.ssh.internal.SshTaskService
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.RemoteContainerExtension
-import org.hidetake.gradle.ssh.internal.SshTaskService
 
 /**
  * Gradle SSH plugin.

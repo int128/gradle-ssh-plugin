@@ -22,5 +22,5 @@ interface Operations {
      *
      * @param closure closure for {@link SftpOperations}
      */
-    void sftp(Closure closure)
+    void sftp(@DelegatesTo(SftpOperations) Closure closure)
 }

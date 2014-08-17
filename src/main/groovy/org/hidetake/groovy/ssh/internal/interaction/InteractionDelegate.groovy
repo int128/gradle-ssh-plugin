@@ -32,7 +32,7 @@ class InteractionDelegate implements InteractionHandler {
      * @param closure
      * @return interaction rules declared by the closure
      */
-    def evaluate(Closure closure) {
+    def evaluate(@DelegatesTo(InteractionHandler) Closure closure) {
         interactionRules.clear()
         callWithDelegate(closure, this)
 
