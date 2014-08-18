@@ -18,11 +18,7 @@ class ProxySpec extends Specification {
         def result = proxy.toString()
 
         then:
-        result.contains('theProxy')
-        result.contains('theHost')
-        result.contains('theUser')
         !result.contains('thePassword')
-        result.contains(SOCKS.toString())
     }
 
 }
