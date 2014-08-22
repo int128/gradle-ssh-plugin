@@ -48,7 +48,7 @@ class ConnectionSettings extends Settings<ConnectionSettings> {
      * Represents that strict host key checking is turned off and any host is allowed.
      * @see ConnectionSettings#knownHosts
      */
-    final allowAnyHosts = Constants.allowAnyHosts
+    final File allowAnyHosts = Constants.allowAnyHosts
 
     /**
      * Retry count for connecting to a host.
