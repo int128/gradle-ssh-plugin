@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.groovy.ssh.internal
 
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.ConnectionSettings
@@ -13,12 +13,12 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-class DefaultSshTaskHandlerSpec extends Specification {
+class DefaultRunHandlerSpec extends Specification {
 
-    DefaultSshTaskHandler sshTaskDelegate
+    DefaultRunHandler runHandler
 
     def setup() {
-        sshTaskDelegate = new DefaultSshTaskHandler()
+        runHandler = new DefaultRunHandler()
     }
 
     def "add a session"() {
@@ -29,7 +29,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def operationClosure = { assert false }
 
         when:
-        sshTaskDelegate.session(remote, operationClosure)
+        runHandler.session(remote, operationClosure)
 
         then:
         noExceptionThrown()
@@ -40,7 +40,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def operationClosure = { assert false }
 
         when:
-        sshTaskDelegate.session(null as Remote, operationClosure)
+        runHandler.session(null as Remote, operationClosure)
 
         then:
         AssertionError e = thrown()
@@ -54,7 +54,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         remote.host = theHost
 
         when:
-        sshTaskDelegate.session(remote, theOperationClosure)
+        runHandler.session(remote, theOperationClosure)
 
         then:
         AssertionError e = thrown()
@@ -79,7 +79,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def closure = { assert false }
 
         when:
-        sshTaskDelegate.session([remote1, remote2], closure)
+        runHandler.session([remote1, remote2], closure)
 
         then:
         noExceptionThrown()
@@ -95,7 +95,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def closure = { assert false }
 
         when:
-        sshTaskDelegate.session(remote, closure)
+        runHandler.session(remote, closure)
 
         then:
         noExceptionThrown()
@@ -108,7 +108,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def closure = { assert false }
 
         when:
-        sshTaskDelegate.session([], closure)
+        runHandler.session([], closure)
 
         then:
         AssertionError ex = thrown()
@@ -122,7 +122,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
         remote.host = 'myHost'
 
         when:
-        sshTaskDelegate.session([remote], null)
+        runHandler.session([remote], null)
 
         then:
         AssertionError ex2 = thrown()
@@ -132,7 +132,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
 
     def "add a session with remote properties"() {
         when:
-        sshTaskDelegate.session(host: 'myHost', user: 'myUser') {
+        runHandler.session(host: 'myHost', user: 'myUser') {
             assert false
         }
 
@@ -142,7 +142,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
 
     def "add a session with remote properties and null closure throws an error"() {
         when:
-        sshTaskDelegate.session(host: 'myHost', user: 'myUser', null)
+        runHandler.session(host: 'myHost', user: 'myUser', null)
 
         then:
         AssertionError ex = thrown()
@@ -151,7 +151,7 @@ class DefaultSshTaskHandlerSpec extends Specification {
 
     def "add a session with remote properties but without host throws an error"() {
         when:
-        sshTaskDelegate.session(user: 'myUser', null)
+        runHandler.session(user: 'myUser', null)
 
         then:
         AssertionError ex = thrown()
@@ -186,8 +186,8 @@ class DefaultSshTaskHandlerSpec extends Specification {
         def sessionHandler2 = Mock(SessionHandler)
 
         when:
-        sshTaskDelegate.session([remote1, remote2], closure)
-        def result = sshTaskDelegate.execute(new CompositeSettings())
+        runHandler.session([remote1, remote2], closure)
+        def result = runHandler.run(new CompositeSettings())
 
         then: 1 * sessionService.createDelegate(remote1, OperationSettings.DEFAULT, _) >> sessionHandler1
         then: 1 * sessionService.createDelegate(remote2, OperationSettings.DEFAULT, _) >> sessionHandler2

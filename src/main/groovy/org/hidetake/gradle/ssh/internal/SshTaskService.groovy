@@ -2,7 +2,7 @@ package org.hidetake.gradle.ssh.internal
 
 import org.gradle.util.ConfigureUtil
 import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.gradle.ssh.plugin.SshTaskHandler
+import org.hidetake.groovy.ssh.api.RunHandler
 
 /**
  * A service for SSH tasks.
@@ -16,8 +16,7 @@ class SshTaskService {
      *
      * @return a task delegate
      */
-    SshTaskHandler createDelegate() {
-        new DefaultSshTaskHandler()
+    RunHandler createDelegate() {
     }
 
     /**

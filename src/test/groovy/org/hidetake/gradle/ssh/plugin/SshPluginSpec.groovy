@@ -4,7 +4,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.ConnectionSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.gradle.ssh.internal.SshTaskService
+import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
@@ -198,11 +198,11 @@ class SshPluginSpec extends Specification {
         proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "invoke sshexec"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
 
         def project = createProject()
 
@@ -218,16 +218,16 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _)
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        ))
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "sshexec() returns a result of the closure"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
 
         def project = createProject()
 
@@ -240,9 +240,9 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _) >> 'ls-result'
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        )) >> 'ls-result'
 
         then: project.ext.actualResult == 'ls-result'
     }

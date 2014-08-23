@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.api
 
-import org.hidetake.gradle.ssh.internal.SshTaskService
+import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
@@ -75,11 +75,13 @@ class ServiceSpec extends Specification {
         'managementServer'  | 'http'
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "ssh.run() should call internal service"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
+
+        configureFixture()
 
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -87,21 +89,23 @@ class ServiceSpec extends Specification {
 
         when:
         ssh.run {
-            session(remotes.webServer) {
+            session(ssh.remotes.webServer) {
                 execute 'ls'
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _)
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        ))
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "ssh.run() should return result of the closure"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
+
+        configureFixture()
 
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -109,14 +113,14 @@ class ServiceSpec extends Specification {
 
         when:
         def actualResult = ssh.run {
-            session(remotes.webServer) {
+            session(ssh.remotes.webServer) {
                 execute 'ls'
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _) >> 'ls-result'
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        )) >> 'ls-result'
 
         then: actualResult == 'ls-result'
     }

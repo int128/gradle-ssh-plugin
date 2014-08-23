@@ -1,8 +1,8 @@
-package org.hidetake.gradle.ssh.internal
+package org.hidetake.groovy.ssh.internal
 
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.gradle.ssh.plugin.SshTaskHandler
+import org.hidetake.groovy.ssh.api.RunHandler
 import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
 import org.hidetake.groovy.ssh.internal.connection.ConnectionService
 import org.hidetake.groovy.ssh.internal.session.SessionService
@@ -11,23 +11,23 @@ import static org.gradle.util.ConfigureUtil.configure
 import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 
 /**
- * A delegate class of ssh task.
+ * A runner for {@link RunHandler}.
  *
  * @author hidetake.org
  */
-class DefaultSshTaskHandler implements SshTaskHandler {
+class DefaultRunHandler implements RunHandler {
     /**
-     * Task specific settings.
+     * One time settings.
      * This overrides global settings.
      */
-    private final CompositeSettings taskSpecificSettings = new CompositeSettings()
+    private final CompositeSettings settings = new CompositeSettings()
 
     private final List<Map> sessions = []
 
     @Override
-    void ssh(Closure closure) {
+    void settings(Closure closure) {
         assert closure, 'closure must be given'
-        configure(closure, taskSpecificSettings)
+        configure(closure, settings)
     }
 
     @Override
@@ -49,13 +49,12 @@ class DefaultSshTaskHandler implements SshTaskHandler {
         assert remoteProperties, 'properties of a remote must be given'
         assert remoteProperties.host, 'host must be given for the remote'
         def remote = new Remote(remoteProperties.host as String)
-        remoteProperties.each { String k, Object v -> remote[k] = v }
+        remoteProperties.each { k, v -> remote[k as String] = v }
         session(remote, closure)
     }
 
-    @Override
-    Object execute(CompositeSettings globalSettings) {
-        def merged = CompositeSettings.DEFAULT + globalSettings + taskSpecificSettings
+    Object run(CompositeSettings globalSettings) {
+        def merged = CompositeSettings.DEFAULT + globalSettings + settings
 
         def connectionService = ConnectionService.instance
         def sessionService = SessionService.instance

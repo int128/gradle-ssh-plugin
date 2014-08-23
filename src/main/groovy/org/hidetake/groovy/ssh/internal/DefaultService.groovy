@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.internal
 
-import org.hidetake.gradle.ssh.internal.SshTaskService
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
@@ -47,6 +46,8 @@ class DefaultService implements Service {
     @Override
     Object run(Closure closure) {
         assert closure, 'closure must be given'
-        SshTaskService.instance.execute(settings, closure)
+        def handler = new DefaultRunHandler()
+        callWithDelegate(closure, handler)
+        handler.run(settings)
     }
 }

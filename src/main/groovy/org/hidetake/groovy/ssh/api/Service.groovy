@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.api
 
-import org.hidetake.gradle.ssh.plugin.SshTaskHandler
 import org.hidetake.groovy.ssh.api.util.NamedObjectMap
 
 /**
@@ -51,5 +50,5 @@ interface Service {
      * @param closure
      * @return returned value of the last session
      */
-    Object run(@DelegatesTo(SshTaskHandler) Closure closure)
+    Object run(@DelegatesTo(RunHandler) Closure closure)
 }
