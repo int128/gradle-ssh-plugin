@@ -13,6 +13,7 @@ import org.hidetake.groovy.ssh.internal.DefaultRunHandler
  * @author hidetake.org
  */
 @Slf4j
+@Deprecated
 class SshTask extends DefaultTask implements RunHandler {
     @Delegate
     private final RunHandler handler = new DefaultRunHandler()
@@ -25,7 +26,7 @@ class SshTask extends DefaultTask implements RunHandler {
 
     @TaskAction
     void perform() {
-        def settings = project.extensions.ssh as CompositeSettings
-        (handler as DefaultRunHandler).run(settings)
+        log.info 'Deprecated: use ssh.run {...} instead of the ssh task'
+        (handler as DefaultRunHandler).run(project.ssh.settings)
     }
 }

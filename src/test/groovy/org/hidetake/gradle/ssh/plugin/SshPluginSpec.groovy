@@ -19,7 +19,7 @@ class SshPluginSpec extends Specification {
         project.apply plugin: 'ssh'
 
         then:
-        project.ssh
+        project.ssh.settings instanceof CompositeSettings
         project.remotes.size() == 0
         project.proxies.size() == 0
         project.SshTask == SshTask
@@ -41,10 +41,10 @@ class SshPluginSpec extends Specification {
         }
 
         then:
-        project.ssh.dryRun
-        project.ssh.retryCount == 1
-        project.ssh.retryWaitSec == 1
-        project.ssh.proxy == globalProxy
+        project.ssh.settings.dryRun
+        project.ssh.settings.retryCount == 1
+        project.ssh.settings.retryWaitSec == 1
+        project.ssh.settings.proxy == globalProxy
     }
 
     def "apply the full monty"() {
@@ -52,7 +52,7 @@ class SshPluginSpec extends Specification {
         def project = createProject()
 
         then:
-        project.ssh.knownHosts == ConnectionSettings.Constants.allowAnyHosts
+        project.ssh.settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts
         project.remotes.size() == 4
         project.proxies.size() == 2
     }

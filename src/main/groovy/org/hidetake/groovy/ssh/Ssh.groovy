@@ -11,7 +11,11 @@ import org.hidetake.groovy.ssh.internal.DefaultService
 class Ssh {
     static final Service ssh
 
+    static Service createService() {
+        new DefaultService()
+    }
+
     static {
-        ssh = new DefaultService()
+        ssh = createService()
     }
 }
