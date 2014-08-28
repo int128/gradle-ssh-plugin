@@ -71,6 +71,12 @@ if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
     }
 }
 
+if (System.getProperty('os.name') == 'Linux') {
+    tasks.withType(JavaForkOptions) {
+        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+    }
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
 }
