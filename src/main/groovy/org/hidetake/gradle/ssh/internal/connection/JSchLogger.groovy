@@ -15,9 +15,9 @@ class JSchLogger implements Logger {
     boolean isEnabled(int logLevel) {
         switch (logLevel) {
             case DEBUG: return log.isDebugEnabled()
-            case INFO:  return log.isInfoEnabled()
-            case WARN:  return log.isWarnEnabled()
-            case ERROR: return log.isErrorEnabled()
+            case INFO:  return log.isDebugEnabled()
+            case WARN:  return log.isInfoEnabled()
+            case ERROR: return log.isWarnEnabled()
             case FATAL: return log.isErrorEnabled()
             default:    return false
         }
@@ -30,13 +30,13 @@ class JSchLogger implements Logger {
                 log.debug("JSch: $message")
                 break
             case INFO:
-                log.info("JSch: $message")
+                log.debug("JSch: $message")
                 break
             case WARN:
-                log.warn("JSch: $message")
+                log.info("JSch: $message")
                 break
             case ERROR:
-                log.error("JSch: $message")
+                log.warn("JSch: $message")
                 break
             case FATAL:
                 log.error("JSch: $message")
