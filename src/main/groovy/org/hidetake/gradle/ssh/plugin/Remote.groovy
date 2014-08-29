@@ -1,14 +1,11 @@
 package org.hidetake.gradle.ssh.plugin
 
-import groovy.transform.ToString
-
 /**
  * Represents a remote host.
  *
  * @author hidetake.org
  *
  */
-@ToString
 class Remote {
     /**
      * Name of this instance.
@@ -53,5 +50,9 @@ class Remote {
     void role(String role) {
         assert role != null, 'role should be set'
         roles.add(role)
+    }
+
+    String toString() {
+        "Remote $name [$host:$port]"
     }
 }

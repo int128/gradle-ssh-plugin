@@ -16,9 +16,7 @@ class RemoteSpec extends Specification {
         def result = remote.toString()
 
         then:
-        result.contains('theUser')
         !result.contains('thePassword')
-        result.contains('theIdentity')
         !result.contains('thePassphrase')
     }
 

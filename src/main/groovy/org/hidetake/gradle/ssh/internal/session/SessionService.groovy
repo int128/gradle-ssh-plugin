@@ -15,7 +15,7 @@ class SessionService {
         def operations = operationService.create(remote, operationSettings, connectionManager)
 
         def handler = new DefaultSessionHandler(operations, operationSettings)
-        log.info("Mixin extensions: ${operationSettings.extensions}")
+        log.debug("Mixin extensions: ${operationSettings.extensions}")
         handler.metaClass.mixin(operationSettings.extensions)
         handler
     }
