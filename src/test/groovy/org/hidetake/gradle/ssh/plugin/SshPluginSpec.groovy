@@ -1,8 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.gradle.api.logging.LogLevel
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.SshTaskService
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.ConnectionSettings
+import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
@@ -17,7 +19,7 @@ class SshPluginSpec extends Specification {
         project.apply plugin: 'ssh'
 
         then:
-        project.ssh
+        project.ssh.settings instanceof CompositeSettings
         project.remotes.size() == 0
         project.proxies.size() == 0
         project.SshTask == SshTask
@@ -28,25 +30,21 @@ class SshPluginSpec extends Specification {
         given:
         def project = ProjectBuilder.builder().build()
         project.apply plugin: 'ssh'
-        def globalProxy = new Proxy('globalProxy')
+        def globalProxy = new org.hidetake.groovy.ssh.api.Proxy('globalProxy')
 
         when:
         project.ssh {
             dryRun = true
             retryCount = 1
             retryWaitSec = 1
-            outputLogLevel = LogLevel.DEBUG
-            errorLogLevel = LogLevel.INFO
             proxy = globalProxy
         }
 
         then:
-        project.ssh.dryRun
-        project.ssh.retryCount == 1
-        project.ssh.retryWaitSec == 1
-        project.ssh.outputLogLevel == LogLevel.DEBUG
-        project.ssh.errorLogLevel == LogLevel.INFO
-        project.ssh.proxy == globalProxy
+        project.ssh.settings.dryRun
+        project.ssh.settings.retryCount == 1
+        project.ssh.settings.retryWaitSec == 1
+        project.ssh.settings.proxy == globalProxy
     }
 
     def "apply the full monty"() {
@@ -54,7 +52,7 @@ class SshPluginSpec extends Specification {
         def project = createProject()
 
         then:
-        project.ssh.knownHosts == ConnectionSettings.Constants.allowAnyHosts
+        project.ssh.settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts
         project.remotes.size() == 4
         project.proxies.size() == 2
     }
@@ -200,11 +198,11 @@ class SshPluginSpec extends Specification {
         proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "invoke sshexec"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
 
         def project = createProject()
 
@@ -220,16 +218,16 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _)
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        ))
     }
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "sshexec() returns a result of the closure"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
 
         def project = createProject()
 
@@ -242,9 +240,9 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * service.execute(new CompositeSettings(
-                connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ), _) >> 'ls-result'
+        then: 1 * called(new CompositeSettings(
+            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
+        )) >> 'ls-result'
 
         then: project.ext.actualResult == 'ls-result'
     }
@@ -307,7 +305,7 @@ class SshPluginSpec extends Specification {
         remotes.collect { it.name }.toSet()
     }
 
-    private static proxyNameSet(Collection<Proxy> proxies) {
+    private static proxyNameSet(Collection<org.hidetake.groovy.ssh.api.Proxy> proxies) {
         proxies.collect { it.name }.toSet()
     }
 

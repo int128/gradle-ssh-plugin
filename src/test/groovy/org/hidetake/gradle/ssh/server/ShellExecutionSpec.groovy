@@ -4,17 +4,17 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.gradle.api.Project
-import org.gradle.api.logging.LogLevel
-import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.operation.DefaultOperations
 import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.plugin.session.BadExitStatusException
 import org.hidetake.gradle.ssh.test.SshServerMock
 import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
+import org.hidetake.groovy.ssh.api.session.BadExitStatusException
+import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.mop.ConfineMetaClassChanges
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class ShellExecutionSpec extends Specification {
@@ -104,16 +104,15 @@ class ShellExecutionSpec extends Specification {
     }
 
     @Unroll
+    @ConfineMetaClassChanges(DefaultOperations)
     def "logging, #description"() {
         given:
-        def logger = GroovySpy(Logging.getLogger(DefaultOperations).class, global: true) {
-            isEnabled(LogLevel.INFO) >> true
+        def logger = Mock(Logger) {
+            isInfoEnabled() >> true
         }
+        DefaultOperations.metaClass.static.getLog = { -> logger }
 
         project.with {
-            ssh {
-                outputLogLevel = LogLevel.INFO
-            }
             task(type: SshTask, 'testTask') {
                 session(remotes.testServer) {
                     shell(interaction: {})
@@ -133,7 +132,7 @@ class ShellExecutionSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        logMessages.each { 1 * logger.log(LogLevel.INFO, it) }
+        logMessages.each { 1 * logger.info(it) }
 
         where:
         description            | outputValue                  | logMessages
@@ -144,11 +143,13 @@ class ShellExecutionSpec extends Specification {
     }
 
     @Unroll
+    @ConfineMetaClassChanges(DefaultOperations)
     def "toggle logging = #logging"() {
         given:
-        def logger = GroovySpy(Logging.getLogger(DefaultOperations).class, global: true) {
-            isEnabled(_) >> true
+        def logger = Mock(Logger) {
+            isInfoEnabled() >> true
         }
+        DefaultOperations.metaClass.static.getLog = { -> logger }
 
         project.with {
             task(type: SshTask, 'testTask') {
@@ -170,7 +171,7 @@ class ShellExecutionSpec extends Specification {
         project.tasks.testTask.execute()
 
         then:
-        (logging ? 1 : 0) * logger.log(_, 'some message')
+        (logging ? 1 : 0) * logger.info('some message')
 
         where:
         logging << [true, false]

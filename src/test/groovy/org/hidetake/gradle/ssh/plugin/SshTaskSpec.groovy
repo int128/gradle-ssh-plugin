@@ -1,7 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.internal.SshTaskService
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.ConnectionSettings
+import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
@@ -44,36 +47,25 @@ class SshTaskSpec extends Specification {
     }
 
 
-    @ConfineMetaClassChanges(SshTaskService)
+    @ConfineMetaClassChanges(DefaultRunHandler)
     def "task action delegates to executor"() {
         given:
-        def service = Mock(SshTaskService)
-        SshTaskService.metaClass.static.getInstance = { -> service }
+        def called = Mock(Closure)
+        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
 
-        def taskHandler1 = Mock(SshTaskHandler)
-        def taskHandler2 = Mock(SshTaskHandler)
-
-        when:
         def project = project()
-        def globalProxy = project.proxies.globalProxy
-
-        then: 1 * service.createDelegate() >> taskHandler1
-        then: 1 * taskHandler1.ssh(_)
-        then: 1 * taskHandler1.session(_ as Remote, _ as Closure)
-
-        then: 1 * service.createDelegate() >> taskHandler2
-        then: 1 * taskHandler2.session(_ as Remote, _ as Closure)
 
         when: project.tasks.testTask1.execute()
-        then: 1 * taskHandler1.execute(new CompositeSettings(
-                operationSettings: new OperationSettings(dryRun: false),
-                connectionSettings: new ConnectionSettings(proxy: globalProxy)
+
+        then: 1 * called(new CompositeSettings(
+            operationSettings: new OperationSettings(dryRun: false),
+            connectionSettings: new ConnectionSettings(proxy: project.proxies.globalProxy)
         ))
 
         when: project.tasks.testTask2.execute()
-        then: 1 * taskHandler2.execute(new CompositeSettings(
-                operationSettings: new OperationSettings(dryRun: false),
-                connectionSettings: new ConnectionSettings(proxy: globalProxy)
+        then: 1 * called(new CompositeSettings(
+            operationSettings: new OperationSettings(dryRun: false),
+            connectionSettings: new ConnectionSettings(proxy: project.proxies.globalProxy)
         ))
     }
 

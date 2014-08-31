@@ -1,9 +1,17 @@
 package org.hidetake.gradle.ssh.plugin
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.hidetake.gradle.ssh.internal.SshTaskService
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.CompositeSettings
+import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.RunHandler
+import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.internal.DefaultRunHandler
+
+import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 
 /**
  * Gradle SSH plugin.
@@ -11,10 +19,12 @@ import org.hidetake.gradle.ssh.internal.SshTaskService
  *
  * @author hidetake.org
  */
+@Slf4j
 class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.extensions.ssh = new CompositeSettings()
+        //project.extensions.ssh = ssh
+
         project.extensions.remotes = createRemoteContainer(project)
         project.extensions.proxies = createProxyContainer(project)
 
@@ -32,9 +42,9 @@ class SshPlugin implements Plugin<Project> {
     }
 
     private static createProxyContainer(Project project) {
-		def proxies = project.container(Proxy)
+		def proxies = project.container(org.hidetake.groovy.ssh.api.Proxy)
 		def parentProxies = project.parent?.extensions?.findByName('proxies')
-		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
+		if (parentProxies instanceof NamedDomainObjectContainer<org.hidetake.groovy.ssh.api.Proxy>) {
 			proxies.addAll(parentProxies)
 		}
 
@@ -52,17 +62,39 @@ class SshPlugin implements Plugin<Project> {
         /**
          * Alias to omit import in build script.
          */
+        @Deprecated
         final Class SshTask = org.hidetake.gradle.ssh.plugin.SshTask
+
+        final Service ssh = Ssh.createService()
+
+        /**
+         * Set global settings.
+         *
+         * @param closure
+         */
+        @Deprecated
+        void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
+            log.info 'Deprecated: use ssh.settings {...} instead of ssh {...}'
+            ssh.settings(closure)
+        }
 
         /**
          * Execute a SSH closure.
          *
-         * @param closure closure for {@link org.hidetake.gradle.ssh.internal.DefaultSshTaskHandler}
+         * @param closure closure for {@link org.hidetake.groovy.ssh.api.RunHandler}
          * @return returned value of the last session
          */
-        Object sshexec(Closure closure) {
+        @Deprecated
+        Object sshexec(@DelegatesTo(RunHandler) Closure closure) {
             assert closure, 'closure must be given'
-            SshTaskService.instance.execute(project.extensions.ssh as CompositeSettings, closure)
+            log.info 'Deprecated: use ssh.run {...} instead of sshexec {...}'
+            def handler = new DefaultRunHandler()
+            handler.metaClass.ssh = { Closure c ->
+                log.info 'Deprecated: use settings {...} instead of ssh {...} in the sshexec method'
+                handler.settings(c)
+            }
+            callWithDelegate(closure, handler)
+            handler.run(ssh.settings)
         }
     }
 }
