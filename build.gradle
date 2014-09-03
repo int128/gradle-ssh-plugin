@@ -6,27 +6,27 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
+    compile 'org.codehaus.groovy:groovy-all:2.3.6'
+    compile 'org.slf4j:slf4j-api:1.7.7'
     compile 'com.jcraft:jsch:0.1.51'
 	compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.7'
 	compile 'com.jcraft:jsch.agentproxy.jsch:0.0.7'
-    testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
-        exclude module: 'groovy-all'
-    }
+    testCompile('org.spockframework:spock-core:0.7-groovy-2.0')
     testCompile 'cglib:cglib-nodep:3.1'
-    testCompile 'org.apache.sshd:sshd-core:0.9.0'
+    testRuntime 'org.objenesis:objenesis:2.1'
+    testCompile 'org.apache.sshd:sshd-core:0.12.0'
+    testRuntime 'org.bouncycastle:bcpkix-jdk15on:1.51'
 }
 
 test {
     useJUnit {
-        excludeCategories 'org.hidetake.gradle.ssh.server.ServerIntegrationTest'
+        excludeCategories 'org.hidetake.groovy.ssh.server.ServerIntegrationTest'
     }
 }
 
 task serverIntegrationTest(type: Test) {
     useJUnit {
-        includeCategories 'org.hidetake.gradle.ssh.server.ServerIntegrationTest'
+        includeCategories 'org.hidetake.groovy.ssh.server.ServerIntegrationTest'
     }
     reports {
         html.destination = file("$buildDir/reports/server-integration-tests")
@@ -75,12 +75,4 @@ if (System.getProperty('os.name') == 'Linux') {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
-}
-
-task archiveDependencies(type: Zip, dependsOn: jar) {
-    classifier = 'all'
-    into('dep-libs') {
-        from configurations.runtime
-        from 'build/libs'
-    }
 }

@@ -7,8 +7,6 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.ExitCallback
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.PublickeyAuthenticator
-import org.hidetake.gradle.ssh.server.ServerIntegrationTest
-import org.hidetake.gradle.ssh.test.SshServerMock
 import spock.lang.Specification
 
 import java.security.PublicKey

@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.test
+package org.hidetake.groovy.ssh.server
 
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider

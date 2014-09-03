@@ -37,14 +37,14 @@ uploadArchives {
         }
         beforeDeployment { signing.signPom(it) }
         pom.project {
-            name 'Gradle SSH Plugin'
+            name 'Groovy SSH'
             packaging 'jar'
             description project.description
-            url 'https://github.com/int128/gradle-ssh-plugin'
+            url 'https://github.com/int128/groovy-ssh'
             scm {
-                url                         'git@github.com:int128/gradle-ssh-plugin.git'
-                connection          'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
-                developerConnection 'scm:git:git@github.com:int128/gradle-ssh-plugin.git'
+                url                         'git@github.com:int128/groovy-ssh.git'
+                connection          'scm:git:git@github.com:int128/groovy-ssh.git'
+                developerConnection 'scm:git:git@github.com:int128/groovy-ssh.git'
             }
             licenses {
                 license {

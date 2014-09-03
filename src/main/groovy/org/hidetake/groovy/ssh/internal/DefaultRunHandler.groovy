@@ -7,7 +7,6 @@ import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
 import org.hidetake.groovy.ssh.internal.connection.ConnectionService
 import org.hidetake.groovy.ssh.internal.session.SessionService
 
-import static org.gradle.util.ConfigureUtil.configure
 import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 
 /**
@@ -27,7 +26,7 @@ class DefaultRunHandler implements RunHandler {
     @Override
     void settings(Closure closure) {
         assert closure, 'closure must be given'
-        configure(closure, settings)
+        callWithDelegate(closure, settings)
     }
 
     @Override
