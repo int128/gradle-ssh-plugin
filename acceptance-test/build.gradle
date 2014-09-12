@@ -7,7 +7,7 @@ buildscript {
         properties.version
     }
     repositories {
-        ivy { url = '../build/ivy' }
+        mavenLocal()
         mavenCentral()
     }
     dependencies {

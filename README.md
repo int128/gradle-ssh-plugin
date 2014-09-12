@@ -81,8 +81,10 @@ It is strongly recommended to run on a disposable instance such as Travis CI.
 ```
 
 
-Publish to Bintray
-------------------
+Publish
+-------
+
+### Publish to Bintray
 
 Prerequisite:
 
@@ -97,3 +99,10 @@ Invoke the upload task:
 ```
 
 
+### Publish to the local repository
+
+The install task will do it.
+
+```bash
+./gradlew install
+```

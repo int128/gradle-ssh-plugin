@@ -3,7 +3,7 @@ jdk:
   - oraclejdk7
   - oraclejdk8
 install:
-  - ./gradlew uploadArchives
+  - ./gradlew install
 script:
   - ./gradlew check
   - ./.travis.sh acceptance_test
