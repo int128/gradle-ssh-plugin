@@ -37,7 +37,7 @@ class HostKeyCheckingSpec extends Specification {
 
         project = ProjectBuilder.builder().build()
         project.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 testServer {
                     host = server.host

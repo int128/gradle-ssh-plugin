@@ -15,7 +15,7 @@ buildscript {
     }
 }
 
-apply plugin: 'ssh'
+apply plugin: 'org.hidetake.ssh'
 
 remotes {
     localhost {

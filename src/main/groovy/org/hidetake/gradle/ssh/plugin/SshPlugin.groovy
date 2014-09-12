@@ -1,5 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -63,6 +64,21 @@ class SshPlugin implements Plugin<Project> {
         Object sshexec(Closure closure) {
             assert closure, 'closure must be given'
             SshTaskService.instance.execute(project.extensions.ssh as CompositeSettings, closure)
+        }
+    }
+
+    /**
+     * Alternative entry point for old plugin ID, i.e. 'ssh'.
+     * @deprecated will be removed in future
+     */
+    @Slf4j
+    @Deprecated
+    static class DeprecatedEntryPoint extends SshPlugin {
+        @Override
+        void apply(Project project) {
+            log.warn "Deprecated: use apply plugin: 'org.hidetake.ssh', instead of 'ssh'"
+            log.warn 'Deprecated: old plugin ID will be removed in future release'
+            super.apply(project)
         }
     }
 }
