@@ -14,7 +14,7 @@ class SshPluginSpec extends Specification {
         def project = ProjectBuilder.builder().build()
 
         when:
-        project.apply plugin: 'ssh'
+        project.apply plugin: 'org.hidetake.ssh'
 
         then:
         project.ssh
@@ -27,7 +27,7 @@ class SshPluginSpec extends Specification {
     def "apply global settings"() {
         given:
         def project = ProjectBuilder.builder().build()
-        project.apply plugin: 'ssh'
+        project.apply plugin: 'org.hidetake.ssh'
         def globalProxy = new Proxy('globalProxy')
 
         when:
@@ -102,7 +102,7 @@ class SshPluginSpec extends Specification {
         when:
         def parentProject = ProjectBuilder.builder().build()
         parentProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 webServer {}
             }
@@ -110,7 +110,7 @@ class SshPluginSpec extends Specification {
 
         def childProject = ProjectBuilder.builder().withParent(parentProject).build()
         childProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 appServer {}
             }
@@ -125,7 +125,7 @@ class SshPluginSpec extends Specification {
         when:
         def parentProject = ProjectBuilder.builder().build()
         parentProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 webServer { role 'roleA' }
             }
@@ -133,7 +133,7 @@ class SshPluginSpec extends Specification {
 
         def childProject = ProjectBuilder.builder().withParent(parentProject).build()
         childProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 appServer { role 'roleB' }
             }
@@ -150,7 +150,7 @@ class SshPluginSpec extends Specification {
 
         def childProject = ProjectBuilder.builder().withParent(parentProject).build()
         childProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 appServer {}
             }
@@ -164,7 +164,7 @@ class SshPluginSpec extends Specification {
         when:
         def parentProject = ProjectBuilder.builder().build()
         parentProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             remotes {
                 webServer {}
             }
@@ -181,7 +181,7 @@ class SshPluginSpec extends Specification {
         when:
         def parentProject = ProjectBuilder.builder().build()
         parentProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             proxies {
                 socks {}
             }
@@ -189,7 +189,7 @@ class SshPluginSpec extends Specification {
 
         def childProject = ProjectBuilder.builder().withParent(parentProject).build()
         childProject.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             proxies {
                 http {}
             }
@@ -263,7 +263,7 @@ class SshPluginSpec extends Specification {
 
     private static createProject() {
         ProjectBuilder.builder().build().with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
 
             ssh {
                 knownHosts = allowAnyHosts

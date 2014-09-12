@@ -81,24 +81,28 @@ It is strongly recommended to run on a disposable instance such as Travis CI.
 ```
 
 
-Publish to Maven Central
-------------------------
+Publish
+-------
+
+### Publish to Bintray
 
 Prerequisite:
 
 * `~/.gradle/gradle.properties` must contain 
-  * signing.keyId
-  * signing.secretKeyRingFile
-  * sonatypeUsername
-  * sonatypeFullname
-* PGP key must be placed at signing.secretKeyRingFile
-* Passphrase of key pair must be known
-* Password of Sonatype must be known
+  * bintrayUser
+  * bintrayKey
 
-Invoke the publishing task:
+Invoke the upload task:
 
 ```bash
-./gradlew publishMavenCentral
+./gradlew bintrayUpload
 ```
 
 
+### Publish to the local Ivy repository
+
+The install task will publish to the local Ivy repository, i.e. `~/.ivy2/local`.
+
+```bash
+./gradlew install
+```

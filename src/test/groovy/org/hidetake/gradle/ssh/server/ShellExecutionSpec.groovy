@@ -30,7 +30,7 @@ class ShellExecutionSpec extends Specification {
 
         project = ProjectBuilder.builder().build()
         project.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             ssh {
                 knownHosts = allowAnyHosts
             }
