@@ -10,6 +10,7 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
+apply plugin: 'ivy-publish'
 apply plugin: 'com.jfrog.bintray'
 
 repositories {
@@ -79,11 +80,20 @@ task sourcesJar(type: Jar) {
 }
 
 publishing {
+    repositories {
+        ivy {
+            name 'local'
+            url "${System.properties['user.home']}/.ivy2/local"
+        }
+    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+        }
+        ivyJava(IvyPublication) {
+            from components.java
         }
     }
 }
@@ -105,6 +115,9 @@ bintray {
             attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
         }
     }
+}
+
+task install(dependsOn: 'publishIvyJavaPublicationToLocalRepository') {
 }
 
 task wrapper(type: Wrapper) {

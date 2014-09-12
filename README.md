@@ -81,8 +81,10 @@ It is strongly recommended to run on a disposable instance such as Travis CI.
 ```
 
 
-Publish to Bintray
-------------------
+Publish
+-------
+
+### Publish to Bintray
 
 Prerequisite:
 
@@ -97,3 +99,10 @@ Invoke the upload task:
 ```
 
 
+### Publish to the local Ivy repository
+
+The install task will publish to the local Ivy repository, i.e. `~/.ivy2/local`.
+
+```bash
+./gradlew install
+```
