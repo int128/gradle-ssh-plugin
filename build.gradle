@@ -1,5 +1,16 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
+    }
+}
+
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 repositories {
     mavenCentral()
@@ -47,6 +58,12 @@ check.dependsOn serverIntegrationTest
 check.dependsOn jacocoTestReport
 check.dependsOn jacocoServerIntegrationTestReport
 
+if (System.getProperty('os.name') == 'Linux') {
+    tasks.withType(JavaForkOptions) {
+        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+    }
+}
+
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
     classifier = 'javadoc'
@@ -57,19 +74,30 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-if (gradle.startParameter.taskNames.contains('publishMavenCentral')) {
-    apply from: 'build.publish.gradle'
-} else {
-    uploadArchives {
-        repositories.ivy {
-            url = "$buildDir/ivy"
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
 
-if (System.getProperty('os.name') == 'Linux') {
-    tasks.withType(JavaForkOptions) {
-        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+if ('bintrayUpload' in gradle.startParameter.taskNames) {
+    project.version -= '-SNAPSHOT'
+}
+
+bintray {
+    user = project.properties.bintrayUser
+    key = project.properties.bintrayKey
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        name = 'org.hidetake:gradle-ssh-plugin'
+        version {
+            attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
+        }
     }
 }
 
