@@ -7,10 +7,7 @@ buildscript {
         properties.version
     }
     repositories {
-        ivy {
-            name 'local'
-            url "${System.properties['user.home']}/.ivy2/local"
-        }
+        mavenLocal()
         mavenCentral()
     }
     dependencies {

@@ -10,7 +10,6 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
-apply plugin: 'ivy-publish'
 apply plugin: 'com.jfrog.bintray'
 
 repositories {
@@ -80,20 +79,36 @@ task sourcesJar(type: Jar) {
 }
 
 publishing {
-    repositories {
-        ivy {
-            name 'local'
-            url "${System.properties['user.home']}/.ivy2/local"
-        }
-    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-        }
-        ivyJava(IvyPublication) {
-            from components.java
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = DELEGATE_FIRST
+                    name project.name
+                    description project.description
+                    url project.property('pom.url')
+                    scm {
+                        url project.property('pom.scm.url')
+                        connection project.property('pom.scm.connection')
+                    }
+                    licenses {
+                        license {
+                            name project.property('pom.license.name')
+                            url project.property('pom.license.url')
+                            distribution 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id project.properties.bintrayUser
+                            name project.properties.bintrayUser
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -108,16 +123,14 @@ bintray {
     publications = ['mavenJava']
     pkg {
         repo = 'maven'
-        name = 'gradle-ssh-plugin'
-        licenses = ['Apache-2.0']
-        labels = ['gradle', 'ssh', 'deploy']
+        name = 'org.hidetake:gradle-ssh-plugin'
         version {
             attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
         }
     }
 }
 
-task install(dependsOn: 'publishIvyJavaPublicationToLocalRepository') {
+task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') {
 }
 
 task wrapper(type: Wrapper) {
