@@ -91,6 +91,31 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = DELEGATE_FIRST
+                    name project.name
+                    description project.description
+                    url project.property('pom.url')
+                    scm {
+                        url project.property('pom.scm.url')
+                        connection project.property('pom.scm.connection')
+                    }
+                    licenses {
+                        license {
+                            name project.property('pom.license.name')
+                            url project.property('pom.license.url')
+                            distribution 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id project.properties.bintrayUser
+                            name project.properties.bintrayUser
+                        }
+                    }
+                }
+            }
         }
         ivyJava(IvyPublication) {
             from components.java
