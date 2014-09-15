@@ -108,7 +108,7 @@ bintray {
     publications = ['mavenJava']
     pkg {
         repo = 'maven'
-        name = 'gradle-ssh-plugin'
+        name = 'org.hidetake:gradle-ssh-plugin'
         licenses = ['Apache-2.0']
         labels = ['gradle', 'ssh', 'deploy']
         version {
