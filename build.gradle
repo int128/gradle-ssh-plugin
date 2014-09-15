@@ -10,7 +10,6 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
-apply plugin: 'ivy-publish'
 apply plugin: 'com.jfrog.bintray'
 
 repositories {
@@ -80,12 +79,6 @@ task sourcesJar(type: Jar) {
 }
 
 publishing {
-    repositories {
-        ivy {
-            name 'local'
-            url "${System.properties['user.home']}/.ivy2/local"
-        }
-    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
@@ -117,9 +110,6 @@ publishing {
                 }
             }
         }
-        ivyJava(IvyPublication) {
-            from components.java
-        }
     }
 }
 
@@ -140,7 +130,7 @@ bintray {
     }
 }
 
-task install(dependsOn: 'publishIvyJavaPublicationToLocalRepository') {
+task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') {
 }
 
 task wrapper(type: Wrapper) {
