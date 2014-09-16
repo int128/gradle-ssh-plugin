@@ -12,7 +12,7 @@ class DryRunSpec extends Specification {
     def setup() {
         project = ProjectBuilder.builder().build()
         project.with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             ssh {
                 knownHosts = allowAnyHosts
                 dryRun = true

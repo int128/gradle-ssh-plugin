@@ -12,7 +12,7 @@ class SshTaskSpec extends Specification {
 
     static project() {
         ProjectBuilder.builder().build().with {
-            apply plugin: 'ssh'
+            apply plugin: 'org.hidetake.ssh'
             proxies {
                 globalProxy { host = 'globalPrx' }
                 overrideProxy { host = 'overridePrx' }
