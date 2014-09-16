@@ -1,4 +1,4 @@
-Groovy SSH
+Groovy SSH [![Build Status](https://travis-ci.org/int128/groovy-ssh.svg?branch=master)](https://travis-ci.org/int128/groovy-ssh)
 ==========
 
 Groovy SSH is a Groovy library which provides remote command execution and file transfer features.
