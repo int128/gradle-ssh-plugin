@@ -34,24 +34,17 @@ Just run Gradle wrapper.
 The build and acceptance test will be performed when the branch is pushed. See the [build report](http://gradle-ssh-plugin.github.io/build-report.html) of every branches.
 
 
-Publish to Maven Central
-------------------------
+Publish to Bintray
+------------------
 
 Prerequisite:
 
 * `~/.gradle/gradle.properties` must contain 
-  * signing.keyId
-  * signing.secretKeyRingFile
-  * sonatypeUsername
-  * sonatypeFullname
-* PGP key must be placed at signing.secretKeyRingFile
-* Passphrase of key pair must be known
-* Password of Sonatype must be known
+  * bintrayUser
+  * bintrayKey
 
-Invoke the publishing task:
+Invoke the upload task:
 
 ```bash
-./gradlew publishMavenCentral
+./gradlew bintrayUpload
 ```
-
-
