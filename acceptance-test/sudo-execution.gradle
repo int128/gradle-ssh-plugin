@@ -58,6 +58,58 @@ task deleteUserForSudoWithPassword(type: SshTask) {
 }
 
 
+feature('executing a command as another user by sudo') {
+    task 'executeSudoAsUserWithPassword'
+    category 'aggressiveTest'
+}
+
+task executeSudoAsUserWithPassword(type: SshTask) {
+    dependsOn   'createUserForSudoAsUserWithPassword'
+    finalizedBy 'deleteUserForSudoAsUserWithPassword'
+
+    def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+    session(remotes.sudoWithPassword) {
+        ext.whoami = executeSudo("-u $anotherUsername whoami", pty: true)
+    }
+    doLast {
+        assert whoami == anotherUsername
+    }
+}
+
+task createUserForSudoAsUserWithPassword(type: SshTask) {
+    finalizedBy 'deleteUserForSudoAsUserWithPassword'
+
+    session(remotes.localhost) {
+        def username = remotes.sudoWithPassword.user
+        def password = remotes.sudoWithPassword.password
+        execute("sudo useradd -m $username")
+        execute("sudo passwd $username", interaction: {
+            when(partial: ~/.+[Pp]assword: */) {
+                standardInput << password << '\n'
+            }
+        })
+        execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
+        execute("sudo chmod 440 /tmp/$username")
+        execute("sudo chown 0.0 /tmp/$username")
+        execute("sudo mv /tmp/$username /etc/sudoers.d")
+
+        def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+        execute("sudo useradd -m $anotherUsername")
+    }
+}
+
+task deleteUserForSudoAsUserWithPassword(type: SshTask) {
+    session(remotes.localhost) {
+        def username = remotes.sudoWithPassword.user
+        execute("sudo rm -v /etc/sudoers.d/$username")
+        execute("sudo userdel -r $username")
+
+        def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+        execute("sudo userdel -r $anotherUsername")
+    }
+}
+
+
 feature('executing a privileged command by sudo without password') {
     task 'executeSudoNoPassword'
     category 'aggressiveTest'
