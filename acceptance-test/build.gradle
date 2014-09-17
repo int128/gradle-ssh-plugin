@@ -8,7 +8,7 @@ buildscript {
     }
     repositories {
         mavenLocal()
-        mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.hidetake:gradle-ssh-plugin:$version"
