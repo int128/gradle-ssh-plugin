@@ -13,15 +13,15 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile 'com.jcraft:jsch:0.1.51'
-	compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.7'
-	compile 'com.jcraft:jsch.agentproxy.jsch:0.0.7'
+    compile('org.hidetake:groovy-ssh:0.1.1') {
+        exclude module: 'groovy-all'
+    }
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
         exclude module: 'groovy-all'
     }
