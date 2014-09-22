@@ -95,7 +95,7 @@ Prerequisite:
 Invoke the upload task:
 
 ```bash
-./gradlew bintrayUpload
+./gradlew -Pversion=x.y.z bintrayUpload
 ```
 
 

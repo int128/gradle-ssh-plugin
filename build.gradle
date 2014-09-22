@@ -84,10 +84,6 @@ publishing {
     }
 }
 
-if ('bintrayUpload' in gradle.startParameter.taskNames) {
-    project.version -= '-SNAPSHOT'
-}
-
 bintray {
     user = project.properties.bintrayUser
     key = project.properties.bintrayKey
@@ -99,6 +95,10 @@ bintray {
             attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
         }
     }
+}
+
+tasks.bintrayUpload.doFirst {
+    assert !project.version.contains('SNAPSHOT')
 }
 
 task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') {
