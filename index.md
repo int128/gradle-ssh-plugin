@@ -70,14 +70,14 @@ Here is an example for typical deployment scenario.
 ```groovy
 buildscript {
   repositories {
-    mavenCentral()
+    jcenter()
   }
   dependencies {
     classpath 'org.hidetake:gradle-ssh-plugin:{{ site.product.version }}'
   }
 }
 
-apply plugin: 'ssh'
+apply plugin: 'org.hidetake.ssh'
 
 
 // Global settings
