@@ -7,30 +7,28 @@ Gradle SSH Plugin is a Gradle plugin which provides remote command execution and
 User Guide
 ----------
 
-Please visit [gradle-ssh-plugin.github.io](http://gradle-ssh-plugin.github.io/).
+Please visit [gradle-ssh-plugin.github.io](https://gradle-ssh-plugin.github.io/).
 
 
 Contributions
 -------------
 
-Gradle SSH Plugin is a open source software developed on GitHub and licensed under the Apache License Version 2.0.
+Gradle SSH Plugin is an open source software developed on GitHub and licensed under the Apache License Version 2.0.
 
 
-### Bug report and feature request
+### Bug report or feature request
 
-Please open an issue or pull request. Any issue is welcome. 日本語もOKです.
+Please let me know on GitHub issues or pull requests.
 
 
 ### Documentation
 
-The user guide is maintained on the [GitHub Pages repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io).
+The user guide is maintained on [gradle-ssh-plugin.github.io repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io).
 
 
 ### Example scripts
 
-TODO
-
-Please open a pull request on the [Gradle SSH Plugin template project](https://github.com/gradle-ssh-plugin/template).
+Send me a pull request on [Gradle SSH Plugin template repository](https://github.com/gradle-ssh-plugin/template).
 
 
 Build
@@ -42,14 +40,14 @@ Just run Gradle wrapper.
 ./gradlew build
 ```
 
-The build and acceptance test will be performed when the branch is pushed. See the [build report](http://gradle-ssh-plugin.github.io/build-report.html) of every branches.
+The build and acceptance test will be performed when the branch is pushed.
+See the [build report](https://gradle-ssh-plugin.github.io/build-report.html) of every branches.
 
 
 ### Known issues
 
-1 test will be failed on Mac OS X, due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
-
-2 tests will be failed on Windows, because Apache sshd server does not support SFTP operations on Windows.
+* 1 test will be failed on Mac OS X, due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
+* 2 tests will be failed on Windows, because Apache sshd server does not support SFTP operations on Windows.
 
 
 Acceptance Test
@@ -88,7 +86,7 @@ Publish
 
 Prerequisite:
 
-* `~/.gradle/gradle.properties` must contain 
+* `~/.gradle/gradle.properties` must contain following
   * bintrayUser
   * bintrayKey
 
@@ -99,7 +97,7 @@ Invoke the upload task:
 ```
 
 
-### Publish to the local repository
+### Publish to the local Maven repository
 
 The install task will do it.
 
