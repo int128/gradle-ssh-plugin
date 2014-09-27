@@ -10,6 +10,7 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
+apply plugin: 'ivy-publish'
 apply plugin: 'com.jfrog.bintray'
 
 repositories {
@@ -76,10 +77,18 @@ task sourcesJar(type: Jar) {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+        }
+        ivy(IvyPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        ivy {
+            url ivyRepository
         }
     }
 }
@@ -87,7 +96,7 @@ publishing {
 bintray {
     user = project.properties.bintrayUser
     key = project.properties.bintrayKey
-    publications = ['mavenJava']
+    publications = ['maven']
     pkg {
         repo = 'maven'
         name = project.name
@@ -101,7 +110,7 @@ tasks.bintrayUpload.doFirst {
     assert !project.version.contains('SNAPSHOT')
 }
 
-task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') {
+task install(dependsOn: 'publishIvyPublicationToIvyRepository') {
 }
 
 task wrapper(type: Wrapper) {
