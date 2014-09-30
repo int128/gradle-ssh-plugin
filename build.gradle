@@ -1,17 +1,10 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
-    }
+plugins {
+    id 'groovy'
+    id 'jacoco'
+    id 'maven-publish'
+    id 'ivy-publish'
+    id 'com.jfrog.bintray' version '0.6'
 }
-
-apply plugin: 'groovy'
-apply plugin: 'jacoco'
-apply plugin: 'maven-publish'
-apply plugin: 'ivy-publish'
-apply plugin: 'com.jfrog.bintray'
 
 repositories {
     jcenter()
@@ -114,7 +107,7 @@ task install(dependsOn: 'publishIvyPublicationToIvyRepository') {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.0'
+    gradleVersion = '2.1'
 }
 
 task archiveDependencies(type: Zip, dependsOn: jar) {
