@@ -1,16 +1,14 @@
-package org.hidetake.gradle.ssh.server
+package org.hidetake.groovy.ssh.server
 
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.common.ForwardingFilter
 import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
-import org.hidetake.groovy.ssh.server.ServerIntegrationTest
-import org.hidetake.groovy.ssh.server.SshServerMock
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.Ssh.getSsh
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class PortForwardingSpec extends Specification {

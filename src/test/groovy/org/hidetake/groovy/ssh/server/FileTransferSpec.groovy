@@ -1,10 +1,8 @@
-package org.hidetake.gradle.ssh.server
+package org.hidetake.groovy.ssh.server
 
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
-import org.hidetake.groovy.ssh.server.ServerIntegrationTest
-import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared

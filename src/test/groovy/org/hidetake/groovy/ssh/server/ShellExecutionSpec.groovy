@@ -1,12 +1,10 @@
-package org.hidetake.gradle.ssh.server
+package org.hidetake.groovy.ssh.server
 
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
-import org.hidetake.groovy.ssh.server.ServerIntegrationTest
-import org.hidetake.groovy.ssh.server.SshServerMock
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import org.slf4j.Logger
 import spock.lang.Specification

@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.server
+package org.hidetake.groovy.ssh.server
 
 import spock.lang.Specification
 
