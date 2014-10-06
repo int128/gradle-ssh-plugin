@@ -4,17 +4,17 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
-import org.gradle.api.Project
-import org.gradle.api.tasks.TaskExecutionException
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.test.SshServerMock
-import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
+import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.hidetake.groovy.ssh.server.ServerIntegrationTest
+import org.hidetake.groovy.ssh.server.SshServerMock
+import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
+
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class SudoCommandExecutionSpec extends Specification {
@@ -22,7 +22,6 @@ class SudoCommandExecutionSpec extends Specification {
     private static final NL = Utilities.eol()
 
     SshServer server
-    Project project
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
@@ -30,24 +29,23 @@ class SudoCommandExecutionSpec extends Specification {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
 
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            ssh {
-                knownHosts = allowAnyHosts
-            }
-            remotes {
-                testServer {
-                    host = server.host
-                    port = server.port
-                    user = 'someuser'
-                    password = 'somepassword'
-                }
+        ssh.settings {
+            knownHosts = allowAnyHosts
+        }
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
             }
         }
     }
 
     def cleanup() {
+        ssh.remotes.clear()
+        ssh.proxies.clear()
+        ssh.settings.reset()
         server.stop(true)
     }
 
@@ -61,16 +59,6 @@ class SudoCommandExecutionSpec extends Specification {
 
     def "execute commands sequentially"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo 'somecommand1'
-                    executeSudo 'somecommand2'
-                    executeSudo 'somecommand3'
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -85,7 +73,13 @@ class SudoCommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand1'
+                executeSudo 'somecommand2'
+                executeSudo 'somecommand3'
+            }
+        }
 
         then: 1 * recorder.call('somecommand1')
         then: 1 * recorder.call('somecommand2')
@@ -94,14 +88,6 @@ class SudoCommandExecutionSpec extends Specification {
 
     def "handling authentication failure"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo 'somecommand'
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -120,26 +106,22 @@ class SudoCommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand'
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')
 
         then:
-        TaskExecutionException e = thrown()
-        e.cause.message.contains('exit status -1')
+        BadExitStatusException e = thrown()
+        e.message.contains('exit status -1')
     }
 
     def "handling command failure"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo 'somecommand'
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -154,27 +136,23 @@ class SudoCommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand'
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')
 
         then:
-        TaskExecutionException e = thrown()
-        e.cause.message.contains('exit status 1')
+        BadExitStatusException e = thrown()
+        e.message.contains('exit status 1')
     }
 
     @Unroll
     def "obtain a command result, #description"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    project.ext.resultActual = executeSudo 'somecommand'
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -192,14 +170,20 @@ class SudoCommandExecutionSpec extends Specification {
         }
         server.start()
 
+        def resultActual
+
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                resultActual = executeSudo 'somecommand'
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')
 
         then:
-        project.ext.resultActual == resultExpected
+        resultActual == resultExpected
 
         where:
         description            | outputValue                  | resultExpected
@@ -212,16 +196,6 @@ class SudoCommandExecutionSpec extends Specification {
 
     def "obtain a command result via callback"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo('somecommand') { result ->
-                        project.ext.resultActual = result
-                    }
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -239,28 +213,26 @@ class SudoCommandExecutionSpec extends Specification {
         }
         server.start()
 
+        def resultActual
+
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo('somecommand') { result ->
+                    resultActual = result
+                }
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')
 
         then:
-        project.ext.resultActual == 'something output'
+        resultActual == 'something output'
     }
 
     def "obtain a command result via callback with settings"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo('somecommand', pty: true) { result ->
-                        project.ext.resultActual = result
-                    }
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
@@ -278,14 +250,22 @@ class SudoCommandExecutionSpec extends Specification {
         }
         server.start()
 
+        def resultActual
+
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo('somecommand', pty: true) { result ->
+                    resultActual = result
+                }
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')
 
         then:
-        project.ext.resultActual == 'something output'
+        resultActual == 'something output'
     }
 
     @Unroll
@@ -296,14 +276,6 @@ class SudoCommandExecutionSpec extends Specification {
             isInfoEnabled() >> true
         }
         DefaultOperations.metaClass.static.getLog = { -> logger }
-
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    executeSudo 'somecommand'
-                }
-            }
-        }
 
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -323,7 +295,11 @@ class SudoCommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand'
+            }
+        }
 
         then:
         1 * recorder.call('somecommand')

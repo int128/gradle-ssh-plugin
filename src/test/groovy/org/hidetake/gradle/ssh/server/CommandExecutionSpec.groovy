@@ -4,18 +4,16 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
-import org.gradle.api.Project
-import org.gradle.api.tasks.TaskExecutionException
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.test.SshServerMock
-import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.hidetake.groovy.ssh.server.ServerIntegrationTest
+import org.hidetake.groovy.ssh.server.SshServerMock
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
+
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class CommandExecutionSpec extends Specification {
@@ -23,7 +21,6 @@ class CommandExecutionSpec extends Specification {
     private static final NL = Utilities.eol()
 
     SshServer server
-    Project project
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
@@ -31,44 +28,33 @@ class CommandExecutionSpec extends Specification {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
 
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            ssh {
-                knownHosts = allowAnyHosts
-            }
-            remotes {
-                testServer {
-                    host = server.host
-                    port = server.port
-                    user = 'someuser'
-                    password = 'somepassword'
-                }
+        ssh.settings {
+            knownHosts = allowAnyHosts
+        }
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
             }
         }
     }
 
     def cleanup() {
+        ssh.remotes.clear()
+        ssh.proxies.clear()
+        ssh.settings.reset()
         server.stop(true)
     }
 
 
     def "execute commands sequentially"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute 'somecommand1'
-                    execute 'somecommand2'
-                    execute 'somecommand3'
-                }
-            }
-        }
-
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
             createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
+                SshServerMock.command { SshServerMock.CommandContext c ->
                     recorder(commandline)
                     c.exitCallback.onExit(0)
                 }
@@ -77,7 +63,13 @@ class CommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand1'
+                execute 'somecommand2'
+                execute 'somecommand3'
+            }
+        }
 
         then: 1 * recorder.call('somecommand1')
         then: 1 * recorder.call('somecommand2')
@@ -86,56 +78,46 @@ class CommandExecutionSpec extends Specification {
 
     def "handling command failure"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute 'somecommand'
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.exitCallback.onExit(1)
             }
         }
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand'
+            }
+        }
 
         then:
-        TaskExecutionException e = thrown()
-
-        and:
-        BadExitStatusException cause = e.cause as BadExitStatusException
-        cause.exitStatus == 1
+        BadExitStatusException e = thrown()
+        e.exitStatus == 1
     }
 
     @Unroll
     def "obtain a command result, #description"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    project.ext.resultActual = execute 'somecommand'
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << outputValue }
                 c.exitCallback.onExit(0)
             }
         }
         server.start()
+        def resultActual
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                resultActual = execute 'somecommand'
+            }
+        }
 
         then:
-        project.ext.resultActual == resultExpected
+        resultActual == resultExpected
 
         where:
         description            | outputValue                  | resultExpected
@@ -148,56 +130,50 @@ class CommandExecutionSpec extends Specification {
 
     def "obtain a command result via callback"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute('somecommand') { result ->
-                        project.ext.resultActual = result
-                    }
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'something output' }
                 c.exitCallback.onExit(0)
             }
         }
         server.start()
+        def resultActual
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute('somecommand') { result ->
+                    resultActual = result
+                }
+            }
+        }
 
         then:
-        project.ext.resultActual == 'something output'
+        resultActual == 'something output'
     }
 
     def "obtain a command result via callback with settings"() {
         given:
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute('somecommand', pty: true) { result ->
-                        project.ext.resultActual = result
-                    }
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'something output' }
                 c.exitCallback.onExit(0)
             }
         }
         server.start()
+        def resultActual
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute('somecommand', pty: true) { result ->
+                    resultActual = result
+                }
+            }
+        }
 
         then:
-        project.ext.resultActual == 'something output'
+        resultActual == 'something output'
     }
 
     @Unroll
@@ -209,16 +185,8 @@ class CommandExecutionSpec extends Specification {
         }
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute 'somecommand'
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << outputValue }
                 c.exitCallback.onExit(0)
             }
@@ -226,7 +194,11 @@ class CommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand'
+            }
+        }
 
         then:
         logMessages.each {
@@ -250,16 +222,8 @@ class CommandExecutionSpec extends Specification {
         }
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute('somecommand', logging: logging)
-                }
-            }
-        }
-
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { CommandContext c ->
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'some message' }
                 c.exitCallback.onExit(0)
             }
@@ -267,7 +231,11 @@ class CommandExecutionSpec extends Specification {
         server.start()
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute('somecommand', logging: logging)
+            }
+        }
 
         then:
         (logging ? 1 : 0) * logger.info('some message')

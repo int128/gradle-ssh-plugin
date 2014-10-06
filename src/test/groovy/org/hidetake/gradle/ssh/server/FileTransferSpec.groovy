@@ -3,15 +3,15 @@ package org.hidetake.gradle.ssh.server
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.test.SshServerMock
+import org.hidetake.groovy.ssh.server.ServerIntegrationTest
+import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.Use
+
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Use(FileDivCategory)
@@ -19,8 +19,6 @@ class FileTransferSpec extends Specification {
 
     @Shared
     SshServer server
-
-    Project project
 
     @Rule
     TemporaryFolder temporaryFolder
@@ -35,24 +33,23 @@ class FileTransferSpec extends Specification {
     }
 
     def cleanupSpec() {
+        ssh.remotes.clear()
+        ssh.proxies.clear()
+        ssh.settings.reset()
         server.stop(true)
     }
 
 
     def setup() {
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            ssh {
-                knownHosts = allowAnyHosts
-            }
-            remotes {
-                testServer {
-                    host = server.host
-                    port = server.port
-                    user = 'someuser'
-                    password = 'somepassword'
-                }
+        ssh.settings {
+            knownHosts = allowAnyHosts
+        }
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
             }
         }
     }
@@ -64,16 +61,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationFile = temporaryFolder.newFile()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(sourceFile.path, destinationFile.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile.path, destinationFile.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -86,16 +79,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationFile = temporaryFolder.newFile()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(sourceFile, destinationFile.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile, destinationFile.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -109,16 +98,12 @@ class FileTransferSpec extends Specification {
         def sourceFile2 = sourceDir / uuidgen() << uuidgen()
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(files(sourceFile1, sourceFile2), destinationDir.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put([sourceFile1, sourceFile2], destinationDir.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         (destinationDir / sourceFile1.name).text == sourceFile1.text
@@ -131,16 +116,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(sourceFile, destinationDir.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile, destinationDir.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -158,16 +139,12 @@ class FileTransferSpec extends Specification {
 
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(source1Dir, destinationDir.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(source1Dir, destinationDir.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         (destinationDir / source1Dir.name / source1File.name).text == source1File.text
@@ -180,16 +157,12 @@ class FileTransferSpec extends Specification {
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    put(sourceDir, destinationDir.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceDir, destinationDir.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         (destinationDir / sourceDir.name).list() == []
@@ -202,16 +175,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationFile = temporaryFolder.newFile()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    get(sourceFile.path, destinationFile.path)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationFile.path)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -224,16 +193,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationFile = temporaryFolder.newFile()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    get(sourceFile.path, destinationFile)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationFile)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -246,16 +211,12 @@ class FileTransferSpec extends Specification {
         def sourceFile = temporaryFolder.newFile() << text
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    get(sourceFile.path, destinationDir)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationDir)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         sourceFile.text == text
@@ -275,16 +236,12 @@ class FileTransferSpec extends Specification {
 
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    get(source1Dir.path, destinationDir)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(source1Dir.path, destinationDir)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         (destinationDir / source1Dir.name / source1File.name).text == source1File.text
@@ -297,16 +254,12 @@ class FileTransferSpec extends Specification {
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
 
-        project.with {
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    get(sourceDir.path, destinationDir)
-                }
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceDir.path, destinationDir)
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         (destinationDir / sourceDir.name).list() == []

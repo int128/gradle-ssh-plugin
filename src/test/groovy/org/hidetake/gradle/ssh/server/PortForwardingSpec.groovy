@@ -5,12 +5,12 @@ import org.apache.sshd.common.Factory
 import org.apache.sshd.common.ForwardingFilter
 import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.test.SshServerMock
-import org.hidetake.gradle.ssh.test.SshServerMock.CommandContext
+import org.hidetake.groovy.ssh.server.ServerIntegrationTest
+import org.hidetake.groovy.ssh.server.SshServerMock
+import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
+
+import static org.hidetake.groovy.ssh.Ssh.getSsh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class PortForwardingSpec extends Specification {
@@ -18,19 +18,14 @@ class PortForwardingSpec extends Specification {
     SshServer targetServer
     SshServer gateway1Server
     SshServer gateway2Server
-    Project project
 
     def setup() {
         targetServer = setupServer('target')
         gateway1Server = setupServer('gateway1')
         gateway2Server = setupServer('gateway2')
 
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            ssh {
-                knownHosts = allowAnyHosts
-            }
+        ssh.settings {
+            knownHosts = allowAnyHosts
         }
     }
 
@@ -45,6 +40,9 @@ class PortForwardingSpec extends Specification {
     }
 
     def cleanup() {
+        ssh.remotes.clear()
+        ssh.proxies.clear()
+        ssh.settings.reset()
         targetServer.stop(true)
         gateway1Server.stop(true)
         gateway2Server.stop(true)
@@ -56,31 +54,28 @@ class PortForwardingSpec extends Specification {
         gateway1Server.start()
         targetServer.start()
 
-        project.with {
-            remotes {
-                gw {
-                    host = gateway1Server.host
-                    port = gateway1Server.port
-                    user = 'gateway1User'
-                    password = 'gateway1Password'
-                }
-                target {
-                    host = targetServer.host
-                    port = targetServer.port
-                    user = 'targetUser'
-                    password = 'targetPassword'
-                    gateway = remotes.gw
-                }
+        ssh.remotes {
+            gw {
+                host = gateway1Server.host
+                port = gateway1Server.port
+                user = 'gateway1User'
+                password = 'gateway1Password'
             }
-            task(type: SshTask, 'testTask') {
-                session(remotes.target) {
-                    shell(interaction: {})
-                }
+            target {
+                host = targetServer.host
+                port = targetServer.port
+                user = 'targetUser'
+                password = 'targetPassword'
+                gateway = ssh.remotes.gw
             }
         }
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.target) {
+                shell(interaction: {})
+            }
+        }
 
         then:
         1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
@@ -97,38 +92,35 @@ class PortForwardingSpec extends Specification {
         gateway2Server.start()
         targetServer.start()
 
-        project.with {
-            remotes {
-                gw01 {
-                    host = gateway1Server.host
-                    port = gateway1Server.port
-                    user = 'gateway1User'
-                    password = 'gateway1Password'
-                }
-                gw02 {
-                    host = gateway2Server.host
-                    port = gateway2Server.port
-                    user = 'gateway2User'
-                    password = 'gateway2Password'
-                    gateway = remotes.gw01
-                }
-                target {
-                    host = targetServer.host
-                    port = targetServer.port
-                    user = 'targetUser'
-                    password = 'targetPassword'
-                    gateway = remotes.gw02
-                }
+        ssh.remotes {
+            gw01 {
+                host = gateway1Server.host
+                port = gateway1Server.port
+                user = 'gateway1User'
+                password = 'gateway1Password'
             }
-            task(type: SshTask, 'testTask') {
-                session(remotes.target) {
-                    shell(interaction: {})
-                }
+            gw02 {
+                host = gateway2Server.host
+                port = gateway2Server.port
+                user = 'gateway2User'
+                password = 'gateway2Password'
+                gateway = ssh.remotes.gw01
+            }
+            target {
+                host = targetServer.host
+                port = targetServer.port
+                user = 'targetUser'
+                password = 'targetPassword'
+                gateway = ssh.remotes.gw02
             }
         }
 
         when:
-        project.tasks.testTask.execute()
+        ssh.run {
+            session(ssh.remotes.target) {
+                shell(interaction: {})
+            }
+        }
 
         then:
         1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true

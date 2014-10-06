@@ -1,194 +1,169 @@
 package org.hidetake.gradle.ssh.server
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
+
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 class DryRunSpec extends Specification {
 
-    Project project
-
     def setup() {
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            ssh {
-                knownHosts = allowAnyHosts
-                dryRun = true
-            }
-            remotes {
-                testServer {
-                    host = 'localhost'
-                    user = 'user'
-                }
-            }
-            task(type: SshTask, 'testTask') {
+        ssh.settings {
+            knownHosts = allowAnyHosts
+            dryRun = true
+        }
+        ssh.remotes {
+            testServer {
+                host = 'localhost'
+                user = 'user'
             }
         }
+    }
+
+    def cleanup() {
+        ssh.remotes.clear()
+        ssh.proxies.clear()
+        ssh.settings.reset()
     }
 
 
     def "invoke a shell"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 shell(interaction: {})
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "invoke a shell with options"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 shell(logging: false)
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "execute a command"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 execute('ls -l')
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "execute a command with callback"() {
         given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        def callbackExecuted = false
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 execute('ls -l') {
-                    project.ext.callbackExecuted = true
+                    callbackExecuted = true
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
-        project.ext.callbackExecuted == true
+        callbackExecuted
     }
 
     def "execute a command with options"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 execute('ls -l', pty: true)
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "execute a command with options and callback"() {
         given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        def callbackExecuted = false
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 execute('ls -l', pty: true) {
-                    project.ext.callbackExecuted = true
+                    callbackExecuted = true
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
-        project.ext.callbackExecuted == true
+        callbackExecuted
     }
 
     def "execute a command in background"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 executeBackground('ls -l')
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "execute a command in background with callback"() {
         given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        def callbackExecuted = false
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 executeBackground('ls -l') {
-                    project.ext.callbackExecuted = true
+                    callbackExecuted = true
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
-        project.ext.callbackExecuted == true
+        callbackExecuted
     }
 
     def "execute a command with options in background"() {
-        given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 executeBackground('ls -l', pty: true)
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "execute a command with options and callback in background"() {
         given:
-        project.tasks.testTask.with {
-            session(project.remotes.testServer) {
+        def callbackExecuted = false
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
                 executeBackground('ls -l', pty: true) {
-                    project.ext.callbackExecuted = true
+                    callbackExecuted = true
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
-        project.ext.callbackExecuted == true
+        callbackExecuted
     }
 
 }

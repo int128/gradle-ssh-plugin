@@ -5,11 +5,8 @@ import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
-import org.gradle.api.Project
-import org.gradle.api.tasks.TaskExecutionException
-import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
-import org.hidetake.gradle.ssh.test.SshServerMock
+import org.hidetake.groovy.ssh.server.ServerIntegrationTest
+import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -17,14 +14,14 @@ import spock.lang.Specification
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-import static org.hidetake.gradle.ssh.test.SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
 
     SshServer server
-    Project project
 
     @Rule
     TemporaryFolder temporaryFolder
@@ -35,21 +32,12 @@ class HostKeyCheckingSpec extends Specification {
         server.commandFactory = Mock(CommandFactory)
         server.start()
 
-        project = ProjectBuilder.builder().build()
-        project.with {
-            apply plugin: 'ssh'
-            remotes {
-                testServer {
-                    host = server.host
-                    port = server.port
-                    user = 'someuser'
-                    password = 'somepassword'
-                }
-            }
-            task(type: SshTask, 'testTask') {
-                session(remotes.testServer) {
-                    execute 'somecommand'
-                }
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
             }
         }
     }
@@ -58,17 +46,23 @@ class HostKeyCheckingSpec extends Specification {
         server.stop(true)
     }
 
+    def executeCommand() {
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand'
+            }
+        }
+    }
+
 
     def "turn off strict host key checking"() {
         given:
-        project.with {
-            ssh {
-                knownHosts = allowAnyHosts
-            }
+        ssh.settings {
+            knownHosts = allowAnyHosts
         }
 
         when:
-        project.tasks.testTask.execute()
+        executeCommand()
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
@@ -77,16 +71,18 @@ class HostKeyCheckingSpec extends Specification {
 
     def "turn off strict host key checking by per remote settings"() {
         given:
-        project.with {
-            remotes {
-                testServer {
-                    knownHosts = allowAnyHosts
-                }
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                knownHosts = allowAnyHosts
             }
         }
 
         when:
-        project.tasks.testTask.execute()
+        executeCommand()
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
@@ -98,14 +94,12 @@ class HostKeyCheckingSpec extends Specification {
         def hostKey = HostKeyCheckingSpec.getResourceAsStream('/hostkey.pub').text
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
 
-        project.with {
-            ssh {
-                knownHosts = knownHostsFile
-            }
+        ssh.settings {
+            knownHosts = knownHostsFile
         }
 
         when:
-        project.tasks.testTask.execute()
+        executeCommand()
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
@@ -123,14 +117,12 @@ class HostKeyCheckingSpec extends Specification {
         def knownHostsFile = temporaryFolder.newFile() << knownHostsItem
         log.debug(knownHostsItem)
 
-        project.with {
-            ssh {
-                knownHosts = knownHostsFile
-            }
+        ssh.settings {
+            knownHosts = knownHostsFile
         }
 
         when:
-        project.tasks.testTask.execute()
+        executeCommand()
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
@@ -141,23 +133,20 @@ class HostKeyCheckingSpec extends Specification {
         given:
         def knownHostsFile = temporaryFolder.newFile()
 
-        project.with {
-            ssh {
-                knownHosts = knownHostsFile
-            }
+        ssh.settings {
+            knownHosts = knownHostsFile
         }
 
         when:
-        project.tasks.testTask.execute()
+        executeCommand()
 
         then:
         0 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _)
         0 * server.commandFactory.createCommand('somecommand')
 
         then:
-        TaskExecutionException e = thrown()
-        e.cause.cause instanceof JSchException
-        e.cause.cause.message.contains 'reject HostKey'
+        JSchException e = thrown()
+        e.message.contains 'reject HostKey'
     }
 
     private static randomBytes(int size) {
