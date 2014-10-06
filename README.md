@@ -26,28 +26,24 @@ Please let me know on GitHub issues or pull requests.
 The user guide is maintained on [gradle-ssh-plugin.github.io repository](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io).
 
 
-### Example scripts
-
-Send me a pull request on [Gradle SSH Plugin template repository](https://github.com/gradle-ssh-plugin/template).
-
-
 Build
 -----
 
-Just run Gradle wrapper.
+Run the build task.
 
-```bash
+```sh
 ./gradlew build
 ```
 
 The build and acceptance test will be performed when the branch is pushed.
 See the [build report](https://gradle-ssh-plugin.github.io/build-report.html) of every branches.
 
+Known issues:
 
-### Known issues
-
-* 1 test will be failed on Mac OS X, due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
-* 2 tests will be failed on Windows, because Apache sshd server does not support SFTP operations on Windows.
+* 1 test will be failed on Mac OS X
+  * Due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
+* 2 tests will be failed on Windows
+  * Apache sshd server does not support SFTP operations on Windows.
 
 
 Acceptance Test
@@ -61,46 +57,36 @@ Prerequisite:
 * Current user must be able to log in with a private key placed at `~/.ssh/id_rsa` without any passphrase
 * SSH service must accept SFTP subsystem
 
-Upload a built JAR into the local repository and invoke a test.
 
-```bash
-./gradlew uploadArchives
+### Run on the development environment
+
+Install an artifact to the local repository and run tests.
+
+```sh
+./gradlew install
 ./gradlew -p acceptance-tests -i test
 ```
 
-### Aggressive tests
 
-Above does not contain aggressive tests such as creating users or changing system configration.
-Invoke with aggressiveTest to run aggressive tests.
-It is strongly recommended to run on a disposable instance such as Travis CI.
+### Run on a disposable container
 
-```bash
-./gradlew -p acceptance-tests -i aggressiveTest
+We can run also aggressive tests changing system configuration.
+It is strongly recommended to run on a disposable container, e.g. Docker.
+
+```sh
+docker build -t gradle-ssh-plugin acceptance-test
+docker run -v /tmp/.gradle:/root/.gradle gradle-ssh-plugin
 ```
 
 
 Publish
 -------
 
-### Publish to Bintray
+Build with JDK 7 for compatibility.
+Run `bintrayUpload` task with Bintray credential.
 
-Prerequisite:
-
-* `~/.gradle/gradle.properties` must contain following
-  * bintrayUser
-  * bintrayKey
-
-Invoke the upload task:
-
-```bash
-./gradlew -Pversion=x.y.z bintrayUpload
-```
-
-
-### Publish to the local Maven repository
-
-The install task will do it.
-
-```bash
-./gradlew install
+```sh
+docker build -t gradle-ssh-plugin .
+docker run -v /tmp/.gradle:/root/.gradle gradle-ssh-plugin \
+  -PbintrayUser=$bintrayUser -PbintrayKey=$bintrayKey -Pversion=x.y.z bintrayUpload
 ```
