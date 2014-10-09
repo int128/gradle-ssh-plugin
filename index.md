@@ -9,9 +9,7 @@ Gradle SSH Plugin is
 
 A [Gradle](http://www.gradle.org) plugin which provides remote execution and file transfer features for continuous delivery.
 
-An open source software developed on [GitHub project](https://github.com/int128/gradle-ssh-plugin).
-
-See also [User Guide](user-guide.html) for details.
+See [the User Guide](user-guide.html) for details.
 
 
 Features
@@ -22,11 +20,14 @@ Features
 Build and deploy seamlessly on Gradle.
 
 ```groovy
-apply plugin: 'war'
-apply plugin: 'ssh'
+plugins {
+  id 'org.hidetake.ssh' version '{{ site.product.version }}'
+}
 
-task deploy(type: SshTask, dependsOn: war) {
-  // TODO: put a WAR file and reload server
+task deploy(dependsOn: war) << {
+  ssh.run {
+    // TODO: put a WAR file and reload server
+  }
 }
 ```
 
@@ -38,7 +39,7 @@ task deploy(type: SshTask, dependsOn: war) {
 * File transfer
 
 ```groovy
-task deploy(type: SshTask, dependsOn: war) {
+ssh.run {
   session(remotes.webServer) {
     put war.archivePath, '/webapps'
     execute 'sudo service tomcat restart'
@@ -68,21 +69,13 @@ Example
 Here is an example for typical deployment scenario.
 
 ```groovy
-buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:{{ site.product.version }}'
-  }
+plugins {
+  id 'org.hidetake.ssh' version '{{ site.product.version }}'
+  id 'war'
 }
 
-apply plugin: 'org.hidetake.ssh'
-
-
 // Global settings
-ssh {
-  identity = file('id_rsa')     // Enable public key authentication
+ssh.settings {
   knownHosts = allowAnyHosts    // Disable host key verification
 }
 
@@ -91,20 +84,22 @@ remotes {
   webServer {
     host = '192.168.1.101'
     user = 'jenkins'
+    identity = file('id_rsa')   // Enable public key authentication
   }
 }
 
-task deploy(type: SshTask, dependsOn: war) {
-  description = 'Deploys an application to the server.'
-  ssh {
-    // Enable PTY allocation for sudo
-    pty = true
-  }
-  session(remotes.webServer) {
-    // Put a built WAR to the server
-    put war.archivePath, '/webapps'
-    // Restart the application server
-    execute 'sudo service tomcat restart'
+task deploy(dependsOn: war) << {
+  ssh.run {
+    settings {
+      // Enable PTY allocation for sudo
+      pty = true
+    }
+    session(remotes.webServer) {
+      // Put a built WAR to the server
+      put war.archivePath, '/webapps'
+      // Restart the application server
+      execute 'sudo service tomcat restart'
+    }
   }
 }
 ```
@@ -115,6 +110,6 @@ See also [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plug
 Contribution
 ------------
 
-Please send your issue report or pull request via [GitHub project](https://github.com/int128/gradle-ssh-plugin).
+Gradle SSH Plugin is an open source software developed on the [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
 Latest release is [version {{ site.product.version }}](https://github.com/int128/gradle-ssh-plugin/releases).
