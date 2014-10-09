@@ -7,44 +7,39 @@ Groovy SSH is a Groovy library which provides remote command execution and file 
 User Guide
 ----------
 
-Groovy SSH is part of Gradle SSH Plugin.
+At this time, Groovy SSH is part of Gradle SSH Plugin.
 See [the user guide of Gradle SSH Plugin](http://gradle-ssh-plugin.github.io/).
 
 
 Contributions
 -------------
 
-Groovy SSH is a open source software developed on GitHub and licensed under the Apache License Version 2.0.
+Groovy SSH is an open source software developed on GitHub and licensed under the Apache License Version 2.0.
 
 
-### Bug report and feature request
+### Bug report or feature request
 
-Please open an issue or pull request. Any issue is welcome. 日本語もOKです.
+Please let me know on GitHub issues or pull requests.
 
 
 Build
 -----
 
-Just run Gradle wrapper.
+Run the build task.
 
-```bash
+```sh
 ./gradlew build
 ```
 
-The build and acceptance test will be performed when the branch is pushed. See the [build report](http://gradle-ssh-plugin.github.io/build-report.html) of every branches.
 
+Publish
+-------
 
-Publish to Bintray
-------------------
+Build with JDK 7 for compatibility.
+Run `bintrayUpload` task with Bintray credential.
 
-Prerequisite:
-
-* `~/.gradle/gradle.properties` must contain 
-  * bintrayUser
-  * bintrayKey
-
-Invoke the upload task:
-
-```bash
-./gradlew -Pversion=x.y.z bintrayUpload
+```sh
+docker build -t groovy-ssh .
+docker run -v /tmp/.gradle:/root/.gradle groovy-ssh \
+  -PbintrayUser=$bintrayUser -PbintrayKey=$bintrayKey -Pversion=x.y.z bintrayUpload
 ```
