@@ -3,101 +3,77 @@ layout: default
 title: Home
 ---
 
+<section class="jumbotron">
+<section class="container">
+<section class="row">
+<section class="col-md-10">
 
-Gradle SSH Plugin is
---------------------
+# Deploy your App from Gradle
 
-A [Gradle](http://www.gradle.org) plugin which provides remote execution and file transfer features for continuous delivery.
+A Gradle plugin which provides SSH facilities for continuous delivery.
 
-See [the User Guide](user-guide.html) for details.
+</section>
+<section class="col-md-2">
 
+![Logo](/public/gradle-ssh-plugin.png)
 
-Features
---------
+</section>
+</section>
+</section>
+</section>
+<section class="container">
+<section class="row">
+<section class="col-md-6">
+
+## Features
+
+See also [User Guide](/user-guide.html) for details.
 
 ### Integrated with Gradle
 
-Build and deploy seamlessly on Gradle.
+* Run SSH sessions in the task
+* Deploy artifacts after build
 
-```groovy
-plugins {
-  id 'org.hidetake.ssh' version '{{ site.product.version }}'
-}
-
-task deploy(dependsOn: war) << {
-  ssh.run {
-    // TODO: put a WAR file and reload server
-  }
-}
-```
-
-
-### Simple and intuitive DSL
-
-* Command execution
-* Shell execution
-* File transfer
-
-```groovy
-ssh.run {
-  session(remotes.webServer) {
-    put war.archivePath, '/webapps'
-    execute 'sudo service tomcat restart'
-  }
-}
-```
-
-
-### Authentication and security
+### Authentication and Security
 
 * Password authentication
-* Public key authentication with an OpenSSH key pair
-* Authentication with Putty Agent or ssh-agent
-* Host key verification with an OpenSSH style `known_hosts` file
+* Public key authentication
+* Putty Agent or OpenSSH agent support
+* Provide a password for sudo prompt
+* Host key verification with known_hosts
+* Connect via SSH gateways
+* Connect via SOCKS or HTTP proxy
 
+### Interaction
 
-### Also supports
+* Interact with the remote command
+* Handle standard output and error
+* Write to standard input
 
-* Connection via gateways or proxy
-* Providing a password for `sudo` command
-* Interaction with the shell such as bash or Cisco IOS
+</section>
+<section class="col-md-6">
 
-
-Example
--------
+## Getting Started
 
 Here is an example for typical deployment scenario.
 
 ```groovy
 plugins {
   id 'org.hidetake.ssh' version '{{ site.product.version }}'
-  id 'war'
 }
 
-// Global settings
-ssh.settings {
-  knownHosts = allowAnyHosts    // Disable host key verification
-}
-
-// Add a remote host
 remotes {
   webServer {
     host = '192.168.1.101'
     user = 'jenkins'
-    identity = file('id_rsa')   // Enable public key authentication
+    identity = file('id_rsa')
   }
 }
 
-task deploy(dependsOn: war) << {
+task deploy << {
   ssh.run {
-    settings {
-      // Enable PTY allocation for sudo
-      pty = true
-    }
     session(remotes.webServer) {
-      // Put a built WAR to the server
-      put war.archivePath, '/webapps'
-      // Restart the application server
+      put 'example.war', '/webapps'
       execute 'sudo service tomcat restart'
     }
   }
@@ -106,10 +82,13 @@ task deploy(dependsOn: war) << {
 
 See also [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template).
 
+</section>
+</section>
+
 
 Contribution
 ------------
 
 Gradle SSH Plugin is an open source software developed on the [GitHub project](https://github.com/int128/gradle-ssh-plugin).
 
-Latest release is [version {{ site.product.version }}](https://github.com/int128/gradle-ssh-plugin/releases).
+</section>
