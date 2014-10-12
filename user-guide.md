@@ -9,7 +9,7 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 0.4.x. Also see [the document for version 0.3.x](/user-guide-v3.html).
+This document is for version 0.4.x. See also [the document for version 0.3.x](/user-guide.v3.html).
 
 
 Getting Started
@@ -22,6 +22,16 @@ Getting Started
 5. Describe SSH operations in the task
 
 
+### Compatibility
+
+Gradle SSH Plugin 0.4.x requires following:
+
+* Java 7 or later
+* Gradle 2.0 or later
+
+Gradle SSH Plugin 0.3.x is still available for Gradle 1.x compatible.
+
+
 ### Create a script
 
 Create an empty file and save as `build.gradle`.
@@ -32,23 +42,31 @@ The project contains Gradle wrapper and Gradle installation is not needed.
 
 ### Add the plugin dependency
 
-Add Gradle SSH plugin to the script:
+The plugin is available on Bintrat JCenter repository.
+Gradle will fetch the plugin from Internet.
+
+Add the plugin to your script:
+
+```groovy
+plugins {
+  id 'org.hidetake.ssh' version '{{ site.product.version }}'
+}
+```
+
+Gradle 2.0 or earlier style:
 
 ```groovy
 buildscript {
   repositories {
-    mavenCentral()
+    jcenter()
   }
   dependencies {
     classpath 'org.hidetake:gradle-ssh-plugin:{{ site.product.version }}'
   }
 }
 
-apply plugin: 'ssh'
+apply plugin: 'org.hidetake.ssh'
 ```
-
-The plugin is available on Maven Central repository.
-Gradle will fetch the plugin from Internet.
 
 
 ### Add a remote host
@@ -77,63 +95,38 @@ Now we can specify each remote host by `remotes.web01` or `remotes.web02`.
 Also we can specify the web01 by `remotes.role('masterNode')`.
 
 
-### Declare a SSH session
+### Run a SSH session in the task
 
-There are two ways to use SSH facility.
-
-1. Create a SSH task
-2. Call SSH method in the task
-
-
-#### Create a SSH task
-
-This may be mostly used.
-The plugin provides type of a SSH task as `SshTask`.
-It is a generic Gradle task and provides trivial features such as `dependsOn: task`, `doFirst` or `doLast`.
-
-Following code creates a SSH task in the script:
+Following code run a SSH session in the script:
 
 ```groovy
-task checkWebServer(type: SshTask) {
-  session(remotes.web01) {
-    //execute ...
-  }
-  session(remotes.web02) {
-    //execute ...
+task checkWebServer << {
+  ssh.run {
+    session(remotes.web01) {
+      //execute ...
+    }
+    session(remotes.web02) {
+      //execute ...
+    }
   }
 }
 ```
 
-Invoke Gradle with name of the task to execute it.
+`ssh.run` method will connect to all remote hosts of sessions, i.e. web01 and web02,
+and evaluate each closure of sessions in order.
 
-```bash
-./gradlew checkWebServer
-```
-
-The SSH task will connect to all remote hosts of sessions, i.e. web01 and web02.
-And it will evaluate each closure of sessions in order.
-
-
-#### Call sshexec method in a task
-
-The plugin also supports calling `sshexec` in a task.
-This may be useful if more complex scenario is needed.
-
-Exactly same syntax is available in a SSH task and the sshexec method,
-but the sshexec method returns a value of the last session closure.
-
-Here is an example.
+More example.
 
 ```groovy
 task syncKernelParam << {
   def paramKey = 'net.core.wmem_max'
-  def paramValue = sshexec {
+  def paramValue = ssh.run {
     session(remotes.web01) {
       execute("sysctl '$paramKey' | sed -e 's/ //g'")
     }
   }
   assert paramValue.contains(paramKey)
-  sshexec {
+  ssh.run {
     session(remotes.web02) {
       execute("sysctl -w '$paramValue'")
     }
@@ -277,7 +270,8 @@ remotes {
 
 #### Connect through a proxy server
 
-A remote host can specify that connections should be made through a proxy server. Individual proxy server connections are configured in the `proxies` container provided by the plugin. 
+A remote host can specify that connections should be made through a proxy server.
+Individual proxy server connections are configured in the `proxies` container provided by the plugin.
 
 The following code adds a proxy server to the `proxies` container:
 
@@ -297,12 +291,14 @@ Key            | Type                 | Description
 ---------------|----------------------|------------
 `host`         | String, Mandatory    | Hostname or IP address.
 `port`         | Integer, Mandatory   | Port.
-`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`. 
+`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`.
 `user`         | String               | Proxy server user name.
 `password`     | String               | Proxy server password.
 `socksVersion` | Integer              | Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
 
-Once a proxy server is defined in the `proxies` container, it can be referenced per-remote, per-task or globally. Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied. 
+Once a proxy server is defined in the `proxies` container,
+it can be referenced per-remote, per-method or globally.
+Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied.
 
 The following code shows how remote hosts can use different proxy servers.
 
@@ -316,7 +312,7 @@ proxies {
     type = SOCKS
     socksVersion = 5
   }
-  
+
   http {
     host = '192.168.1.113'
     port = 8080
@@ -330,7 +326,7 @@ remotes {
     user = 'jenkins'
     proxy = proxies.http
   }
-  
+
   web02 {
     host = '192.168.1.102'
     user = 'jenkins'
@@ -342,21 +338,23 @@ remotes {
 The following shows how to set a global proxy server.
 
 ```groovy
-ssh {
+ssh.settings {
   // All remotes will use this proxy by default.
   // Each remote can override this configuration.
   proxy = proxies.socks01
 }
 ```
 
-The following shows how to set a proxy server on a particular task.
+The following shows how to set a proxy server on a particular method.
 
 ```groovy
-task jarSearch(type: SshTask) {
-  ssh {
-    proxy = proxies.http01
+task jarSearch << {
+  ssh.run {
+    settings {
+      proxy = proxies.http01
+    }
+    session(remotes.role('mavenRepo')) { ... }
   }
-  session(remotes.role('mavenRepo')) { ... }
 }
 ```
 
@@ -395,7 +393,7 @@ A remote host can be defined on execution phase by `remotes.create(name)`.
 
 ```groovy
 task setupRemote << {
-  sshexec {
+  ssh.run {
     session(remotes.web01) {
       def targetHost = execute 'cat settings/hostname'
       def targetUser = execute 'cat settings/username'
@@ -409,7 +407,7 @@ task setupRemote << {
 }
 
 task something(dependsOn: setupRemote) << {
-  sshexec {
+  ssh.run {
     session(remotes.dynamic1) {
       //execute ...
     }
@@ -501,7 +499,7 @@ executeBackground('ping -c 3 server') { result ->
 ```
 
 The method throws an exception if an exit status of the command is not zero.
-If a background command returned an error, the task or sshexec method waits for any other commands and throws an exception finally.
+If a background command returned an error, `ssh.run` method waits for any other commands and throws an exception finally.
 
 
 ### Execute a command with the sudo support
@@ -592,8 +590,6 @@ Key              | Type     | Description
 `dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
 `pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
 `logging`        | Boolean  | If this is false, the logging of standard output and error is turned off, for such as hiding credential. Default is true.
-`outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
-`errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
 `encoding`       | String   | Encoding of input and output on the command or shell execution. Default is `UTF-8`.
 `interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Default is no interaction.
 `extensions`     | List of classes | List of extension classes. If this is set, classes will be mixed in.
@@ -734,46 +730,36 @@ Override settings
 -----------------
 
 Connection settings and operation settings can be set globally
-and overridden by each remote hosts, tasks or operation methods.
+and overridden by each remote hosts, methods or operation methods.
 
 
-Category            | Global | Per task | Per remote | Per operation
---------------------|--------|----------|------------|--------------
-Connection settings | x      | x        | x          | -
-Operation settings  | x      | x        | -          | x
+Category            | Global | Per method | Per remote | Per operation
+--------------------|--------|------------|------------|--------------
+Connection settings | x      | x          | x          | -
+Operation settings  | x      | x          | -          | x
 
 
-Connection settings and operation settings can be set globally in the ssh closure.
+Connection settings and operation settings can be set globally as follows.
 
 ```groovy
-ssh {
+ssh.settings {
   knownHosts = allowAnyHosts
   dryRun = true
 }
 ```
 
-Connection settings and operation settings can be overridden in a task.
+Connection settings and operation settings can be overridden as follows.
 
 ```groovy
-task reloadServers(type: SshTask) {
-  ssh {
-    pty = true
-  }
-  session(remotes.role('webServers')) {
-    executeBackground('sudo service httpd reload')
-  }
-}
-```
-
-Same in a sshexec closure.
-
-```groovy
-sshexec {
-  ssh {
-    pty = true
-  }
-  session(remotes.role('webServers')) {
-    executeBackground('sudo service httpd reload')
+task reloadServers << {
+  ssh.run {
+    settings {
+      // overrides global settings
+      pty = true
+    }
+    session(remotes.role('webServers')) {
+      executeBackground('sudo service httpd reload')
+    }
   }
 }
 ```
@@ -803,8 +789,8 @@ Add custom DSL
 
 We can extend DSL syntax.
 
-Declare an extension class and add it to global or task specific settings.
-All methods in the class will be available in the session closure.
+Declare an extension class and add it to global or method specific settings.
+All methods in the extension class will be available in the session closure.
 
 ```groovy
 class RemoteFileAssertion {
@@ -813,14 +799,15 @@ class RemoteFileAssertion {
   }
 }
 
-ssh {
+ssh.settings {
   extensions.add RemoteFileAssertion
 }
 
-task checkApacheConfig(type: SshTask) {
-  session(remotes.webServer) {
-    assertFileContains '/etc/httpd/conf/httpd.conf', 'listen 80'
+task checkApacheConfig << {
+  ssh.run {
+    session(remotes.webServer) {
+      assertFileContains '/etc/httpd/conf/httpd.conf', 'listen 80'
+    }
   }
 }
 ```
-

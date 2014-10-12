@@ -1,6 +1,6 @@
 ---
 layout: page
-title: User Guide for 0.3.x
+title: User Guide (0.3.x)
 ---
 
 
