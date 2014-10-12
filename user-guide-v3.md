@@ -1,6 +1,6 @@
 ---
 layout: page
-title: User Guide
+title: User Guide for 0.3.x
 ---
 
 
@@ -9,7 +9,7 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 0.4.x. Also see [the document for version 0.3.x](/user-guide-v3.html).
+This document is for version 0.3.x. [Latest version is here](/user-guide.html).
 
 
 Getting Started
@@ -277,7 +277,7 @@ remotes {
 
 #### Connect through a proxy server
 
-A remote host can specify that connections should be made through a proxy server. Individual proxy server connections are configured in the `proxies` container provided by the plugin. 
+A remote host can specify that connections should be made through a proxy server. Individual proxy server connections are configured in the `proxies` container provided by the plugin.
 
 The following code adds a proxy server to the `proxies` container:
 
@@ -297,12 +297,12 @@ Key            | Type                 | Description
 ---------------|----------------------|------------
 `host`         | String, Mandatory    | Hostname or IP address.
 `port`         | Integer, Mandatory   | Port.
-`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`. 
+`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`.
 `user`         | String               | Proxy server user name.
 `password`     | String               | Proxy server password.
 `socksVersion` | Integer              | Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
 
-Once a proxy server is defined in the `proxies` container, it can be referenced per-remote, per-task or globally. Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied. 
+Once a proxy server is defined in the `proxies` container, it can be referenced per-remote, per-task or globally. Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied.
 
 The following code shows how remote hosts can use different proxy servers.
 
@@ -316,7 +316,7 @@ proxies {
     type = SOCKS
     socksVersion = 5
   }
-  
+
   http {
     host = '192.168.1.113'
     port = 8080
@@ -330,7 +330,7 @@ remotes {
     user = 'jenkins'
     proxy = proxies.http
   }
-  
+
   web02 {
     host = '192.168.1.102'
     user = 'jenkins'
@@ -823,4 +823,3 @@ task checkApacheConfig(type: SshTask) {
   }
 }
 ```
-
