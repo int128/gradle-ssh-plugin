@@ -9,7 +9,10 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 0.4.x. See also [the document for version 0.3.x](/user-guide.v3.html).
+This document is for version 0.4.x. See also following.
+
+* [Migration Guide (from 0.3.x to 0.4.x)](/migration.v4.html)
+* [User Guide (0.3.x)](/user-guide.v3.html)
 
 
 Getting Started
