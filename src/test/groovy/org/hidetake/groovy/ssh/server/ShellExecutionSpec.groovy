@@ -6,6 +6,8 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -17,6 +19,9 @@ import static org.hidetake.groovy.ssh.Ssh.ssh
 class ShellExecutionSpec extends Specification {
 
     SshServer server
+
+    @Rule
+    TemporaryFolder temporaryFolder
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
@@ -151,6 +156,87 @@ class ShellExecutionSpec extends Specification {
 
         where:
         logging << [true, false]
+    }
+
+    @Unroll
+    def "shell should write to file if given: stdout=#stdout"() {
+        given:
+        server.shellFactory = Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        def logFile = temporaryFolder.newFile()
+
+        when:
+        logFile.withOutputStream { stream ->
+            ssh.run {
+                session(ssh.remotes.testServer) {
+                    if (stdout) {
+                        shell outputStream: stream
+                    } else {
+                        shell interaction: {}
+                    }
+                }
+            }
+        }
+
+        then:
+        logFile.text == expectedLog
+
+        where:
+        stdout | expectedLog
+        false  | ''
+        true   | 'some message'
+    }
+
+    def "shell can write stdout/stderr to system.out"() {
+        given:
+        server.shellFactory = Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                shell outputStream: System.out
+            }
+        }
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "execute should not write stdout/stderr to file if logging is off"() {
+        given:
+        server.shellFactory = Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        def logFile = temporaryFolder.newFile()
+
+        when:
+        logFile.withOutputStream { stream ->
+            ssh.run {
+                session(ssh.remotes.testServer) {
+                    shell logging: false, outputStream: stream
+                }
+            }
+        }
+
+        then:
+        logFile.text == ''
     }
 
 }

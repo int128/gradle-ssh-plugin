@@ -6,6 +6,8 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -19,6 +21,9 @@ class CommandExecutionSpec extends Specification {
     private static final NL = Utilities.eol()
 
     SshServer server
+
+    @Rule
+    TemporaryFolder temporaryFolder
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
@@ -240,6 +245,91 @@ class CommandExecutionSpec extends Specification {
 
         where:
         logging << [true, false]
+    }
+
+    @Unroll
+    def "execute should write to file if given: stdout=#stdout, stderr=#stderr"() {
+        given:
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.errorStream.withWriter('UTF-8') { it << 'error' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        def logFile = temporaryFolder.newFile()
+
+        when:
+        logFile.withOutputStream { stream ->
+            ssh.run {
+                session(ssh.remotes.testServer) {
+                    def map = [:]
+                    if (stdout) { map.outputStream = stream }
+                    if (stderr) { map.errorStream = stream }
+                    execute(map, 'somecommand')
+                }
+            }
+        }
+
+        then:
+        logFile.text == expectedLog
+
+        where:
+        stdout | stderr | expectedLog
+        false  | false  | ''
+        true   | false  | 'some message'
+        false  | true   | 'error'
+        true   | true   | 'some messageerror'
+    }
+
+    def "execute can write stdout/stderr to system.out"() {
+        given:
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.errorStream.withWriter('UTF-8') { it << 'error' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand', outputStream: System.out, errorStream: System.err
+            }
+        }
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "execute should not write stdout/stderr to file if logging is off"() {
+        given:
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.errorStream.withWriter('UTF-8') { it << 'error' }
+                c.exitCallback.onExit(0)
+            }
+        }
+        server.start()
+
+        def logFile = temporaryFolder.newFile()
+
+        when:
+        logFile.withOutputStream { stream ->
+            ssh.run {
+                session(ssh.remotes.testServer) {
+                    execute 'somecommand', logging: false, outputStream: stream, errorStream: stream
+                }
+            }
+        }
+
+        then:
+        logFile.text == ''
     }
 
 }
