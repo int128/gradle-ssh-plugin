@@ -120,6 +120,8 @@ tasks.bintrayUpload.doFirst {
     assert !project.version.contains('SNAPSHOT')
 }
 
+task install(dependsOn: 'publishMavenPublicationToMavenLocal')
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
 }
