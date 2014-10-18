@@ -2,9 +2,7 @@ description 'Automated acceptance test with SSH server'
 
 buildscript {
     repositories {
-        ivy {
-            url ivyRepository
-        }
+        mavenLocal()
         jcenter()
     }
     dependencies {

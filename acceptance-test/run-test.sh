@@ -3,7 +3,6 @@
 test $jdk
 test $gradle
 test $version
-test $ivyRepository
 dotssh=/root/.ssh
 
 # setup sshd
@@ -40,7 +39,7 @@ rm -v gradle-*-bin.zip
 mv -v gradle-* gradle
 
 # invoke Gradle
-/gradle/bin/gradle -i -p acceptance-test -Pversion="$version" -PivyRepository="$ivyRepository" test aggressiveTest
+/gradle/bin/gradle -i -p acceptance-test -Pversion="$version" test aggressiveTest
 
 # stop SSH server
 xargs kill < /var/run/sshd.pid
