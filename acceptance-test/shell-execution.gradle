@@ -7,10 +7,9 @@ feature('executing a shell') {
 task executeShell(type: SshTask) {
     session(remotes.localhost) {
         shell(interaction: {
-            when(partial: ~/.*$/) {
+            when(partial: ~/.*[$%#] */) {
                 standardInput << 'exit 0' << '\n'
             }
         })
     }
 }
-
