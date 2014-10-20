@@ -185,3 +185,57 @@ task failureStatusInBackground << {
         assert e.localizedMessage == 'Error in background command execution'
     }
 }
+
+
+feature('write output of the command to a file') {
+    task 'writeCommandOutput'
+    category 'test'
+}
+
+task writeCommandOutput << {
+    def x = randomInt()
+    def y = randomInt()
+    def tempFile = file(localTempPath())
+    tempFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "expr $x + $y", outputStream: stream
+            }
+        }
+    }
+    assert tempFile.text as int == (x + y)
+}
+
+
+feature('write output of the command to stdout') {
+    task 'writeCommandOutputToStdout'
+    category 'test'
+}
+
+task writeCommandOutputToStdout << {
+    def x = randomInt()
+    def y = randomInt()
+    ssh.run {
+        session(remotes.localhost) {
+            execute "expr $x + $y", outputStream: System.out
+        }
+    }
+}
+
+
+feature('write error of the command to a file') {
+    task 'writeCommandError'
+    category 'test'
+}
+
+task writeCommandError << {
+    def tempFile = file(localTempPath())
+    tempFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "cat hoge || true", errorStream: stream
+            }
+        }
+    }
+    assert tempFile.text.contains('hoge')
+}

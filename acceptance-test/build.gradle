@@ -33,8 +33,11 @@ task aggressiveTest { description = 'Run tests which require environment modific
 ext {
     randomInt = { int max = 10000 -> (Math.random() * max) as int }
 
-    remoteTempPrefix = "/tmp/fixture-${randomInt()}"
+    remoteTempPrefix = "/tmp/remote-fixture-${randomInt()}"
     remoteTempPath = { String name = '' -> "$remoteTempPrefix-$name" }
+
+    localTempPrefix = "$buildDir/local-fixture-${randomInt()}"
+    localTempPath = { String name = randomInt().toString() -> "$localTempPrefix-$name" }
 }
 
 project.metaClass.mixin(FeatureSupport as Class)
@@ -46,8 +49,9 @@ task setupBuildDir(type: Delete) {
     }
 }
 
-task cleanBuildDir(type: Delete) {
+task cleanLocalTemp << {
     delete buildDir
+    buildDir.mkdir()
 }
 
 task cleanRemoteTemp(type: SshTask) {
