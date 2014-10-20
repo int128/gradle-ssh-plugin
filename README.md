@@ -3,27 +3,29 @@ Groovy SSH [![Build Status](https://travis-ci.org/int128/groovy-ssh.svg?branch=m
 
 Groovy SSH is a Groovy library which provides remote command execution and file transfer features.
 
-
-User Guide
-----------
-
-At this time, Groovy SSH is part of Gradle SSH Plugin.
-See [the user guide of Gradle SSH Plugin](http://gradle-ssh-plugin.github.io/).
+See [groovy-ssh.github.io](https://groovy-ssh.github.io) for details.
 
 
 Contributions
 -------------
 
-Groovy SSH is an open source software developed on GitHub and licensed under the Apache License Version 2.0.
-
-
-### Bug report or feature request
+This is an open source software licensed under the Apache License Version 2.0.
 
 Please let me know on GitHub issues or pull requests.
 
 
-Build
------
+Development
+-----------
+
+JDK 7 or later is needed.
+All dependencies are downloaded by Gradle wrapper.
+
+The continuous integration is enabled on Travis CI.
+
+Artifacts are released on [Bintray](https://bintray.com/int128/maven/groovy-ssh) JCenter and [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22).
+
+
+### Build
 
 Run the build task.
 
@@ -32,11 +34,10 @@ Run the build task.
 ```
 
 
-Publish
--------
+### Publish
 
 Build with JDK 7 for compatibility.
-Run `bintrayUpload` task with Bintray credential.
+Run the upload task with Bintray credential.
 
 ```sh
 docker build -t groovy-ssh .
