@@ -28,6 +28,16 @@ class OperationSettings extends Settings<OperationSettings> {
     Boolean logging
 
     /**
+     * An output stream to log standard output.
+     */
+    OutputStream outputStream
+
+    /**
+     * An output stream to log standard error.
+     */
+    OutputStream errorStream
+
+    /**
      * Encoding of input and output stream.
      */
     String encoding
@@ -58,6 +68,8 @@ class OperationSettings extends Settings<OperationSettings> {
                 logging:        findNotNull(right.logging, logging),
                 encoding:       findNotNull(right.encoding, encoding),
                 interaction:    findNotNull(right.interaction, interaction),
+                outputStream:   findNotNull(right.outputStream, outputStream),
+                errorStream:    findNotNull(right.errorStream, errorStream),
                 extensions:     extensions + right.extensions
         )
     }

@@ -16,6 +16,7 @@ class LineOutputStream extends OutputStream {
     private final List<Closure> lineListeners = []
     private final List<Closure<Boolean>> partialListeners = []
     private final List<Closure> loggingListeners = []
+    private final List<OutputStream> linkedStreams = []
 
     private final byteBuffer = new ByteArrayOutputStream(512)
     private lineBuffer = ''
@@ -65,9 +66,20 @@ class LineOutputStream extends OutputStream {
         loggingListeners.add(closure)
     }
 
+    /**
+     * Link the stream.
+     * A byte received by {@link #write(int)} will be written to the stream.
+     *
+     * @param stream the output stream
+     */
+    void linkStream(OutputStream stream) {
+        linkedStreams.add(stream)
+    }
+
     void write(int b) {
         withTryCatch {
             byteBuffer.write(b)
+            linkedStreams*.write(b)
         }
     }
 
