@@ -214,29 +214,4 @@ class ShellExecutionSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute should not write stdout/stderr to file if logging is off"() {
-        given:
-        server.shellFactory = Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
-        def logFile = temporaryFolder.newFile()
-
-        when:
-        logFile.withOutputStream { stream ->
-            ssh.run {
-                session(ssh.remotes.testServer) {
-                    shell logging: false, outputStream: stream
-                }
-            }
-        }
-
-        then:
-        logFile.text == ''
-    }
-
 }

@@ -28,12 +28,12 @@ class OperationSettings extends Settings<OperationSettings> {
     Boolean logging
 
     /**
-     * An output stream to log standard output.
+     * An output stream to forward the standard output.
      */
     OutputStream outputStream
 
     /**
-     * An output stream to log standard error.
+     * An output stream to forward the standard error.
      */
     OutputStream errorStream
 

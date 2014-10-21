@@ -358,32 +358,6 @@ class BackgroundCommandExecutionSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute should not write stdout/stderr to file if logging is off"() {
-        given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.errorStream.withWriter('UTF-8') { it << 'error' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
-        def logFile = temporaryFolder.newFile()
-
-        when:
-        logFile.withOutputStream { stream ->
-            ssh.run {
-                session(ssh.remotes.testServer) {
-                    executeBackground 'somecommand', logging: false, outputStream: stream, errorStream: stream
-                }
-            }
-        }
-
-        then:
-        logFile.text == ''
-    }
-
     private static commandWithExit(int status) {
         SshServerMock.command { SshServerMock.CommandContext c ->
             c.exitCallback.onExit(status)

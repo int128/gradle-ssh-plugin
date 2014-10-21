@@ -43,7 +43,10 @@ class DefaultOperations implements Operations {
 
         if (settings.logging) {
             standardOutput.listenLogging { String m -> log.info(m) }
-            if (settings.outputStream) { standardOutput.linkStream(settings.outputStream) }
+        }
+
+        if (settings.outputStream) {
+            standardOutput.linkStream(settings.outputStream)
         }
 
         if (settings.interaction) {
@@ -85,8 +88,13 @@ class DefaultOperations implements Operations {
         if (settings.logging) {
             standardOutput.listenLogging { String m -> log.info(m) }
             standardError.listenLogging { String m -> log.error(m) }
-            if (settings.outputStream) { standardOutput.linkStream(settings.outputStream) }
-            if (settings.errorStream)  { standardError.linkStream(settings.errorStream) }
+        }
+
+        if (settings.outputStream) {
+            standardOutput.linkStream(settings.outputStream)
+        }
+        if (settings.errorStream) {
+            standardError.linkStream(settings.errorStream)
         }
 
         if (settings.interaction) {
@@ -136,8 +144,13 @@ class DefaultOperations implements Operations {
         if (settings.logging) {
             standardOutput.listenLogging { String m -> log.info(m) }
             standardError.listenLogging { String m -> log.error(m) }
-            if (settings.outputStream) { standardOutput.linkStream(settings.outputStream) }
-            if (settings.errorStream)  { standardError.linkStream(settings.errorStream) }
+        }
+
+        if (settings.outputStream) {
+            standardOutput.linkStream(settings.outputStream)
+        }
+        if (settings.errorStream) {
+            standardError.linkStream(settings.errorStream)
         }
 
         if (settings.interaction) {
