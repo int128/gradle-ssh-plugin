@@ -10,6 +10,26 @@ import org.hidetake.groovy.ssh.extension.SudoExecution
 @ToString
 class OperationSettings extends Settings<OperationSettings> {
     /**
+     * Logging methods.
+     */
+    static enum Logging {
+        /**
+         * Log is sent to SLF4J.
+         */
+        slf4j,
+
+        /**
+         * Log is sent to standard output or error.
+         */
+        stdout,
+
+        /**
+         * Logging is turned off.
+         */
+        none
+    }
+
+    /**
      * Dry-run flag.
      * If <code>true</code>, performs no action.
      */
@@ -22,10 +42,9 @@ class OperationSettings extends Settings<OperationSettings> {
     Boolean pty
 
     /**
-     * Logging flag.
-     * If <code>false</code>, performs no logging.
+     * A logging method of the remote command or shell.
      */
-    Boolean logging
+    Logging logging
 
     /**
      * An output stream to forward the standard output.
@@ -56,7 +75,7 @@ class OperationSettings extends Settings<OperationSettings> {
     static final DEFAULT = new OperationSettings(
             dryRun: false,
             pty: false,
-            logging: true,
+            logging: Logging.slf4j,
             encoding: 'UTF-8',
             extensions: [SudoExecution, SftpGet, SftpPut]
     )

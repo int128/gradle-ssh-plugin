@@ -4,6 +4,7 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
+import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
@@ -236,16 +237,21 @@ class BackgroundCommandExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "toggle logging = #logging"() {
+    def "executeBackground should write stdout/stderr to #logging"() {
         given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
+        def out = System.out
+        def err = System.err
+        System.out = Mock(PrintStream)
+        System.err = Mock(PrintStream)
+
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'some message' }
+                c.errorStream.withWriter('UTF-8') { it << 'error' }
                 c.exitCallback.onExit(0)
             }
         }
@@ -254,49 +260,26 @@ class BackgroundCommandExecutionSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                executeBackground('somecommand', logging: logging)
+                executeBackground 'somecommand', logging: logging
             }
         }
 
         then:
-        (logging ? 1 : 0) * logger.info('some message')
+        stdout * System.out.println('some message')
+        stdout * System.err.println('error')
+
+        slf4j * logger.info('some message')
+        slf4j * logger.error('error')
+
+        cleanup:
+        System.out = out
+        System.err = err
 
         where:
-        logging << [true, false]
-    }
-
-    @ConfineMetaClassChanges(DefaultOperations)
-    def "toggle logging and obtain a command result"() {
-        given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
-        DefaultOperations.metaClass.static.getLog = { -> logger }
-
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
-        def resultActual
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground('somecommand', logging: true) { result ->
-                    resultActual = result
-                }
-            }
-        }
-
-        then:
-        1 * logger.info('some message')
-
-        then:
-        resultActual == 'some message'
+        logging                          | stdout | slf4j
+        OperationSettings.Logging.stdout | 1      | 0
+        OperationSettings.Logging.slf4j  | 0      | 1
+        OperationSettings.Logging.none   | 0      | 0
     }
 
     @Unroll

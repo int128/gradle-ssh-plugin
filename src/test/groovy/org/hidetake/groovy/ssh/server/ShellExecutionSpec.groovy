@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.server
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.PasswordAuthenticator
+import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
@@ -129,11 +130,13 @@ class ShellExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "toggle logging = #logging"() {
+    def "shell should write stdout to #logging"() {
         given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
+        def out = System.out
+        System.out = Mock(PrintStream)
+
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
         server.shellFactory = Mock(Factory) {
@@ -147,15 +150,22 @@ class ShellExecutionSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                shell(logging: logging)
+                shell logging: logging
             }
         }
 
         then:
-        (logging ? 1 : 0) * logger.info('some message')
+        stdout * System.out.println('some message')
+        slf4j * logger.info('some message')
+
+        cleanup:
+        System.out = out
 
         where:
-        logging << [true, false]
+        logging                          | stdout | slf4j
+        OperationSettings.Logging.stdout | 1      | 0
+        OperationSettings.Logging.slf4j  | 0      | 1
+        OperationSettings.Logging.none   | 0      | 0
     }
 
     @Unroll

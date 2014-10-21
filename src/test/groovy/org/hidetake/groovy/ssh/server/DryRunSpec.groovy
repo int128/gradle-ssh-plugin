@@ -42,7 +42,7 @@ class DryRunSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                shell(logging: false)
+                shell(logging: 'none')
             }
         }
 
