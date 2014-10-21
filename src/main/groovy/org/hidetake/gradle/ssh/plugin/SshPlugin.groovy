@@ -74,7 +74,7 @@ class SshPlugin implements Plugin<Project> {
          */
         @Deprecated
         void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
-            log.info 'Deprecated: use ssh.settings {...} instead of ssh {...}'
+            log.warn 'Deprecated: use ssh.settings {...} instead of ssh {...}'
             ssh.settings(closure)
         }
 
@@ -87,10 +87,10 @@ class SshPlugin implements Plugin<Project> {
         @Deprecated
         Object sshexec(@DelegatesTo(RunHandler) Closure closure) {
             assert closure, 'closure must be given'
-            log.info 'Deprecated: use ssh.run {...} instead of sshexec {...}'
+            log.warn 'Deprecated: use ssh.run {...} instead of sshexec {...}'
             def handler = new DefaultRunHandler()
             handler.metaClass.ssh = { Closure c ->
-                log.info 'Deprecated: use settings {...} instead of ssh {...} in the sshexec method'
+                log.warn 'Deprecated: use settings {...} instead of ssh {...} in the sshexec method'
                 handler.settings(c)
             }
             callWithDelegate(closure, handler)

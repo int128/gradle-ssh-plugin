@@ -20,13 +20,13 @@ class SshTask extends DefaultTask implements RunHandler {
 
     @Deprecated
     void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
-        log.info 'Deprecated: use settings {...} instead of ssh {...} in the ssh task'
+        log.warn 'Deprecated: use settings {...} instead of ssh {...} in the ssh task'
         handler.settings(closure)
     }
 
     @TaskAction
     void perform() {
-        log.info 'Deprecated: use ssh.run {...} instead of the ssh task'
+        log.warn 'Deprecated: use ssh.run {...} instead of the ssh task'
         (handler as DefaultRunHandler).run(project.ssh.settings)
     }
 }
