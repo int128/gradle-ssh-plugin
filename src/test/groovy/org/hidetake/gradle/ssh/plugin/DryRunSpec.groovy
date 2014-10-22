@@ -1,4 +1,4 @@
-package org.hidetake.gradle.ssh.server
+package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
