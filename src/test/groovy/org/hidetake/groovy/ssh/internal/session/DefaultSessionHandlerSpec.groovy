@@ -31,11 +31,11 @@ class DefaultSessionHandlerSpec extends Specification {
     def "invoke a shell with options"() {
         when:
         defaultSessionHandler.with {
-            shell(logging: false)
+            shell(logging: 'none')
         }
 
         then:
-        1 * operations.shell(OperationSettings.DEFAULT + new OperationSettings(logging: false, dryRun: true))
+        1 * operations.shell(OperationSettings.DEFAULT + new OperationSettings(logging: 'none', dryRun: true))
     }
 
     def "execute a command"() {

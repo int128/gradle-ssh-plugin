@@ -41,8 +41,13 @@ class DefaultOperations implements Operations {
         def standardOutput = new LineOutputStream(settings.encoding)
         channel.outputStream = standardOutput
 
-        if (settings.logging) {
-            standardOutput.listenLogging { String m -> log.info(m) }
+        switch (settings.logging) {
+            case OperationSettings.Logging.slf4j:
+                standardOutput.listenLogging { String m -> log.info(m) }
+                break
+            case OperationSettings.Logging.stdout:
+                standardOutput.listenLogging { String m -> System.out.println(m) }
+                break
         }
 
         if (settings.outputStream) {
@@ -85,9 +90,15 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        if (settings.logging) {
-            standardOutput.listenLogging { String m -> log.info(m) }
-            standardError.listenLogging { String m -> log.error(m) }
+        switch (settings.logging) {
+            case OperationSettings.Logging.slf4j:
+                standardOutput.listenLogging { String m -> log.info(m) }
+                standardError.listenLogging  { String m -> log.error(m) }
+                break
+            case OperationSettings.Logging.stdout:
+                standardOutput.listenLogging { String m -> System.out.println(m) }
+                standardError.listenLogging  { String m -> System.err.println(m) }
+                break
         }
 
         if (settings.outputStream) {
@@ -141,9 +152,15 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        if (settings.logging) {
-            standardOutput.listenLogging { String m -> log.info(m) }
-            standardError.listenLogging { String m -> log.error(m) }
+        switch (settings.logging) {
+            case OperationSettings.Logging.slf4j:
+                standardOutput.listenLogging { String m -> log.info(m) }
+                standardError.listenLogging  { String m -> log.error(m) }
+                break
+            case OperationSettings.Logging.stdout:
+                standardOutput.listenLogging { String m -> System.out.println(m) }
+                standardError.listenLogging  { String m -> System.err.println(m) }
+                break
         }
 
         if (settings.outputStream) {

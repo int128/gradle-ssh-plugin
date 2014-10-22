@@ -36,6 +36,16 @@ class ServiceSpec extends Specification {
         ssh.settings.proxy == ssh.proxies.globalProxy
     }
 
+    def "logging setting can be set by a string"() {
+        when:
+        ssh.settings {
+            logging = 'stdout'
+        }
+
+        then:
+        ssh.settings.logging == OperationSettings.Logging.stdout
+    }
+
     @Unroll
     def "filter remotes by role: #roles"() {
         given:
