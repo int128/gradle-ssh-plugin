@@ -3,6 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '0.6'
+    id 'com.github.johnrengelman.shadow' version '1.1.1'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7
@@ -12,18 +13,28 @@ repositories {
     jcenter()
 }
 
+configurations {
+    cliRuntime
+}
+
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.3.6'
     compile 'org.slf4j:slf4j-api:1.7.7'
     compile 'com.jcraft:jsch:0.1.51'
-	compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.7'
-	compile 'com.jcraft:jsch.agentproxy.jsch:0.0.7'
-    testCompile('org.spockframework:spock-core:0.7-groovy-2.0')
+    compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.7'
+    compile 'com.jcraft:jsch.agentproxy.jsch:0.0.7'
+
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
     testCompile 'cglib:cglib-nodep:3.1'
-    testRuntime 'org.objenesis:objenesis:2.1'
-    testRuntime 'ch.qos.logback:logback-classic:1.1.2'
     testCompile 'org.apache.sshd:sshd-core:0.12.0'
+
+    testRuntime 'ch.qos.logback:logback-classic:1.1.2'
+    testRuntime 'org.objenesis:objenesis:2.1'
     testRuntime 'org.bouncycastle:bcpkix-jdk15on:1.51'
+    testRuntime 'commons-cli:commons-cli:1.2'
+
+    cliRuntime 'ch.qos.logback:logback-classic:1.1.2'
+    cliRuntime 'commons-cli:commons-cli:1.2'
 }
 
 test {
@@ -69,6 +80,14 @@ task javadocJar(type: Jar, dependsOn: groovydoc) {
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     classifier = 'sources'
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'
+    }
+    configurations = [project.configurations.runtime, project.configurations.cliRuntime]
+    mergeServiceFiles()
 }
 
 publishing {
