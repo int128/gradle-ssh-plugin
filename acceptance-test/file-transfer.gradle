@@ -117,8 +117,8 @@ feature('retrieve a large file from the remote host and send it again') {
 }
 
 task getAndPutLargeFile(type: SshTask, dependsOn: 'setupBuildDir') {
+    finalizedBy 'cleanLocalTemp'
     finalizedBy 'cleanRemoteTemp'
-    finalizedBy 'cleanBuildDir'
 
     doFirst {
         ext.sizeX = 1024 * 256
