@@ -18,6 +18,25 @@ task executeCommand(type: SshTask) {
 }
 
 
+feature('execute a command with console logging to stdout') {
+    task 'executeCommandWithLogging'
+    category 'test'
+}
+
+task executeCommandWithLogging(type: SshTask) {
+    doFirst {
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.localhost) {
+        ext.a = execute "expr $x + $y", logging: 'stdout'
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
 feature('executing a command by the sshexec method') {
     task 'executeCommandBySshexec'
     category 'test'
