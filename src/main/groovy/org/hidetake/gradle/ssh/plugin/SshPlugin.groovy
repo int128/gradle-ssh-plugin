@@ -65,7 +65,7 @@ class SshPlugin implements Plugin<Project> {
         @Deprecated
         final Class SshTask = org.hidetake.gradle.ssh.plugin.SshTask
 
-        final Service ssh = Ssh.createService()
+        final Service ssh = Ssh.newService()
 
         /**
          * Set global settings.

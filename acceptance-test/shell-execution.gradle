@@ -13,3 +13,41 @@ task executeShell(type: SshTask) {
         })
     }
 }
+
+
+feature('write output of the shell to a file') {
+    task 'writeShellOutput'
+    category 'test'
+}
+
+task writeShellOutput(dependsOn: 'setupBuildDir') << {
+    def x = randomInt()
+    def y = randomInt()
+    def tempFile = file("$buildDir/local-${randomInt()}")
+    tempFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "expr $x + $y", outputStream: stream
+            }
+        }
+    }
+    assert tempFile.text as int == (x + y)
+}
+
+
+feature('write output of the shell to stdout') {
+    task 'writeShellOutputToStdout'
+    category 'test'
+}
+
+task writeShellOutputToStdout << {
+    ssh.run {
+        session(remotes.localhost) {
+            shell outputStream: System.out, interaction: {
+                when(partial: ~/.*[$%#] */) {
+                    standardInput << 'exit 0' << '\n'
+                }
+            }
+        }
+    }
+}

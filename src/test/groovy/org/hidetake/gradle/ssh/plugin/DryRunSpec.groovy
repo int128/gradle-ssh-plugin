@@ -2,7 +2,6 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.gradle.ssh.plugin.SshTask
 import spock.lang.Specification
 
 class DryRunSpec extends Specification {
@@ -48,7 +47,7 @@ class DryRunSpec extends Specification {
         given:
         project.tasks.testTask.with {
             session(project.remotes.testServer) {
-                shell(logging: false)
+                shell(logging: 'none')
             }
         }
 

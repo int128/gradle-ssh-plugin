@@ -18,6 +18,25 @@ task executeCommand(type: SshTask) {
 }
 
 
+feature('execute a command with console logging to stdout') {
+    task 'executeCommandWithLogging'
+    category 'test'
+}
+
+task executeCommandWithLogging(type: SshTask) {
+    doFirst {
+        ext.x = randomInt()
+        ext.y = randomInt()
+    }
+    session(remotes.localhost) {
+        ext.a = execute "expr $x + $y", logging: 'stdout'
+    }
+    doLast {
+        assert a as int == (x + y)
+    }
+}
+
+
 feature('executing a command by the sshexec method') {
     task 'executeCommandBySshexec'
     category 'test'
@@ -184,4 +203,58 @@ task failureStatusInBackground << {
     } catch (RuntimeException e) {
         assert e.localizedMessage == 'Error in background command execution'
     }
+}
+
+
+feature('write output of the command to a file') {
+    task 'writeCommandOutput'
+    category 'test'
+}
+
+task writeCommandOutput << {
+    def x = randomInt()
+    def y = randomInt()
+    def tempFile = file(localTempPath())
+    tempFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "expr $x + $y", outputStream: stream
+            }
+        }
+    }
+    assert tempFile.text as int == (x + y)
+}
+
+
+feature('write output of the command to stdout') {
+    task 'writeCommandOutputToStdout'
+    category 'test'
+}
+
+task writeCommandOutputToStdout << {
+    def x = randomInt()
+    def y = randomInt()
+    ssh.run {
+        session(remotes.localhost) {
+            execute "expr $x + $y", outputStream: System.out
+        }
+    }
+}
+
+
+feature('write error of the command to a file') {
+    task 'writeCommandError'
+    category 'test'
+}
+
+task writeCommandError << {
+    def tempFile = file(localTempPath())
+    tempFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "cat hoge || true", errorStream: stream
+            }
+        }
+    }
+    assert tempFile.text.contains('hoge')
 }
