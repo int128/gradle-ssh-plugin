@@ -5,7 +5,7 @@ install:
   - ./gradlew install
 script:
   - ./gradlew check
-  - ./.travis.sh acceptance_test
+  - cd acceptance-test && ./run-test.sh
 
 env:
   global:

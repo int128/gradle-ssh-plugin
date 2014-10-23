@@ -1,46 +1,35 @@
 #!/bin/bash -xe
+#
+# Requirements:
+# - sshd must be running
+# - sudo must be enabled without password
+# - java must be installed
 
-test $jdk
-test $gradle
-test $version
-dotssh=/root/.ssh
+[ -z "$version" ] && version=SNAPSHOT
 
-# setup sshd
-sed -i 's/^UsePrivilegeSeparation .*/UsePrivilegeSeparation no/g' /etc/ssh/sshd_config
-sed -i 's/^PermitRootLogin .*/PermitRootLogin yes/g' /etc/ssh/sshd_config
-touch '/etc/rc.d/init.d/functions'
-sshd-keygen
-
-# enable password-less sudo
-echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/no-password
-echo 'Defaults !lecture'              > /etc/sudoers.d/no-lecture
-echo 'Defaults !requiretty'           > /etc/sudoers.d/permit-notty
+# determine Gradle path
+[ -x ../gradlew ] && gradle=../gradlew
+[ -x ./gradle/bin/gradle ] && gradle=./gradle/bin/gradle
 
 # enable public key authentication
-mkdir -m 700 -v $dotssh
-ssh-keygen -t rsa -N ''            -f $dotssh/id_rsa
-ssh-keygen -t rsa -N 'pass_phrase' -f $dotssh/id_rsa_pass
-cat $dotssh/id_rsa.pub              > $dotssh/authorized_keys
+mkdir -m 700 -p -v                    $HOME/.ssh
+ssh-keygen -t rsa -N ''            -f $HOME/.ssh/id_rsa
+ssh-keygen -t rsa -N 'pass_phrase' -f $HOME/.ssh/id_rsa_pass
+cat $HOME/.ssh/id_rsa.pub           > $HOME/.ssh/authorized_keys
 
-# generate known hosts
-/usr/sbin/sshd
-ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa localhost id
+# generate a known hosts file
+ssh -o StrictHostKeyChecking=no \
+    -o HostKeyAlgorithms=ssh-rsa \
+    -o UserKnownHostsFile=$HOME/.ssh/known_hosts \
+    -i $HOME/.ssh/id_rsa \
+    localhost id
 ssh-keygen -H -F localhost
 
-# install JDK
-curl -L -C - -b oraclelicense=accept-securebackup-cookie -O http://download.oracle.com/otn-pub/java/jdk/$jdk/jdk-${jdk%-*}-linux-x64.rpm
-yum install -y ./*.rpm
-rm -v *.rpm
+# run tests
+"$gradle" -i -s -Pversion="$version" test aggressiveTest
 
-# install Gradle
-curl -L -O https://services.gradle.org/distributions/gradle-${gradle}-bin.zip
-unzip gradle-*-bin.zip
-rm -v gradle-*-bin.zip
-mv -v gradle-* gradle
-
-# invoke Gradle
-/gradle/bin/gradle -i -p acceptance-test -Pversion="$version" test aggressiveTest
-
-# stop SSH server
-xargs kill < /var/run/sshd.pid
-
+# run tests with ssh-agent
+eval $(ssh-agent)
+ssh-add $HOME/.ssh/id_rsa
+"$gradle" -i -s -Pversion="$version" testWithAgent
+ssh-agent -k
