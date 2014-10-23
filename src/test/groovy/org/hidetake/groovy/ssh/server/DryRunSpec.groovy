@@ -1,12 +1,15 @@
 package org.hidetake.groovy.ssh.server
 
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import spock.lang.Specification
-
-import static org.hidetake.groovy.ssh.Ssh.ssh
 
 class DryRunSpec extends Specification {
 
+    Service ssh
+
     def setup() {
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
             dryRun = true
@@ -17,12 +20,6 @@ class DryRunSpec extends Specification {
                 user = 'user'
             }
         }
-    }
-
-    def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
     }
 
 

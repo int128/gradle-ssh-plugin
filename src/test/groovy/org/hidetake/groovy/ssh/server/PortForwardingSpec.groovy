@@ -5,10 +5,10 @@ import org.apache.sshd.common.Factory
 import org.apache.sshd.common.ForwardingFilter
 import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
-
-import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class PortForwardingSpec extends Specification {
@@ -17,11 +17,14 @@ class PortForwardingSpec extends Specification {
     SshServer gateway1Server
     SshServer gateway2Server
 
+    Service ssh
+
     def setup() {
         targetServer = setupServer('target')
         gateway1Server = setupServer('gateway1')
         gateway2Server = setupServer('gateway2')
 
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
         }
@@ -38,9 +41,6 @@ class PortForwardingSpec extends Specification {
     }
 
     def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
         targetServer.stop(true)
         gateway1Server.stop(true)
         gateway2Server.stop(true)

@@ -4,6 +4,8 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
@@ -12,8 +14,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.Ssh.ssh
-
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class SudoCommandExecutionSpec extends Specification {
 
@@ -21,12 +21,15 @@ class SudoCommandExecutionSpec extends Specification {
 
     SshServer server
 
+    Service ssh
+
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
 
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
         }
@@ -41,9 +44,6 @@ class SudoCommandExecutionSpec extends Specification {
     }
 
     def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
         server.stop(true)
     }
 

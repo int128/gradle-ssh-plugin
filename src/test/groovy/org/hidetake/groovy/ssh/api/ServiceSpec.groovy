@@ -1,18 +1,17 @@
 package org.hidetake.groovy.ssh.api
 
+import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.Ssh.ssh
-
 class ServiceSpec extends Specification {
 
-    def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
+    Service ssh
+
+    def setup() {
+        ssh = Ssh.newService()
     }
 
     def "global settings can be set"() {
@@ -144,7 +143,7 @@ class ServiceSpec extends Specification {
         err.message.contains("closure")
     }
 
-    private static void configureFixture() {
+    private void configureFixture() {
         ssh.settings {
             knownHosts = allowAnyHosts
         }

@@ -5,6 +5,8 @@ import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -13,13 +15,14 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
-import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
 
     SshServer server
+
+    Service ssh
 
     @Rule
     TemporaryFolder temporaryFolder
@@ -30,6 +33,7 @@ class HostKeyCheckingSpec extends Specification {
         server.commandFactory = Mock(CommandFactory)
         server.start()
 
+        ssh = Ssh.newService()
         ssh.remotes {
             testServer {
                 host = server.host
