@@ -3,13 +3,13 @@ package org.hidetake.groovy.ssh.server
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.Use
-
-import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Use(FileDivCategory)
@@ -17,6 +17,8 @@ class FileTransferSpec extends Specification {
 
     @Shared
     SshServer server
+
+    Service ssh
 
     @Rule
     TemporaryFolder temporaryFolder
@@ -31,14 +33,12 @@ class FileTransferSpec extends Specification {
     }
 
     def cleanupSpec() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
         server.stop(true)
     }
 
 
     def setup() {
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
         }

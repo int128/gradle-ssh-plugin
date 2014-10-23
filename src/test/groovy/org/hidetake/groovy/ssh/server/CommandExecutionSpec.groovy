@@ -4,7 +4,9 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
+import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
 import org.junit.Rule
@@ -14,14 +16,14 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.Ssh.ssh
-
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class CommandExecutionSpec extends Specification {
 
     private static final NL = Utilities.eol()
 
     SshServer server
+
+    Service ssh
 
     @Rule
     TemporaryFolder temporaryFolder
@@ -32,6 +34,7 @@ class CommandExecutionSpec extends Specification {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
 
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
         }
@@ -46,9 +49,6 @@ class CommandExecutionSpec extends Specification {
     }
 
     def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
         server.stop(true)
     }
 

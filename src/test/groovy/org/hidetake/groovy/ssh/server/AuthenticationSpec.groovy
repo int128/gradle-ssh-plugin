@@ -3,28 +3,28 @@ package org.hidetake.groovy.ssh.server
 import com.jcraft.jsch.JSchException
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.*
+import org.hidetake.groovy.ssh.Ssh
+import org.hidetake.groovy.ssh.api.Service
 import spock.lang.Specification
 
 import java.security.PublicKey
-
-import static org.hidetake.groovy.ssh.Ssh.ssh
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class AuthenticationSpec extends Specification {
 
     SshServer server
 
+    Service ssh
+
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
+        ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
         }
     }
 
     def cleanup() {
-        ssh.remotes.clear()
-        ssh.proxies.clear()
-        ssh.settings.reset()
         server.stop(true)
     }
 

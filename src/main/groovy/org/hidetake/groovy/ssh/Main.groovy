@@ -31,17 +31,17 @@ class Main {
             }
 
             if (options.e) {
-                Ssh.shell.run(options.e as String, 'script.groovy', options.arguments())
+                Ssh.newShell().run(options.e as String, 'script.groovy', options.arguments())
             } else {
                 def extraArguments = options.arguments()
                 if (extraArguments.size() > 0) {
                     if (extraArguments.head() == '-') {
-                        Ssh.shell.run(System.in.newReader(), 'script.groovy', extraArguments.tail())
+                        Ssh.newShell().run(System.in.newReader(), 'script.groovy', extraArguments.tail())
                     } else {
-                        Ssh.shell.run(new File(extraArguments.head()), extraArguments.tail())
+                        Ssh.newShell().run(new File(extraArguments.head()), extraArguments.tail())
                     }
                 } else {
-                    Ssh.shell.run(System.in.newReader(), 'script.groovy')
+                    Ssh.newShell().run(System.in.newReader(), 'script.groovy')
                 }
             }
         }

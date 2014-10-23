@@ -14,22 +14,18 @@ import org.hidetake.groovy.ssh.internal.DefaultService
 @CompileStatic
 class Ssh {
     /**
-     * An implementation of {@link Service}.
+     * Create an implementation of {@link Service}.
      */
-    @Lazy
-    static final Service ssh = {
+    static Service newService() {
         new DefaultService()
-    }()
+    }
 
     /**
-     * A {@link GroovyShell} object to run a Groovy script.
+     * Create a {@link GroovyShell} object to run a Groovy script.
      */
-    @Lazy
-    static final GroovyShell shell = {
-        def importCustomizer = new ImportCustomizer()
-        importCustomizer.addStaticImport(Ssh.class.name, 'ssh')
-        def configuration = new CompilerConfiguration()
-        configuration.addCompilationCustomizers(importCustomizer)
-        new GroovyShell(configuration)
-    }()
+    static GroovyShell newShell() {
+        def binding = new Binding()
+        binding.variables.ssh = newService()
+        new GroovyShell(binding)
+    }
 }

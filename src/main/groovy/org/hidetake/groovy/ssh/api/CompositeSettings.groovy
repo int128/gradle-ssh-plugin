@@ -29,9 +29,4 @@ class CompositeSettings extends Settings<CompositeSettings> {
                 operationSettings: operationSettings + right.operationSettings
         )
     }
-
-    void reset() {
-        connectionSettings = new ConnectionSettings()
-        operationSettings = new OperationSettings()
-    }
 }
