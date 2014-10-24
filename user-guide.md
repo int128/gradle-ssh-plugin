@@ -592,7 +592,9 @@ Key              | Type     | Description
 -----------------|----------|------------
 `dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
 `pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
-`logging`        | Boolean  | If this is false, the logging of standard output and error is turned off, for such as hiding credential. Default is true.
+`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+`outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.
+`errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
 `encoding`       | String   | Encoding of input and output on the command or shell execution. Default is `UTF-8`.
 `interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Default is no interaction.
 `extensions`     | List of classes | List of extension classes. If this is set, classes will be mixed in.

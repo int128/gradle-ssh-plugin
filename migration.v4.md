@@ -98,8 +98,18 @@ Key              | Type     | Description
 `outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
 `errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
 
-Use `logging` setting to toggle logging output.
+Instead use `logging` setting to enable verbose logging.
 
 Key              | Type     | Description
 -----------------|----------|------------
-`logging`        | Boolean  | If this is false, the logging of standard output and error is turned off, for such as hiding credential. Default is true.
+`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+
+e.g.
+
+```groovy
+ssh.settings {
+  logging = 'stdout'
+}
+ssh.run {
+}
+```
