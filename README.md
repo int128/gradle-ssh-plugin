@@ -38,15 +38,6 @@ Run the build task.
 ./gradlew build
 ```
 
-Known issues:
-
-* Mac OS X
-  * 1 test will be failed
-  * Due to a bug of JSch to handle a hashed `known_hosts` on Mac OS X.
-* Windows
-  * 2 tests will be failed
-  * Apache sshd server does not support SFTP operations on Windows.
-
 
 ### Acceptance Test
 
