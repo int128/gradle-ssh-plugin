@@ -3,31 +3,30 @@ Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugi
 
 Gradle SSH Plugin is a Gradle plugin which provides remote command execution and file transfer features.
 
-Please see [the user guide](https://gradle-ssh-plugin.github.io/) for details.
+See also:
+
+* [User Guide](https://gradle-ssh-plugin.github.io) for details.
+* [Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
 
 
 Contributions
 -------------
 
 This is an open source software licensed under the Apache License Version 2.0.
-
-Please let me know on GitHub issues or pull requests.
+Any issues or pull requests are welcome.
 
 The user guide is maintained on [the repository of gradle-ssh-plugin.github.io](https://github.com/gradle-ssh-plugin/gradle-ssh-plugin.github.io).
 
-The template project is maintained on [this repository](https://github.com/gradle-ssh-plugin/template).
 
+### Environment
 
-Development
------------
-
-JDK 7 or later is needed.
+JDK 7 or later is required.
+Intellij IDEA is recommended.
 All dependencies are downloaded by Gradle wrapper.
 
-The continuous integration is enabled on Travis CI.
-See [the build report](https://gradle-ssh-plugin.github.io/build-report.html) for each branch.
+Travis CI will compile and test the branch on each push and pull request.
 
-Artifacts are released on [Gradle Plugins](http://plugins.gradle.org/plugin/org.hidetake.ssh), [Bintray](https://bintray.com/int128/maven/gradle-ssh-plugin) JCenter and [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22gradle-ssh-plugin%22).
+Artifacts are published on [Gradle Plugins](http://plugins.gradle.org/plugin/org.hidetake.ssh), [Bintray](https://bintray.com/int128/maven/gradle-ssh-plugin) JCenter and [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22gradle-ssh-plugin%22).
 
 
 ### Build
