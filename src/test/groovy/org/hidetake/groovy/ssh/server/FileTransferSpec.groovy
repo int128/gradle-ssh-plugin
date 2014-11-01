@@ -53,7 +53,7 @@ class FileTransferSpec extends Specification {
     }
 
 
-    def "put a file given by path"() {
+    def "put() should accept a path string as source"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -71,7 +71,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "put a file given by a File object"() {
+    def "put() should accept a File object as source"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -89,7 +89,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "put files given by a collection of File object"() {
+    def "put() should accept a collection of file as source"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def sourceFile1 = sourceDir / uuidgen() << uuidgen()
@@ -108,7 +108,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
-    def "put a file to a directory"() {
+    def "put() should save a file of same name if destination is a directory"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -126,7 +126,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
-    def "put a directory"() {
+    def "put() should put a whole directory if both are directories"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
         def source2Dir = mkdir(source1Dir / uuidgen())
@@ -150,7 +150,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
     }
 
-    def "put an empty directory"() {
+    def "put() should put a whole directory even if empty"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
@@ -167,7 +167,7 @@ class FileTransferSpec extends Specification {
     }
 
 
-    def "get a remote file to local given by path"() {
+    def "get() should accept a path string as destination"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -185,7 +185,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "get a remote file to local given by a File object"() {
+    def "get() should accept a file object as destination"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -203,7 +203,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "get a file to a directory"() {
+    def "get() should save a file of same name if destination is a directory"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -223,7 +223,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
-    def "get a directory"() {
+    def "get() should get a whole directory if source is a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
         def source2Dir = mkdir(source1Dir / uuidgen())
@@ -247,7 +247,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
     }
 
-    def "get an empty directory"() {
+    def "get() should get a whole directory even if empty"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
