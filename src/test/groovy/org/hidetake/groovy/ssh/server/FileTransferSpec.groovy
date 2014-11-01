@@ -166,6 +166,38 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceDir.name).list() == []
     }
 
+    def "put() should throw an error if source is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(null, file.path)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'local'
+    }
+
+    def "put() should throw an error if destination is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(file.path, null)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'remote'
+    }
+
 
     def "get() should accept a path string as destination"() {
         given:
@@ -262,6 +294,39 @@ class FileTransferSpec extends Specification {
         then:
         (destinationDir / sourceDir.name).list() == []
     }
+
+    def "get() should throw an error if source is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(null, file.path)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'remote'
+    }
+
+    def "get() should throw an error if destination is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(file.path, null as String)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'local'
+    }
+
 
     @Category(File)
     static class FileDivCategory {
