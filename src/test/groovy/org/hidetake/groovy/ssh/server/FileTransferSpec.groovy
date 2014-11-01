@@ -53,7 +53,7 @@ class FileTransferSpec extends Specification {
     }
 
 
-    def "put a file given by path"() {
+    def "put() should accept a path string as source"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -71,7 +71,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "put a file given by a File object"() {
+    def "put() should accept a File object as source"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -89,7 +89,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "put files given by a collection of File object"() {
+    def "put() should accept a collection of file as source"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def sourceFile1 = sourceDir / uuidgen() << uuidgen()
@@ -108,7 +108,25 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
-    def "put a file to a directory"() {
+    def "put() should overwrite a file if destination already exists"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile() << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile.path, destinationFile.path)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "put() should save a file of same name if destination is a directory"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -126,7 +144,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
-    def "put a directory"() {
+    def "put() should put a whole directory if both are directories"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
         def source2Dir = mkdir(source1Dir / uuidgen())
@@ -150,7 +168,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
     }
 
-    def "put an empty directory"() {
+    def "put() should put a whole directory even if empty"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
@@ -166,8 +184,40 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceDir.name).list() == []
     }
 
+    def "put() should throw an error if source is null"() {
+        given:
+        def file = temporaryFolder.newFile()
 
-    def "get a remote file to local given by path"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(null, file.path)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'local'
+    }
+
+    def "put() should throw an error if destination is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(file.path, null)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'remote'
+    }
+
+
+    def "get() should accept a path string as destination"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -185,7 +235,7 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "get a remote file to local given by a File object"() {
+    def "get() should accept a file object as destination"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -203,7 +253,25 @@ class FileTransferSpec extends Specification {
         destinationFile.text == text
     }
 
-    def "get a file to a directory"() {
+    def "get() should overwrite a file if destination already exists"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile() << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationFile.path)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "get() should save a file of same name if destination is a directory"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -223,7 +291,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
-    def "get a directory"() {
+    def "get() should get a whole directory if source is a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
         def source2Dir = mkdir(source1Dir / uuidgen())
@@ -247,7 +315,7 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
     }
 
-    def "get an empty directory"() {
+    def "get() should get a whole directory even if empty"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder()
@@ -262,6 +330,39 @@ class FileTransferSpec extends Specification {
         then:
         (destinationDir / sourceDir.name).list() == []
     }
+
+    def "get() should throw an error if source is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(null, file.path)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'remote'
+    }
+
+    def "get() should throw an error if destination is null"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(file.path, null as String)
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'local'
+    }
+
 
     @Category(File)
     static class FileDivCategory {
