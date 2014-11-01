@@ -108,6 +108,24 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
+    def "put() should overwrite a file if destination already exists"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile() << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile.path, destinationFile.path)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
     def "put() should save a file of same name if destination is a directory"() {
         given:
         def text = uuidgen()
@@ -227,6 +245,24 @@ class FileTransferSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 get(sourceFile.path, destinationFile)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "get() should overwrite a file if destination already exists"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile() << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationFile.path)
             }
         }
 
