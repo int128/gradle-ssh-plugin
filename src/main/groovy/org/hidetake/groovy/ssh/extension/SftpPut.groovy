@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.extension
 
+import com.jcraft.jsch.SftpException
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.session.SessionHandler
 
@@ -52,7 +53,15 @@ class SftpPut {
         putInternal = { File localPath, String remotePath ->
             if (localPath.directory) {
                 def remoteDir = "$remotePath/${localPath.name}"
-                mkdir(remoteDir)
+                try {
+                    mkdir(remoteDir)
+                } catch (SftpException e) {
+                    if (e.id == 4) {
+                        log.info("Remote directory already exists: ${e.localizedMessage}")
+                    } else {
+                        throw new RuntimeException(e)
+                    }
+                }
                 localPath.eachFile(putInternal.rcurry(remoteDir))
             } else {
                 putFile(localPath.path, remotePath)
