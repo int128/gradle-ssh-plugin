@@ -224,7 +224,7 @@ class BackgroundCommandExecutionSpec extends Specification {
 
         then:
         logMessages.each {
-            1 * logger.info(it)
+            1 * logger.info("testServer|$it")
         }
 
         where:
@@ -268,8 +268,8 @@ class BackgroundCommandExecutionSpec extends Specification {
         stdout * System.out.println('some message')
         stdout * System.err.println('error')
 
-        slf4j * logger.info('some message')
-        slf4j * logger.error('error')
+        slf4j * logger.info ('testServer|some message')
+        slf4j * logger.error('testServer|error')
 
         cleanup:
         System.out = out

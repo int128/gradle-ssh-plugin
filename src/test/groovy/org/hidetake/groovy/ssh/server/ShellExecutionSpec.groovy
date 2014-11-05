@@ -118,7 +118,9 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        logMessages.each { 1 * logger.info(it) }
+        logMessages.each {
+            1 * logger.info("testServer|$it")
+        }
 
         where:
         description            | outputValue                  | logMessages
@@ -156,7 +158,7 @@ class ShellExecutionSpec extends Specification {
 
         then:
         stdout * System.out.println('some message')
-        slf4j * logger.info('some message')
+        slf4j * logger.info('testServer|some message')
 
         cleanup:
         System.out = out

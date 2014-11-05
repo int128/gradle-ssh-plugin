@@ -43,7 +43,7 @@ class DefaultOperations implements Operations {
 
         switch (settings.logging) {
             case OperationSettings.Logging.slf4j:
-                standardOutput.listenLogging { String m -> log.info(m) }
+                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
                 standardOutput.listenLogging { String m -> System.out.println(m) }
@@ -92,8 +92,8 @@ class DefaultOperations implements Operations {
 
         switch (settings.logging) {
             case OperationSettings.Logging.slf4j:
-                standardOutput.listenLogging { String m -> log.info(m) }
-                standardError.listenLogging  { String m -> log.error(m) }
+                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
+                standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
                 standardOutput.listenLogging { String m -> System.out.println(m) }
@@ -154,8 +154,8 @@ class DefaultOperations implements Operations {
 
         switch (settings.logging) {
             case OperationSettings.Logging.slf4j:
-                standardOutput.listenLogging { String m -> log.info(m) }
-                standardError.listenLogging  { String m -> log.error(m) }
+                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
+                standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
                 standardOutput.listenLogging { String m -> System.out.println(m) }

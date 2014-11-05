@@ -304,7 +304,7 @@ class SudoCommandExecutionSpec extends Specification {
 
         then:
         logMessages.each {
-            1 * logger.info(it)
+            1 * logger.info("testServer|$it")
         }
 
         where:
