@@ -1,7 +1,10 @@
 package org.hidetake.groovy.ssh.extension
 
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.api.operation.SftpException
 import org.hidetake.groovy.ssh.api.session.SessionHandler
+
+import static org.hidetake.groovy.ssh.api.operation.SftpException.Error.*
 
 /**
  * An extension class to put a file or directory via SFTP.
@@ -52,7 +55,15 @@ class SftpPut {
         putInternal = { File localPath, String remotePath ->
             if (localPath.directory) {
                 def remoteDir = "$remotePath/${localPath.name}"
-                mkdir(remoteDir)
+                try {
+                    mkdir(remoteDir)
+                } catch (SftpException e) {
+                    if (e.error == SSH_FX_FAILURE) {
+                        log.info("Remote directory already exists: ${e.localizedMessage}")
+                    } else {
+                        throw new RuntimeException(e)
+                    }
+                }
                 localPath.eachFile(putInternal.rcurry(remoteDir))
             } else {
                 putFile(localPath.path, remotePath)

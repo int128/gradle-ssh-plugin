@@ -1,7 +1,9 @@
 package org.hidetake.groovy.ssh.internal.operation
 
 import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.SftpException as JschSftpException
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.api.operation.SftpException
 import org.hidetake.groovy.ssh.api.operation.SftpOperations
 
 @Slf4j
@@ -16,30 +18,50 @@ class DefaultSftpOperations implements SftpOperations {
     @Override
     void getFile(String remote, String local) {
         log.info("Get a remote file ($remote) to local ($local)")
-        channel.get(remote, local, new FileTransferLogger())
+        try {
+            channel.get(remote, local, new FileTransferLogger())
+        } catch (JschSftpException e) {
+            throw new SftpException(e)
+        }
     }
 
     @Override
     void putFile(String local, String remote) {
         log.info("Put a local file ($local) to remote ($remote)")
-        channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
+        try {
+            channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
+        } catch (JschSftpException e) {
+            throw new SftpException(e)
+        }
     }
 
     @Override
     void mkdir(String path) {
         log.info("Create a directory ($path)")
-        channel.mkdir(path)
+        try {
+            channel.mkdir(path)
+        } catch (JschSftpException e) {
+            throw new SftpException(e)
+        }
     }
 
     @Override
     List<ChannelSftp.LsEntry> ls(String path) {
         log.info("Get a directory listing of ($path)")
-        channel.ls(path).toList()
+        try {
+            channel.ls(path).toList()
+        } catch (JschSftpException e) {
+            throw new SftpException(e)
+        }
     }
 
     @Override
     void cd(String path) {
         log.info("Change current directory to ($path)")
-        channel.cd(path)
+        try {
+            channel.cd(path)
+        } catch (JschSftpException e) {
+            throw new SftpException(e)
+        }
     }
 }

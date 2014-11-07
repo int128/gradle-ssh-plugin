@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.extension
 
 import com.jcraft.jsch.ChannelSftp.LsEntry
-import com.jcraft.jsch.SftpException
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.api.operation.SftpException
 import org.hidetake.groovy.ssh.api.session.SessionHandler
 
 /**
@@ -65,7 +65,7 @@ class SftpGet {
         try {
             getFile(remoteFile, localFile.path)
         } catch (SftpException e) {
-            if (e.message.startsWith('not supported to get directory')) {
+            if (e.rawMessage.startsWith('not supported to get directory')) {
                 log.debug(e.localizedMessage)
                 log.debug('Starting to get a directory recursively')
                 getDirectory(remoteFile, localFile)

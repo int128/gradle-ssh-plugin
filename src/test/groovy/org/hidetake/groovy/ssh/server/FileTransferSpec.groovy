@@ -144,6 +144,28 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
+    def "put() should merge and overwrite a file to a directory if it is not empty"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+
+        def destinationDir = temporaryFolder.newFolder()
+        def destination1File = destinationDir / sourceFile.name << uuidgen()
+        def destination2File = destinationDir / uuidgen() << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(sourceFile, destinationDir.path)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destination1File.text == text
+        destination2File.exists()
+    }
+
     def "put() should put a whole directory if both are directories"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
@@ -166,6 +188,41 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source1File.name).text == source1File.text
         (destinationDir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+    }
+
+    def "put() should merge and overwrite a directory to a directory if it is not empty"() {
+        given:
+        def source1Dir = temporaryFolder.newFolder()
+        def source2Dir = mkdir(source1Dir / uuidgen())
+        def source3Dir = mkdir(source2Dir / uuidgen())
+
+        def source1File = source1Dir / uuidgen() << uuidgen()
+        def source2File = source2Dir / uuidgen() << uuidgen()
+
+        def destination0Dir = temporaryFolder.newFolder()
+        def destination1Dir = mkdir(destination0Dir / source1Dir.name)
+        def destination2Dir = mkdir(destination1Dir / source2Dir.name)
+        def destination3Dir = mkdir(destination2Dir / source3Dir.name)
+
+        def destination1File = destination1Dir / source1File.name << uuidgen()
+        def destination2File = destination2Dir / source2File.name << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put(source1Dir, destination0Dir.path)
+            }
+        }
+
+        then:
+        (destination0Dir / source1Dir.name / source1File.name).text == source1File.text
+        (destination0Dir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
+        (destination0Dir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+
+        and:
+        destination1File.text == source1File.text
+        destination2File.text == source2File.text
+        destination3Dir.exists()
     }
 
     def "put() should put a whole directory even if empty"() {
@@ -291,6 +348,27 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile.name).text == text
     }
 
+    def "get() should merge and overwrite a file to a directory if it is not empty"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationDir = temporaryFolder.newFolder()
+        def destination1File = destinationDir / sourceFile.name << text
+        def destination2File = destinationDir / uuidgen() << text
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(sourceFile.path, destinationDir)
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destination1File.text == text
+        destination2File.exists()
+    }
+
     def "get() should get a whole directory if source is a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
@@ -313,6 +391,41 @@ class FileTransferSpec extends Specification {
         (destinationDir / source1Dir.name / source1File.name).text == source1File.text
         (destinationDir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
         (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+    }
+
+    def "get() should merge and overwrite a directory to a directory if it is not empty"() {
+        given:
+        def source1Dir = temporaryFolder.newFolder()
+        def source2Dir = mkdir(source1Dir / uuidgen())
+        def source3Dir = mkdir(source2Dir / uuidgen())
+
+        def source1File = source1Dir / uuidgen() << uuidgen()
+        def source2File = source2Dir / uuidgen() << uuidgen()
+
+        def destination0Dir = temporaryFolder.newFolder()
+        def destination1Dir = mkdir(destination0Dir / source1Dir.name)
+        def destination2Dir = mkdir(destination1Dir / source2Dir.name)
+        def destination3Dir = mkdir(destination2Dir / source3Dir.name)
+
+        def destination1File = destination1Dir / source1File.name << uuidgen()
+        def destination2File = destination2Dir / source2File.name << uuidgen()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(source1Dir.path, destination0Dir)
+            }
+        }
+
+        then:
+        (destination0Dir / source1Dir.name / source1File.name).text == source1File.text
+        (destination0Dir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
+        (destination0Dir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+
+        and:
+        destination1File.text == source1File.text
+        destination2File.text == source2File.text
+        destination3Dir.exists()
     }
 
     def "get() should get a whole directory even if empty"() {
