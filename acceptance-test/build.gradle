@@ -34,7 +34,7 @@ ext {
     randomInt = { int max = 10000 -> (Math.random() * max) as int }
 
     remoteTempPrefix = "/tmp/remote-fixture-${randomInt()}"
-    remoteTempPath = { String name = '' -> "$remoteTempPrefix-$name" }
+    remoteTempPath = { String name = randomInt().toString() -> "$remoteTempPrefix-$name" }
 
     localTempPrefix = "$buildDir/local-fixture-${randomInt()}"
     localTempPath = { String name = randomInt().toString() -> "$localTempPrefix-$name" }
