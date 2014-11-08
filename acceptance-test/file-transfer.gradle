@@ -1,112 +1,139 @@
 
-feature('sending files to the remote host and acquiring result files') {
+feature('put, compute and get files') {
     task 'putAndGetFiles'
     category 'test'
 }
 
-task putAndGetFiles(type: SshTask, dependsOn: 'setupBuildDir') {
+task putAndGetFiles {
+    dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
-
-        ext.localX = file("$buildDir/local-${randomInt()}") << x
-        ext.localY = file("$buildDir/local-${randomInt()}") << y
-        ext.localA = file("$buildDir/local-${randomInt()}")
-        ext.localB = file("$buildDir/local-${randomInt()}")
-
-        ext.pathX = remoteTempPath('X')
-        ext.pathY = remoteTempPath('Y')
-        ext.pathA = remoteTempPath('A')
-        ext.pathB = remoteTempPath('B')
-    }
-    session(remotes.localhost) {
-        put localX, pathX
-        put localY, pathY
-        execute("expr `cat $pathX` + `cat $pathY` > $pathA")
-        execute("expr `cat $pathX` - `cat $pathY` > $pathB")
-        get pathA, localA
-        get pathB, localB
-    }
     doLast {
+        def x = randomInt()
+        def y = randomInt()
+
+        def localX = file(localTempPath()) << x
+        def localY = file(localTempPath()) << y
+        def localA = file(localTempPath())
+        def localB = file(localTempPath())
+
+        def remoteX = remoteTempPath()
+        def remoteY = remoteTempPath()
+        def remoteA = remoteTempPath()
+        def remoteB = remoteTempPath()
+
+        // should put and get files exactly
+        ssh.run {
+            session(remotes.localhost) {
+                put localX, remoteX
+                put localY, remoteY
+                execute("expr `cat $remoteX` + `cat $remoteY` > $remoteA")
+                execute("expr `cat $remoteX` - `cat $remoteY` > $remoteB")
+                get remoteA, localA
+                get remoteB, localB
+            }
+        }
+
         assert localA.text as int == (x + y)
         assert localB.text as int == (x - y)
+
+        // should overwrite local files
+        ssh.run {
+            session(remotes.localhost) {
+                get remoteX, localA
+                get remoteY, localB
+            }
+        }
+
+        assert localA.text as int == x
+        assert localB.text as int == y
     }
 }
 
 
-feature('sending a whole directory') {
+feature('put a directory recursively') {
     task 'putDirectory'
     category 'test'
 }
 
-task putDirectory(type: SshTask, dependsOn: 'setupBuildDir') {
+task putDirectory {
+    dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
-    doFirst {
-        ext.x1 = randomInt()
-        ext.y1 = randomInt()
-        ext.z1 = randomInt()
-
-        ext.localX = file("$buildDir/X-${randomInt()}")
-        localX.mkdir()
-        ext.localY = file("$localX/Y-${randomInt()}")
-        localY.mkdir()
-        ext.localZ = file("$localY/Z-${randomInt()}")
-        localZ.mkdir()
-
-        ext.localX1 = file("$localX/X1-${randomInt()}") << x1
-        ext.localY1 = file("$localY/Y1-${randomInt()}") << y1
-        ext.localZ1 = file("$localZ/Z1-${randomInt()}") << z1
-
-        ext.remoteBase = remoteTempPath()
-    }
-    session(remotes.localhost) {
-        execute "mkdir -vp $remoteBase"
-        put localX, remoteBase
-    }
     doLast {
-        sshexec {
+        def x = randomInt()
+        def y = randomInt()
+        def z = randomInt()
+
+        def localBase = file(localTempPath())
+        file("$localBase/Y/Z").mkdirs()
+        file("$localBase/xfile") << x
+        file("$localBase/Y/yfile") << y
+        file("$localBase/Y/Z/zfile") << z
+
+        def remoteBase = remoteTempPath()
+
+        // should merge and overwrite a directory
+        ssh.run {
             session(remotes.localhost) {
-                assert execute("cat $remoteBase/${localX.name}/${localX1.name}") as int == x1
-                assert execute("cat $remoteBase/${localX.name}/${localY.name}/${localY1.name}") as int == y1
-                assert execute("cat $remoteBase/${localX.name}/${localY.name}/${localZ.name}/${localZ1.name}") as int == z1
+                execute "mkdir -vp $remoteBase/${localBase.name}/Y"
+                execute "echo dummy1 > $remoteBase/${localBase.name}/Y/yfile"
+                execute "echo dummy2 > $remoteBase/${localBase.name}/Y/yfile2"
+                assert execute("cat $remoteBase/${localBase.name}/Y/yfile") == 'dummy1'
+                assert execute("cat $remoteBase/${localBase.name}/Y/yfile2") == 'dummy2'
+            }
+            session(remotes.localhost) {
+                put localBase, remoteBase
+            }
+            session(remotes.localhost) {
+                assert execute("cat $remoteBase/${localBase.name}/xfile") as int == x
+                assert execute("cat $remoteBase/${localBase.name}/Y/yfile") as int == y
+                assert execute("cat $remoteBase/${localBase.name}/Y/yfile2") == 'dummy2'
+                assert execute("cat $remoteBase/${localBase.name}/Y/Z/zfile") as int == z
             }
         }
     }
 }
 
 
-feature('acquiring a whole directory') {
+feature('get a directory recursively') {
     task 'getDirectory'
     category 'test'
 }
 
-task getDirectory(type: SshTask, dependsOn: 'setupBuildDir') {
+task getDirectory {
+    dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
-        ext.z = randomInt()
-        ext.x1 = randomInt()
-        ext.y1 = randomInt()
-        ext.z1 = randomInt()
-        ext.remoteBase = remoteTempPath()
-    }
-    session(remotes.localhost) {
-        ext.remoteBaseName = execute "basename $remoteBase"
-        execute "mkdir -vp $remoteBase/$x/$y/$z"
-        execute "echo $x1 > $remoteBase/$x/$x1"
-        execute "echo $y1 > $remoteBase/$x/$y/$y1"
-        execute "echo $z1 > $remoteBase/$x/$y/$z/$z1"
-        get remoteBase, buildDir
-    }
     doLast {
-        assert file("$buildDir/$remoteBaseName/$x/$x1").text as int == x1
-        assert file("$buildDir/$remoteBaseName/$x/$y/$y1").text as int == y1
-        assert file("$buildDir/$remoteBaseName/$x/$y/$z/$z1").text as int == z1
+        def x = randomInt()
+        def y = randomInt()
+        def z = randomInt()
+
+        def remoteBase = remoteTempPath()
+        def remoteBaseName = file(remoteBase).name
+
+        def localBase = file(localTempPath())
+        file("$localBase/$remoteBaseName/X/Y").mkdirs()
+        file("$localBase/$remoteBaseName/X/Y/yfile") << 'dummy1'
+        file("$localBase/$remoteBaseName/X/Y/yfile2") << 'dummy2'
+
+        ssh.run {
+            session(remotes.localhost) {
+                execute "mkdir -vp $remoteBase/X/Y/Z"
+                execute "echo $x > $remoteBase/X/xfile"
+                execute "echo $y > $remoteBase/X/Y/yfile"
+                execute "echo $z > $remoteBase/X/Y/Z/zfile"
+            }
+            session(remotes.localhost) {
+                get remoteBase, localBase
+            }
+        }
+
+        assert file("$localBase/$remoteBaseName/X/xfile").text as int == x
+        assert file("$localBase/$remoteBaseName/X/Y/yfile").text as int == y
+        assert file("$localBase/$remoteBaseName/X/Y/yfile2").text == 'dummy2'
+        assert file("$localBase/$remoteBaseName/X/Y/Z/zfile").text as int == z
     }
 }
 
