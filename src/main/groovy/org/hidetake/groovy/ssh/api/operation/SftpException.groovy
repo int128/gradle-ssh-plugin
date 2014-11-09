@@ -11,8 +11,8 @@ class SftpException extends Exception {
     final Error error
     final String rawMessage
 
-    def SftpException(JschSftpException cause) {
-        super(formatExceptionMessage(cause), cause)
+    def SftpException(String contextMessage, JschSftpException cause) {
+        super("$contextMessage: ${formatExceptionMessage(cause)}", cause)
         error = Error.findByCode(cause.id)
         rawMessage = cause.message
     }
