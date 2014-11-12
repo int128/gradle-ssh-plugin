@@ -25,11 +25,11 @@ Getting Started
 5. Describe SSH operations in the task
 
 
-### Compatibility
+### Requirement
 
 Gradle SSH Plugin 0.4.x requires following:
 
-* Java 7 or later
+* Java 6 or later
 * Gradle 2.0 or later
 
 Gradle SSH Plugin 0.3.x is still available for Gradle 1.x compatible.
