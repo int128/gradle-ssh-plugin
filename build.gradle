@@ -6,6 +6,9 @@ plugins {
     id 'com.jfrog.bintray' version '0.6'
 }
 
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
+
 repositories {
     mavenLocal()
     jcenter()
@@ -14,7 +17,7 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile('org.hidetake:groovy-ssh:0.1.6') {
+    compile('org.hidetake:groovy-ssh:0.1.7') {
         exclude module: 'groovy-all'
     }
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
