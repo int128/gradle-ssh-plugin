@@ -5,7 +5,8 @@
 # - sudo must be enabled without password
 # - java must be installed
 
-[ -z "$version" ] && version=SNAPSHOT
+# move to acceptance test directory
+cd $(dirname $0)
 
 # determine Gradle path
 [ -x ../gradlew ] && gradle=../gradlew
@@ -26,10 +27,10 @@ ssh -o StrictHostKeyChecking=no \
 ssh-keygen -H -F localhost
 
 # run tests
-"$gradle" -i -s -Pversion="$version" test aggressiveTest
+"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" test aggressiveTest
 
 # run tests with ssh-agent
 eval $(ssh-agent)
 ssh-add $HOME/.ssh/id_rsa
-"$gradle" -i -s -Pversion="$version" testWithAgent
+"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" testWithAgent
 ssh-agent -k
