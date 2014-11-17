@@ -21,7 +21,7 @@ class DefaultSftpOperations implements SftpOperations {
         try {
             channel.get(remote, local, new FileTransferLogger())
         } catch (JschSftpException e) {
-            throw new SftpException(e)
+            throw new SftpException('Failed to get a file from the remote host', e)
         }
     }
 
@@ -31,7 +31,7 @@ class DefaultSftpOperations implements SftpOperations {
         try {
             channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
         } catch (JschSftpException e) {
-            throw new SftpException(e)
+            throw new SftpException('Failed to put a file into the remote host', e)
         }
     }
 
@@ -41,7 +41,7 @@ class DefaultSftpOperations implements SftpOperations {
         try {
             channel.mkdir(path)
         } catch (JschSftpException e) {
-            throw new SftpException(e)
+            throw new SftpException('Failed to create a directory on the remote host', e)
         }
     }
 
@@ -51,7 +51,7 @@ class DefaultSftpOperations implements SftpOperations {
         try {
             channel.ls(path).toList()
         } catch (JschSftpException e) {
-            throw new SftpException(e)
+            throw new SftpException('Failed to fetch a directory listing on the remote host', e)
         }
     }
 
@@ -61,7 +61,7 @@ class DefaultSftpOperations implements SftpOperations {
         try {
             channel.cd(path)
         } catch (JschSftpException e) {
-            throw new SftpException(e)
+            throw new SftpException('Failed to change directory on the remote host', e)
         }
     }
 }
