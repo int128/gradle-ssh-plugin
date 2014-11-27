@@ -153,7 +153,7 @@ If more than one remote hosts are given, the plugin will connect to all remote h
 For instance,
 
 ```groovy
-session(remotes.web01, remotes.web02) {
+session([remotes.web01, remotes.web02]) {
   //execute ...
 }
 ```
