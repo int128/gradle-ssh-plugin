@@ -57,25 +57,6 @@ task executeCommandBySshexec << {
 }
 
 
-feature('filter hosts by role') {
-    task 'executeCommandByRole'
-    category 'test'
-}
-
-task executeCommandByRole(type: SshTask) {
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
-    }
-    session(remotes.role('testServers')) {
-        ext.a = execute "expr $x + $y"
-    }
-    doLast {
-        assert a as int == (x + y)
-    }
-}
-
-
 feature('executing commands sequentially') {
     task 'executeSequentially'
     category 'test'
