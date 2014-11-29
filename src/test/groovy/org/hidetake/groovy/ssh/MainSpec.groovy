@@ -29,7 +29,7 @@ class MainSpec extends Specification {
             _ * authenticate('someuser', 'somepassword', _) >> true
         }
         server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+            _ * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'some message' }
                 c.errorStream.withWriter('UTF-8') { it << 'error' }
                 c.exitCallback.onExit(0)
@@ -63,29 +63,29 @@ class MainSpec extends Specification {
         1 * logger.error('error')
     }
 
-    def "main should read script from standard input if no arg is given"() {
+    def "main should show usage if no arg is given"() {
         given:
-        def stdin = System.in
-        System.in = new ByteArrayInputStream(script.bytes)
+        def stdout = System.out
+        def stdoutBuffer = new ByteArrayOutputStream()
+        System.out = new PrintStream(stdoutBuffer)
 
         when:
-        Main.main '-d'
+        Main.main()
 
         then:
-        1 * logger.info('some message')
-        1 * logger.error('error')
+        stdoutBuffer.toString('UTF-8').contains('usage:')
 
         cleanup:
-        System.in = stdin
+        System.out = stdout
     }
 
-    def "main should read script from standard input if - is given"() {
+    def "main should read script from standard input if --stdin is given"() {
         given:
         def stdin = System.in
         System.in = new ByteArrayInputStream(script.bytes)
 
         when:
-        Main.main '-d', '-'
+        Main.main '-d', '--stdin'
 
         then:
         1 * logger.info('some message')
