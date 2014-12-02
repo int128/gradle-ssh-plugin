@@ -14,7 +14,8 @@ class Main {
     static void main(String[] args) {
         def cli = new CliBuilder(usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]')
         cli.h longOpt: 'help',  'Shows this help message.'
-        cli.i longOpt: 'info',  'Set log level to info.'
+        cli.q longOpt: 'quite', 'Set log level to warn.'
+        cli.i longOpt: 'info',  'Set log level to info. (default)'
         cli.d longOpt: 'debug', 'Set log level to debug.'
         cli._ longOpt: 'stdin', 'Specify standard input as a source.'
         cli.e args: 1,          'Specify a command line script.'
@@ -27,8 +28,10 @@ class Main {
                 configureLogLevel('DEBUG')
             } else if (options.i) {
                 configureLogLevel('INFO')
-            } else {
+            } else if (options.q) {
                 configureLogLevel('WARN')
+            } else {
+                configureLogLevel('INFO')
             }
 
             def extraArguments = options.arguments()

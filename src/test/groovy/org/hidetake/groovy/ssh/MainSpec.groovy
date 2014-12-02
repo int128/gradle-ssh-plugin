@@ -8,7 +8,9 @@ import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import spock.lang.Specification
+import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 @ConfineMetaClassChanges(DefaultOperations)
@@ -56,7 +58,7 @@ class MainSpec extends Specification {
 
     def "main should evaluate a script line if -e is given"() {
         when:
-        Main.main '-d', '-e', script
+        Main.main '-e', script
 
         then:
         1 * logger.info('some message')
@@ -85,7 +87,7 @@ class MainSpec extends Specification {
         System.in = new ByteArrayInputStream(script.bytes)
 
         when:
-        Main.main '-d', '--stdin'
+        Main.main '--stdin'
 
         then:
         1 * logger.info('some message')
@@ -101,11 +103,51 @@ class MainSpec extends Specification {
         scriptFile << script
 
         when:
-        Main.main '-d', scriptFile.path
+        Main.main scriptFile.path
 
         then:
         1 * logger.info('some message')
         1 * logger.error('error')
+    }
+
+    def "default log level should be INFO"() {
+        given:
+        def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        root.setLevel(logbackLogLevel('ERROR'))
+
+        when:
+        Main.main()
+
+        then:
+        root.getLevel() == logbackLogLevel('INFO')
+    }
+
+    @Unroll
+    def "flag #flags should set log level to #level"() {
+        given:
+        def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        root.setLevel(logbackLogLevel('ERROR'))
+
+        when:
+        Main.main(flags.toArray(new String[0]))
+
+        then:
+        root.getLevel() == logbackLogLevel(level)
+
+        where:
+        flags               | level
+        ['-q']              | 'WARN'
+        ['-i']              | 'INFO'
+        ['-q', '-i']        | 'INFO'
+        ['-d']              | 'DEBUG'
+        ['-i', '-d']        | 'DEBUG'
+        ['-q', '-d', '-i']  | 'DEBUG'
+    }
+
+
+
+    private static final logbackLogLevel(String level) {
+        Class.forName('ch.qos.logback.classic.Level').invokeMethod('toLevel', level)
     }
 
 }
