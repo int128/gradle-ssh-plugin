@@ -12,10 +12,15 @@ import org.slf4j.LoggerFactory
 @Slf4j
 class Main {
     static void main(String[] args) {
-        def cli = new CliBuilder(usage: '[option...] [-e script-text] [script-filename] [script-args...]')
+        def cli = new CliBuilder(
+            usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]',
+            width: 120
+        )
         cli.h longOpt: 'help',  'Shows this help message.'
-        cli.i longOpt: 'info',  'Set log level to info.'
+        cli.q longOpt: 'quite', 'Set log level to warn.'
+        cli.i longOpt: 'info',  'Set log level to info. (default)'
         cli.d longOpt: 'debug', 'Set log level to debug.'
+        cli._ longOpt: 'stdin', 'Specify standard input as a source.'
         cli.e args: 1,          'Specify a command line script.'
 
         def options = cli.parse(args)
@@ -26,23 +31,21 @@ class Main {
                 configureLogLevel('DEBUG')
             } else if (options.i) {
                 configureLogLevel('INFO')
-            } else {
+            } else if (options.q) {
                 configureLogLevel('WARN')
+            } else {
+                configureLogLevel('INFO')
             }
 
+            def extraArguments = options.arguments()
             if (options.e) {
-                Ssh.newShell().run(options.e as String, 'script.groovy', options.arguments())
+                Ssh.newShell().run(options.e as String, 'script.groovy', extraArguments)
+            } else if (options.stdin) {
+                Ssh.newShell().run(System.in.newReader(), 'script.groovy', extraArguments)
+            } else if (extraArguments.size() > 0) {
+                Ssh.newShell().run(new File(extraArguments.head()), extraArguments.tail())
             } else {
-                def extraArguments = options.arguments()
-                if (extraArguments.size() > 0) {
-                    if (extraArguments.head() == '-') {
-                        Ssh.newShell().run(System.in.newReader(), 'script.groovy', extraArguments.tail())
-                    } else {
-                        Ssh.newShell().run(new File(extraArguments.head()), extraArguments.tail())
-                    }
-                } else {
-                    Ssh.newShell().run(System.in.newReader(), 'script.groovy')
-                }
+                cli.usage()
             }
         }
     }
