@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory
 @Slf4j
 class Main {
     static void main(String[] args) {
-        def cli = new CliBuilder(usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]')
+        def cli = new CliBuilder(
+            usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]',
+            width: 120
+        )
         cli.h longOpt: 'help',  'Shows this help message.'
         cli.q longOpt: 'quite', 'Set log level to warn.'
         cli.i longOpt: 'info',  'Set log level to info. (default)'
