@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.internal
 
+import groovy.transform.CompileStatic
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.RunHandler
@@ -50,6 +51,21 @@ class DefaultRunHandler implements RunHandler {
         def remote = new Remote(remoteProperties.host as String)
         remoteProperties.each { k, v -> remote[k as String] = v }
         session(remote, closure)
+    }
+
+    @Override
+    void session(Object[] args) {
+        if (args.last() instanceof Closure) {
+            def remotes = args.take(args.length - 1)
+            def closure = args.last()
+            remotes.each { remote -> session(remote as Remote, closure as Closure) }
+        } else {
+            throw new IllegalArgumentException('''session() allows following arguments:
+session(remote) {}
+session(remote1, remote2, ...) {}
+session([remote1, remote2, ...]) {}
+session(host: 'myHost', user: 'myUser', ...) {}''')
+        }
     }
 
     Object run(CompositeSettings globalSettings) {

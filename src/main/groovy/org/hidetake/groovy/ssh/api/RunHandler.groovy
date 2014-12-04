@@ -39,4 +39,13 @@ interface RunHandler {
      * @param closure closure for {@link org.hidetake.groovy.ssh.api.session.SessionHandler}
      */
     void session(Map remoteProperties, @DelegatesTo(SessionHandler) Closure closure)
+
+    /**
+     * Add sessions.
+     * This is a last resort method and allows only below arguments.
+     *
+     * @param args elements except last must be {@link Remote}s and last must be a closure
+     * @throws IllegalArgumentException if wrong arguments are given.
+     */
+    void session(Object[] args)
 }
