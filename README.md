@@ -10,8 +10,9 @@ Contributions
 -------------
 
 This is an open source software licensed under the Apache License Version 2.0.
+Any issues or pull requests are welcome.
 
-Please let me know on GitHub issues or pull requests.
+The web site is maintained on [the repository of groovy-ssh.github.io](https://github.com/groovy-ssh/groovy-ssh.github.io).
 
 
 Development
