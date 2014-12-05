@@ -38,10 +38,17 @@ Run the build task.
 ### Publish
 
 Build with JDK 7 for compatibility.
-Run the upload task with Bintray credential.
+Do not build with JDK 8.
+
+Push a versioned tag to GitHub and Travis CI will publish the artifact to Bintray and GitHub releases.
 
 ```sh
-docker build -t groovy-ssh .
-docker run -v /tmp/.gradle:/root/.gradle groovy-ssh \
-  -PbintrayUser=$bintrayUser -PbintrayKey=$bintrayKey -Pversion=x.y.z bintrayUpload
+git tag v0.0.0
+git push origin --tags
+```
+
+Or manually invoke tasks.
+
+```
+./gradlew -Pversion=0.0.0 bintrayUpload shadowJar
 ```
