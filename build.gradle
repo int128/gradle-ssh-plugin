@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '0.6'
-    id 'com.github.johnrengelman.shadow' version '1.1.1'
+    id 'com.github.johnrengelman.shadow' version '1.2.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
@@ -142,5 +142,5 @@ tasks.bintrayUpload.doFirst {
 task install(dependsOn: 'publishMavenPublicationToMavenLocal')
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = '2.2.1'
 }
