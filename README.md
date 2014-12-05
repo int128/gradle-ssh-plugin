@@ -9,6 +9,9 @@ See also:
 * [Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
 
 
+Gradle SSH Plugin depends on [Groovy SSH](https://github.com/int128/groovy-ssh) library and delegates SSH operations to the library.
+
+
 Contributions
 -------------
 
