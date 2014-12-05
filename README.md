@@ -69,11 +69,18 @@ docker run -v /tmp/.gradle:/root/.gradle gradle-ssh-plugin
 
 ### Publish
 
-Build with JDK 7 for compatibility.
-Run the upload task with Bintray credential.
+Build a release with JDK 7 for compatibility.
+Do not build with JDK 8.
+
+Push a versioned tag to GitHub and Travis CI will publish the artifact to Bintray.
 
 ```sh
-docker build -t gradle-ssh-plugin .
-docker run -v /tmp/.gradle:/root/.gradle gradle-ssh-plugin \
-  -PbintrayUser=$bintrayUser -PbintrayKey=$bintrayKey -Pversion=x.y.z bintrayUpload
+git tag v0.0.0
+git push origin --tags
+```
+
+Or manually invoke the upload task.
+
+```sh
+./gradlew -PbintrayUser=$bintrayUser -PbintrayKey=$bintrayKey -Pversion=0.0.0 bintrayUpload
 ```
