@@ -68,7 +68,7 @@ class DefaultRunHandlerSpec extends Specification {
 
 
 
-    def "add session for multiple remotes"() {
+    def "add session for multiple remotes by list"() {
         given:
         def remote1 = new Remote('myRemote1')
         remote1.user = 'myUser1'
@@ -76,10 +76,29 @@ class DefaultRunHandlerSpec extends Specification {
         def remote2 = new Remote('myRemote2')
         remote2.user = 'myUser2'
         remote2.host = 'myHost2'
-        def closure = { assert false }
 
         when:
-        runHandler.session([remote1, remote2], closure)
+        runHandler.session([remote1, remote2]) {
+            assert false
+        }
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "add session for multiple remotes by var args"() {
+        given:
+        def remote1 = new Remote('myRemote1')
+        remote1.user = 'myUser1'
+        remote1.host = 'myHost1'
+        def remote2 = new Remote('myRemote2')
+        remote2.user = 'myUser2'
+        remote2.host = 'myHost2'
+
+        when:
+        runHandler.session(remote1, remote2) {
+            assert false
+        }
 
         then:
         noExceptionThrown()
@@ -156,6 +175,21 @@ class DefaultRunHandlerSpec extends Specification {
         then:
         AssertionError ex = thrown()
         ex.message.contains("host")
+    }
+
+
+    def "session() with wrong arguments causes an error"() {
+        given:
+        def remote = new Remote('myRemote')
+        remote.user = 'myUser'
+        remote.host = 'myHost'
+
+        when:
+        runHandler.session(remote)
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message.contains('arguments')
     }
 
 
