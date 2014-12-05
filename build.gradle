@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'ivy-publish'
-    id 'com.jfrog.bintray' version '0.6'
+    id 'com.jfrog.bintray' version '1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
