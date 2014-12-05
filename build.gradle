@@ -98,11 +98,3 @@ task install(dependsOn: 'publishMavenPublicationToMavenLocal')
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
 }
-
-task archiveDependencies(type: Zip, dependsOn: jar) {
-    classifier = 'all'
-    into('dep-libs') {
-        from configurations.runtime
-        from 'build/libs'
-    }
-}
