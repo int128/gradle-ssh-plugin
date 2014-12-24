@@ -5,6 +5,11 @@ buildscript {
     }
     dependencies {
         classpath "org.hidetake:gradle-ssh-plugin:$version"
+
+        // apply backports if Gradle version is 1.x
+        if (GradleVersion.current().version.startsWith('1.')) {
+            classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
+        }
     }
 }
 
