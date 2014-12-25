@@ -34,7 +34,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void shell(OperationSettings settings) {
-        log.debug("Executing a shell with $settings")
+        log.debug("Execute a shell with $settings")
 
         def channel = connection.createShellChannel(settings)
         def standardInput = channel.outputStream
@@ -64,13 +64,13 @@ class DefaultOperations implements Operations {
 
         try {
             channel.connect()
-            log.info("Channel #${channel.id} has been opened")
+            log.info("Shell has been started on channel #${channel.id}")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            log.info("Shell returned exit status $exitStatus on channel #${channel.id}")
             if (exitStatus != 0) {
                 throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
             }
@@ -81,7 +81,7 @@ class DefaultOperations implements Operations {
 
     @Override
     String execute(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing a command ($command) with $settings")
+        log.debug("Execute a command ($command) with $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -122,13 +122,13 @@ class DefaultOperations implements Operations {
 
         try {
             channel.connect()
-            log.info("Channel #${channel.id} has been opened")
+            log.info("Command has been started on channel #${channel.id} ($command)")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            log.info("Command returned exit status $exitStatus on channel #${channel.id}")
             if (exitStatus != 0) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
@@ -143,7 +143,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing a command ($command) in background with $settings")
+        log.debug("Execute a command ($command) in background with $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -180,14 +180,14 @@ class DefaultOperations implements Operations {
         }
 
         channel.connect()
-        log.info("Channel #${channel.id} has been opened")
+        log.info("Command has been started on channel #${channel.id} in background ($command)")
 
         def lines = [] as List<String>
         standardOutput.listenLine { String line -> lines << line }
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
-            log.info("Channel #${channel.id} has been closed with exit status $exitStatus")
+            log.info("Command returned exit status $exitStatus on channel #${channel.id}")
             if (exitStatus != 0) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
@@ -202,11 +202,11 @@ class DefaultOperations implements Operations {
         def channel = connection.createSftpChannel()
         try {
             channel.connect()
-            log.info("SFTP Channel #${channel.id} has been opened")
+            log.info("SFTP has been started on channel #${channel.id}")
 
             callWithDelegate(closure, new DefaultSftpOperations(channel))
 
-            log.info("SFTP Channel #${channel.id} has been closed")
+            log.info("SFTP has been closed on channel #${channel.id}")
         } finally {
             channel.disconnect()
         }

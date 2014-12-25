@@ -88,7 +88,7 @@ class DefaultConnectionManager implements ConnectionManager {
 
         if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
             jsch.setConfig('StrictHostKeyChecking', 'no')
-            log.info('Strict host key checking is turned off. Use only for testing purpose.')
+            log.warn('Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
         } else {
             jsch.setKnownHosts(settings.knownHosts.path)
             jsch.setConfig('StrictHostKeyChecking', 'yes')

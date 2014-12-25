@@ -74,9 +74,9 @@ class DefaultConnection implements Connection {
             } catch (Exception e) {
                 exceptions.add(e)
                 if (e instanceof BadExitStatusException) {
-                    log.warn("${e.class.name}: ${e.localizedMessage}")
+                    log.error("${e.class.name}: ${e.localizedMessage}")
                 } else {
-                    log.warn('Error in background command execution', e)
+                    log.error('Error in background command execution', e)
                 }
             }
         }
