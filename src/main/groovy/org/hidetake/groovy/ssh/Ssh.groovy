@@ -1,8 +1,6 @@
 package org.hidetake.groovy.ssh
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.internal.DefaultService
 
