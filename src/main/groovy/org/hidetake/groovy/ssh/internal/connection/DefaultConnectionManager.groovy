@@ -158,24 +158,29 @@ class DefaultConnectionManager implements ConnectionManager {
             throw new BackgroundCommandException(exceptions)
         }
     }
-    
-    private JschProxy asJschProxy(Proxy proxy) {
-        JschProxy jschProxy = null
-		if(proxy.type == SOCKS) {
-			jschProxy = proxy.socksVersion == 5 ? new ProxySOCKS5(proxy.host, proxy.port) : new ProxySOCKS4(proxy.host, proxy.port)
-        } else {
-			jschProxy = new ProxyHTTP(proxy.host, proxy.port)
-        }
-		jschProxy.setUserPasswd(proxy.user, proxy.password)
+
+    private static JschProxy asJschProxy(Proxy proxy) {
+        def jschProxy = {
+            if (proxy.type == SOCKS) {
+                if (proxy.socksVersion == 5) {
+                    new ProxySOCKS5(proxy.host, proxy.port)
+                } else {
+                    new ProxySOCKS4(proxy.host, proxy.port)
+                }
+            } else {
+                new ProxyHTTP(proxy.host, proxy.port)
+            }
+        }()
+        jschProxy.setUserPasswd(proxy.user, proxy.password)
         jschProxy
-    }	
-	
-	private void validate(Proxy proxy) {
+    }
+
+	private static void validate(Proxy proxy) {
 		def validator = new DefaultProxyValidator(proxy)
-		if(validator.error()) {
+		if (validator.error()) {
 			throw new IllegalArgumentException(validator.error())
 		}
-		if(validator.warnings()) {
+		if (validator.warnings()) {
 			validator.warnings().each { warning -> log.info(warning) }
 		}
 	}	
