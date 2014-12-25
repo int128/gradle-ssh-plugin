@@ -50,5 +50,5 @@ interface Service {
      * @param closure
      * @return returned value of the last session
      */
-    Object run(@DelegatesTo(RunHandler) Closure closure)
+    def run(@DelegatesTo(RunHandler) Closure closure)
 }

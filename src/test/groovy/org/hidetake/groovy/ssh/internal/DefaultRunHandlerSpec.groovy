@@ -1,17 +1,10 @@
 package org.hidetake.groovy.ssh.internal
 
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.ConnectionSettings
-import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.session.SessionHandler
-import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
-import org.hidetake.groovy.ssh.internal.connection.ConnectionService
-import org.hidetake.groovy.ssh.internal.session.SessionService
+import org.hidetake.groovy.ssh.internal.session.Plan
 import spock.lang.Specification
 import spock.lang.Unroll
-import spock.util.mop.ConfineMetaClassChanges
 
 class DefaultRunHandlerSpec extends Specification {
 
@@ -26,21 +19,21 @@ class DefaultRunHandlerSpec extends Specification {
         def remote = new Remote('myRemote')
         remote.user = 'myUser'
         remote.host = 'myHost'
-        def operationClosure = { assert false }
+        def closure = { assert false }
 
         when:
-        runHandler.session(remote, operationClosure)
+        runHandler.session(remote, closure)
 
         then:
-        noExceptionThrown()
+        runHandler.sessions == [new Plan(remote, closure)]
     }
 
     def "add a session with null remote throws assertion error"() {
         given:
-        def operationClosure = { assert false }
+        def closure = { assert false }
 
         when:
-        runHandler.session(null as Remote, operationClosure)
+        runHandler.session(null as Remote, closure)
 
         then:
         AssertionError e = thrown()
@@ -54,14 +47,14 @@ class DefaultRunHandlerSpec extends Specification {
         remote.host = theHost
 
         when:
-        runHandler.session(remote, theOperationClosure)
+        runHandler.session(remote, theClosure)
 
         then:
         AssertionError e = thrown()
         e.message.contains(errorContains)
 
         where:
-        theHost          | theOperationClosure | errorContains
+        theHost          | theClosure          | errorContains
         null             | { assert false }    | "host"
         "www.myhost.com" | null                | "closure"
     }
@@ -76,14 +69,13 @@ class DefaultRunHandlerSpec extends Specification {
         def remote2 = new Remote('myRemote2')
         remote2.user = 'myUser2'
         remote2.host = 'myHost2'
+        def closure = { assert false }
 
         when:
-        runHandler.session([remote1, remote2]) {
-            assert false
-        }
+        runHandler.session([remote1, remote2], closure)
 
         then:
-        noExceptionThrown()
+        runHandler.sessions == [new Plan(remote1, closure), new Plan(remote2, closure)]
     }
 
     def "add session for multiple remotes by var args"() {
@@ -94,14 +86,13 @@ class DefaultRunHandlerSpec extends Specification {
         def remote2 = new Remote('myRemote2')
         remote2.user = 'myUser2'
         remote2.host = 'myHost2'
+        def closure = { assert false }
 
         when:
-        runHandler.session(remote1, remote2) {
-            assert false
-        }
+        runHandler.session(remote1, remote2, closure)
 
         then:
-        noExceptionThrown()
+        runHandler.sessions == [new Plan(remote1, closure), new Plan(remote2, closure)]
     }
 
     def "add session for remote with proxy"() {
@@ -117,11 +108,9 @@ class DefaultRunHandlerSpec extends Specification {
         runHandler.session(remote, closure)
 
         then:
-        noExceptionThrown()
+        runHandler.sessions == [new Plan(remote, closure)]
     }
 
-
-    
     def "add session for empty remotes throws assertion error"() {
         given:
         def closure = { assert false }
@@ -150,13 +139,17 @@ class DefaultRunHandlerSpec extends Specification {
 
 
     def "add a session with remote properties"() {
+        given:
+        def closure = { assert false }
+
         when:
-        runHandler.session(host: 'myHost', user: 'myUser') {
-            assert false
-        }
+        runHandler.session(host: 'myHost', user: 'myUser', closure)
 
         then:
-        noExceptionThrown()
+        runHandler.sessions.size() == 1
+        runHandler.sessions.first().remote.host == 'myHost'
+        runHandler.sessions.first().remote.user == 'myUser'
+        runHandler.sessions.first().closure == closure
     }
 
     def "add a session with remote properties and null closure throws an error"() {
@@ -190,46 +183,6 @@ class DefaultRunHandlerSpec extends Specification {
         then:
         IllegalArgumentException e = thrown()
         e.message.contains('arguments')
-    }
-
-
-    @ConfineMetaClassChanges([ConnectionService, SessionService])
-    def "execute sessions"() {
-        given:
-        def remote1 = new Remote('myRemote1')
-        remote1.user = 'myUser1'
-        remote1.host = 'myHost1'
-        def remote2 = new Remote('myRemote2')
-        remote2.user = 'myUser2'
-        remote2.host = 'myHost2'
-        def closure = {
-            execute 'something'
-        }
-
-        def connectionService = Mock(ConnectionService) {
-            1 * withManager(ConnectionSettings.DEFAULT, _) >> { ignore, Closure x ->
-                x.call(Mock(ConnectionManager))
-            }
-        }
-        ConnectionService.metaClass.static.getInstance = { -> connectionService }
-
-        def sessionService = Mock(SessionService)
-        SessionService.metaClass.static.getInstance = { -> sessionService }
-
-        def sessionHandler1 = Mock(SessionHandler)
-        def sessionHandler2 = Mock(SessionHandler)
-
-        when:
-        runHandler.session([remote1, remote2], closure)
-        def result = runHandler.run(new CompositeSettings())
-
-        then: 1 * sessionService.createDelegate(remote1, OperationSettings.DEFAULT, _) >> sessionHandler1
-        then: 1 * sessionService.createDelegate(remote2, OperationSettings.DEFAULT, _) >> sessionHandler2
-
-        then: 1 * sessionHandler1.execute('something') >> 'result1'
-        then: 1 * sessionHandler2.execute('something') >> 'result2'
-
-        then: result == 'result2'
     }
 
 }

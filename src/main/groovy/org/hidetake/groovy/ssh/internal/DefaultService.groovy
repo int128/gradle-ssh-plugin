@@ -1,11 +1,14 @@
 package org.hidetake.groovy.ssh.internal
 
+import groovy.transform.TupleConstructor
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.RemoteContainer
 import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.api.util.NamedObjectMap
+import org.hidetake.groovy.ssh.internal.session.DefaultSessionExecutor
+import org.hidetake.groovy.ssh.internal.session.SessionExecutor
 import org.hidetake.groovy.ssh.internal.util.DefaultNamedObjectMap
 import org.hidetake.groovy.ssh.internal.util.NamedObjectMapBuilder
 
@@ -16,7 +19,10 @@ import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
  *
  * @author Hidetake Iwata
  */
+@TupleConstructor
 class DefaultService implements Service {
+    final SessionExecutor sessionExecutor = new DefaultSessionExecutor()
+
     final RemoteContainer remotes = new DefaultRemoteContainer()
 
     final NamedObjectMap<Proxy> proxies = new DefaultNamedObjectMap<Proxy>()
@@ -44,10 +50,12 @@ class DefaultService implements Service {
     }
 
     @Override
-    Object run(Closure closure) {
+    def run(Closure closure) {
         assert closure, 'closure must be given'
         def handler = new DefaultRunHandler()
         callWithDelegate(closure, handler)
-        handler.run(settings)
+
+        def results = sessionExecutor.execute(CompositeSettings.DEFAULT + settings + handler.settings, handler.sessions)
+        results.empty ? null : results.last()
     }
 }

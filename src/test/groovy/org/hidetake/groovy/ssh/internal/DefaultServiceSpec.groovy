@@ -1,17 +1,21 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.internal
 
-import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.internal.DefaultRunHandler
+import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.internal.session.Plan
+import org.hidetake.groovy.ssh.internal.session.SessionExecutor
 import spock.lang.Specification
 import spock.lang.Unroll
-import spock.util.mop.ConfineMetaClassChanges
 
-class ServiceSpec extends Specification {
+class DefaultServiceSpec extends Specification {
 
     Service ssh
+    SessionExecutor sessionExecutor
 
     def setup() {
-        ssh = Ssh.newService()
+        sessionExecutor = Mock(SessionExecutor)
+        ssh = new DefaultService(sessionExecutor)
     }
 
     def "global settings can be set"() {
@@ -84,54 +88,28 @@ class ServiceSpec extends Specification {
         'managementServer'  | 'http'
     }
 
-    @ConfineMetaClassChanges(DefaultRunHandler)
-    def "ssh.run() should call internal service"() {
+    def "ssh.run() should call executor and return last result"() {
         given:
-        def called = Mock(Closure)
-        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
-
-        configureFixture()
-
-        ssh.settings {
-            knownHosts = allowAnyHosts
+        def remote1 = new Remote('myRemote1')
+        remote1.user = 'myUser1'
+        remote1.host = 'myHost1'
+        def remote2 = new Remote('myRemote2')
+        remote2.user = 'myUser2'
+        remote2.host = 'myHost2'
+        def closure = {
+            execute 'something'
         }
 
         when:
-        ssh.run {
-            session(ssh.remotes.webServer) {
-                execute 'ls'
-            }
+        def result = ssh.run {
+            session(remote1, remote2, closure)
         }
 
-        then: 1 * called(new CompositeSettings(
-            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ))
-    }
+        then:
+        1 * sessionExecutor.execute(_, [new Plan(remote1, closure), new Plan(remote2, closure)]) >> ['result1', 'result2']
 
-    @ConfineMetaClassChanges(DefaultRunHandler)
-    def "ssh.run() should return result of the closure"() {
-        given:
-        def called = Mock(Closure)
-        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
-
-        configureFixture()
-
-        ssh.settings {
-            knownHosts = allowAnyHosts
-        }
-
-        when:
-        def actualResult = ssh.run {
-            session(ssh.remotes.webServer) {
-                execute 'ls'
-            }
-        }
-
-        then: 1 * called(new CompositeSettings(
-            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        )) >> 'ls-result'
-
-        then: actualResult == 'ls-result'
+        then:
+        result == 'result2'
     }
 
     def "ssh.run(null) causes error"() {
