@@ -61,8 +61,8 @@ class MainSpec extends Specification {
         Main.main '-e', script
 
         then:
-        1 * logger.info('some message')
-        1 * logger.error('error')
+        1 * logger.info ('localhost|some message')
+        1 * logger.error('localhost|error')
     }
 
     def "main should show usage if no arg is given"() {
@@ -90,8 +90,8 @@ class MainSpec extends Specification {
         Main.main '--stdin'
 
         then:
-        1 * logger.info('some message')
-        1 * logger.error('error')
+        1 * logger.info ('localhost|some message')
+        1 * logger.error('localhost|error')
 
         cleanup:
         System.in = stdin
@@ -106,8 +106,8 @@ class MainSpec extends Specification {
         Main.main scriptFile.path
 
         then:
-        1 * logger.info('some message')
-        1 * logger.error('error')
+        1 * logger.info ('localhost|some message')
+        1 * logger.error('localhost|error')
     }
 
     def "default log level should be INFO"() {
