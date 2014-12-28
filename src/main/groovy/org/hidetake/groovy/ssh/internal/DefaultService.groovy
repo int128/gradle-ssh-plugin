@@ -7,7 +7,6 @@ import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.RemoteContainer
 import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.api.util.NamedObjectMap
-import org.hidetake.groovy.ssh.internal.session.DefaultSessionExecutor
 import org.hidetake.groovy.ssh.internal.session.SessionExecutor
 import org.hidetake.groovy.ssh.internal.util.DefaultNamedObjectMap
 import org.hidetake.groovy.ssh.internal.util.NamedObjectMapBuilder
@@ -21,7 +20,7 @@ import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
  */
 @TupleConstructor
 class DefaultService implements Service {
-    final SessionExecutor sessionExecutor = new DefaultSessionExecutor()
+    final SessionExecutor sessionExecutor = new SessionExecutor()
 
     final RemoteContainer remotes = new DefaultRemoteContainer()
 

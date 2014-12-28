@@ -14,7 +14,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = HTTP
 			proxy.user = "jsmith"
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -31,7 +31,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = HTTP
 			proxy.user = null
 			proxy.password = null
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -48,7 +48,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = HTTP
 			proxy.user = "jsmith"
 			proxy.password = null
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -65,7 +65,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = HTTP
 			proxy.user = null
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -83,7 +83,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.socksVersion = 5
 			proxy.user = "jsmith"
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -101,7 +101,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.socksVersion = 8
 			proxy.user = "jsmith"
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -118,7 +118,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = SOCKS
 			proxy.user = "jsmith"
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -134,7 +134,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			def proxy = new Proxy("proxy")
 			proxy.user = "jsmith"
 			proxy.password = "s3cr3t"
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -151,7 +151,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = SOCKS
 			proxy.user = null
 			proxy.password = null
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()
@@ -168,7 +168,7 @@ class DefaultProxyValidatorSpec extends Specification {
 			proxy.type = SOCKS
 			proxy.user = "jsmith"
 			proxy.password = null
-			def validator = new DefaultProxyValidator(proxy)
+			def validator = new ProxyValidator(proxy)
 	
 		when:
 			def errorMsg = validator.error()

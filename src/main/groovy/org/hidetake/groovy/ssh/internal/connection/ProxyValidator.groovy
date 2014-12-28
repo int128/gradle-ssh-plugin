@@ -12,14 +12,14 @@ import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS
  * @author mlipper
  *
  */
-class DefaultProxyValidator {
+class ProxyValidator {
 	protected static final SOCKS_DEFAULT_VERSION = 5
 	protected static final SOCKS_SUPPORTED_VERSIONS = 4..5
 
 	private final Proxy proxy
 	private final Map report
-	
-	DefaultProxyValidator(Proxy proxy1) {
+
+	ProxyValidator(Proxy proxy1) {
 		this.proxy = proxy1
 		this.report = [error:null,warnings:[]]
 		createReport()
