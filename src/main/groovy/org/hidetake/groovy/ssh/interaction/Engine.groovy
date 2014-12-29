@@ -1,9 +1,8 @@
-package org.hidetake.groovy.ssh.internal.interaction
+package org.hidetake.groovy.ssh.interaction
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.internal.interaction.Matcher.Event
+import org.hidetake.groovy.ssh.interaction.Matcher.Event
 
 /**
  * A rule engine for processing stream events.
@@ -12,13 +11,13 @@ import org.hidetake.groovy.ssh.internal.interaction.Matcher.Event
  */
 @Slf4j
 class Engine {
-    private final InteractionDelegate interactionDelegate
+    private final InteractionHandler interactionDelegate
 
     protected List<InteractionRule> interactionRules = []
 
     private depth = new Counter()
 
-    def Engine(InteractionDelegate interactionDelegate1) {
+    def Engine(InteractionHandler interactionDelegate1) {
         interactionDelegate = interactionDelegate1
         assert interactionDelegate
     }

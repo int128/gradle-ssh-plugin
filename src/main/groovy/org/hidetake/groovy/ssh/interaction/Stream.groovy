@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api.interaction
+package org.hidetake.groovy.ssh.interaction
 
 /**
  * Stream.

@@ -63,7 +63,7 @@ class OperationSettings extends Settings<OperationSettings> {
 
     /**
      * Stream interaction.
-     * @see org.hidetake.groovy.ssh.api.interaction.InteractionHandler
+     * @see org.hidetake.groovy.ssh.interaction.InteractionHandler
      */
     Closure interaction
 

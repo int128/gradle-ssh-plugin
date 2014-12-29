@@ -1,7 +1,4 @@
-package org.hidetake.groovy.ssh.internal.interaction
-
-import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.api.interaction.Wildcard
+package org.hidetake.groovy.ssh.interaction
 
 import java.util.regex.Pattern
 

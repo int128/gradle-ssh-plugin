@@ -1,8 +1,6 @@
-package org.hidetake.groovy.ssh.internal.interaction
+package org.hidetake.groovy.ssh.interaction
 
-import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.api.interaction.Wildcard
-import org.hidetake.groovy.ssh.internal.interaction.Matcher.Event
+import org.hidetake.groovy.ssh.interaction.Matcher.Event
 import spock.lang.Specification
 import spock.lang.Unroll
 

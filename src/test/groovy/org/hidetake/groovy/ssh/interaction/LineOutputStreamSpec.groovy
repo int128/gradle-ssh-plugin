@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.interaction
+package org.hidetake.groovy.ssh.interaction
 
 import spock.lang.Specification
 import spock.lang.Unroll

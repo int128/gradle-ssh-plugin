@@ -1,7 +1,6 @@
-package org.hidetake.groovy.ssh.internal.interaction
+package org.hidetake.groovy.ssh.interaction
 
-import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.internal.interaction.Engine.Counter
+import org.hidetake.groovy.ssh.interaction.Engine.Counter
 import spock.lang.Specification
 
 class EngineSpec extends Specification {
@@ -10,7 +9,7 @@ class EngineSpec extends Specification {
         given:
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
@@ -27,7 +26,7 @@ class EngineSpec extends Specification {
         given:
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
@@ -47,7 +46,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
         def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
@@ -68,7 +67,7 @@ class EngineSpec extends Specification {
         given:
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
@@ -87,7 +86,7 @@ class EngineSpec extends Specification {
         given:
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
@@ -109,7 +108,7 @@ class EngineSpec extends Specification {
         def counter = Spy(Counter)
         def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
         def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionDelegate)
+        def interactionDelegate = Mock(InteractionHandler)
         def engine = new Engine(interactionDelegate)
         engine.alterInteractionRules([rule1])
 
