@@ -1,5 +1,6 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core.settings
 
+import org.hidetake.groovy.ssh.core.Proxy
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -7,10 +8,10 @@ import spock.lang.Unroll
 class ConnectionSettingsSpec extends Specification {
 
     @Shared
-    org.hidetake.groovy.ssh.api.Proxy proxyDefault = new org.hidetake.groovy.ssh.api.Proxy("proxyDefault")
+    Proxy proxyDefault = new Proxy("proxyDefault")
     
     @Shared
-    org.hidetake.groovy.ssh.api.Proxy proxyOverride =  new org.hidetake.groovy.ssh.api.Proxy("proxyOverride")
+    Proxy proxyOverride =  new Proxy("proxyOverride")
     
     def "merge with empty"() {
         given:

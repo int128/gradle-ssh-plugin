@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core
 
 /**
  * Represents a connection proxy to use when establishing a {@link Session}. An instance

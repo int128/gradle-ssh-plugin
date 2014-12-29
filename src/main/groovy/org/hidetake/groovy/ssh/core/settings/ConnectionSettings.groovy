@@ -1,7 +1,8 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core.settings
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
+import org.hidetake.groovy.ssh.core.Proxy
 
 @EqualsAndHashCode
 @ToString(excludes = 'password, passphrase, allowAnyHosts')

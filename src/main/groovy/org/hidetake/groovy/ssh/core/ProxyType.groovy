@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api;
+package org.hidetake.groovy.ssh.core;
 
 enum ProxyType {
     HTTP,

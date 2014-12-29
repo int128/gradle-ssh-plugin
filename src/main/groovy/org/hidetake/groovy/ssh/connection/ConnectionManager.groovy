@@ -9,13 +9,13 @@ import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.ConnectionSettings
-import org.hidetake.groovy.ssh.api.Proxy
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
+import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 
 import static Retry.retry
-import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS
+import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS
 
 /**
  * A manager of {@link Connection}s.

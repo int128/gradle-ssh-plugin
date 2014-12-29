@@ -1,12 +1,12 @@
 package org.hidetake.groovy.ssh.session
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.operation.Operations
 
 /**
- * A handler of {@link org.hidetake.groovy.ssh.core.RunHandler#session(org.hidetake.groovy.ssh.api.Remote, groovy.lang.Closure)}.
+ * A handler of {@link org.hidetake.groovy.ssh.core.RunHandler#session(Remote, groovy.lang.Closure)}.
  *
  * @author hidetake.org
  */

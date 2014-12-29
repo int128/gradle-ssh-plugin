@@ -2,8 +2,8 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.interaction.Stream
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.connection.Connection

@@ -1,4 +1,6 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core
+
+import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 
 /**
  * Represents a remote host.

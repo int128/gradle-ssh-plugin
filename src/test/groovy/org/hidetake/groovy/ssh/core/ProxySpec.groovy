@@ -1,14 +1,15 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core
 
+import org.hidetake.groovy.ssh.core.Proxy
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS
+import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS
 
 class ProxySpec extends Specification {
 
     def "result of toString() does not contain password"() {
         given:
-        def proxy = new org.hidetake.groovy.ssh.api.Proxy('theProxy')
+        def proxy = new Proxy('theProxy')
         proxy.host = 'theHost'
         proxy.user = 'theUser'
         proxy.password = 'thePassword'

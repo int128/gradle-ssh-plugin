@@ -1,5 +1,6 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core.settings
 
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import spock.lang.Specification
 
 class OperationSettingsSpec extends Specification {

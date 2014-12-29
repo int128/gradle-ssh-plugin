@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.session
 
-import org.hidetake.groovy.ssh.api.OperationSettings
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import spock.lang.Specification
 

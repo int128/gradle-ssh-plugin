@@ -1,5 +1,6 @@
-package org.hidetake.groovy.ssh.api
+package org.hidetake.groovy.ssh.core
 
+import org.hidetake.groovy.ssh.core.Remote
 import spock.lang.Specification
 
 class RemoteSpec extends Specification {

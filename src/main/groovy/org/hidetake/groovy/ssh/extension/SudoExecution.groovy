@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.SessionHandler
 
 /**

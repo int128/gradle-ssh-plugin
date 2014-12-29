@@ -6,8 +6,8 @@ import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.ChannelShell
 import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 

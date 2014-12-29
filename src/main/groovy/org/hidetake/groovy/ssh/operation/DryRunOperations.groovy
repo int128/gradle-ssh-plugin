@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.operation
 
-import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.Remote
 
 /**
  * Dry-run implementation of {@link Operations}.

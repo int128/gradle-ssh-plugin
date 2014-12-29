@@ -1,9 +1,9 @@
 package org.hidetake.groovy.ssh.connection
 
-import org.hidetake.groovy.ssh.api.Proxy
-import org.hidetake.groovy.ssh.api.ProxyType
+import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.ProxyType
 
-import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS
+import static ProxyType.SOCKS
 
 /**
  * Basic validation and defaults for proxied connections created by 

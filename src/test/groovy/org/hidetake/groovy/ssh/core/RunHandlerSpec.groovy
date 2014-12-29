@@ -1,7 +1,5 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.api.Proxy
-import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.session.Plan
 import spock.lang.Specification
 import spock.lang.Unroll

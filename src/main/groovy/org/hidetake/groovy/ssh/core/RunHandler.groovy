@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.session.SessionHandler
 import org.hidetake.groovy.ssh.session.Plan
 
