@@ -23,7 +23,7 @@ class SftpPut {
     void put(File local, String remote) {
         assert remote, 'remote path must be given'
         assert local,  'local file must be given'
-        operations.sftp(sftpPutRecursive.curry([local], remote))
+        sftp(sftpPutRecursive.curry([local], remote))
     }
 
     /**
@@ -35,7 +35,7 @@ class SftpPut {
     void put(String local, String remote) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        operations.sftp(sftpPutRecursive.curry([new File(local)], remote))
+        sftp(sftpPutRecursive.curry([new File(local)], remote))
     }
 
     /**
@@ -47,7 +47,7 @@ class SftpPut {
     void put(Iterable<File> local, String remote) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        operations.sftp(sftpPutRecursive.curry(local, remote))
+        sftp(sftpPutRecursive.curry(local, remote))
     }
 
     private static final sftpPutRecursive = { Iterable<File> localFiles, String remoteFile ->

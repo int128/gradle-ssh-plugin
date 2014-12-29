@@ -22,7 +22,7 @@ class SftpGet {
     void get(String remote, File local) {
         assert remote, 'remote path must be given'
         assert local,  'local file must be given'
-        operations.sftp(sftpGetRecursive.curry(remote, local))
+        sftp(sftpGetRecursive.curry(remote, local))
     }
 
     /**
@@ -34,7 +34,7 @@ class SftpGet {
     void get(String remote, String local) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        operations.sftp(sftpGetRecursive.curry(remote, new File(local)))
+        sftp(sftpGetRecursive.curry(remote, new File(local)))
     }
 
     private static final sftpGetRecursive = { String remoteFile, File localFile ->

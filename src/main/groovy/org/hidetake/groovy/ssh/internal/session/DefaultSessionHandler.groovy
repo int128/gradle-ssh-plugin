@@ -3,7 +3,7 @@ package org.hidetake.groovy.ssh.internal.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.operation.Operations
+import org.hidetake.groovy.ssh.internal.operation.Operations
 import org.hidetake.groovy.ssh.api.session.SessionHandler
 
 /**
@@ -96,5 +96,12 @@ class DefaultSessionHandler implements SessionHandler {
         assert settings != null, 'settings must not be null'
         log.info("Execute a command ($command) with settings ($settings) and callback in background")
         operations.executeBackground(operationSettings + new OperationSettings(settings), command, callback)
+    }
+
+    @Override
+    void sftp(Closure closure) {
+        assert closure, 'closure must be given'
+        log.info("Execute a SFTP subsystem")
+        operations.sftp(closure)
     }
 }

@@ -5,7 +5,6 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.api.operation.Operations
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.connection.Connection
 import org.hidetake.groovy.ssh.internal.interaction.Engine
@@ -15,7 +14,7 @@ import org.hidetake.groovy.ssh.internal.interaction.LineOutputStream
 import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 
 /**
- * Default implementation of {@link org.hidetake.groovy.ssh.api.operation.Operations}.
+ * Default implementation of {@link Operations}.
  *
  * @author hidetake.org
  */

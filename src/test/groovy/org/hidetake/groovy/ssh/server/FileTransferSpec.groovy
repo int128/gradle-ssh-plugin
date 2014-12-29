@@ -485,8 +485,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                // internal API (not public API)
-                operations.sftp {
+                sftp {
                     mkdir folder.path
                 }
             }

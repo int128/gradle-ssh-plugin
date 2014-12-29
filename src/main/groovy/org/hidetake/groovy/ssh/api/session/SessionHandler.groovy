@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.api.session
 
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.operation.Operations
+import org.hidetake.groovy.ssh.api.operation.SftpOperations
 
 /**
  * A core handler for session closure.
@@ -102,11 +102,9 @@ interface SessionHandler {
     void executeBackground(HashMap settings, String command, Closure callback)
 
     /**
-     * Access to the {@link org.hidetake.groovy.ssh.api.operation.Operations} object.
-     * This method should be called internally by extension classes.
-     * Build script should not access to the operations object.
+     * Perform SFTP operations.
      *
-     * @return the operations object
+     * @param closure closure for {@link SftpOperations}
      */
-    Operations getOperations()
+    void sftp(@DelegatesTo(SftpOperations) Closure closure)
 }

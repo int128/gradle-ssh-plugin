@@ -1,7 +1,8 @@
-package org.hidetake.groovy.ssh.api.operation
+package org.hidetake.groovy.ssh.internal.operation
 
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.api.operation.SftpOperations
 
 /**
  * An aggregate of core SSH operations.
@@ -20,7 +21,7 @@ interface Operations {
     /**
      * Perform SFTP operations.
      *
-     * @param closure closure for {@link SftpOperations}
+     * @param closure closure for {@link org.hidetake.groovy.ssh.api.operation.SftpOperations}
      */
     void sftp(@DelegatesTo(SftpOperations) Closure closure)
 }
