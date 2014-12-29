@@ -1,19 +1,19 @@
-package org.hidetake.groovy.ssh.internal.session
+package org.hidetake.groovy.ssh.session
 
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.internal.operation.Operations
 import spock.lang.Specification
 
-class DefaultSessionHandlerSpec extends Specification {
+class SessionHandlerSpec extends Specification {
 
-    DefaultSessionHandler defaultSessionHandler
+    SessionHandler defaultSessionHandler
     Operations operations
     OperationSettings operationSettings
 
     def setup() {
         operations = Mock(Operations)
         operationSettings = OperationSettings.DEFAULT + new OperationSettings(dryRun: true)
-        defaultSessionHandler = new DefaultSessionHandler(operations, operationSettings)
+        defaultSessionHandler = new SessionHandler(operations, operationSettings)
     }
 
 

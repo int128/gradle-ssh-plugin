@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api.session
+package org.hidetake.groovy.ssh.session
 
 /**
  * An exception class thrown if the remote command returns bad exit status.

@@ -5,7 +5,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.interaction.Stream
-import org.hidetake.groovy.ssh.api.session.BadExitStatusException
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.connection.Connection
 import org.hidetake.groovy.ssh.internal.interaction.Engine
 import org.hidetake.groovy.ssh.internal.interaction.InteractionDelegate

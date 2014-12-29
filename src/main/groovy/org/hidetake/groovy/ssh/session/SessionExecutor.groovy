@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.session
+package org.hidetake.groovy.ssh.session
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.CompositeSettings
@@ -27,7 +27,7 @@ class SessionExecutor {
         if (compositeSettings.dryRun) {
             plans.collect { plan ->
                 def operations = new DryRunOperations(plan.remote)
-                def handler = new DefaultSessionHandler(operations, compositeSettings.operationSettings)
+                def handler = new SessionHandler(operations, compositeSettings.operationSettings)
                 log.debug("Mixin extensions: ${compositeSettings.extensions}")
                 handler.metaClass.mixin(compositeSettings.extensions)
                 callWithDelegate(plan.closure, handler)
@@ -37,7 +37,7 @@ class SessionExecutor {
                 plans.collect { plan ->
                     def connection = manager.connect(plan.remote)
                     def operations = new DefaultOperations(connection)
-                    def handler = new DefaultSessionHandler(operations, compositeSettings.operationSettings)
+                    def handler = new SessionHandler(operations, compositeSettings.operationSettings)
                     log.debug("Mixin extensions: ${compositeSettings.extensions}")
                     handler.metaClass.mixin(compositeSettings.extensions)
                     callWithDelegate(plan.closure, handler)

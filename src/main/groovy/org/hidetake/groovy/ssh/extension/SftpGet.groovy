@@ -3,7 +3,7 @@ package org.hidetake.groovy.ssh.extension
 import com.jcraft.jsch.ChannelSftp.LsEntry
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.operation.SftpException
-import org.hidetake.groovy.ssh.api.session.SessionHandler
+import org.hidetake.groovy.ssh.session.SessionHandler
 
 /**
  * An extension class to get a file or directory via SFTP.

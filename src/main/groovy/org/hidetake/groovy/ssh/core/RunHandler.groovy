@@ -2,8 +2,8 @@ package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.session.SessionHandler
-import org.hidetake.groovy.ssh.internal.session.Plan
+import org.hidetake.groovy.ssh.session.SessionHandler
+import org.hidetake.groovy.ssh.session.Plan
 
 import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 

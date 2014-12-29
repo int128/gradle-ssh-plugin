@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.RemoteContainer
 import org.hidetake.groovy.ssh.api.util.NamedObjectMap
 import org.hidetake.groovy.ssh.internal.DefaultRemoteContainer
-import org.hidetake.groovy.ssh.internal.session.SessionExecutor
+import org.hidetake.groovy.ssh.session.SessionExecutor
 import org.hidetake.groovy.ssh.internal.util.DefaultNamedObjectMap
 import org.hidetake.groovy.ssh.internal.util.NamedObjectMapBuilder
 

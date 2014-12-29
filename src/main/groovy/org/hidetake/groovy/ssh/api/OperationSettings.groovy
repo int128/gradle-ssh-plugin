@@ -68,7 +68,7 @@ class OperationSettings extends Settings<OperationSettings> {
     Closure interaction
 
     /**
-     * Extension classes to mixin to {@link org.hidetake.groovy.ssh.api.session.SessionHandler}.
+     * Extension classes to mixin to {@link org.hidetake.groovy.ssh.session.SessionHandler}.
      */
     List<Class> extensions = []
 

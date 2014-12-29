@@ -8,8 +8,8 @@ import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.session.BackgroundCommandException
-import org.hidetake.groovy.ssh.api.session.BadExitStatusException
+import org.hidetake.groovy.ssh.session.BackgroundCommandException
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 
 /**
  * A SSH connection.
@@ -87,7 +87,7 @@ class Connection {
 
     /**
      * Execute registered closures.
-     * This method throws a {@link org.hidetake.groovy.ssh.api.session.BackgroundCommandException} if any closure returns an exception.
+     * This method throws a {@link BackgroundCommandException} if any closure returns an exception.
      *
      * @see #whenClosed(com.jcraft.jsch.Channel, groovy.lang.Closure)
      */

@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.operation.SftpException
-import org.hidetake.groovy.ssh.api.session.SessionHandler
+import org.hidetake.groovy.ssh.session.SessionHandler
 
 import static org.hidetake.groovy.ssh.api.operation.SftpException.Error.*
 

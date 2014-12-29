@@ -2,8 +2,8 @@ package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.internal.session.Plan
-import org.hidetake.groovy.ssh.internal.session.SessionExecutor
+import org.hidetake.groovy.ssh.session.Plan
+import org.hidetake.groovy.ssh.session.SessionExecutor
 import spock.lang.Specification
 import spock.lang.Unroll
 

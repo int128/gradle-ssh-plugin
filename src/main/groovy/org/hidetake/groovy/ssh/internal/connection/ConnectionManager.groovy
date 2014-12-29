@@ -12,7 +12,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.ConnectionSettings
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.session.BackgroundCommandException
+import org.hidetake.groovy.ssh.session.BackgroundCommandException
 
 import static Retry.retry
 import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS

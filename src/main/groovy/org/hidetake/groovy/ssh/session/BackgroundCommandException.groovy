@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api.session
+package org.hidetake.groovy.ssh.session
 
 /**
  * An exception thrown if at least one background command occurs any error.
