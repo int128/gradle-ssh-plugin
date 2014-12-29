@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.util
+package org.hidetake.groovy.ssh.core.container
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -9,14 +9,14 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  *
  * @author Hidetake Iwata
  */
-class NamedObjectMapBuilder<T> {
+class ContainerBuilder<T> {
     private final Class<T> clazz
 
-    private final NamedObjectMap<T> map
+    private final Container container
 
-    def NamedObjectMapBuilder(Class<T> clazz, NamedObjectMap<T> map) {
+    def ContainerBuilder(Class<T> clazz, Container container) {
         this.clazz = clazz
-        this.map = map
+        this.container = container
     }
 
     def methodMissing(String name, args) {
@@ -29,7 +29,7 @@ class NamedObjectMapBuilder<T> {
 
         def namedObject = clazz.newInstance(name)
         callWithDelegate(closure, namedObject)
-        map.add(namedObject)
+        container.add(namedObject)
 
         namedObject
     }

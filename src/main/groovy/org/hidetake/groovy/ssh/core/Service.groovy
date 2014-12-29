@@ -1,11 +1,11 @@
 package org.hidetake.groovy.ssh.core
 
 import groovy.transform.TupleConstructor
+import org.hidetake.groovy.ssh.core.container.Container
+import org.hidetake.groovy.ssh.core.container.ContainerBuilder
+import org.hidetake.groovy.ssh.core.container.RoleAccessible
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.core.container.RemoteContainer
 import org.hidetake.groovy.ssh.session.SessionExecutor
-import org.hidetake.groovy.ssh.util.NamedObjectMap
-import org.hidetake.groovy.ssh.util.NamedObjectMapBuilder
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -21,12 +21,12 @@ class Service {
     /**
      * Container of remote hosts.
      */
-    final RemoteContainer remotes = new RemoteContainer()
+    final remotes = ([:] as Container) as RoleAccessible
 
     /**
      * Container of proxy hosts.
      */
-    final NamedObjectMap<Proxy> proxies = new NamedObjectMap<Proxy>()
+    final proxies = [:] as Container
 
     /**
      * Global settings.
@@ -40,7 +40,7 @@ class Service {
      */
     void remotes(Closure closure) {
         assert closure, 'closure must be given'
-        def builder = new NamedObjectMapBuilder(Remote, remotes)
+        def builder = new ContainerBuilder(Remote, remotes)
         callWithDelegate(closure, builder)
     }
 
@@ -51,7 +51,7 @@ class Service {
      */
     void proxies(Closure closure) {
         assert closure, 'closure must be given'
-        def builder = new NamedObjectMapBuilder(Proxy, proxies)
+        def builder = new ContainerBuilder(Proxy, proxies)
         callWithDelegate(closure, builder)
     }
 

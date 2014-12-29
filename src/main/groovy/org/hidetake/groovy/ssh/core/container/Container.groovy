@@ -1,32 +1,26 @@
-package org.hidetake.groovy.ssh.util
+package org.hidetake.groovy.ssh.core.container
 
 /**
- * A map of T.
- * An instance of T must have name property.
- *
- * @param < T > type of an element
+ * A container.
  *
  * @author Hidetake Iwata
  */
-class NamedObjectMap<T> {
-    @Delegate
-    private final Map<String, T> map = [:]
-
+trait Container implements Map {
     /**
      * Add an item.
-     * The item must have name property.
+     * The item must have <code>name</code> property.
      * If this map already contains an item with same name, it will be overwritten.
      *
      * @param item
      * @return true if this map did not already contain the same name
      */
-    boolean add(T item) {
+    boolean add(item) {
         assert item.name instanceof String
         put(item.name, item) ? false : true
     }
 
-    T put(String name, T item) {
+    def put(String name, item) {
         assert name == item.name
-        map.put(item.name as String, item)
+        super.put(item.name as String, item)
     }
 }
