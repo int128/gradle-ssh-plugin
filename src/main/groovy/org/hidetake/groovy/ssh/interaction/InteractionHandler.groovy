@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.interaction
 
-import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * A handler of the {@link org.hidetake.groovy.ssh.core.settings.OperationSettings#interaction} closure.

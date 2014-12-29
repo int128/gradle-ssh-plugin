@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.session.SessionExecutor
 import org.hidetake.groovy.ssh.util.NamedObjectMap
 import org.hidetake.groovy.ssh.util.NamedObjectMapBuilder
 
-import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * An entry point of SSH service.

@@ -4,7 +4,7 @@ import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.session.SessionHandler
 import org.hidetake.groovy.ssh.session.Plan
 
-import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * A handler of {@link Service#run(groovy.lang.Closure)}.

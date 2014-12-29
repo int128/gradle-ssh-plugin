@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.connection.ConnectionManager
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.operation.DryRunOperations
 
-import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * An executor of session {@link Plan}s.

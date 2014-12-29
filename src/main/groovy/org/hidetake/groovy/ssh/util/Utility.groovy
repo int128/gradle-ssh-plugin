@@ -16,4 +16,11 @@ class Utility {
             second
         }
     }
+
+    static <T> T callWithDelegate(Closure<T> closure, Object delegate) {
+        def cloned = closure.clone() as Closure<T>
+        cloned.resolveStrategy = Closure.DELEGATE_FIRST
+        cloned.delegate = delegate
+        cloned.call()
+    }
 }

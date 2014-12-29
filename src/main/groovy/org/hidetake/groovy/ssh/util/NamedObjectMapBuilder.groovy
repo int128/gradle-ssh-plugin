@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.util
 
-import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * An evaluator of a closure which contains named objects.
