@@ -12,14 +12,14 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 class ContainerBuilder<T> {
     private final Class<T> clazz
 
-    private final Container container
+    private final Container<T> container
 
-    def ContainerBuilder(Class<T> clazz, Container container) {
+    def ContainerBuilder(Class<T> clazz, Container<T> container) {
         this.clazz = clazz
         this.container = container
     }
 
-    def methodMissing(String name, args) {
+    T methodMissing(String name, args) {
         assert name
 
         assert args instanceof Object[]
@@ -27,7 +27,7 @@ class ContainerBuilder<T> {
         assert args[0] instanceof Closure
         def closure = args[0] as Closure
 
-        def namedObject = clazz.newInstance(name)
+        T namedObject = clazz.newInstance(name)
         callWithDelegate(closure, namedObject)
         container.add(namedObject)
 

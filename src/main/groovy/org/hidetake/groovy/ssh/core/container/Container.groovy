@@ -5,7 +5,7 @@ package org.hidetake.groovy.ssh.core.container
  *
  * @author Hidetake Iwata
  */
-trait Container implements Map {
+trait Container<T> implements Map<String, T> {
     /**
      * Add an item.
      * The item must have <code>name</code> property.
@@ -14,13 +14,8 @@ trait Container implements Map {
      * @param item
      * @return true if this map did not already contain the same name
      */
-    boolean add(item) {
+    boolean add(T item) {
         assert item.name instanceof String
-        put(item.name, item) ? false : true
-    }
-
-    def put(String name, item) {
-        assert name == item.name
-        super.put(item.name as String, item)
+        put(item.name as String, item) ? false : true
     }
 }

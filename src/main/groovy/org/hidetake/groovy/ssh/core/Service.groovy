@@ -1,9 +1,9 @@
 package org.hidetake.groovy.ssh.core
 
 import groovy.transform.TupleConstructor
-import org.hidetake.groovy.ssh.core.container.Container
 import org.hidetake.groovy.ssh.core.container.ContainerBuilder
-import org.hidetake.groovy.ssh.core.container.RoleAccessible
+import org.hidetake.groovy.ssh.core.container.ProxyContainer
+import org.hidetake.groovy.ssh.core.container.RemoteContainer
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.session.SessionExecutor
 
@@ -21,12 +21,12 @@ class Service {
     /**
      * Container of remote hosts.
      */
-    final remotes = ([:] as Container) as RoleAccessible
+    final remotes = [:] as RemoteContainer
 
     /**
      * Container of proxy hosts.
      */
-    final proxies = [:] as Container
+    final proxies = [:] as ProxyContainer
 
     /**
      * Global settings.
