@@ -10,7 +10,7 @@ import groovy.transform.ToString
  */
 @EqualsAndHashCode
 @ToString
-class CompositeSettings extends Settings<CompositeSettings> {
+class CompositeSettings implements Settings<CompositeSettings> {
     @Delegate
     ConnectionSettings connectionSettings = new ConnectionSettings()
 

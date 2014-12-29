@@ -4,9 +4,11 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.hidetake.groovy.ssh.core.Proxy
 
+import static org.hidetake.groovy.ssh.util.Utility.findNotNull
+
 @EqualsAndHashCode
 @ToString(excludes = 'password, passphrase, allowAnyHosts')
-class ConnectionSettings extends Settings<ConnectionSettings> {
+class ConnectionSettings implements Settings<ConnectionSettings> {
     static class Constants {
         static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
     }

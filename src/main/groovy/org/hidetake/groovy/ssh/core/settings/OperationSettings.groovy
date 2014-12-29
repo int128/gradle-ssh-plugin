@@ -6,9 +6,11 @@ import org.hidetake.groovy.ssh.extension.SftpGet
 import org.hidetake.groovy.ssh.extension.SftpPut
 import org.hidetake.groovy.ssh.extension.SudoExecution
 
+import static org.hidetake.groovy.ssh.util.Utility.findNotNull
+
 @EqualsAndHashCode
 @ToString
-class OperationSettings extends Settings<OperationSettings> {
+class OperationSettings implements Settings<OperationSettings> {
     /**
      * Logging methods.
      */
