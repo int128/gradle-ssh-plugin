@@ -4,8 +4,8 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.api.Service
-import org.hidetake.groovy.ssh.api.operation.SftpException
+import org.hidetake.groovy.ssh.core.Service
+import org.hidetake.groovy.ssh.operation.SftpException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
@@ -485,8 +485,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                // internal API (not public API)
-                operations.sftp {
+                sftp {
                     mkdir folder.path
                 }
             }

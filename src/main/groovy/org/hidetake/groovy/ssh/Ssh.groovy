@@ -1,8 +1,7 @@
 package org.hidetake.groovy.ssh
 
 import groovy.transform.CompileStatic
-import org.hidetake.groovy.ssh.api.Service
-import org.hidetake.groovy.ssh.internal.DefaultService
+import org.hidetake.groovy.ssh.core.Service
 
 /**
  * Entry point of Groovy SSH library.
@@ -12,10 +11,10 @@ import org.hidetake.groovy.ssh.internal.DefaultService
 @CompileStatic
 class Ssh {
     /**
-     * Create an implementation of {@link Service}.
+     * Create an instance of {@link Service}.
      */
     static Service newService() {
-        new DefaultService()
+        new Service()
     }
 
     /**

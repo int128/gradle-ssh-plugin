@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.server
 
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
 class DryRunSpec extends Specification {

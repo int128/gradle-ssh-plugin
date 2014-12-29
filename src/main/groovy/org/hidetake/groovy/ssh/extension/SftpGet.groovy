@@ -2,8 +2,8 @@ package org.hidetake.groovy.ssh.extension
 
 import com.jcraft.jsch.ChannelSftp.LsEntry
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.operation.SftpException
-import org.hidetake.groovy.ssh.api.session.SessionHandler
+import org.hidetake.groovy.ssh.operation.SftpException
+import org.hidetake.groovy.ssh.session.SessionHandler
 
 /**
  * An extension class to get a file or directory via SFTP.
@@ -22,7 +22,7 @@ class SftpGet {
     void get(String remote, File local) {
         assert remote, 'remote path must be given'
         assert local,  'local file must be given'
-        operations.sftp(sftpGetRecursive.curry(remote, local))
+        sftp(sftpGetRecursive.curry(remote, local))
     }
 
     /**
@@ -34,7 +34,7 @@ class SftpGet {
     void get(String remote, String local) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        operations.sftp(sftpGetRecursive.curry(remote, new File(local)))
+        sftp(sftpGetRecursive.curry(remote, new File(local)))
     }
 
     private static final sftpGetRecursive = { String remoteFile, File localFile ->

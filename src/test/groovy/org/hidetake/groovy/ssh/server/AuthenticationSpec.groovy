@@ -4,7 +4,7 @@ import com.jcraft.jsch.JSchException
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.*
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
 import java.security.PublicKey
