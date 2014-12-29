@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.session
 
 import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.internal.operation.Operations
+import org.hidetake.groovy.ssh.operation.Operations
 import spock.lang.Specification
 
 class SessionHandlerSpec extends Specification {

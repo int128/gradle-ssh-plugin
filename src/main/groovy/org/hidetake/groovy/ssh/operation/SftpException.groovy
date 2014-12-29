@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api.operation
+package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.SftpException as JschSftpException
 

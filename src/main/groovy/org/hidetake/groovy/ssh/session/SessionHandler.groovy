@@ -3,7 +3,7 @@ package org.hidetake.groovy.ssh.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.internal.operation.Operations
+import org.hidetake.groovy.ssh.operation.Operations
 
 /**
  * A handler of {@link org.hidetake.groovy.ssh.core.RunHandler#session(org.hidetake.groovy.ssh.api.Remote, groovy.lang.Closure)}.
@@ -162,7 +162,7 @@ class SessionHandler {
     /**
      * Perform SFTP operations.
      *
-     * @param closure closure for {@link org.hidetake.groovy.ssh.api.operation.SftpOperations}
+     * @param closure closure for {@link org.hidetake.groovy.ssh.operation.SftpOperations}
      */
     void sftp(Closure closure) {
         assert closure, 'closure must be given'

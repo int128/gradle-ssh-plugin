@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.operation
+package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.SftpProgressMonitor
 import groovy.transform.TupleConstructor

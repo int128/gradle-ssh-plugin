@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.operation
+package org.hidetake.groovy.ssh.operation
 
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote

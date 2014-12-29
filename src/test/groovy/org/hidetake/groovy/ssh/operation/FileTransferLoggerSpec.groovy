@@ -1,9 +1,9 @@
-package org.hidetake.groovy.ssh.internal.operation
+package org.hidetake.groovy.ssh.operation
 
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.internal.operation.FileTransferLogger.LOG_INTERVAL_MILLIS
+import static org.hidetake.groovy.ssh.operation.FileTransferLogger.LOG_INTERVAL_MILLIS
 
 class FileTransferLoggerSpec extends Specification {
 

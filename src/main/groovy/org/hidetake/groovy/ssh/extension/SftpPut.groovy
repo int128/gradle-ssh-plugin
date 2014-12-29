@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.extension
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.operation.SftpException
+import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionHandler
 
-import static org.hidetake.groovy.ssh.api.operation.SftpException.Error.*
+import static org.hidetake.groovy.ssh.operation.SftpException.Error.*
 
 /**
  * An extension class to put a file or directory via SFTP.

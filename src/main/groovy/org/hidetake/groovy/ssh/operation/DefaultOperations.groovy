@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.operation
+package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
@@ -203,7 +203,7 @@ class DefaultOperations implements Operations {
             channel.connect()
             log.info("SFTP has been started on channel #${channel.id}")
 
-            callWithDelegate(closure, new DefaultSftpOperations(channel))
+            callWithDelegate(closure, new SftpOperations(channel))
 
             log.info("SFTP has been closed on channel #${channel.id}")
         } finally {

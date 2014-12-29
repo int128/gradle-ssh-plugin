@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger

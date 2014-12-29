@@ -3,7 +3,7 @@ package org.hidetake.groovy.ssh
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
-import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder

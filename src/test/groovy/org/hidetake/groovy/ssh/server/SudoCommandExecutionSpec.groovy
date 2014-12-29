@@ -7,7 +7,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.internal.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import org.slf4j.Logger
 import spock.lang.Specification

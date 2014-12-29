@@ -1,21 +1,29 @@
-package org.hidetake.groovy.ssh.internal.operation
+package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.SftpException as JschSftpException
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.api.operation.SftpException
-import org.hidetake.groovy.ssh.api.operation.SftpOperations
 
+/**
+ * An aggregate of file transfer operations.
+ *
+ * @author hidetake.org
+ */
 @Slf4j
-class DefaultSftpOperations implements SftpOperations {
+class SftpOperations {
     private final ChannelSftp channel
 
-    def DefaultSftpOperations(ChannelSftp channel1) {
+    def SftpOperations(ChannelSftp channel1) {
         channel = channel1
         assert channel
     }
 
-    @Override
+    /**
+     * Get a file from the remote host.
+     *
+     * @param remote
+     * @param local
+     */
     void getFile(String remote, String local) {
         log.info("Get a remote file ($remote) to local ($local)")
         try {
@@ -25,7 +33,12 @@ class DefaultSftpOperations implements SftpOperations {
         }
     }
 
-    @Override
+    /**
+     * Put a file to the remote host.
+     *
+     * @param local
+     * @param remote
+     */
     void putFile(String local, String remote) {
         log.info("Put a local file ($local) to remote ($remote)")
         try {
@@ -35,7 +48,11 @@ class DefaultSftpOperations implements SftpOperations {
         }
     }
 
-    @Override
+    /**
+     * Create a directory.
+     *
+     * @param path
+     */
     void mkdir(String path) {
         log.info("Create a directory ($path)")
         try {
@@ -45,7 +62,12 @@ class DefaultSftpOperations implements SftpOperations {
         }
     }
 
-    @Override
+    /**
+     * Get a directory listing.
+     *
+     * @param path
+     * @return list of files or directories
+     */
     List<ChannelSftp.LsEntry> ls(String path) {
         log.info("Get a directory listing of ($path)")
         try {
@@ -55,7 +77,11 @@ class DefaultSftpOperations implements SftpOperations {
         }
     }
 
-    @Override
+    /**
+     * Change current directory.
+     *
+     * @param path
+     */
     void cd(String path) {
         log.info("Change current directory to ($path)")
         try {
