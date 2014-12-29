@@ -2,14 +2,14 @@ package org.hidetake.groovy.ssh.internal
 
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.api.RemoteContainer
-import org.hidetake.groovy.ssh.internal.util.DefaultNamedObjectMap
+import org.hidetake.groovy.ssh.util.NamedObjectMap
 
 /**
  * A default implementation of {@link RemoteContainer}.
  *
  * @author Hidetake Iwata
  */
-class DefaultRemoteContainer extends DefaultNamedObjectMap<Remote> implements RemoteContainer {
+class DefaultRemoteContainer extends NamedObjectMap<Remote> implements RemoteContainer {
     class DefaultRoleAccessor implements RemoteContainer.RoleAccessor {
         Collection<Remote> getAt(String name) {
             role(name)

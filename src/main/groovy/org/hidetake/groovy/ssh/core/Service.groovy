@@ -4,14 +4,12 @@ import groovy.transform.TupleConstructor
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.RemoteContainer
-import org.hidetake.groovy.ssh.api.util.NamedObjectMap
 import org.hidetake.groovy.ssh.internal.DefaultRemoteContainer
 import org.hidetake.groovy.ssh.session.SessionExecutor
-import org.hidetake.groovy.ssh.internal.util.DefaultNamedObjectMap
-import org.hidetake.groovy.ssh.internal.util.NamedObjectMapBuilder
+import org.hidetake.groovy.ssh.util.NamedObjectMap
+import org.hidetake.groovy.ssh.util.NamedObjectMapBuilder
 
-import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
 
 /**
  * An entry point of SSH service.
@@ -25,12 +23,12 @@ class Service {
     /**
      * Container of remote hosts.
      */
-    final RemoteContainer remotes = new DefaultRemoteContainer()
+    final DefaultRemoteContainer remotes = new DefaultRemoteContainer()
 
     /**
      * Container of proxy hosts.
      */
-    final NamedObjectMap<Proxy> proxies = new DefaultNamedObjectMap<Proxy>()
+    final NamedObjectMap<Proxy> proxies = new NamedObjectMap<Proxy>()
 
     /**
      * Global settings.

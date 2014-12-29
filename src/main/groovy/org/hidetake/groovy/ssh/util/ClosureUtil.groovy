@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.util
+package org.hidetake.groovy.ssh.util
 
 /**
  * An utility class of the closure.

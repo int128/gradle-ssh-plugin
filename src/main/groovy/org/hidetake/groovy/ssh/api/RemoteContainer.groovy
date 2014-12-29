@@ -1,13 +1,13 @@
 package org.hidetake.groovy.ssh.api
 
-import org.hidetake.groovy.ssh.api.util.NamedObjectMap
+import org.hidetake.groovy.ssh.util.NamedObjectMap
 
 /**
  * A container of {@link Remote}s.
  *
  * @author Hidetake Iwata
  */
-interface RemoteContainer extends NamedObjectMap<Remote> {
+interface RemoteContainer {
     interface RoleAccessor {
         /**
          * Find remote hosts associated with given role.

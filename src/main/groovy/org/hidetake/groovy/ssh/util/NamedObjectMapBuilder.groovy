@@ -1,8 +1,6 @@
-package org.hidetake.groovy.ssh.internal.util
+package org.hidetake.groovy.ssh.util
 
-import org.hidetake.groovy.ssh.api.util.NamedObjectMap
-
-import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
 
 /**
  * An evaluator of a closure which contains named objects.

@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.api.util
+package org.hidetake.groovy.ssh.util
 
 /**
  * A map of T.
@@ -8,7 +8,10 @@ package org.hidetake.groovy.ssh.api.util
  *
  * @author Hidetake Iwata
  */
-interface NamedObjectMap<T> extends Map<String, T> {
+class NamedObjectMap<T> {
+    @Delegate
+    private final Map<String, T> map = [:]
+
     /**
      * Add an item.
      * The item must have name property.
@@ -17,5 +20,13 @@ interface NamedObjectMap<T> extends Map<String, T> {
      * @param item
      * @return true if this map did not already contain the same name
      */
-    boolean add(T item)
+    boolean add(T item) {
+        assert item.name instanceof String
+        put(item.name, item) ? false : true
+    }
+
+    T put(String name, T item) {
+        assert name == item.name
+        map.put(item.name as String, item)
+    }
 }

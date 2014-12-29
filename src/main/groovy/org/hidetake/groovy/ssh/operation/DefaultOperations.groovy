@@ -11,7 +11,7 @@ import org.hidetake.groovy.ssh.interaction.Engine
 import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.interaction.LineOutputStream
 
-import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.ClosureUtil.callWithDelegate
 
 /**
  * Default implementation of {@link Operations}.
