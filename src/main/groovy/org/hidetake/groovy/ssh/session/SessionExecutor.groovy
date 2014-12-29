@@ -3,7 +3,7 @@ package org.hidetake.groovy.ssh.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.api.CompositeSettings
 import org.hidetake.groovy.ssh.api.ConnectionSettings
-import org.hidetake.groovy.ssh.internal.connection.ConnectionManager
+import org.hidetake.groovy.ssh.connection.ConnectionManager
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.operation.DryRunOperations
 

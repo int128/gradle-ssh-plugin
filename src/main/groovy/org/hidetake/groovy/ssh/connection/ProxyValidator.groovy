@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.connection
+package org.hidetake.groovy.ssh.connection
 
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.ProxyType

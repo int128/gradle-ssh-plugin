@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.connection
+package org.hidetake.groovy.ssh.connection
 
 import org.hidetake.groovy.ssh.api.Proxy
 import spock.lang.Specification
@@ -6,7 +6,7 @@ import spock.lang.Specification
 import static org.hidetake.groovy.ssh.api.ProxyType.HTTP
 import static org.hidetake.groovy.ssh.api.ProxyType.SOCKS
 
-class DefaultProxyValidatorSpec extends Specification {
+class ProxyValidatorSpec extends Specification {
 	
 	def "proxy with user and password generates no warnings"() {
 		given:

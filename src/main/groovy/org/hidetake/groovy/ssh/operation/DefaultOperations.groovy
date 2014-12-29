@@ -6,7 +6,7 @@ import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
 import org.hidetake.groovy.ssh.interaction.Stream
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.internal.connection.Connection
+import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.interaction.Engine
 import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.interaction.LineOutputStream

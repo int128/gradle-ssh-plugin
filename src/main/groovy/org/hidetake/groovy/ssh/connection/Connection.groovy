@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal.connection
+package org.hidetake.groovy.ssh.connection
 
 import com.jcraft.jsch.Channel
 import com.jcraft.jsch.ChannelExec
