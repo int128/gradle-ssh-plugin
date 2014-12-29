@@ -6,7 +6,7 @@ import org.apache.sshd.common.ForwardingFilter
 import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
 

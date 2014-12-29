@@ -6,7 +6,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.api.Service
+import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.api.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.api.session.BadExitStatusException
 import org.hidetake.groovy.ssh.internal.operation.DefaultOperations

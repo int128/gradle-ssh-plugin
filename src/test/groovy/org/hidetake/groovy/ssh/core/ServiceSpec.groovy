@@ -1,21 +1,20 @@
-package org.hidetake.groovy.ssh.internal
+package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.api.OperationSettings
 import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.Service
 import org.hidetake.groovy.ssh.internal.session.Plan
 import org.hidetake.groovy.ssh.internal.session.SessionExecutor
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DefaultServiceSpec extends Specification {
+class ServiceSpec extends Specification {
 
     Service ssh
     SessionExecutor sessionExecutor
 
     def setup() {
         sessionExecutor = Mock(SessionExecutor)
-        ssh = new DefaultService(sessionExecutor)
+        ssh = new Service(sessionExecutor)
     }
 
     def "global settings can be set"() {

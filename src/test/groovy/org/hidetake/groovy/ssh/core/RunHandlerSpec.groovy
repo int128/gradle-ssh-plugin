@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.internal
+package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.api.Proxy
 import org.hidetake.groovy.ssh.api.Remote
@@ -6,12 +6,12 @@ import org.hidetake.groovy.ssh.internal.session.Plan
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DefaultRunHandlerSpec extends Specification {
+class RunHandlerSpec extends Specification {
 
-    DefaultRunHandler runHandler
+    RunHandler runHandler
 
     def setup() {
-        runHandler = new DefaultRunHandler()
+        runHandler = new RunHandler()
     }
 
     def "add a session"() {
