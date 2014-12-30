@@ -1,13 +1,12 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.ConnectionSettings
-import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.internal.DefaultRunHandler
+import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import spock.lang.Specification
 import spock.lang.Unroll
-import spock.util.mop.ConfineMetaClassChanges
 
 class SshPluginSpec extends Specification {
 
@@ -30,7 +29,7 @@ class SshPluginSpec extends Specification {
         given:
         def project = ProjectBuilder.builder().build()
         project.apply plugin: 'org.hidetake.ssh'
-        def globalProxy = new org.hidetake.groovy.ssh.api.Proxy('globalProxy')
+        def globalProxy = new Proxy('globalProxy')
 
         when:
         project.ssh {
@@ -198,18 +197,15 @@ class SshPluginSpec extends Specification {
         proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
     }
 
-    @ConfineMetaClassChanges(DefaultRunHandler)
     def "invoke sshexec"() {
         given:
-        def called = Mock(Closure)
-        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
-
         def project = createProject()
 
         when:
         project.with {
             sshexec {
                 ssh {
+                    dryRun = true
                     knownHosts = file('my_known_hosts')
                 }
                 session(remotes.webServer) {
@@ -218,31 +214,25 @@ class SshPluginSpec extends Specification {
             }
         }
 
-        then: 1 * called(new CompositeSettings(
-            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        ))
+        then: noExceptionThrown()
     }
 
-    @ConfineMetaClassChanges(DefaultRunHandler)
     def "sshexec() returns a result of the closure"() {
         given:
-        def called = Mock(Closure)
-        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
-
         def project = createProject()
 
         when:
         project.with {
             project.ext.actualResult = sshexec {
+                ssh {
+                    dryRun = true
+                }
                 session(remotes.webServer) {
                     execute 'ls'
+                    'ls-result'
                 }
             }
         }
-
-        then: 1 * called(new CompositeSettings(
-            connectionSettings: new ConnectionSettings(knownHosts: ConnectionSettings.Constants.allowAnyHosts)
-        )) >> 'ls-result'
 
         then: project.ext.actualResult == 'ls-result'
     }
@@ -305,7 +295,7 @@ class SshPluginSpec extends Specification {
         remotes.collect { it.name }.toSet()
     }
 
-    private static proxyNameSet(Collection<org.hidetake.groovy.ssh.api.Proxy> proxies) {
+    private static proxyNameSet(Collection<Proxy> proxies) {
         proxies.collect { it.name }.toSet()
     }
 

@@ -1,12 +1,9 @@
 package org.hidetake.gradle.ssh.plugin
 
+import com.jcraft.jsch.JSchException
+import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.ConnectionSettings
-import org.hidetake.groovy.ssh.api.OperationSettings
-import org.hidetake.groovy.ssh.internal.DefaultRunHandler
 import spock.lang.Specification
-import spock.util.mop.ConfineMetaClassChanges
 
 class SshTaskSpec extends Specification {
 
@@ -35,11 +32,13 @@ class SshTaskSpec extends Specification {
                 }
                 session(remotes.webServer) {
                     execute 'ls'
+                    project.ext.checkpoint1 = true
                 }
             }
             task(type: SshTask, 'testTask2') {
                 session(remotes.webServer) {
                     execute 'ls'
+                    project.ext.checkpoint2 = true
                 }
             }
             it
@@ -47,26 +46,18 @@ class SshTaskSpec extends Specification {
     }
 
 
-    @ConfineMetaClassChanges(DefaultRunHandler)
     def "task action delegates to executor"() {
         given:
-        def called = Mock(Closure)
-        DefaultRunHandler.metaClass.run = { CompositeSettings s -> called(s) }
-
         def project = project()
 
         when: project.tasks.testTask1.execute()
-
-        then: 1 * called(new CompositeSettings(
-            operationSettings: new OperationSettings(dryRun: false),
-            connectionSettings: new ConnectionSettings(proxy: project.proxies.globalProxy)
-        ))
+        then: project.ext.checkpoint1
 
         when: project.tasks.testTask2.execute()
-        then: 1 * called(new CompositeSettings(
-            operationSettings: new OperationSettings(dryRun: false),
-            connectionSettings: new ConnectionSettings(proxy: project.proxies.globalProxy)
-        ))
+        then:
+        TaskExecutionException e = thrown()
+        e.cause.cause instanceof JSchException
+        e.cause.cause.cause instanceof FileNotFoundException
     }
 
 }

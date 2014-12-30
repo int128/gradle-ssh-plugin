@@ -5,13 +5,13 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.Remote
-import org.hidetake.groovy.ssh.api.RunHandler
-import org.hidetake.groovy.ssh.api.Service
-import org.hidetake.groovy.ssh.internal.DefaultRunHandler
+import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.RunHandler
+import org.hidetake.groovy.ssh.core.Service
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 
-import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
  * Gradle SSH plugin.
@@ -23,7 +23,7 @@ import static org.hidetake.groovy.ssh.internal.util.ClosureUtil.callWithDelegate
 class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        //project.extensions.ssh = ssh
+        //project.extensions.ssh = Ssh.newService()
 
         project.extensions.remotes = createRemoteContainer(project)
         project.extensions.proxies = createProxyContainer(project)
@@ -42,9 +42,9 @@ class SshPlugin implements Plugin<Project> {
     }
 
     private static createProxyContainer(Project project) {
-		def proxies = project.container(org.hidetake.groovy.ssh.api.Proxy)
+		def proxies = project.container(Proxy)
 		def parentProxies = project.parent?.extensions?.findByName('proxies')
-		if (parentProxies instanceof NamedDomainObjectContainer<org.hidetake.groovy.ssh.api.Proxy>) {
+		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
 			proxies.addAll(parentProxies)
 		}
 
@@ -81,20 +81,22 @@ class SshPlugin implements Plugin<Project> {
         /**
          * Execute a SSH closure.
          *
-         * @param closure closure for {@link org.hidetake.groovy.ssh.api.RunHandler}
+         * @param closure closure for {@link RunHandler}
          * @return returned value of the last session
          */
         @Deprecated
         Object sshexec(@DelegatesTo(RunHandler) Closure closure) {
             assert closure, 'closure must be given'
             log.warn 'Deprecated: use ssh.run {...} instead of sshexec {...}'
-            def handler = new DefaultRunHandler()
+            def handler = new RunHandler()
             handler.metaClass.ssh = { Closure c ->
                 log.warn 'Deprecated: use settings {...} instead of ssh {...} in the sshexec method'
                 handler.settings(c)
             }
             callWithDelegate(closure, handler)
-            handler.run(ssh.settings)
+
+            def results = ssh.executor.execute(CompositeSettings.DEFAULT + ssh.settings + handler.settings, handler.sessions)
+            results.empty ? null : results.last()
         }
     }
 

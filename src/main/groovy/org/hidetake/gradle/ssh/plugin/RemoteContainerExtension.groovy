@@ -1,6 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
-import org.hidetake.groovy.ssh.api.Remote
+import org.hidetake.groovy.ssh.core.Remote
 
 /**
  * An extension class of the remote container.

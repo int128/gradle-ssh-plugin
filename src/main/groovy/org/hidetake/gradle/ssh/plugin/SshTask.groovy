@@ -3,9 +3,8 @@ package org.hidetake.gradle.ssh.plugin
 import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.hidetake.groovy.ssh.api.CompositeSettings
-import org.hidetake.groovy.ssh.api.RunHandler
-import org.hidetake.groovy.ssh.internal.DefaultRunHandler
+import org.hidetake.groovy.ssh.core.RunHandler
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 
 /**
  * A SSH task for Gradle.
@@ -14,9 +13,9 @@ import org.hidetake.groovy.ssh.internal.DefaultRunHandler
  */
 @Slf4j
 @Deprecated
-class SshTask extends DefaultTask implements RunHandler {
+class SshTask extends DefaultTask {
     @Delegate
-    private final RunHandler handler = new DefaultRunHandler()
+    private final RunHandler handler = new RunHandler()
 
     @Deprecated
     void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
@@ -27,6 +26,6 @@ class SshTask extends DefaultTask implements RunHandler {
     @TaskAction
     void perform() {
         log.warn 'Deprecated: use ssh.run {...} instead of the ssh task'
-        (handler as DefaultRunHandler).run(project.ssh.settings)
+        project.ssh.executor.execute(CompositeSettings.DEFAULT + project.ssh.settings + settings, sessions)
     }
 }
