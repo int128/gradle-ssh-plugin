@@ -56,14 +56,6 @@ class MainSpec extends Specification {
         DefaultOperations.metaClass.static.getLog = { -> logger }
     }
 
-    def "main should evaluate a script line if -e is given"() {
-        when:
-        Main.main '-e', script
-
-        then:
-        1 * logger.info ('localhost|some message')
-        1 * logger.error('localhost|error')
-    }
 
     def "main should show usage if no arg is given"() {
         given:
@@ -79,6 +71,28 @@ class MainSpec extends Specification {
 
         cleanup:
         System.out = stdout
+    }
+
+    def "main should read script from a file is path is given"() {
+        given:
+        def scriptFile = temporaryFolder.newFile()
+        scriptFile << script
+
+        when:
+        Main.main scriptFile.path
+
+        then:
+        1 * logger.info ('localhost|some message')
+        1 * logger.error('localhost|error')
+    }
+
+    def "main should evaluate a script line if -e is given"() {
+        when:
+        Main.main '-e', script
+
+        then:
+        1 * logger.info ('localhost|some message')
+        1 * logger.error('localhost|error')
     }
 
     def "main should read script from standard input if --stdin is given"() {
@@ -97,18 +111,6 @@ class MainSpec extends Specification {
         System.in = stdin
     }
 
-    def "main should read script from a file is path is given"() {
-        given:
-        def scriptFile = temporaryFolder.newFile()
-        scriptFile << script
-
-        when:
-        Main.main scriptFile.path
-
-        then:
-        1 * logger.info ('localhost|some message')
-        1 * logger.error('localhost|error')
-    }
 
     def "default log level should be INFO"() {
         given:
