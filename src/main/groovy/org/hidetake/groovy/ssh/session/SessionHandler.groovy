@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.operation.Operations
+import org.hidetake.groovy.ssh.operation.SftpOperations
 
 /**
  * A handler of {@link org.hidetake.groovy.ssh.core.RunHandler#session(Remote, groovy.lang.Closure)}.
@@ -162,9 +163,9 @@ class SessionHandler {
     /**
      * Perform SFTP operations.
      *
-     * @param closure closure for {@link org.hidetake.groovy.ssh.operation.SftpOperations}
+     * @param closure closure for {@link SftpOperations}
      */
-    void sftp(Closure closure) {
+    void sftp(@DelegatesTo(SftpOperations) Closure closure) {
         assert closure, 'closure must be given'
         log.info("Execute a SFTP subsystem")
         operations.sftp(closure)
