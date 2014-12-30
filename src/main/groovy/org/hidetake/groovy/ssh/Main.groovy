@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh
 
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.core.Service
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,6 +23,7 @@ class Main {
         cli.d longOpt: 'debug', 'Set log level to debug.'
         cli._ longOpt: 'stdin', 'Specify standard input as a source.'
         cli.e args: 1,          'Specify a command line script.'
+        cli.n longOpt: 'dry-run', 'Do a dry run without connections.'
 
         def options = cli.parse(args)
         if (!options || options.h) {
@@ -39,15 +41,26 @@ class Main {
 
             def extraArguments = options.arguments()
             if (options.e) {
-                Ssh.newShell().run(options.e as String, 'script.groovy', extraArguments)
+                newShellWith(options).run(options.e as String, 'script.groovy', extraArguments)
             } else if (options.stdin) {
-                Ssh.newShell().run(System.in.newReader(), 'script.groovy', extraArguments)
+                newShellWith(options).run(System.in.newReader(), 'script.groovy', extraArguments)
             } else if (extraArguments.size() > 0) {
-                Ssh.newShell().run(new File(extraArguments.head()), extraArguments.tail())
+                newShellWith(options).run(new File(extraArguments.head()), extraArguments.tail())
             } else {
                 cli.usage()
             }
         }
+    }
+
+    private static newShellWith(options) {
+        def shell = Ssh.newShell()
+        if (options.n) {
+            def service = shell.getVariable('ssh') as Service
+            service.settings {
+                dryRun = true
+            }
+        }
+        shell
     }
 
     /**
