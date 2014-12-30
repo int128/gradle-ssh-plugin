@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.core.container.ContainerBuilder
 import org.hidetake.groovy.ssh.core.container.ProxyContainer
 import org.hidetake.groovy.ssh.core.container.RemoteContainer
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.session.SessionExecutor
+import org.hidetake.groovy.ssh.session.Executor
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -16,7 +16,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  */
 @TupleConstructor
 class Service {
-    final SessionExecutor sessionExecutor = new SessionExecutor()
+    final Executor executor = new Executor()
 
     /**
      * Container of remote hosts.
@@ -76,7 +76,7 @@ class Service {
         def handler = new RunHandler()
         callWithDelegate(closure, handler)
 
-        def results = sessionExecutor.execute(CompositeSettings.DEFAULT + settings + handler.settings, handler.sessions)
+        def results = executor.execute(CompositeSettings.DEFAULT + settings + handler.settings, handler.sessions)
         results.empty ? null : results.last()
     }
 }

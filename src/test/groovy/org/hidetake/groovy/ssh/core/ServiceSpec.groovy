@@ -2,18 +2,18 @@ package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.session.Plan
-import org.hidetake.groovy.ssh.session.SessionExecutor
+import org.hidetake.groovy.ssh.session.Executor
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class ServiceSpec extends Specification {
 
     Service ssh
-    SessionExecutor sessionExecutor
+    Executor executor
 
     def setup() {
-        sessionExecutor = Mock(SessionExecutor)
-        ssh = new Service(sessionExecutor)
+        executor = Mock(Executor)
+        ssh = new Service(executor)
     }
 
     def "global settings can be set"() {
@@ -104,7 +104,7 @@ class ServiceSpec extends Specification {
         }
 
         then:
-        1 * sessionExecutor.execute(_, [new Plan(remote1, closure), new Plan(remote2, closure)]) >> ['result1', 'result2']
+        1 * executor.execute(_, [new Plan(remote1, closure), new Plan(remote2, closure)]) >> ['result1', 'result2']
 
         then:
         result == 'result2'

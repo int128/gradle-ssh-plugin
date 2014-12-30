@@ -15,7 +15,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  * @author Hidetake Iwata
  */
 @Slf4j
-class SessionExecutor {
+class Executor {
     /**
      * Execute {@link Plan}s.
      *
