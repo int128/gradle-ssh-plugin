@@ -29,26 +29,18 @@ class Main {
         if (!options || options.h) {
             cli.usage()
         } else {
-            if (options.d) {
-                configureLogLevel('DEBUG')
-            } else if (options.i) {
-                configureLogLevel('INFO')
-            } else if (options.q) {
-                configureLogLevel('WARN')
-            } else {
-                configureLogLevel('INFO')
-            }
+            if      (options.d) { configureLogLevel('DEBUG') }
+            else if (options.i) { configureLogLevel('INFO') }
+            else if (options.q) { configureLogLevel('WARN') }
+            else                { configureLogLevel('INFO') }
 
-            def extraArguments = options.arguments()
-            if (options.e) {
-                newShellWith(options).run(options.e as String, 'script.groovy', extraArguments)
-            } else if (options.stdin) {
-                newShellWith(options).run(System.in.newReader(), 'script.groovy', extraArguments)
-            } else if (extraArguments.size() > 0) {
-                newShellWith(options).run(new File(extraArguments.head()), extraArguments.tail())
-            } else {
-                cli.usage()
-            }
+            def shell = newShellWith(options)
+            def extra = options.arguments()
+
+            if      (options.e)     { shell.run(options.e as String,   'script.groovy', extra) }
+            else if (options.stdin) { shell.run(System.in.newReader(), 'script.groovy', extra) }
+            else if (!extra.empty)  { shell.run(new File(extra.head()), extra.tail()) }
+            else                    { cli.usage() }
         }
     }
 
