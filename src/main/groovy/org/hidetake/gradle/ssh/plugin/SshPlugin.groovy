@@ -7,28 +7,22 @@ import org.gradle.api.Project
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.RunHandler
-import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-
-import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
- * Gradle SSH plugin.
- * This class adds project extension and convention properties.
+ * Main class of Gradle SSH plugin.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class SshPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        //project.extensions.ssh = Ssh.newService()
-
+        project.extensions.ssh = Ssh.newService()
         project.extensions.remotes = createRemoteContainer(project)
         project.extensions.proxies = createProxyContainer(project)
 
-        project.convention.plugins.ssh = new Convention(project)
+        // TODO: remove in future release
+        project.ext.SshTask = SshTask
     }
 
     private static createRemoteContainer(Project project) {
@@ -47,62 +41,13 @@ class SshPlugin implements Plugin<Project> {
 		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
 			proxies.addAll(parentProxies)
 		}
-
 		proxies
-    }
-
-    static class Convention {
-        private final Project project
-
-        private Convention(Project project1) {
-            project = project1
-            assert project
-        }
-
-        /**
-         * Alias to omit import in build script.
-         */
-        @Deprecated
-        final Class SshTask = org.hidetake.gradle.ssh.plugin.SshTask
-
-        final Service ssh = Ssh.newService()
-
-        /**
-         * Set global settings.
-         *
-         * @param closure
-         */
-        @Deprecated
-        void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
-            log.warn 'Deprecated: use ssh.settings {...} instead of ssh {...}'
-            ssh.settings(closure)
-        }
-
-        /**
-         * Execute a SSH closure.
-         *
-         * @param closure closure for {@link RunHandler}
-         * @return returned value of the last session
-         */
-        @Deprecated
-        Object sshexec(@DelegatesTo(RunHandler) Closure closure) {
-            assert closure, 'closure must be given'
-            log.warn 'Deprecated: use ssh.run {...} instead of sshexec {...}'
-            def handler = new RunHandler()
-            handler.metaClass.ssh = { Closure c ->
-                log.warn 'Deprecated: use settings {...} instead of ssh {...} in the sshexec method'
-                handler.settings(c)
-            }
-            callWithDelegate(closure, handler)
-
-            def results = ssh.executor.execute(CompositeSettings.DEFAULT + ssh.settings + handler.settings, handler.sessions)
-            results.empty ? null : results.last()
-        }
     }
 
     /**
      * Alternative entry point for old plugin ID, i.e. 'ssh'.
-     * @deprecated will be removed in future
+     *
+     * @deprecated TODO: remove in future release
      */
     @Slf4j
     @Deprecated

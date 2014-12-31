@@ -9,6 +9,8 @@ import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 /**
  * A SSH task for Gradle.
  *
+ * @deprecated TODO: remove in future release
+ *
  * @author hidetake.org
  */
 @Slf4j
@@ -19,7 +21,6 @@ class SshTask extends DefaultTask {
 
     @Deprecated
     void ssh(@DelegatesTo(CompositeSettings) Closure closure) {
-        log.warn 'Deprecated: use settings {...} instead of ssh {...} in the ssh task'
         handler.settings(closure)
     }
 

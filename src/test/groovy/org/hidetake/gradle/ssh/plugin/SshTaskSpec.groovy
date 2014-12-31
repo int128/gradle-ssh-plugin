@@ -21,7 +21,7 @@ class SshTaskSpec extends Specification {
                     identity = file('id_rsa')
                 }
             }
-            ssh {
+            ssh.settings {
                 dryRun = false
                 proxy = proxies.globalProxy
             }

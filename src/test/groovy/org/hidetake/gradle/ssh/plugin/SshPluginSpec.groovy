@@ -28,15 +28,18 @@ class SshPluginSpec extends Specification {
     def "apply global settings"() {
         given:
         def project = ProjectBuilder.builder().build()
-        project.apply plugin: 'org.hidetake.ssh'
         def globalProxy = new Proxy('globalProxy')
 
         when:
-        project.ssh {
-            dryRun = true
-            retryCount = 1
-            retryWaitSec = 1
-            proxy = globalProxy
+        project.with {
+            apply plugin: 'org.hidetake.ssh'
+
+            ssh.settings {
+                dryRun = true
+                retryCount = 1
+                retryWaitSec = 1
+                proxy = globalProxy
+            }
         }
 
         then:
@@ -197,63 +200,11 @@ class SshPluginSpec extends Specification {
         proxyNameSet(childProject.proxies) == ['socks', 'http'].toSet()
     }
 
-    def "invoke sshexec"() {
-        given:
-        def project = createProject()
-
-        when:
-        project.with {
-            sshexec {
-                ssh {
-                    dryRun = true
-                    knownHosts = file('my_known_hosts')
-                }
-                session(remotes.webServer) {
-                    execute 'ls'
-                }
-            }
-        }
-
-        then: noExceptionThrown()
-    }
-
-    def "sshexec() returns a result of the closure"() {
-        given:
-        def project = createProject()
-
-        when:
-        project.with {
-            project.ext.actualResult = sshexec {
-                ssh {
-                    dryRun = true
-                }
-                session(remotes.webServer) {
-                    execute 'ls'
-                    'ls-result'
-                }
-            }
-        }
-
-        then: project.ext.actualResult == 'ls-result'
-    }
-
-    def "invoke sshexec with null"() {
-        given:
-        def project = createProject()
-
-        when:
-        project.sshexec(null)
-
-        then:
-        AssertionError err = thrown()
-        err.message.contains("closure")
-    }
-
     private static createProject() {
         ProjectBuilder.builder().build().with {
             apply plugin: 'org.hidetake.ssh'
 
-            ssh {
+            ssh.settings {
                 knownHosts = allowAnyHosts
             }
 

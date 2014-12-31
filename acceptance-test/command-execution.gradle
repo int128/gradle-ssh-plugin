@@ -37,26 +37,6 @@ task executeCommandWithLogging(type: SshTask) {
 }
 
 
-feature('executing a command by the sshexec method') {
-    task 'executeCommandBySshexec'
-    category 'test'
-}
-
-task executeCommandBySshexec << {
-    def x = randomInt()
-    def y = randomInt()
-    def a = sshexec {
-        session(remotes.localhost) {
-            execute "expr $x + $y"
-        }
-        session(remotes.localhost) {
-            execute "expr $x - $y"
-        }
-    }
-    assert a as int == (x - y)
-}
-
-
 feature('executing commands sequentially') {
     task 'executeSequentially'
     category 'test'
@@ -139,7 +119,7 @@ task executeConcurrently(type: SshTask) {
     }
     doLast {
         // all commands should be completed at this point
-        def result = sshexec {
+        def result = ssh.run {
             session(remotes.localhost) {
                 execute("cat $tempPath")
             }
@@ -156,7 +136,7 @@ feature('handling failure of the remote command') {
 
 task failureStatus << {
     try {
-        sshexec {
+        ssh.run {
             session(remotes.localhost) {
                 execute 'exit 1'
             }
@@ -175,7 +155,7 @@ feature('handling failure of the remote command in background') {
 
 task failureStatusInBackground << {
     try {
-        sshexec {
+        ssh.run {
             session(remotes.localhost) {
                 executeBackground 'exit 1'
             }
