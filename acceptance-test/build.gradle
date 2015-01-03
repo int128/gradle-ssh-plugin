@@ -54,10 +54,12 @@ task cleanLocalTemp << {
     buildDir.mkdir()
 }
 
-task cleanRemoteTemp(type: SshTask) {
-    session(remotes.localhost) {
-        assert remoteTempPrefix
-        execute("rm -vr ${remoteTempPrefix}*")
+task cleanRemoteTemp << {
+    assert remoteTempPrefix
+    ssh.run {
+        session(remotes.localhost) {
+            execute("rm -vr ${remoteTempPrefix}*")
+        }
     }
 }
 

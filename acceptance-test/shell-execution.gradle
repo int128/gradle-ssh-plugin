@@ -4,13 +4,15 @@ feature('executing a shell') {
     category 'test'
 }
 
-task executeShell(type: SshTask) {
-    session(remotes.localhost) {
-        shell(interaction: {
-            when(partial: ~/.*[$%#] */) {
-                standardInput << 'exit 0' << '\n'
-            }
-        })
+task executeShell << {
+    ssh.run {
+        session(remotes.localhost) {
+            shell(interaction: {
+                when(partial: ~/.*[$%#] */) {
+                    standardInput << 'exit 0' << '\n'
+                }
+            })
+        }
     }
 }
 

@@ -10,16 +10,16 @@ class RemoteFileAssertion {
     }
 }
 
-task extendRemoteFileAssertion(type: SshTask) {
-    ssh {
-        extensions.add RemoteFileAssertion
-    }
-    doFirst {
-        ext.x = randomInt()
-        ext.pathX = remoteTempPath('X')
-    }
-    session(remotes.localhost) {
-        execute "echo 'port $x' > $pathX"
-        assertFileContains pathX, "port $x"
+task extendRemoteFileAssertion << {
+    def x = randomInt()
+    def pathX = remoteTempPath('X')
+    ssh.run {
+        settings {
+            extensions.add RemoteFileAssertion
+        }
+        session(remotes.localhost) {
+            execute "echo 'port $x' > $pathX"
+            assertFileContains pathX, "port $x"
+        }
     }
 }

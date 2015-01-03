@@ -26,15 +26,13 @@ feature('connect via a gateway host') {
     category 'test'
 }
 
-task connectViaGateway(type: SshTask) {
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
+task connectViaGateway << {
+    def x = randomInt()
+    def y = randomInt()
+    def a = ssh.run {
+        session(remotes.viaGateway) {
+            execute "expr $x + $y"
+        }
     }
-    session(remotes.viaGateway) {
-        ext.a = execute "expr $x + $y"
-    }
-    doLast {
-        assert a as int == (x + y)
-    }
+    assert a as int == (x + y)
 }

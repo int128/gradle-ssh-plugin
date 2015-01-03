@@ -143,24 +143,27 @@ feature('retrieve a large file from the remote host and send it again') {
     category 'aggressiveTest'
 }
 
-task getAndPutLargeFile(type: SshTask, dependsOn: 'setupBuildDir') {
+task getAndPutLargeFile {
+    dependsOn 'setupBuildDir'
     finalizedBy 'cleanLocalTemp'
     finalizedBy 'cleanRemoteTemp'
 
-    doFirst {
-        ext.sizeX = 1024 * 256
-        ext.localX = file("$buildDir/local-${randomInt()}")
-        ext.pathX = remoteTempPath('X')
-        ext.pathY = remoteTempPath('Y')
-    }
-    session(remotes.localhost) {
-        execute("dd if=/dev/zero of=$pathX bs=1024 count=$sizeX")
-        get pathX, localX
-
-        put localX, pathY
-        ext.sizeY = execute("wc -c < $pathY") as int
-    }
     doLast {
+        def sizeX = 1024 * 256
+        def localX = file("$buildDir/local-${randomInt()}")
+        def pathX = remoteTempPath('X')
+        def pathY = remoteTempPath('Y')
+
+        def sizeY = ssh.run {
+            session(remotes.localhost) {
+                execute("dd if=/dev/zero of=$pathX bs=1024 count=$sizeX")
+                get pathX, localX
+
+                put localX, pathY
+                execute("wc -c < $pathY") as int
+            }
+        }
+
         assert localX.size() == 1024 * sizeX
         assert sizeY == 1024 * sizeX
     }

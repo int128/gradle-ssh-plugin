@@ -18,42 +18,47 @@ feature('executing a privileged command by sudo') {
     category 'aggressiveTest'
 }
 
-task executeSudoWithPassword(type: SshTask) {
+task executeSudoWithPassword {
     dependsOn   'createUserForSudoWithPassword'
     finalizedBy 'deleteUserForSudoWithPassword'
-
-    session(remotes.sudoWithPassword) {
-        ext.whoami = executeSudo('whoami', pty: true)
-    }
     doLast {
-        assert whoami == 'root'
-    }
-}
-
-task createUserForSudoWithPassword(type: SshTask) {
-    finalizedBy 'deleteUserForSudoWithPassword'
-
-    session(remotes.localhost) {
-        def username = remotes.sudoWithPassword.user
-        def password = remotes.sudoWithPassword.password
-        execute("sudo useradd -m $username")
-        execute("sudo passwd $username", interaction: {
-            when(partial: ~/.+[Pp]assword: */) {
-                standardInput << password << '\n'
+        assert ssh.run {
+            session(remotes.sudoWithPassword) {
+                executeSudo('whoami', pty: true)
             }
-        })
-        execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
-        execute("sudo chmod 440 /tmp/$username")
-        execute("sudo chown 0.0 /tmp/$username")
-        execute("sudo mv /tmp/$username /etc/sudoers.d")
+        } == 'root'
     }
 }
 
-task deleteUserForSudoWithPassword(type: SshTask) {
-    session(remotes.localhost) {
-        def username = remotes.sudoWithPassword.user
-        execute("sudo rm -v /etc/sudoers.d/$username")
-        execute("sudo userdel -r $username")
+task createUserForSudoWithPassword {
+    finalizedBy 'deleteUserForSudoWithPassword'
+    doLast {
+        ssh.run {
+            session(remotes.localhost) {
+                def username = remotes.sudoWithPassword.user
+                def password = remotes.sudoWithPassword.password
+                execute("sudo useradd -m $username")
+                execute("sudo passwd $username", interaction: {
+                    when(partial: ~/.+[Pp]assword: */) {
+                        standardInput << password << '\n'
+                    }
+                })
+                execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
+                execute("sudo chmod 440 /tmp/$username")
+                execute("sudo chown 0.0 /tmp/$username")
+                execute("sudo mv /tmp/$username /etc/sudoers.d")
+            }
+        }
+    }
+}
+
+task deleteUserForSudoWithPassword << {
+    ssh.run {
+        session(remotes.localhost) {
+            def username = remotes.sudoWithPassword.user
+            execute("sudo rm -v /etc/sudoers.d/$username")
+            execute("sudo userdel -r $username")
+        }
     }
 }
 
@@ -63,49 +68,54 @@ feature('executing a command as another user by sudo') {
     category 'aggressiveTest'
 }
 
-task executeSudoAsUserWithPassword(type: SshTask) {
+task executeSudoAsUserWithPassword {
     dependsOn   'createUserForSudoAsUserWithPassword'
     finalizedBy 'deleteUserForSudoAsUserWithPassword'
-
-    def anotherUsername = "${remotes.sudoWithPassword.user}ya"
-    session(remotes.sudoWithPassword) {
-        ext.whoami = executeSudo("-u $anotherUsername whoami", pty: true)
-    }
     doLast {
-        assert whoami == anotherUsername
-    }
-}
-
-task createUserForSudoAsUserWithPassword(type: SshTask) {
-    finalizedBy 'deleteUserForSudoAsUserWithPassword'
-
-    session(remotes.localhost) {
-        def username = remotes.sudoWithPassword.user
-        def password = remotes.sudoWithPassword.password
-        execute("sudo useradd -m $username")
-        execute("sudo passwd $username", interaction: {
-            when(partial: ~/.+[Pp]assword: */) {
-                standardInput << password << '\n'
+        def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+        assert ssh.run {
+            session(remotes.sudoWithPassword) {
+                ext.whoami = executeSudo("-u $anotherUsername whoami", pty: true)
             }
-        })
-        execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
-        execute("sudo chmod 440 /tmp/$username")
-        execute("sudo chown 0.0 /tmp/$username")
-        execute("sudo mv /tmp/$username /etc/sudoers.d")
-
-        def anotherUsername = "${remotes.sudoWithPassword.user}ya"
-        execute("sudo useradd -m $anotherUsername")
+        } == anotherUsername
     }
 }
 
-task deleteUserForSudoAsUserWithPassword(type: SshTask) {
-    session(remotes.localhost) {
-        def username = remotes.sudoWithPassword.user
-        execute("sudo rm -v /etc/sudoers.d/$username")
-        execute("sudo userdel -r $username")
+task createUserForSudoAsUserWithPassword {
+    finalizedBy 'deleteUserForSudoAsUserWithPassword'
+    doLast {
+        ssh.run {
+            session(remotes.localhost) {
+                def username = remotes.sudoWithPassword.user
+                def password = remotes.sudoWithPassword.password
+                execute("sudo useradd -m $username")
+                execute("sudo passwd $username", interaction: {
+                    when(partial: ~/.+[Pp]assword: */) {
+                        standardInput << password << '\n'
+                    }
+                })
+                execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
+                execute("sudo chmod 440 /tmp/$username")
+                execute("sudo chown 0.0 /tmp/$username")
+                execute("sudo mv /tmp/$username /etc/sudoers.d")
 
-        def anotherUsername = "${remotes.sudoWithPassword.user}ya"
-        execute("sudo userdel -r $anotherUsername")
+                def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+                execute("sudo useradd -m $anotherUsername")
+            }
+        }
+    }
+}
+
+task deleteUserForSudoAsUserWithPassword << {
+    ssh.run {
+        session(remotes.localhost) {
+            def username = remotes.sudoWithPassword.user
+            execute("sudo rm -v /etc/sudoers.d/$username")
+            execute("sudo userdel -r $username")
+
+            def anotherUsername = "${remotes.sudoWithPassword.user}ya"
+            execute("sudo userdel -r $anotherUsername")
+        }
     }
 }
 
@@ -115,41 +125,46 @@ feature('executing a privileged command by sudo without password') {
     category 'aggressiveTest'
 }
 
-task executeSudoNoPassword(type: SshTask) {
+task executeSudoNoPassword {
     dependsOn 'createUserForSudoNoPassword'
     finalizedBy 'deleteUserForSudoNoPassword'
-
-    session(remotes.localhost) {
-        ext.whoami = executeSudo('whoami', pty: true)
-    }
     doLast {
-        assert whoami == 'root'
-    }
-}
-
-task createUserForSudoNoPassword(type: SshTask) {
-    finalizedBy 'deleteUserForSudoNoPassword'
-
-    session(remotes.localhost) {
-        def username = remotes.sudoNoPassword.user
-        def password = remotes.sudoNoPassword.password
-        execute("sudo useradd -m $username")
-        execute("sudo passwd $username", interaction: {
-            when(partial: ~/.+[Pp]assword: */) {
-                standardInput << password << '\n'
+        assert ssh.run {
+            session(remotes.localhost) {
+                executeSudo('whoami', pty: true)
             }
-        })
-        execute("echo '$username ALL=(ALL) NOPASSWD: ALL' > /tmp/$username")
-        execute("sudo chmod 440 /tmp/$username")
-        execute("sudo chown 0.0 /tmp/$username")
-        execute("sudo mv /tmp/$username /etc/sudoers.d")
+        } == 'root'
     }
 }
 
-task deleteUserForSudoNoPassword(type: SshTask) {
-    session(remotes.localhost) {
-        def username = remotes.sudoNoPassword.user
-        execute("sudo rm -v /etc/sudoers.d/$username")
-        execute("sudo userdel -r $username")
+task createUserForSudoNoPassword {
+    finalizedBy 'deleteUserForSudoNoPassword'
+    doLast {
+        ssh.run {
+            session(remotes.localhost) {
+                def username = remotes.sudoNoPassword.user
+                def password = remotes.sudoNoPassword.password
+                execute("sudo useradd -m $username")
+                execute("sudo passwd $username", interaction: {
+                    when(partial: ~/.+[Pp]assword: */) {
+                        standardInput << password << '\n'
+                    }
+                })
+                execute("echo '$username ALL=(ALL) NOPASSWD: ALL' > /tmp/$username")
+                execute("sudo chmod 440 /tmp/$username")
+                execute("sudo chown 0.0 /tmp/$username")
+                execute("sudo mv /tmp/$username /etc/sudoers.d")
+            }
+        }
+    }
+}
+
+task deleteUserForSudoNoPassword << {
+    ssh.run {
+        session(remotes.localhost) {
+            def username = remotes.sudoNoPassword.user
+            execute("sudo rm -v /etc/sudoers.d/$username")
+            execute("sudo userdel -r $username")
+        }
     }
 }

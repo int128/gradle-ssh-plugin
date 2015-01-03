@@ -19,33 +19,38 @@ feature('using remote specific identity') {
     category 'aggressiveTest'
 }
 
-task useRemoteSpecificIdentity(type: SshTask) {
+task useRemoteSpecificIdentity {
     dependsOn   'createUserWithAuthorizedKey'
     finalizedBy 'deleteUserWithAuthorizedKey'
-
-    session(remotes.dedicatedIdentity) {
-        ext.whoami = execute('whoami')
-    }
     doLast {
-        assert whoami == remotes.dedicatedIdentity.user
+        assert ssh.run {
+            session(remotes.dedicatedIdentity) {
+                execute('whoami')
+            }
+        } == remotes.dedicatedIdentity.user
     }
 }
 
-task createUserWithAuthorizedKey(type: SshTask) {
+task createUserWithAuthorizedKey {
     finalizedBy 'deleteUserWithAuthorizedKey'
-
-    session(remotes.localhost) {
-        def username = remotes.dedicatedIdentity.user
-        execute("sudo useradd -m $username")
-        execute("sudo -u $username mkdir ~$username/.ssh")
-        execute("sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub")
+    doLast {
+        ssh.run {
+            session(remotes.localhost) {
+                def username = remotes.dedicatedIdentity.user
+                execute("sudo useradd -m $username")
+                execute("sudo -u $username mkdir ~$username/.ssh")
+                execute("sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub")
+            }
+        }
     }
 }
 
-task deleteUserWithAuthorizedKey(type: SshTask) {
-    session(remotes.localhost) {
-        def username = remotes.dedicatedIdentity.user
-        execute("sudo userdel -r $username")
+task deleteUserWithAuthorizedKey << {
+    ssh.run {
+        session(remotes.localhost) {
+            def username = remotes.dedicatedIdentity.user
+            execute("sudo userdel -r $username")
+        }
     }
 }
 
@@ -55,16 +60,14 @@ feature('authenticate with the ssh agent') {
     category 'testWithAgent'
 }
 
-task authenticateWithSshAgent(type: SshTask) {
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
+task authenticateWithSshAgent << {
+    def x = randomInt()
+    def y = randomInt()
+    def a = ssh.run {
+        session(remotes.usingAgent) {
+            execute "expr $x + $y"
+        }
     }
-    session(remotes.usingAgent) {
-        ext.a = execute "expr $x + $y"
-    }
-    doLast {
-        assert a as int == (x + y)
-    }
+    assert a as int == (x + y)
 }
 

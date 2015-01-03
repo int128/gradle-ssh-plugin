@@ -4,17 +4,15 @@ feature('executing a command') {
     category 'test'
 }
 
-task executeCommand(type: SshTask) {
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
+task executeCommand << {
+    def x = randomInt()
+    def y = randomInt()
+    def a = ssh.run {
+        session(remotes.localhost) {
+            execute "expr $x + $y"
+        }
     }
-    session(remotes.localhost) {
-        ext.a = execute "expr $x + $y"
-    }
-    doLast {
-        assert a as int == (x + y)
-    }
+    assert a as int == (x + y)
 }
 
 
@@ -23,17 +21,15 @@ feature('execute a command with console logging to stdout') {
     category 'test'
 }
 
-task executeCommandWithLogging(type: SshTask) {
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
+task executeCommandWithLogging << {
+    def x = randomInt()
+    def y = randomInt()
+    def a = ssh.run {
+        session(remotes.localhost) {
+            execute "expr $x + $y", logging: 'stdout'
+        }
     }
-    session(remotes.localhost) {
-        ext.a = execute "expr $x + $y", logging: 'stdout'
-    }
-    doLast {
-        assert a as int == (x + y)
-    }
+    assert a as int == (x + y)
 }
 
 
@@ -42,22 +38,23 @@ feature('executing commands sequentially') {
     category 'test'
 }
 
-task executeSequentially(type: SshTask) {
+task executeSequentially {
     finalizedBy 'cleanRemoteTemp'
-
-    doFirst {
-        ext.x = randomInt()
-        ext.y = randomInt()
-        ext.pathA = remoteTempPath('A')
-        ext.pathB = remoteTempPath('B')
-    }
-    session(remotes.localhost) {
-        execute "expr $x + $y > $pathA"
-        execute "expr $x + `cat $pathA` > $pathB"
-        ext.a = execute "cat $pathA"
-        ext.b = execute "cat $pathB"
-    }
     doLast {
+        def x = randomInt()
+        def y = randomInt()
+        def pathA = remoteTempPath('A')
+        def pathB = remoteTempPath('B')
+        def a
+        def b
+        ssh.run {
+            session(remotes.localhost) {
+                execute "expr $x + $y > $pathA"
+                execute "expr $x + `cat $pathA` > $pathB"
+                a = execute "cat $pathA"
+                b = execute "cat $pathB"
+            }
+        }
         assert a as int == (x + y)
         assert b as int == (x + x + y)
     }
@@ -69,14 +66,14 @@ feature('each command should have independent environment') {
     category 'test'
 }
 
-task testEnvironmentOfCommand(type: SshTask) {
-    session(remotes.localhost) {
-        execute "export testdata=dummy"
-        ext.a = execute 'echo "testdata is $testdata"'
+task testEnvironmentOfCommand << {
+    def a = ssh.run {
+        session(remotes.localhost) {
+            execute "export testdata=dummy"
+            execute 'echo "testdata is $testdata"'
+        }
     }
-    doLast {
-        assert a == 'testdata is '
-    }
+    assert a == 'testdata is '
 }
 
 
@@ -85,14 +82,16 @@ feature('executing a command with PTY allocation') {
     category 'test'
 }
 
-task executeCommandWithPty(type: SshTask) {
-    session(remotes.localhost) {
-        executeBackground("env | grep -v SSH_TTY")
-        executeBackground("env | grep SSH_TTY", pty: true)
-    }
-    session(remotes.localhost) {
-        execute("env | grep -v SSH_TTY")
-        execute("env | grep SSH_TTY", pty: true)
+task executeCommandWithPty << {
+    ssh.run {
+        session(remotes.localhost) {
+            executeBackground("env | grep -v SSH_TTY")
+            executeBackground("env | grep SSH_TTY", pty: true)
+        }
+        session(remotes.localhost) {
+            execute("env | grep -v SSH_TTY")
+            execute("env | grep SSH_TTY", pty: true)
+        }
     }
 }
 
@@ -102,22 +101,21 @@ feature('executing commands concurrently') {
     category 'test'
 }
 
-task executeConcurrently(type: SshTask) {
+task executeConcurrently {
     finalizedBy 'cleanRemoteTemp'
-
-    doFirst {
-        ext.tempPath = remoteTempPath(name)
-    }
-    // task should start sessions concurrently
-    session(remotes.localhost) {
-        executeBackground "sleep 2 && echo 2 >> $tempPath"
-    }
-    session(remotes.localhost) {
-        executeBackground "sleep 3 && echo 3 >> $tempPath"
-        executeBackground "sleep 1 && echo 1 >> $tempPath"
-        executeBackground            "echo 0 >> $tempPath"
-    }
     doLast {
+        def tempPath = remoteTempPath(name)
+        ssh.run {
+            // task should start sessions concurrently
+            session(remotes.localhost) {
+                executeBackground "sleep 2 && echo 2 >> $tempPath"
+            }
+            session(remotes.localhost) {
+                executeBackground "sleep 3 && echo 3 >> $tempPath"
+                executeBackground "sleep 1 && echo 1 >> $tempPath"
+                executeBackground "echo 0 >> $tempPath"
+            }
+        }
         // all commands should be completed at this point
         def result = ssh.run {
             session(remotes.localhost) {
