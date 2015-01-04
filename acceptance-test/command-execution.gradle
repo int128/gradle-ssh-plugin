@@ -49,12 +49,12 @@ task('spec: each command should have independent environment') << {
 task('feature: execute a command with PTY allocation') << {
     ssh.run {
         session(remotes.localhost) {
-            executeBackground("env | grep -v SSH_TTY")
-            executeBackground("env | grep SSH_TTY", pty: true)
+            executeBackground "env | grep -v SSH_TTY"
+            executeBackground "env | grep SSH_TTY", pty: true
         }
         session(remotes.localhost) {
-            execute("env | grep -v SSH_TTY")
-            execute("env | grep SSH_TTY", pty: true)
+            execute "env | grep -v SSH_TTY"
+            execute "env | grep SSH_TTY", pty: true
         }
     }
 }
@@ -79,7 +79,7 @@ task('feature: execute commands concurrently') << {
     // all commands should be completed at this point
     def result = ssh.run {
         session(remotes.localhost) {
-            execute("cat $remoteWorkDir/result")
+            execute "cat $remoteWorkDir/result"
         }
     }
     assert result.readLines() == ['0', '1', '2', '3']

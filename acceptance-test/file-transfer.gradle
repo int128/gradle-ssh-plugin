@@ -13,8 +13,8 @@ task('feature: put, compute and get files') << {
             execute "mkdir -vp $remoteWorkDir"
             put "$localWorkDir/LX", "$remoteWorkDir/RX"
             put "$localWorkDir/LY", "$remoteWorkDir/RY"
-            execute("expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA")
-            execute("expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB")
+            execute "expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA"
+            execute "expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB"
             get "$remoteWorkDir/RA", "$localWorkDir/LA"
             get "$remoteWorkDir/RB", "$localWorkDir/LB"
         }
@@ -89,7 +89,7 @@ task('feature: get a large file and put it back', dependsOn: sideEffect) << {
     ssh.run {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
-            execute("dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize")
+            execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
             get "$remoteWorkDir/result", localWorkDir
         }
     }

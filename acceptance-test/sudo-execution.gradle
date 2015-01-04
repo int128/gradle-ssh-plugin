@@ -31,16 +31,16 @@ task createUserForSudoWithPassword {
             session(remotes.localhost) {
                 def username = remotes.sudoWithPassword.user
                 def password = remotes.sudoWithPassword.password
-                execute("sudo useradd -m $username")
-                execute("sudo passwd $username", interaction: {
+                execute "sudo useradd -m $username"
+                execute "sudo passwd $username", interaction: {
                     when(partial: ~/.+[Pp]assword: */) {
                         standardInput << password << '\n'
                     }
-                })
-                execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
-                execute("sudo chmod 440 /tmp/$username")
-                execute("sudo chown 0.0 /tmp/$username")
-                execute("sudo mv /tmp/$username /etc/sudoers.d")
+                }
+                execute "echo '$username ALL=(ALL) ALL' > /tmp/$username"
+                execute "sudo chmod 440 /tmp/$username"
+                execute "sudo chown 0.0 /tmp/$username"
+                execute "sudo mv /tmp/$username /etc/sudoers.d"
             }
         }
     }
@@ -50,8 +50,8 @@ task deleteUserForSudoWithPassword << {
     ssh.run {
         session(remotes.localhost) {
             def username = remotes.sudoWithPassword.user
-            execute("sudo rm -v /etc/sudoers.d/$username")
-            execute("sudo userdel -r $username")
+            execute "sudo rm -v /etc/sudoers.d/$username"
+            execute "sudo userdel -r $username"
         }
     }
 }
@@ -76,19 +76,19 @@ task createUserForSudoAsUserWithPassword {
             session(remotes.localhost) {
                 def username = remotes.sudoWithPassword.user
                 def password = remotes.sudoWithPassword.password
-                execute("sudo useradd -m $username")
-                execute("sudo passwd $username", interaction: {
+                execute "sudo useradd -m $username"
+                execute "sudo passwd $username", interaction: {
                     when(partial: ~/.+[Pp]assword: */) {
                         standardInput << password << '\n'
                     }
-                })
-                execute("echo '$username ALL=(ALL) ALL' > /tmp/$username")
-                execute("sudo chmod 440 /tmp/$username")
-                execute("sudo chown 0.0 /tmp/$username")
-                execute("sudo mv /tmp/$username /etc/sudoers.d")
+                }
+                execute "echo '$username ALL=(ALL) ALL' > /tmp/$username"
+                execute "sudo chmod 440 /tmp/$username"
+                execute "sudo chown 0.0 /tmp/$username"
+                execute "sudo mv /tmp/$username /etc/sudoers.d"
 
                 def anotherUsername = "${remotes.sudoWithPassword.user}ya"
-                execute("sudo useradd -m $anotherUsername")
+                execute "sudo useradd -m $anotherUsername"
             }
         }
     }
@@ -98,11 +98,11 @@ task deleteUserForSudoAsUserWithPassword << {
     ssh.run {
         session(remotes.localhost) {
             def username = remotes.sudoWithPassword.user
-            execute("sudo rm -v /etc/sudoers.d/$username")
-            execute("sudo userdel -r $username")
+            execute "sudo rm -v /etc/sudoers.d/$username"
+            execute "sudo userdel -r $username"
 
             def anotherUsername = "${remotes.sudoWithPassword.user}ya"
-            execute("sudo userdel -r $anotherUsername")
+            execute "sudo userdel -r $anotherUsername"
         }
     }
 }
@@ -126,16 +126,16 @@ task createUserForSudoNoPassword {
             session(remotes.localhost) {
                 def username = remotes.sudoNoPassword.user
                 def password = remotes.sudoNoPassword.password
-                execute("sudo useradd -m $username")
-                execute("sudo passwd $username", interaction: {
+                execute "sudo useradd -m $username"
+                execute "sudo passwd $username", interaction: {
                     when(partial: ~/.+[Pp]assword: */) {
                         standardInput << password << '\n'
                     }
-                })
-                execute("echo '$username ALL=(ALL) NOPASSWD: ALL' > /tmp/$username")
-                execute("sudo chmod 440 /tmp/$username")
-                execute("sudo chown 0.0 /tmp/$username")
-                execute("sudo mv /tmp/$username /etc/sudoers.d")
+                }
+                execute "echo '$username ALL=(ALL) NOPASSWD: ALL' > /tmp/$username"
+                execute "sudo chmod 440 /tmp/$username"
+                execute "sudo chown 0.0 /tmp/$username"
+                execute "sudo mv /tmp/$username /etc/sudoers.d"
             }
         }
     }
@@ -145,8 +145,8 @@ task deleteUserForSudoNoPassword << {
     ssh.run {
         session(remotes.localhost) {
             def username = remotes.sudoNoPassword.user
-            execute("sudo rm -v /etc/sudoers.d/$username")
-            execute("sudo userdel -r $username")
+            execute "sudo rm -v /etc/sudoers.d/$username"
+            execute "sudo userdel -r $username"
         }
     }
 }

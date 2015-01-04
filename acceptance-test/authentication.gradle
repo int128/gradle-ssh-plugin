@@ -20,7 +20,7 @@ task('feature: authenticate with remote specific identity', dependsOn: sideEffec
     doLast {
         assert ssh.run {
             session(remotes.dedicatedIdentity) {
-                execute('whoami')
+                execute 'whoami'
             }
         } == remotes.dedicatedIdentity.user
     }
@@ -32,9 +32,9 @@ task createUserWithAuthorizedKey {
         ssh.run {
             session(remotes.localhost) {
                 def username = remotes.dedicatedIdentity.user
-                execute("sudo useradd -m $username")
-                execute("sudo -u $username mkdir ~$username/.ssh")
-                execute("sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub")
+                execute "sudo useradd -m $username"
+                execute "sudo -u $username mkdir ~$username/.ssh"
+                execute "sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub"
             }
         }
     }
@@ -44,7 +44,7 @@ task deleteUserWithAuthorizedKey << {
     ssh.run {
         session(remotes.localhost) {
             def username = remotes.dedicatedIdentity.user
-            execute("sudo userdel -r $username")
+            execute "sudo userdel -r $username"
         }
     }
 }

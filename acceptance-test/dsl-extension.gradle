@@ -1,7 +1,7 @@
 
 class RemoteFileAssertion {
     def assertFileContains(String path, String regexp) {
-        execute("egrep '$regexp' '$path'")
+        execute "egrep '$regexp' '$path'"
     }
 }
 
