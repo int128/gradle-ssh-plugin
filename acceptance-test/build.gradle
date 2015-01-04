@@ -21,10 +21,6 @@ remotes {
     }
 }
 
-task test           { description = 'Run tests' }
-task testWithAgent  { description = 'Run tests which require ssh-agent' }
-task aggressiveTest { description = 'Run tests which require environment modification' }
-
 
 /*
  * Test helper tasks and methods.
@@ -39,8 +35,6 @@ ext {
     localTempPrefix = "$buildDir/local-fixture-${randomInt()}"
     localTempPath = { String name = randomInt().toString() -> "$localTempPrefix-$name" }
 }
-
-project.metaClass.mixin(FeatureSupport as Class)
 
 task setupBuildDir(type: Delete) {
     delete buildDir
@@ -63,10 +57,28 @@ task cleanRemoteTemp << {
     }
 }
 
+task sideEffect { description = '(internal task)' }
+task sshAgent   { description = '(internal task)' }
+
 
 fileTree(projectDir) {
     include '*.gradle'
     exclude 'build.gradle'
 }.each {
     apply from: it
+}
+
+
+task test               { description = 'run tests' }
+task testWithSideEffect { description = 'run tests which cause side effect' }
+task testWithSshAgent   { description = 'run tests which require SSH agent' }
+
+afterEvaluate {
+    final features = tasks.matching { it.name.matches ~/(feature|spec): .+/ }
+    final featuresWithSideEffect = features.findAll { it.dependsOn.contains tasks.sideEffect }
+    final featuresWithSshAgent = features.findAll { it.dependsOn.contains tasks.sshAgent }
+
+    tasks.testWithSideEffect.dependsOn(featuresWithSideEffect)
+    tasks.testWithSshAgent.dependsOn(featuresWithSshAgent)
+    tasks.test.dependsOn(features - featuresWithSideEffect - featuresWithSshAgent)
 }

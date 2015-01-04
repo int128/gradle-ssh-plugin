@@ -1,16 +1,11 @@
 
-feature('adding remote file assertion feature') {
-    task 'extendRemoteFileAssertion'
-    category 'test'
-}
-
 class RemoteFileAssertion {
     def assertFileContains(String path, String regexp) {
         execute("egrep '$regexp' '$path'")
     }
 }
 
-task extendRemoteFileAssertion << {
+task('feature: remote file assertion') << {
     def x = randomInt()
     def pathX = remoteTempPath('X')
     ssh.run {

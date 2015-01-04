@@ -1,10 +1,5 @@
 
-feature('put, compute and get files') {
-    task 'putAndGetFiles'
-    category 'test'
-}
-
-task putAndGetFiles {
+task('feature: put, compute and get files') {
     dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
@@ -50,13 +45,7 @@ task putAndGetFiles {
     }
 }
 
-
-feature('put a directory recursively') {
-    task 'putDirectory'
-    category 'test'
-}
-
-task putDirectory {
+task('feature: put a directory recursively') {
     dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
@@ -95,13 +84,7 @@ task putDirectory {
     }
 }
 
-
-feature('get a directory recursively') {
-    task 'getDirectory'
-    category 'test'
-}
-
-task getDirectory {
+task('feature: get a directory recursively') {
     dependsOn 'setupBuildDir'
     finalizedBy 'cleanRemoteTemp'
 
@@ -137,13 +120,7 @@ task getDirectory {
     }
 }
 
-
-feature('retrieve a large file from the remote host and send it again') {
-    task 'getAndPutLargeFile'
-    category 'aggressiveTest'
-}
-
-task getAndPutLargeFile {
+task('feature: get a large file and put it back', dependsOn: sideEffect) {
     dependsOn 'setupBuildDir'
     finalizedBy 'cleanLocalTemp'
     finalizedBy 'cleanRemoteTemp'

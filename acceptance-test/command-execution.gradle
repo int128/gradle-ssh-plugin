@@ -1,10 +1,5 @@
 
-feature('executing a command') {
-    task 'executeCommand'
-    category 'test'
-}
-
-task executeCommand << {
+task('feature: execute a command') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
@@ -15,13 +10,7 @@ task executeCommand << {
     assert a as int == (x + y)
 }
 
-
-feature('execute a command with console logging to stdout') {
-    task 'executeCommandWithLogging'
-    category 'test'
-}
-
-task executeCommandWithLogging << {
+task('feature: execute a command with console logging to stdout') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
@@ -32,13 +21,7 @@ task executeCommandWithLogging << {
     assert a as int == (x + y)
 }
 
-
-feature('executing commands sequentially') {
-    task 'executeSequentially'
-    category 'test'
-}
-
-task executeSequentially {
+task('feature: execute commands sequentially') {
     finalizedBy 'cleanRemoteTemp'
     doLast {
         def x = randomInt()
@@ -60,13 +43,7 @@ task executeSequentially {
     }
 }
 
-
-feature('each command should have independent environment') {
-    task 'testEnvironmentOfCommand'
-    category 'test'
-}
-
-task testEnvironmentOfCommand << {
+task('spec: each command should have independent environment') << {
     def a = ssh.run {
         session(remotes.localhost) {
             execute "export testdata=dummy"
@@ -76,13 +53,7 @@ task testEnvironmentOfCommand << {
     assert a == 'testdata is '
 }
 
-
-feature('executing a command with PTY allocation') {
-    task 'executeCommandWithPty'
-    category 'test'
-}
-
-task executeCommandWithPty << {
+task('feature: execute a command with PTY allocation') << {
     ssh.run {
         session(remotes.localhost) {
             executeBackground("env | grep -v SSH_TTY")
@@ -95,16 +66,10 @@ task executeCommandWithPty << {
     }
 }
 
-
-feature('executing commands concurrently') {
-    task 'executeConcurrently'
-    category 'test'
-}
-
-task executeConcurrently {
+task('feature: execute commands concurrently') {
     finalizedBy 'cleanRemoteTemp'
     doLast {
-        def tempPath = remoteTempPath(name)
+        def tempPath = remoteTempPath()
         ssh.run {
             // task should start sessions concurrently
             session(remotes.localhost) {
@@ -126,13 +91,7 @@ task executeConcurrently {
     }
 }
 
-
-feature('handling failure of the remote command') {
-    task 'failureStatus'
-    category 'test'
-}
-
-task failureStatus << {
+task('spec: it should throw exception if the command returned error') << {
     try {
         ssh.run {
             session(remotes.localhost) {
@@ -145,13 +104,7 @@ task failureStatus << {
     }
 }
 
-
-feature('handling failure of the remote command in background') {
-    task 'failureStatusInBackground'
-    category 'test'
-}
-
-task failureStatusInBackground << {
+task('spec: it should throw exception if the command returned error also on background') << {
     try {
         ssh.run {
             session(remotes.localhost) {
@@ -164,13 +117,7 @@ task failureStatusInBackground << {
     }
 }
 
-
-feature('write output of the command to a file') {
-    task 'writeCommandOutput'
-    category 'test'
-}
-
-task writeCommandOutput << {
+task('feature: write output of the command to a file') << {
     def x = randomInt()
     def y = randomInt()
     def tempFile = file(localTempPath())
@@ -184,13 +131,7 @@ task writeCommandOutput << {
     assert tempFile.text as int == (x + y)
 }
 
-
-feature('write output of the command to stdout') {
-    task 'writeCommandOutputToStdout'
-    category 'test'
-}
-
-task writeCommandOutputToStdout << {
+task('feature: write output of the command to standard output') << {
     def x = randomInt()
     def y = randomInt()
     ssh.run {
@@ -200,13 +141,7 @@ task writeCommandOutputToStdout << {
     }
 }
 
-
-feature('write error of the command to a file') {
-    task 'writeCommandError'
-    category 'test'
-}
-
-task writeCommandError << {
+task('feature: write error of the command to a file') << {
     def tempFile = file(localTempPath())
     tempFile.withOutputStream { stream ->
         ssh.run {

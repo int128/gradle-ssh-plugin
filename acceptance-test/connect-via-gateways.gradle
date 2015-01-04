@@ -21,12 +21,8 @@ remotes {
     }
 }
 
-feature('connect via a gateway host') {
-    task 'connectViaGateway'
-    category 'test'
-}
 
-task connectViaGateway << {
+task('feature: connect via a gateway host') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {

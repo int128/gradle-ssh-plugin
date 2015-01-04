@@ -14,12 +14,7 @@ remotes {
 }
 
 
-feature('using remote specific identity') {
-    task 'useRemoteSpecificIdentity'
-    category 'aggressiveTest'
-}
-
-task useRemoteSpecificIdentity {
+task('feature: authenticate with remote specific identity', dependsOn: sideEffect) {
     dependsOn   'createUserWithAuthorizedKey'
     finalizedBy 'deleteUserWithAuthorizedKey'
     doLast {
@@ -54,13 +49,7 @@ task deleteUserWithAuthorizedKey << {
     }
 }
 
-
-feature('authenticate with the ssh agent') {
-    task 'authenticateWithSshAgent'
-    category 'testWithAgent'
-}
-
-task authenticateWithSshAgent << {
+task('feature: authenticate with the ssh agent', dependsOn: sshAgent) << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
@@ -70,4 +59,3 @@ task authenticateWithSshAgent << {
     }
     assert a as int == (x + y)
 }
-

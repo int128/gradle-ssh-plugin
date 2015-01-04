@@ -27,10 +27,10 @@ ssh -o StrictHostKeyChecking=no \
 ssh-keygen -H -F localhost
 
 # run tests
-"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" test aggressiveTest
+"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" test testWithSideEffect
 
 # run tests with ssh-agent
 eval $(ssh-agent)
 ssh-add $HOME/.ssh/id_rsa
-"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" testWithAgent
+"$gradle" -i -s -Pversion="${version:-SNAPSHOT}" testWithSshAgent
 ssh-agent -k

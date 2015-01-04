@@ -8,12 +8,7 @@ remotes {
 }
 
 
-feature('execute on multiple remotes by list with braces') {
-    task 'executeOnRemotesBraces'
-    category 'test'
-}
-
-task executeOnRemotesBraces << {
+task('feature: execute on multiple remotes by list with braces') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
@@ -24,13 +19,7 @@ task executeOnRemotesBraces << {
     assert a as int == (x + y)
 }
 
-
-feature('execute on multiple remotes by list without braces') {
-    task 'executeOnRemotes'
-    category 'test'
-}
-
-task executeOnRemotes << {
+task('feature: execute on multiple remotes by list without braces') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
@@ -41,13 +30,7 @@ task executeOnRemotes << {
     assert a as int == (x + y)
 }
 
-
-feature('filter hosts by role') {
-    task 'executeCommandByRole'
-    category 'test'
-}
-
-task executeCommandByRole << {
+task('feature: filter hosts by role') << {
     def x = randomInt()
     def y = randomInt()
     def a = ssh.run {
