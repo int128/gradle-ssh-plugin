@@ -11,32 +11,29 @@ remotes {
 task('feature: execute on multiple remotes by list with braces') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session([remotes.localhost, remotes.yetAnotherLocalhost]) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }
 
 task('feature: execute on multiple remotes by list without braces') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.localhost, remotes.yetAnotherLocalhost) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }
 
 task('feature: filter hosts by role') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.role('testServers')) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }

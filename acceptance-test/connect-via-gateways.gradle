@@ -25,10 +25,9 @@ remotes {
 task('feature: connect via a gateway host') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.viaGateway) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }

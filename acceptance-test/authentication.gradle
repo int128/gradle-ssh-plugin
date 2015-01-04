@@ -48,14 +48,12 @@ task deleteUserWithAuthorizedKey << {
         }
     }
 }
-
 task('feature: authenticate with the ssh agent', dependsOn: sshAgent) << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.usingAgent) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }

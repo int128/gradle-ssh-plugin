@@ -2,23 +2,21 @@
 task('feature: execute a command') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.localhost) {
             execute "expr $x + $y"
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }
 
 task('feature: execute a command with console logging to stdout') << {
     def x = randomInt()
     def y = randomInt()
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.localhost) {
             execute "expr $x + $y", logging: 'stdout'
         }
-    }
-    assert a as int == (x + y)
+    } as int == (x + y)
 }
 
 task('feature: execute commands sequentially') << {
@@ -40,13 +38,12 @@ task('feature: execute commands sequentially') << {
 }
 
 task('spec: each command should have independent environment') << {
-    def a = ssh.run {
+    assert ssh.run {
         session(remotes.localhost) {
             execute "export testdata=dummy"
             execute 'echo "testdata is $testdata"'
         }
-    }
-    assert a == 'testdata is '
+    } == 'testdata is '
 }
 
 task('feature: execute a command with PTY allocation') << {
