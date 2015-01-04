@@ -7,14 +7,14 @@ class RemoteFileAssertion {
 
 task('feature: remote file assertion') << {
     def x = randomInt()
-    def pathX = remoteTempPath('X')
     ssh.run {
         settings {
             extensions.add RemoteFileAssertion
         }
         session(remotes.localhost) {
-            execute "echo 'port $x' > $pathX"
-            assertFileContains pathX, "port $x"
+            execute "mkdir -vp $remoteWorkDir"
+            execute "echo 'port $x' > $remoteWorkDir/config"
+            assertFileContains "$remoteWorkDir/config", "port $x"
         }
     }
 }

@@ -1,5 +1,3 @@
-description 'Automated acceptance test with SSH server'
-
 buildscript {
     repositories {
         mavenLocal()
@@ -22,44 +20,11 @@ remotes {
 }
 
 
-/*
- * Test helper tasks and methods.
- */
-
-ext {
-    randomInt = { int max = 10000 -> (Math.random() * max) as int }
-
-    remoteTempPrefix = "/tmp/remote-fixture-${randomInt()}"
-    remoteTempPath = { String name = randomInt().toString() -> "$remoteTempPrefix-$name" }
-
-    localTempPrefix = "$buildDir/local-fixture-${randomInt()}"
-    localTempPath = { String name = randomInt().toString() -> "$localTempPrefix-$name" }
-}
-
-task setupBuildDir(type: Delete) {
-    delete buildDir
-    doLast {
-        buildDir.mkdir()
-    }
-}
-
-task cleanLocalTemp << {
-    delete buildDir
-    buildDir.mkdir()
-}
-
-task cleanRemoteTemp << {
-    assert remoteTempPrefix
-    ssh.run {
-        session(remotes.localhost) {
-            execute("rm -vr ${remoteTempPrefix}*")
-        }
-    }
-}
-
+// apply scripts in this directory
 task sideEffect { description = '(internal task)' }
 task sshAgent   { description = '(internal task)' }
 
+project.ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
 
 fileTree(projectDir) {
     include '*.gradle'
@@ -69,6 +34,36 @@ fileTree(projectDir) {
 }
 
 
+// add tasks to manage the working directory
+task setupLocalWorkDir << {
+    delete buildDir
+    buildDir.mkdirs()
+}
+
+task cleanupLocalWorkDir << {
+    delete buildDir
+}
+
+final remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
+
+task setupRemoteWorkDir << {
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -v $remoteWorkDirBase"
+        }
+    }
+}
+
+task cleanupRemoteWorkDir << {
+    ssh.run {
+        session(remotes.localhost) {
+            execute "rm -vfr $remoteWorkDirBase"
+        }
+    }
+}
+
+
+// categorize features
 task test               { description = 'run tests' }
 task testWithSideEffect { description = 'run tests which cause side effect' }
 task testWithSshAgent   { description = 'run tests which require SSH agent' }
@@ -81,4 +76,11 @@ afterEvaluate {
     tasks.testWithSideEffect.dependsOn(featuresWithSideEffect)
     tasks.testWithSshAgent.dependsOn(featuresWithSshAgent)
     tasks.test.dependsOn(features - featuresWithSideEffect - featuresWithSshAgent)
+
+    features*.dependsOn(tasks.setupLocalWorkDir, tasks.setupRemoteWorkDir)
+    features*.finalizedBy(tasks.cleanupLocalWorkDir, tasks.cleanupRemoteWorkDir)
+    features.each {
+        it.ext.localWorkDir  = file("$buildDir/${it.hashCode()}")
+        it.ext.remoteWorkDir = "${remoteWorkDirBase}/${it.hashCode()}"
+    }
 }

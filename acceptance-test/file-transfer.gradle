@@ -1,147 +1,104 @@
 
-task('feature: put, compute and get files') {
-    dependsOn 'setupBuildDir'
-    finalizedBy 'cleanRemoteTemp'
+task('feature: put, compute and get files') << {
+    def x = randomInt()
+    def y = randomInt()
 
-    doLast {
-        def x = randomInt()
-        def y = randomInt()
+    localWorkDir.mkdir()
+    file("$localWorkDir/LX") << x
+    file("$localWorkDir/LY") << y
 
-        def localX = file(localTempPath()) << x
-        def localY = file(localTempPath()) << y
-        def localA = file(localTempPath())
-        def localB = file(localTempPath())
-
-        def remoteX = remoteTempPath()
-        def remoteY = remoteTempPath()
-        def remoteA = remoteTempPath()
-        def remoteB = remoteTempPath()
-
-        // should put and get files exactly
-        ssh.run {
-            session(remotes.localhost) {
-                put localX, remoteX
-                put localY, remoteY
-                execute("expr `cat $remoteX` + `cat $remoteY` > $remoteA")
-                execute("expr `cat $remoteX` - `cat $remoteY` > $remoteB")
-                get remoteA, localA
-                get remoteB, localB
-            }
+    // should put and get files exactly
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir"
+            put "$localWorkDir/LX", "$remoteWorkDir/RX"
+            put "$localWorkDir/LY", "$remoteWorkDir/RY"
+            execute("expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA")
+            execute("expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB")
+            get "$remoteWorkDir/RA", "$localWorkDir/LA"
+            get "$remoteWorkDir/RB", "$localWorkDir/LB"
         }
-
-        assert localA.text as int == (x + y)
-        assert localB.text as int == (x - y)
-
-        // should overwrite local files
-        ssh.run {
-            session(remotes.localhost) {
-                get remoteX, localA
-                get remoteY, localB
-            }
-        }
-
-        assert localA.text as int == x
-        assert localB.text as int == y
     }
+
+    assert file("$localWorkDir/LA").text as int == (x + y)
+    assert file("$localWorkDir/LB").text as int == (x - y)
 }
 
-task('feature: put a directory recursively') {
-    dependsOn 'setupBuildDir'
-    finalizedBy 'cleanRemoteTemp'
+task('feature: put a directory recursively') << {
+    def x = randomInt()
+    def y = randomInt()
+    def z = randomInt()
 
-    doLast {
-        def x = randomInt()
-        def y = randomInt()
-        def z = randomInt()
+    file("$localWorkDir/Y/Z").mkdirs()
+    file("$localWorkDir/xfile") << x
+    file("$localWorkDir/Y/yfile") << y
+    file("$localWorkDir/Y/Z/zfile") << z
 
-        def localBase = file(localTempPath())
-        file("$localBase/Y/Z").mkdirs()
-        file("$localBase/xfile") << x
-        file("$localBase/Y/yfile") << y
-        file("$localBase/Y/Z/zfile") << z
-
-        def remoteBase = remoteTempPath()
-
-        // should merge and overwrite a directory
-        ssh.run {
-            session(remotes.localhost) {
-                execute "mkdir -vp $remoteBase/${localBase.name}/Y"
-                execute "echo dummy1 > $remoteBase/${localBase.name}/Y/yfile"
-                execute "echo dummy2 > $remoteBase/${localBase.name}/Y/yfile2"
-                assert execute("cat $remoteBase/${localBase.name}/Y/yfile") == 'dummy1'
-                assert execute("cat $remoteBase/${localBase.name}/Y/yfile2") == 'dummy2'
-            }
-            session(remotes.localhost) {
-                put localBase, remoteBase
-            }
-            session(remotes.localhost) {
-                assert execute("cat $remoteBase/${localBase.name}/xfile") as int == x
-                assert execute("cat $remoteBase/${localBase.name}/Y/yfile") as int == y
-                assert execute("cat $remoteBase/${localBase.name}/Y/yfile2") == 'dummy2'
-                assert execute("cat $remoteBase/${localBase.name}/Y/Z/zfile") as int == z
-            }
+    // should merge and overwrite a directory
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir/${localWorkDir.name}/Y"
+            execute "echo dummy1 > $remoteWorkDir/${localWorkDir.name}/Y/yfile"
+            execute "echo dummy2 > $remoteWorkDir/${localWorkDir.name}/Y/yfile2"
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile") == 'dummy1'
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
+        }
+        session(remotes.localhost) {
+            put localWorkDir, remoteWorkDir
+        }
+        session(remotes.localhost) {
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/xfile") as int == x
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile") as int == y
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
+            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/Z/zfile") as int == z
         }
     }
 }
 
-task('feature: get a directory recursively') {
-    dependsOn 'setupBuildDir'
-    finalizedBy 'cleanRemoteTemp'
+task('feature: get a directory recursively') << {
+    def x = randomInt()
+    def y = randomInt()
+    def z = randomInt()
 
-    doLast {
-        def x = randomInt()
-        def y = randomInt()
-        def z = randomInt()
+    file("$localWorkDir/${file(remoteWorkDir).name}/X/Y").mkdirs()
+    file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/yfile") << 'dummy1'
+    file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/yfile2") << 'dummy2'
 
-        def remoteBase = remoteTempPath()
-        def remoteBaseName = file(remoteBase).name
-
-        def localBase = file(localTempPath())
-        file("$localBase/$remoteBaseName/X/Y").mkdirs()
-        file("$localBase/$remoteBaseName/X/Y/yfile") << 'dummy1'
-        file("$localBase/$remoteBaseName/X/Y/yfile2") << 'dummy2'
-
-        ssh.run {
-            session(remotes.localhost) {
-                execute "mkdir -vp $remoteBase/X/Y/Z"
-                execute "echo $x > $remoteBase/X/xfile"
-                execute "echo $y > $remoteBase/X/Y/yfile"
-                execute "echo $z > $remoteBase/X/Y/Z/zfile"
-            }
-            session(remotes.localhost) {
-                get remoteBase, localBase
-            }
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir/X/Y/Z"
+            execute "echo $x > $remoteWorkDir/X/xfile"
+            execute "echo $y > $remoteWorkDir/X/Y/yfile"
+            execute "echo $z > $remoteWorkDir/X/Y/Z/zfile"
         }
-
-        assert file("$localBase/$remoteBaseName/X/xfile").text as int == x
-        assert file("$localBase/$remoteBaseName/X/Y/yfile").text as int == y
-        assert file("$localBase/$remoteBaseName/X/Y/yfile2").text == 'dummy2'
-        assert file("$localBase/$remoteBaseName/X/Y/Z/zfile").text as int == z
+        session(remotes.localhost) {
+            get remoteWorkDir, localWorkDir
+        }
     }
+
+    assert file("$localWorkDir/${file(remoteWorkDir).name}/X/xfile").text as int == x
+    assert file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/yfile").text as int == y
+    assert file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/yfile2").text == 'dummy2'
+    assert file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/Z/zfile").text as int == z
 }
 
-task('feature: get a large file and put it back', dependsOn: sideEffect) {
-    dependsOn 'setupBuildDir'
-    finalizedBy 'cleanLocalTemp'
-    finalizedBy 'cleanRemoteTemp'
+task('feature: get a large file and put it back', dependsOn: sideEffect) << {
+    def fileSize = 1024 * 256
+    localWorkDir.mkdir()
 
-    doLast {
-        def sizeX = 1024 * 256
-        def localX = file("$buildDir/local-${randomInt()}")
-        def pathX = remoteTempPath('X')
-        def pathY = remoteTempPath('Y')
-
-        def sizeY = ssh.run {
-            session(remotes.localhost) {
-                execute("dd if=/dev/zero of=$pathX bs=1024 count=$sizeX")
-                get pathX, localX
-
-                put localX, pathY
-                execute("wc -c < $pathY") as int
-            }
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir"
+            execute("dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize")
+            get "$remoteWorkDir/result", localWorkDir
         }
+    }
+    assert file("$localWorkDir/result").size() == 1024 * fileSize
 
-        assert localX.size() == 1024 * sizeX
-        assert sizeY == 1024 * sizeX
+    ssh.run {
+        session(remotes.localhost) {
+            put "$localWorkDir/result", "$remoteWorkDir/back"
+            assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+        }
     }
 }

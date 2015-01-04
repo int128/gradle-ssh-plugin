@@ -11,21 +11,19 @@ task('feature: execute a shell') << {
     }
 }
 
-task('feature: write output of the shell to a file') {
-    dependsOn 'setupBuildDir'
-    doLast {
-        def x = randomInt()
-        def y = randomInt()
-        def tempFile = file("$buildDir/local-${randomInt()}")
-        tempFile.withOutputStream { stream ->
-            ssh.run {
-                session(remotes.localhost) {
-                    execute "expr $x + $y", outputStream: stream
-                }
+task('feature: write output of the shell to a file') << {
+    def x = randomInt()
+    def y = randomInt()
+    localWorkDir.mkdir()
+    def resultFile = file("$localWorkDir/result")
+    resultFile.withOutputStream { stream ->
+        ssh.run {
+            session(remotes.localhost) {
+                execute "expr $x + $y", outputStream: stream
             }
         }
-        assert tempFile.text as int == (x + y)
     }
+    assert resultFile.text as int == (x + y)
 }
 
 task('feature: write output of the shell to stdout') << {

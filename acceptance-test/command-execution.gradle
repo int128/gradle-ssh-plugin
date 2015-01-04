@@ -21,26 +21,22 @@ task('feature: execute a command with console logging to stdout') << {
     assert a as int == (x + y)
 }
 
-task('feature: execute commands sequentially') {
-    finalizedBy 'cleanRemoteTemp'
-    doLast {
-        def x = randomInt()
-        def y = randomInt()
-        def pathA = remoteTempPath('A')
-        def pathB = remoteTempPath('B')
-        def a
-        def b
-        ssh.run {
-            session(remotes.localhost) {
-                execute "expr $x + $y > $pathA"
-                execute "expr $x + `cat $pathA` > $pathB"
-                a = execute "cat $pathA"
-                b = execute "cat $pathB"
-            }
+task('feature: execute commands sequentially') << {
+    def x = randomInt()
+    def y = randomInt()
+    def a
+    def b
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir"
+            execute "expr $x + $y > $remoteWorkDir/A"
+            execute "expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B"
+            a = execute "cat $remoteWorkDir/A"
+            b = execute "cat $remoteWorkDir/B"
         }
-        assert a as int == (x + y)
-        assert b as int == (x + x + y)
     }
+    assert a as int == (x + y)
+    assert b as int == (x + x + y)
 }
 
 task('spec: each command should have independent environment') << {
@@ -66,29 +62,30 @@ task('feature: execute a command with PTY allocation') << {
     }
 }
 
-task('feature: execute commands concurrently') {
-    finalizedBy 'cleanRemoteTemp'
-    doLast {
-        def tempPath = remoteTempPath()
-        ssh.run {
-            // task should start sessions concurrently
-            session(remotes.localhost) {
-                executeBackground "sleep 2 && echo 2 >> $tempPath"
-            }
-            session(remotes.localhost) {
-                executeBackground "sleep 3 && echo 3 >> $tempPath"
-                executeBackground "sleep 1 && echo 1 >> $tempPath"
-                executeBackground "echo 0 >> $tempPath"
-            }
+task('feature: execute commands concurrently') << {
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir"
         }
-        // all commands should be completed at this point
-        def result = ssh.run {
-            session(remotes.localhost) {
-                execute("cat $tempPath")
-            }
-        }
-        assert result.readLines() == ['0', '1', '2', '3']
     }
+    ssh.run {
+        // task should start sessions concurrently
+        session(remotes.localhost) {
+            executeBackground "sleep 2 && echo 2 >> $remoteWorkDir/result"
+        }
+        session(remotes.localhost) {
+            executeBackground "sleep 3 && echo 3 >> $remoteWorkDir/result"
+            executeBackground "sleep 1 && echo 1 >> $remoteWorkDir/result"
+            executeBackground "echo 0 >> $remoteWorkDir/result"
+        }
+    }
+    // all commands should be completed at this point
+    def result = ssh.run {
+        session(remotes.localhost) {
+            execute("cat $remoteWorkDir/result")
+        }
+    }
+    assert result.readLines() == ['0', '1', '2', '3']
 }
 
 task('spec: it should throw exception if the command returned error') << {
@@ -120,15 +117,16 @@ task('spec: it should throw exception if the command returned error also on back
 task('feature: write output of the command to a file') << {
     def x = randomInt()
     def y = randomInt()
-    def tempFile = file(localTempPath())
-    tempFile.withOutputStream { stream ->
+    localWorkDir.mkdir()
+    def resultFile = file("$localWorkDir/result")
+    resultFile.withOutputStream { stream ->
         ssh.run {
             session(remotes.localhost) {
                 execute "expr $x + $y", outputStream: stream
             }
         }
     }
-    assert tempFile.text as int == (x + y)
+    assert resultFile.text as int == (x + y)
 }
 
 task('feature: write output of the command to standard output') << {
@@ -142,13 +140,14 @@ task('feature: write output of the command to standard output') << {
 }
 
 task('feature: write error of the command to a file') << {
-    def tempFile = file(localTempPath())
-    tempFile.withOutputStream { stream ->
+    localWorkDir.mkdir()
+    def resultFile = file("$localWorkDir/result")
+    resultFile.withOutputStream { stream ->
         ssh.run {
             session(remotes.localhost) {
                 execute "cat hoge || true", errorStream: stream
             }
         }
     }
-    assert tempFile.text.contains('hoge')
+    assert resultFile.text.contains('hoge')
 }
