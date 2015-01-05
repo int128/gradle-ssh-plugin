@@ -7,6 +7,7 @@ import org.gradle.api.Project
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
 
 /**
  * Main class of Gradle SSH plugin.
@@ -20,6 +21,8 @@ class SshPlugin implements Plugin<Project> {
         project.extensions.ssh = Ssh.newService()
         project.extensions.remotes = createRemoteContainer(project)
         project.extensions.proxies = createProxyContainer(project)
+
+        project.ssh.settings.logging = OperationSettings.Logging.stdout
 
         // TODO: remove in future release
         project.ext.SshTask = SshTask

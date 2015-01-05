@@ -9,12 +9,12 @@ task('feature: execute a command') << {
     } as int == (x + y)
 }
 
-task('feature: execute a command with console logging to stdout') << {
+task('feature: execute a command with console logging to slf4j') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {
         session(remotes.localhost) {
-            execute "expr $x + $y", logging: 'stdout'
+            execute "expr $x + $y", logging: 'slf4j'
         }
     } as int == (x + y)
 }
