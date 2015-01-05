@@ -5,6 +5,7 @@ import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -19,6 +20,7 @@ class SshPluginSpec extends Specification {
 
         then:
         project.ssh.settings instanceof CompositeSettings
+        project.ssh.settings.logging == OperationSettings.Logging.stdout
         project.remotes.size() == 0
         project.proxies.size() == 0
         project.SshTask == SshTask
@@ -37,6 +39,7 @@ class SshPluginSpec extends Specification {
                 dryRun = true
                 retryCount = 1
                 retryWaitSec = 1
+                logging = 'slf4j'
                 proxy = globalProxy
             }
         }
@@ -45,6 +48,7 @@ class SshPluginSpec extends Specification {
         project.ssh.settings.dryRun
         project.ssh.settings.retryCount == 1
         project.ssh.settings.retryWaitSec == 1
+        project.ssh.settings.logging == OperationSettings.Logging.slf4j
         project.ssh.settings.proxy == globalProxy
     }
 
