@@ -8,7 +8,7 @@ import spock.util.mop.Use
 @Use(RemoteContainerExtension)
 class RemoteContainerExtensionSpec extends Specification {
 
-    def "filter empty remotes"() {
+    def "role() should return empty collection if empty one is given"() {
         given:
         def remotes = []
 
@@ -20,7 +20,7 @@ class RemoteContainerExtensionSpec extends Specification {
     }
 
     @Unroll
-    def "filter remotes by #roles"() {
+    def "role() should filter remotes by #roles"() {
         given:
         def remotes = [
                 createRemote('remote1', 'roleA'),
@@ -51,7 +51,7 @@ class RemoteContainerExtensionSpec extends Specification {
         ['roleA', 'roleB', 'roleC', 'roleD'] | ['remote1', 'remote2', 'remote3', 'remote4']
     }
 
-    def "filter remotes by null role throws assertion error"() {
+    def "role() should throw error if null is given"() {
         given:
         def remotes = []
 
@@ -63,7 +63,7 @@ class RemoteContainerExtensionSpec extends Specification {
         e.message.contains('role')
     }
 
-    def "filter remotes by empty role throws assertion error"() {
+    def "role() should throw error if no argument is given"() {
         given:
         def remotes = []
 
@@ -75,7 +75,7 @@ class RemoteContainerExtensionSpec extends Specification {
         e.message.contains('role')
     }
 
-    def "validation of category argument"() {
+    def "adding extension to null object should cause error"() {
         when:
         RemoteContainerExtension.role(null, 'role1')
 

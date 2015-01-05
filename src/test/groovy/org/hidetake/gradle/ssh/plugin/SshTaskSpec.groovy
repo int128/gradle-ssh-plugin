@@ -45,8 +45,7 @@ class SshTaskSpec extends Specification {
         }
     }
 
-
-    def "task action delegates to executor"() {
+    def "SshTask should work like ssh.run"() {
         given:
         def project = project()
 

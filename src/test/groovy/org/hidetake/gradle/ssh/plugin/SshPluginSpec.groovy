@@ -10,7 +10,7 @@ import spock.lang.Unroll
 
 class SshPluginSpec extends Specification {
 
-    def "apply the plugin"() {
+    def "default settings should be set"() {
         given:
         def project = ProjectBuilder.builder().build()
 
@@ -24,8 +24,7 @@ class SshPluginSpec extends Specification {
         project.SshTask == SshTask
     }
 
-
-    def "apply global settings"() {
+    def "global settings should overwrite default settings"() {
         given:
         def project = ProjectBuilder.builder().build()
         def globalProxy = new Proxy('globalProxy')
@@ -49,7 +48,7 @@ class SshPluginSpec extends Specification {
         project.ssh.settings.proxy == globalProxy
     }
 
-    def "apply the full monty"() {
+    def "settings, remotes and proxies can be set by configuration closure"() {
         when:
         def project = createProject()
 
@@ -60,7 +59,7 @@ class SshPluginSpec extends Specification {
     }
 
     @Unroll
-    def "filter remotes by role: #roles"() {
+    def "remotes.role() should filter remotes by #roles"() {
         given:
         def project = createProject()
 
@@ -79,7 +78,7 @@ class SshPluginSpec extends Specification {
     }
 
     @Unroll
-    def "remote #remoteName is configured with expected proxy"() {
+    def "remote #remoteName should be configured with proxy #expectedProxyName"() {
         given:
         def project = createProject()
 
