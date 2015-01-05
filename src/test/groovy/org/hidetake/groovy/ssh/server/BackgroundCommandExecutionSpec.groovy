@@ -265,8 +265,8 @@ class BackgroundCommandExecutionSpec extends Specification {
         }
 
         then:
-        stdout * System.out.println('some message')
-        stdout * System.err.println('error')
+        stdout * System.out.println('testServer|some message')
+        stdout * System.err.println('testServer|error')
 
         slf4j * logger.info ('testServer|some message')
         slf4j * logger.error('testServer|error')

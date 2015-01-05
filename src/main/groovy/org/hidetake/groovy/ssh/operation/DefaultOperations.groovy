@@ -45,7 +45,7 @@ class DefaultOperations implements Operations {
                 standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
-                standardOutput.listenLogging { String m -> System.out.println(m) }
+                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
                 break
         }
 
@@ -95,8 +95,8 @@ class DefaultOperations implements Operations {
                 standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
-                standardOutput.listenLogging { String m -> System.out.println(m) }
-                standardError.listenLogging  { String m -> System.err.println(m) }
+                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
+                standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
                 break
         }
 
@@ -157,8 +157,8 @@ class DefaultOperations implements Operations {
                 standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
             case OperationSettings.Logging.stdout:
-                standardOutput.listenLogging { String m -> System.out.println(m) }
-                standardError.listenLogging  { String m -> System.err.println(m) }
+                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
+                standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
                 break
         }
 
