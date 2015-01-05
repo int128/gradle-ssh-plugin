@@ -154,7 +154,7 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        stdout * System.out.println('some message')
+        stdout * System.out.println('testServer|some message')
         slf4j * logger.info('testServer|some message')
 
         cleanup:
