@@ -29,7 +29,7 @@ class ShellExecutionSpec extends Specification {
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
 
         ssh = Ssh.newService()
@@ -51,10 +51,19 @@ class ShellExecutionSpec extends Specification {
     }
 
 
-    def "exit 0"() {
+    def successShellMock(String output) {
+        Mock(Factory) {
+            1 * create() >> SshServerMock.command { CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << output }
+                c.exitCallback.onExit(0)
+            }
+        }
+    }
+
+
+    def "it should success if the shell exits with zero status"() {
         given:
-        def factoryMock = Mock(Factory)
-        server.shellFactory = factoryMock
+        server.shellFactory = Mock(Factory)
         server.start()
 
         when:
@@ -65,15 +74,14 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        1 * factoryMock.create() >> SshServerMock.command { CommandContext c ->
+        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
             c.exitCallback.onExit(0)
         }
     }
 
-    def "exit 1"() {
+    def "it should throw an exception if the shell exits with non zero status"() {
         given:
-        def factoryMock = Mock(Factory)
-        server.shellFactory = factoryMock
+        server.shellFactory = Mock(Factory)
         server.start()
 
         when:
@@ -84,7 +92,7 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        1 * factoryMock.create() >> SshServerMock.command { CommandContext c ->
+        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
             c.exitCallback.onExit(1)
         }
 
@@ -95,19 +103,13 @@ class ShellExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "logging, #description"() {
+    def "shell should write output to logger: #description"() {
         given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        server.shellFactory = Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << outputValue }
-                c.exitCallback.onExit(0)
-            }
-        }
+        server.shellFactory = successShellMock(outputValue)
         server.start()
 
         when:
@@ -132,7 +134,7 @@ class ShellExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "shell should write stdout to #logging"() {
+    def "shell should write output to #logging"() {
         given:
         def out = System.out
         System.out = Mock(PrintStream)
@@ -141,12 +143,7 @@ class ShellExecutionSpec extends Specification {
         logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        server.shellFactory = Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.exitCallback.onExit(0)
-            }
-        }
+        server.shellFactory = successShellMock('some message')
         server.start()
 
         when:
@@ -170,15 +167,9 @@ class ShellExecutionSpec extends Specification {
         OperationSettings.Logging.none   | 0      | 0
     }
 
-    @Unroll
-    def "shell should write to file if given: stdout=#stdout"() {
+    def "shell should write output to file"() {
         given:
-        server.shellFactory = Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.exitCallback.onExit(0)
-            }
-        }
+        server.shellFactory = successShellMock('some message')
         server.start()
 
         def logFile = temporaryFolder.newFile()
@@ -187,32 +178,18 @@ class ShellExecutionSpec extends Specification {
         logFile.withOutputStream { stream ->
             ssh.run {
                 session(ssh.remotes.testServer) {
-                    if (stdout) {
-                        shell outputStream: stream
-                    } else {
-                        shell interaction: {}
-                    }
+                    shell outputStream: stream
                 }
             }
         }
 
         then:
-        logFile.text == expectedLog
-
-        where:
-        stdout | expectedLog
-        false  | ''
-        true   | 'some message'
+        logFile.text == 'some message'
     }
 
-    def "shell can write stdout/stderr to system.out"() {
+    def "shell can write output to system.out"() {
         given:
-        server.shellFactory = Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.exitCallback.onExit(0)
-            }
-        }
+        server.shellFactory = successShellMock('some message')
         server.start()
 
         when:

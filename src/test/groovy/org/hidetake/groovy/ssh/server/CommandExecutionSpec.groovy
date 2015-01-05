@@ -31,7 +31,7 @@ class CommandExecutionSpec extends Specification {
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
 
         ssh = Ssh.newService()
@@ -53,7 +53,7 @@ class CommandExecutionSpec extends Specification {
     }
 
 
-    def "execute commands sequentially"() {
+    def "commands should be executed sequentially in ssh.run"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -80,7 +80,7 @@ class CommandExecutionSpec extends Specification {
         then: 1 * recorder.call('somecommand3')
     }
 
-    def "handling command failure"() {
+    def "it should throw an exception if the command exits with non zero status"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -102,7 +102,7 @@ class CommandExecutionSpec extends Specification {
     }
 
     @Unroll
-    def "obtain a command result, #description"() {
+    def "execute should return output of the command: #description"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -132,7 +132,7 @@ class CommandExecutionSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
     }
 
-    def "obtain a command result via callback"() {
+    def "execute can return value via callback closure"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -156,7 +156,7 @@ class CommandExecutionSpec extends Specification {
         resultActual == 'something output'
     }
 
-    def "obtain a command result via callback with settings"() {
+    def "execute can return value via callback setting"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -182,7 +182,7 @@ class CommandExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "logging, #description"() {
+    def "execute should write output to logger: #description"() {
         given:
         def logger = Mock(Logger) {
             isInfoEnabled() >> true

@@ -38,11 +38,9 @@ class AuthenticationSpec extends Specification {
         }
     }
 
-    def "password authentication"() {
+    def "password authentication should pass if exact one is given"() {
         given:
-        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
-        }
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.commandFactory = successCommandFactory()
         server.start()
 
@@ -63,17 +61,13 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
     }
 
-    def "password authentication with wrong password"() {
+    def "password authentication should fail if wrong one is given"() {
         given:
-        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'wrongpassword', _) >> false
-        }
-        server.commandFactory = Mock(CommandFactory) {
-            0 * createCommand(_)
-        }
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
+        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -93,15 +87,19 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
+        (1.._) * server.passwordAuthenticator.authenticate('someuser', 'wrongpassword', _) >> false
+
+        then:
+        0 * server.commandFactory.createCommand(_)
+
+        and:
         JSchException e = thrown()
         e.message == 'Auth fail'
     }
 
-    def "public key authentication"() {
+    def "public key authentication should pass if valid one is given"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.commandFactory = successCommandFactory()
         server.start()
 
@@ -122,14 +120,12 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
     }
 
-    def "public key authentication with global identity"() {
+    def "identity of public key authentication can be set by global settings"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.commandFactory = successCommandFactory()
         server.start()
 
@@ -153,17 +149,13 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
     }
 
-    def "public key authentication but denied"() {
+    def "public key authentication should fail if wrong one is given"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', _ as PublicKey, _) >> false
-        }
-        server.commandFactory = Mock(CommandFactory) {
-            0 * createCommand(_)
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
+        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -183,15 +175,19 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', _ as PublicKey, _) >> false
+
+        then:
+        0 * server.commandFactory.createCommand(_)
+
+        and:
         JSchException e = thrown()
         e.message == 'Auth fail'
     }
 
-    def "public key authentication with passphrase"() {
+    def "public key authentication should accept the passphrase of identity"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.commandFactory = successCommandFactory()
         server.start()
 
@@ -213,14 +209,12 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
     }
 
-    def "public key authentication with global identity and passphrase"() {
+    def "identity and passphrase can be set by global settings"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.commandFactory = successCommandFactory()
         server.start()
 
@@ -245,17 +239,13 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
     }
 
-    def "public key authentication with wrong passphrase"() {
+    def "public key authentication should fail if wrong passphrase is given"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
-        server.commandFactory = Mock(CommandFactory) {
-            0 * createCommand(_)
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
+        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -276,15 +266,19 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        0 * server.commandFactory.createCommand(_)
+
+        and:
         JSchException e = thrown()
         e.message == 'USERAUTH fail'
     }
 
-    def "remote specific identity overrides global one"() {
+    def "remote specific identity should precede one in global settings"() {
         given:
-        server.publickeyAuthenticator = Mock(PublickeyAuthenticator) {
-            _ * authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-        }
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.commandFactory = Mock(CommandFactory)
         server.start()
 
@@ -307,6 +301,9 @@ class AuthenticationSpec extends Specification {
                 execute 'ls'
             }
         }
+
+        then:
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
 
         then:
         JSchException e = thrown()

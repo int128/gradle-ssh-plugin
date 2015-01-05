@@ -23,7 +23,7 @@ class DryRunSpec extends Specification {
     }
 
 
-    def "invoke a shell"() {
+    def "dry-run shell should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -35,7 +35,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "invoke a shell with options"() {
+    def "dry-run shell with options should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -47,7 +47,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute a command"() {
+    def "dry-run command should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -59,7 +59,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute a command with callback"() {
+    def "dry-run command with callback should work without server"() {
         given:
         def callbackExecuted = false
 
@@ -76,7 +76,7 @@ class DryRunSpec extends Specification {
         callbackExecuted
     }
 
-    def "execute a command with options"() {
+    def "dry-run command with options should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -88,7 +88,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute a command with options and callback"() {
+    def "dry-run command with options and callback should work without server"() {
         given:
         def callbackExecuted = false
 
@@ -105,7 +105,7 @@ class DryRunSpec extends Specification {
         callbackExecuted
     }
 
-    def "execute a command in background"() {
+    def "dry-run command in background should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -117,7 +117,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute a command in background with callback"() {
+    def "dry-run command in background with callback should work without server"() {
         given:
         def callbackExecuted = false
 
@@ -134,7 +134,7 @@ class DryRunSpec extends Specification {
         callbackExecuted
     }
 
-    def "execute a command with options in background"() {
+    def "dry-run command with options in background should work without server"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -146,7 +146,7 @@ class DryRunSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "execute a command with options and callback in background"() {
+    def "dry-run command with options and callback in background should work without server"() {
         given:
         def callbackExecuted = false
 

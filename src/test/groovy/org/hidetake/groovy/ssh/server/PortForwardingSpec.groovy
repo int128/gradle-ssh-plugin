@@ -32,9 +32,7 @@ class PortForwardingSpec extends Specification {
 
     def setupServer(String name) {
         def server = SshServerMock.setUpLocalhostServer()
-        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate("${name}User", "${name}Password", _) >> true
-        }
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.shellFactory = Mock(Factory)
         server.tcpipForwardingFilter = Mock(ForwardingFilter)
         server
@@ -47,7 +45,7 @@ class PortForwardingSpec extends Specification {
     }
 
 
-    def "connect via the gateway server"() {
+    def "it can connect to the target server via the gateway server"() {
         given:
         gateway1Server.start()
         targetServer.start()
@@ -75,8 +73,9 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then:
-        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
+        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
@@ -84,7 +83,7 @@ class PortForwardingSpec extends Specification {
         }
     }
 
-    def "connect via 2 gateway servers"() {
+    def "it can connect to the target server via more gateway servers"() {
         given:
         gateway1Server.start()
         gateway2Server.start()
@@ -120,11 +119,11 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then:
-        1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
-
-        then:
-        1 * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
+        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
+        then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
+        then: 1 * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
         1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->

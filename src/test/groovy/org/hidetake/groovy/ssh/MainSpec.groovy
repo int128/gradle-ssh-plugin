@@ -28,10 +28,10 @@ class MainSpec extends Specification {
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            authenticate('someuser', 'somepassword', _) >> true
         }
         server.commandFactory = Mock(CommandFactory) {
-            _ * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+            createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
                 c.outputStream.withWriter('UTF-8') { it << 'some message' }
                 c.errorStream.withWriter('UTF-8') { it << 'error' }
                 c.exitCallback.onExit(0)

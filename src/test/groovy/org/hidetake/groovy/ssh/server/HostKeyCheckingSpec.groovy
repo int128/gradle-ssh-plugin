@@ -57,7 +57,7 @@ class HostKeyCheckingSpec extends Specification {
     }
 
 
-    def "turn off strict host key checking"() {
+    def "strict host key checking should be turned off if knownHosts is allowAnyHosts"() {
         given:
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -71,7 +71,7 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
     }
 
-    def "turn off strict host key checking by per remote settings"() {
+    def "strict host key checking should be turned off by remote specific settings"() {
         given:
         ssh.remotes {
             testServer {
@@ -91,7 +91,7 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
     }
 
-    def "strict host key checking with a valid known-hosts"() {
+    def "strict host key checking should pass with a valid known-hosts"() {
         given:
         def hostKey = HostKeyCheckingSpec.getResourceAsStream('/hostkey.pub').text
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
@@ -108,7 +108,7 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
     }
 
-    def "strict host key checking with a hashed known-hosts"() {
+    def "strict host key checking should accept a hashed known-hosts"() {
         given:
         def hostname = "[localhost]:${server.port}"
         def salt = randomBytes(20)
@@ -131,7 +131,7 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
     }
 
-    def "strict host key checking with an empty known-hosts"() {
+    def "strict host key checking should fail if an empty known-hosts is given"() {
         given:
         def knownHostsFile = temporaryFolder.newFile()
 

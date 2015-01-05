@@ -26,7 +26,7 @@ class SudoCommandExecutionSpec extends Specification {
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
 
         ssh = Ssh.newService()
@@ -55,7 +55,7 @@ class SudoCommandExecutionSpec extends Specification {
     }
 
 
-    def "execute commands sequentially"() {
+    def "commands should be executed sequentially in ssh.run"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -84,7 +84,7 @@ class SudoCommandExecutionSpec extends Specification {
         then: 1 * recorder.call('somecommand3')
     }
 
-    def "handling authentication failure"() {
+    def "it should throw an exception if sudo returns failure"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -118,7 +118,7 @@ class SudoCommandExecutionSpec extends Specification {
         e.message.contains('exit status -1')
     }
 
-    def "handling command failure"() {
+    def "it should throw an exception if the command exits with non zero status"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -149,7 +149,7 @@ class SudoCommandExecutionSpec extends Specification {
     }
 
     @Unroll
-    def "obtain a command result, #description"() {
+    def "executeSudo should return output of the command: #description"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -192,7 +192,7 @@ class SudoCommandExecutionSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
     }
 
-    def "obtain a command result via callback"() {
+    def "executeSudo can return value via callback closure"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -229,7 +229,7 @@ class SudoCommandExecutionSpec extends Specification {
         resultActual == 'something output'
     }
 
-    def "obtain a command result via callback with settings"() {
+    def "executeSudo can return value via callback setting"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -268,7 +268,7 @@ class SudoCommandExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "logging, #description"() {
+    def "executeSudo should write output to logger: #description"() {
         given:
         def logger = Mock(Logger) {
             isInfoEnabled() >> true

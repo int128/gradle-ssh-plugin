@@ -32,7 +32,7 @@ class BackgroundCommandExecutionSpec extends Specification {
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
 
         ssh = Ssh.newService()
@@ -54,7 +54,7 @@ class BackgroundCommandExecutionSpec extends Specification {
     }
 
 
-    def "execute commands sequentially"() {
+    def "commands should be executed sequentially in ssh.run"() {
         given:
         def recorder = Mock(Closure)
         server.commandFactory = Mock(CommandFactory) {
@@ -81,7 +81,7 @@ class BackgroundCommandExecutionSpec extends Specification {
         then: 1 * recorder.call('somecommand3')
     }
 
-    def "handling command failure"() {
+    def "it should throw an exception if the command exits with non zero status"() {
         given:
         server.commandFactory = Mock(CommandFactory)
         server.start()
@@ -166,7 +166,7 @@ class BackgroundCommandExecutionSpec extends Specification {
     }
 
     @Unroll
-    def "obtain a command result, #description"() {
+    def "executeBackground should return output of the command: #description"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -200,7 +200,7 @@ class BackgroundCommandExecutionSpec extends Specification {
 
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
-    def "logging, #description"() {
+    def "executeBackground should write output to logger: #description"() {
         given:
         def logger = Mock(Logger) {
             isInfoEnabled() >> true
@@ -283,7 +283,7 @@ class BackgroundCommandExecutionSpec extends Specification {
     }
 
     @Unroll
-    def "execute should write to file if given: stdout=#stdout, stderr=#stderr"() {
+    def "executeBackground should write to file if given: stdout=#stdout, stderr=#stderr"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
@@ -319,7 +319,7 @@ class BackgroundCommandExecutionSpec extends Specification {
         true   | true   | 'some messageerror'
     }
 
-    def "execute can write stdout/stderr to system.out"() {
+    def "executeBackground can write stdout/stderr to system.out"() {
         given:
         server.commandFactory = Mock(CommandFactory) {
             1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->

@@ -27,7 +27,7 @@ class FileTransferSpec extends Specification {
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            _ * authenticate('someuser', 'somepassword', _) >> true
+            (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
         server.subsystemFactories = [new SftpSubsystem.Factory()]
         server.start()
