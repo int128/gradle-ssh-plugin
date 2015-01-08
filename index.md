@@ -19,6 +19,7 @@ A Gradle plugin which provides SSH facilities for continuous delivery.
 
 </section>
 </section>
+<a class="github-button" href="https://github.com/int128/gradle-ssh-plugin" data-icon="octicon-star" data-count-href="/int128/gradle-ssh-plugin/stargazers" data-count-api="/repos/int128/gradle-ssh-plugin#stargazers_count">Star</a>
 </section>
 </section>
 <section class="container">
