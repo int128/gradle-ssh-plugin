@@ -37,6 +37,13 @@ dependencies {
     cliRuntime 'commons-cli:commons-cli:1.2'
 }
 
+processResources {
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
+}
+
+/*
+ * Tasks of unit test and server integration test
+ */
 test {
     useJUnit {
         excludeCategories 'org.hidetake.groovy.ssh.server.ServerIntegrationTest'
@@ -72,6 +79,9 @@ if (System.getProperty('os.name') == 'Linux') {
     }
 }
 
+/*
+ * Tasks for release on Bintray
+ */
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
     classifier = 'javadoc'
@@ -88,6 +98,8 @@ shadowJar {
     }
     configurations = [project.configurations.runtime, project.configurations.cliRuntime]
     mergeServiceFiles()
+    classifier = ''
+    version = ''
 }
 
 publishing {

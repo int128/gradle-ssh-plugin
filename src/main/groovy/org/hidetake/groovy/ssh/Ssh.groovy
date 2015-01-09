@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 
 /**
@@ -8,6 +9,7 @@ import org.hidetake.groovy.ssh.core.Service
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 @CompileStatic
 class Ssh {
     /**
@@ -25,4 +27,19 @@ class Ssh {
         binding.variables.ssh = newService()
         new GroovyShell(binding)
     }
+
+    /**
+     * Product version.
+     * This property should be an empty string if resource is not found.
+     */
+    @Lazy
+    static String version = {
+        try {
+            def stream = Ssh.getResourceAsStream('/version')
+            stream ? stream.text : ''
+        } catch (IOException e) {
+            log.warn('Could not get the version resource', e)
+            ''
+        }
+    }()
 }

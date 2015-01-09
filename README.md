@@ -14,8 +14,8 @@ Getting Started
 Download the release and run. It requires Java 6 or later.
 
 ```sh
-curl -L -O https://github.com/int128/groovy-ssh/releases/download/v1.0.1/groovy-ssh-1.0.1-all.jar
-java -jar groovy-ssh-1.0.1-all.jar
+curl -L -O https://github.com/int128/groovy-ssh/releases/download/latest/groovy-ssh.jar
+java -jar groovy-ssh.jar
 ```
 
 Create a following script and save as `deploy.groovy`.
@@ -40,7 +40,7 @@ ssh.run {
 Run the tool with script path.
 
 ```sh
-java -jar groovy-ssh-1.0.1-all.jar deploy.groovy
+java -jar groovy-ssh.jar deploy.groovy
 ```
 
 ### Dockerized
@@ -60,7 +60,7 @@ The library is available on [Maven Central](http://search.maven.org/#search%7Cga
 
 ```groovy
 // Gradle
-compile 'org.hidetake:groovy-ssh:1.0.1'
+compile 'org.hidetake:groovy-ssh:x.y.z'
 ```
 
 Instantiate a [Service](src/main/groovy/org/hidetake/groovy/ssh/core/Service.groovy) by [`Ssh#newService()`](src/main/groovy/org/hidetake/groovy/ssh/Ssh.groovy)
