@@ -10,7 +10,7 @@ deploy:
     secure: jlJklyZsCT+A+qZCSb89/qQ+CeeS0V9x1Gq27dvsXYBu8805st+JbSqUFZddiWe9xR7sz5mZhrNT5v4LengSbrwHz43JuSNEKzdu7F2yfGCGbWL7aKEk46deqOCzw4l9djT9ZWO/e8tw5YYzLNc1OhGtdkZq2o+HqhwL0yyoYHs=
   skip_cleanup: true
   file_glob: true
-  file: build/libs/*-all.jar
+  file: build/libs/groovy-ssh.jar
   on:
     tags: true
     all_branches: true
