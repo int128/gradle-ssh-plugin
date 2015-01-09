@@ -11,22 +11,12 @@ See also [the user guide of Gradle SSH Plugin](https://gradle-ssh-plugin.github.
 Getting Started
 ---------------
 
-### Run the tool
-
 Download the release and run. It requires Java 6 or later.
 
 ```sh
 curl -L -O https://github.com/int128/groovy-ssh/releases/download/v1.0.1/groovy-ssh-1.0.1-all.jar
 java -jar groovy-ssh-1.0.1-all.jar
 ```
-
-The tool is available on Docker Hub. Run a container as follows.
-
-```sh
-docker run --rm int128/groovy-ssh
-```
-
-### Run a script
 
 Create a following script and save as `deploy.groovy`.
 
@@ -53,10 +43,18 @@ Run the tool with script path.
 java -jar groovy-ssh-1.0.1-all.jar deploy.groovy
 ```
 
-Use the library in your App
----------------------------
+### Dockerized
 
-You can use SSH facilities in your Groovy application.
+The tool is available on Docker Hub. Run a container as follows:
+
+```sh
+docker run --rm int128/groovy-ssh
+```
+
+Embed SSH library in your App
+-----------------------------
+
+You can embed the SSH library in your Groovy application.
 
 The library is available on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22) and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
 
@@ -71,9 +69,19 @@ and run the script as follows.
 ```groovy
 import org.hidetake.groovy.ssh.Ssh
 def ssh = Ssh.newService()
+
+ssh.remotes {
+  webServer {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = new File('id_rsa')
+  }
+}
+
 ssh.run {
   session(ssh.remotes.webServer) {
-    //...
+    put 'example.war', '/webapps'
+    execute 'sudo service tomcat restart'
   }
 }
 ```
