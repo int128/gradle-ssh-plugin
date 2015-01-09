@@ -1,54 +1,85 @@
 Groovy SSH [![Build Status](https://travis-ci.org/int128/groovy-ssh.svg?branch=master)](https://travis-ci.org/int128/groovy-ssh)
 ==========
 
-Groovy SSH is a Groovy library which provides remote command execution and file transfer features.
+Groovy SSH is an automation tool based on intuitive DSL.
 
-See [groovy-ssh.github.io](https://groovy-ssh.github.io) for details.
+It provides the remote command execution and file transfer facilities.
 
+See also [the user guide of Gradle SSH Plugin](https://gradle-ssh-plugin.github.io/user-guide.html) for details of DSL syntax.
+
+
+Getting Started
+---------------
+
+### Run the tool
+
+Download the release and run. It requires Java 6 or later.
+
+```sh
+curl -L -O https://github.com/int128/groovy-ssh/releases/download/v1.0.1/groovy-ssh-1.0.1-all.jar
+java -jar groovy-ssh-1.0.1-all.jar
+```
+
+The tool is available on Docker Hub. Run a container as follows.
+
+```sh
+docker run --rm int128/groovy-ssh
+```
+
+### Run a script
+
+Create a following script and save as `deploy.groovy`.
+
+```groovy
+ssh.remotes {
+  webServer {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = new File('id_rsa')
+  }
+}
+
+ssh.run {
+  session(ssh.remotes.webServer) {
+    put 'example.war', '/webapps'
+    execute 'sudo service tomcat restart'
+  }
+}
+```
+
+Run the tool with script path.
+
+```sh
+java -jar groovy-ssh-1.0.1-all.jar deploy.groovy
+```
+
+Use the library in your App
+---------------------------
+
+You can use SSH facilities in your Groovy application.
+
+The library is available on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22) and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
+
+```groovy
+// Gradle
+compile 'org.hidetake:groovy-ssh:1.0.1'
+```
+
+Instantiate a [Service](src/main/groovy/org/hidetake/groovy/ssh/core/Service.groovy) by [`Ssh#newService()`](src/main/groovy/org/hidetake/groovy/ssh/Ssh.groovy)
+and run the script as follows.
+
+```groovy
+import org.hidetake.groovy.ssh.Ssh
+def ssh = Ssh.newService()
+ssh.run {
+  session(ssh.remotes.webServer) {
+    //...
+  }
+}
+```
 
 Contributions
 -------------
 
 This is an open source software licensed under the Apache License Version 2.0.
-Any issues or pull requests are welcome.
-
-The web site is maintained on [the repository of groovy-ssh.github.io](https://github.com/groovy-ssh/groovy-ssh.github.io).
-
-
-Development
------------
-
-JDK 7 or later is needed.
-All dependencies are downloaded by Gradle wrapper.
-
-The continuous integration is enabled on Travis CI.
-
-Artifacts are released on [Bintray](https://bintray.com/int128/maven/groovy-ssh) JCenter and [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22).
-
-
-### Build
-
-Run the build task.
-
-```sh
-./gradlew build
-```
-
-
-### Publish
-
-Build with JDK 7 for compatibility.
-Do not build with JDK 8.
-
-Push a versioned tag to GitHub and Travis CI will publish the artifact to Bintray and GitHub releases.
-
-```sh
-git tag v0.0.0
-git push origin --tags
-```
-
-Or manually invoke tasks.
-
-```
-./gradlew -Pversion=0.0.0 bintrayUpload shadowJar
-```
+Send me your issue or pull request.
