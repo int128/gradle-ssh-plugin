@@ -9,7 +9,7 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 0.4.x. See also following.
+This document is for version 1.x. See also following.
 
 * [Migration Guide (from 0.3.x to 0.4.x)](/migration.v4.html)
 * [User Guide (0.3.x)](/user-guide.v3.html)
@@ -27,12 +27,12 @@ Getting Started
 
 ### Requirement
 
-Gradle SSH Plugin 0.4.x requires following:
+Gradle SSH Plugin requires following:
 
 * Java 6 or later
 * Gradle 2.0 or later
 
-Gradle SSH Plugin 0.3.x is still available for Gradle 1.x compatible.
+Old version 0.3.x is still available for Gradle 1.x compatible.
 
 
 ### Create a script
