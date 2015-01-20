@@ -56,7 +56,7 @@ plugins {
 }
 ```
 
-Gradle 2.0 or earlier style:
+Gradle 2.0 style:
 
 ```groovy
 buildscript {
