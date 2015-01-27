@@ -34,12 +34,11 @@ class Ssh {
      */
     @Lazy
     static String version = {
-        final resourcePath = '/org.hidetake.groovy.ssh.version'
         try {
-            def stream = Ssh.getResourceAsStream(resourcePath)
+            def stream = Ssh.getResourceAsStream('version')
             stream ? stream.text : ''
         } catch (IOException e) {
-            log.warn("Could not find resource: ${resourcePath}", e)
+            log.warn("Could not find the version resource", e)
             ''
         }
     }()
