@@ -105,6 +105,28 @@ class BackgroundCommandExecutionSpec extends Specification {
         e0.exitStatus == 1
     }
 
+    def "it should ignore the exit status if ignoreError is given"() {
+        given:
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'something output' }
+                c.exitCallback.onExit(1)
+            }
+        }
+        server.start()
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeBackground('somecommand', ignoreError: true) { result -> resultActual = result }
+            }
+        }
+
+        then:
+        resultActual == 'something output'
+    }
+
     @Unroll
     def "all commands should be executed even if error, A=#exitA B=#exitB C=#exitC"() {
         given:

@@ -38,6 +38,11 @@ class OperationSettings implements Settings<OperationSettings> {
     Boolean dryRun
 
     /**
+     * Ignores the exit status of the command or shell.
+     */
+    Boolean ignoreError
+
+    /**
      * PTY allocation flag.
      * If <code>true</code>, PTY will be allocated on command execution.
      */
@@ -76,6 +81,7 @@ class OperationSettings implements Settings<OperationSettings> {
 
     static final DEFAULT = new OperationSettings(
             dryRun: false,
+            ignoreError: false,
             pty: false,
             logging: Logging.slf4j,
             encoding: 'UTF-8',
@@ -85,6 +91,7 @@ class OperationSettings implements Settings<OperationSettings> {
     OperationSettings plus(OperationSettings right) {
         new OperationSettings(
                 dryRun:         findNotNull(right.dryRun, dryRun),
+                ignoreError: findNotNull(right.ignoreError, ignoreError),
                 pty:            findNotNull(right.pty, pty),
                 logging:        findNotNull(right.logging, logging),
                 encoding:       findNotNull(right.encoding, encoding),

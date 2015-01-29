@@ -70,7 +70,8 @@ class DefaultOperations implements Operations {
 
             int exitStatus = channel.exitStatus
             log.info("Shell returned exit status $exitStatus on channel #${channel.id}")
-            if (exitStatus != 0) {
+
+            if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
             }
         } finally {
@@ -128,7 +129,8 @@ class DefaultOperations implements Operations {
 
             int exitStatus = channel.exitStatus
             log.info("Command returned exit status $exitStatus on channel #${channel.id}")
-            if (exitStatus != 0) {
+
+            if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
 
@@ -187,7 +189,8 @@ class DefaultOperations implements Operations {
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
             log.info("Command returned exit status $exitStatus on channel #${channel.id}")
-            if (exitStatus != 0) {
+
+            if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
             }
 

@@ -148,6 +148,39 @@ class SudoCommandExecutionSpec extends Specification {
         e.message.contains('exit status 1')
     }
 
+    def "it should ignore the exit status if ignoreError is given"() {
+        given:
+        def recorder = Mock(Closure)
+        server.commandFactory = Mock(CommandFactory) {
+            createCommand(_) >> { String commandline ->
+                SshServerMock.command { CommandContext c ->
+                    def sudo = parseSudoCommandLine(commandline)
+                    recorder(sudo.commandline)
+                    c.outputStream.withWriter('UTF-8') {
+                        it << sudo.prompt
+                        it.flush()
+                        it << '\n' << 'something output'
+                    }
+                    c.exitCallback.onExit(1)
+                }
+            }
+        }
+        server.start()
+
+        when:
+        def resultActual = ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand', ignoreError: true
+            }
+        }
+
+        then:
+        1 * recorder.call('somecommand')
+
+        then:
+        resultActual == 'something output'
+    }
+
     @Unroll
     def "executeSudo should return output of the command: #description"() {
         given:

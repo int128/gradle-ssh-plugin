@@ -101,6 +101,24 @@ class ShellExecutionSpec extends Specification {
         e.exitStatus == 1
     }
 
+    def "it should ignore the exit status if ignoreError is given"() {
+        given:
+        server.shellFactory = Mock(Factory)
+        server.start()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                shell interaction: {}, ignoreError: true
+            }
+        }
+
+        then:
+        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
+            c.exitCallback.onExit(1)
+        }
+    }
+
     @Unroll
     @ConfineMetaClassChanges(DefaultOperations)
     def "shell should write output to logger: #description"() {
