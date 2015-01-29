@@ -3,8 +3,10 @@ package org.hidetake.groovy.ssh.operation
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 import org.hidetake.groovy.ssh.interaction.Stream
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.connection.Connection
@@ -198,6 +200,21 @@ class DefaultOperations implements Operations {
             def result = lines.join(Utilities.eol())
             callback?.call(result)
         }
+    }
+
+    @Override
+    int forwardLocalPort(LocalPortForwardSettings settings) {
+        log.debug("Request port forwarding from local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})")
+        int port = connection.forwardLocalPort(settings)
+        log.debug("Enabled port forwarding from local (${settings.bind}:${port}) to remote (${settings.host}:${settings.hostPort})")
+        port
+    }
+
+    @Override
+    void forwardRemotePort(RemotePortForwardSettings settings) {
+        log.debug("Request port forwarding from remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+        connection.forwardRemotePort(settings)
+        log.debug("Enabled port forwarding from remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
     }
 
     @Override
