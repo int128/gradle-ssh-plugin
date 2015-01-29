@@ -11,7 +11,7 @@ import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
-class PortForwardingSpec extends Specification {
+class GatewayConnectionSpec extends Specification {
 
     SshServer targetServer
     SshServer gateway1Server
