@@ -2,9 +2,6 @@ package org.hidetake.groovy.ssh.core.settings
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
-import org.hidetake.groovy.ssh.extension.SftpGet
-import org.hidetake.groovy.ssh.extension.SftpPut
-import org.hidetake.groovy.ssh.extension.SudoExecution
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
@@ -85,7 +82,7 @@ class OperationSettings implements Settings<OperationSettings> {
             pty: false,
             logging: Logging.slf4j,
             encoding: 'UTF-8',
-            extensions: [SudoExecution, SftpGet, SftpPut]
+            extensions: []
     )
 
     OperationSettings plus(OperationSettings right) {

@@ -1,63 +1,17 @@
 package org.hidetake.groovy.ssh.extension
 
-import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.session.SessionHandler
+import org.hidetake.groovy.ssh.session.SessionExtension
+import org.slf4j.LoggerFactory
 
 /**
  * An extension class of sudo command execution.
  *
  * @author hidetake.org
  */
-@Category(SessionHandler)
-@Slf4j
-class SudoExecution {
-    /**
-     * Support class for sudo interaction.
-     */
-    private static class InteractionSupport {
-        final String commandWithSudo
-        final HashMap settings = [:]
-
-        private final lines = []
-
-        /**
-         * Constructor.
-         *
-         * @param command will be prepended with <code>sudo</code>
-         * @param remote should be given to provide the password
-         */
-        def InteractionSupport(String command, Remote remote, Map givenSettings = [:]) {
-            def prompt = UUID.randomUUID().toString()
-            def interaction = {
-                when(partial: prompt, from: standardOutput) {
-                    log.info("Sending password for sudo authentication")
-                    standardInput << remote.password << '\n'
-
-                    when(nextLine: _, from: standardOutput) {
-                        when(nextLine: 'Sorry, try again.') {
-                            throw new RuntimeException("Sudo authentication failed")
-                        }
-                        when(line: _, from: standardOutput) {
-                            lines << it
-                        }
-                    }
-                }
-                when(line: _, from: standardOutput) {
-                    lines << it
-                }
-            }
-
-            commandWithSudo = "sudo -S -p '$prompt' $command"
-
-            settings << givenSettings << [interaction: interaction]
-        }
-
-        String getResult() {
-            lines.join(Utilities.eol())
-        }
-    }
+trait SudoExecution implements SessionExtension {
+    private static final log = LoggerFactory.getLogger(SudoExecution)
 
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
@@ -69,9 +23,7 @@ class SudoExecution {
     String executeSudo(String command) {
         assert command, 'command must be given'
         log.info("Execute a command ($command) with sudo support")
-        def support = new InteractionSupport(command, remote)
-        execute(support.settings, support.commandWithSudo)
-        support.result
+        executeSudoInternal(command, remote, [:])
     }
 
     /**
@@ -86,9 +38,7 @@ class SudoExecution {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        def support = new InteractionSupport(command, remote, settings)
-        execute(support.settings, support.commandWithSudo)
-        support.result
+        executeSudoInternal(command, remote, settings)
     }
 
     /**
@@ -102,9 +52,8 @@ class SudoExecution {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         log.info("Execute a command ($command) with sudo support")
-        def support = new InteractionSupport(command, remote)
-        execute(support.settings, support.commandWithSudo)
-        callback(support.result)
+        def result = executeSudoInternal(command, remote, [:])
+        callback(result)
     }
 
     /**
@@ -120,8 +69,41 @@ class SudoExecution {
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
         log.info("Execute a command ($command) with sudo support and settings ($settings)")
-        def support = new InteractionSupport(command, remote, settings)
-        execute(support.settings, support.commandWithSudo)
-        callback(support.result)
+        def result = executeSudoInternal(command, remote, settings)
+        callback(result)
+    }
+
+    /**
+     * Performs a sudo operation.
+     *
+     * @param command will be prepended with <code>sudo</code>
+     * @param remote should be given to provide the password
+     * @param givenSettings
+     */
+    private String executeSudoInternal(String command, Remote remote, Map givenSettings) {
+        def prompt = UUID.randomUUID().toString()
+        def lines = []
+        def settings = [:] << givenSettings << [interaction: { log ->
+            when(partial: prompt, from: standardOutput) {
+                log.info("Sending password for sudo authentication")
+                standardInput << remote.password << '\n'
+
+                when(nextLine: _, from: standardOutput) {
+                    when(nextLine: 'Sorry, try again.') {
+                        throw new RuntimeException("Sudo authentication failed")
+                    }
+                    when(line: _, from: standardOutput) {
+                        lines << it
+                    }
+                }
+            }
+            when(line: _, from: standardOutput) {
+                lines << it
+            }
+        }.curry(log)]
+
+        execute(settings, "sudo -S -p '$prompt' $command")
+
+        lines.join(Utilities.eol())
     }
 }

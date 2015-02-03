@@ -6,14 +6,14 @@ import spock.lang.Specification
 
 class SessionHandlerSpec extends Specification {
 
-    SessionHandler defaultSessionHandler
+    def defaultSessionHandler
     Operations operations
     OperationSettings operationSettings
 
     def setup() {
         operations = Mock(Operations)
         operationSettings = OperationSettings.DEFAULT + new OperationSettings(dryRun: true)
-        defaultSessionHandler = new SessionHandler(operations, operationSettings)
+        defaultSessionHandler = SessionHandler.create(operations, operationSettings)
     }
 
 
