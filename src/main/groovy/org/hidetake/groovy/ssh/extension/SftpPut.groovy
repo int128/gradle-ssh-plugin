@@ -15,6 +15,32 @@ import static org.hidetake.groovy.ssh.operation.SftpException.Error.*
 @Slf4j
 class SftpPut {
     /**
+     * Put file(s) or content to the remote host.
+     *
+     * @param options file, files, into
+     */
+    void put(HashMap options) {
+        assert options.into, 'into must be given'
+
+        if (options.file) {
+            put(options.file, options.into)
+        } else if (options.files) {
+            put(options.files, options.into)
+        } else if (options.text) {
+            sftp(sftpPutContent.curry(options.text.toString().bytes, options.into))
+        } else if (options.bytes) {
+            assert options.bytes instanceof byte[], 'bytes must be an array of byte'
+            sftp(sftpPutContent.curry(options.bytes, options.into))
+        } else {
+            throw new IllegalArgumentException('options of put() must contains file, files, text or bytes')
+        }
+    }
+
+    private static final sftpPutContent = { byte[] content, String remoteFile ->
+        putContent(content, remoteFile)
+    }
+
+    /**
      * Put a file or directory to the remote host.
      *
      * @param local
