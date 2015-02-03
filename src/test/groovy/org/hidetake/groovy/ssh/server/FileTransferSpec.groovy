@@ -705,14 +705,14 @@ class FileTransferSpec extends Specification {
         e.localizedMessage.contains 'remote'
     }
 
-    def "get() should throw an error if destination is null"() {
+    def "get() should throw an error if destination is null string"() {
         given:
         def file = temporaryFolder.newFile()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(file.path, null as String)
+                get(file.path, '')
             }
         }
 
