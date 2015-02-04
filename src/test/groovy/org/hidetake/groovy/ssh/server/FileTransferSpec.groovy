@@ -109,6 +109,93 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
+    def "put() should accept a path string via map"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put file: sourceFile.path, into: destinationFile.path
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "put() should accept a File object via map"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put file: sourceFile, into: destinationFile.path
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "put() should accept a collection of file via map"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        def sourceFile1 = sourceDir / uuidgen() << uuidgen()
+        def sourceFile2 = sourceDir / uuidgen() << uuidgen()
+        def destinationDir = temporaryFolder.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put files: [sourceFile1, sourceFile2], into: destinationDir.path
+            }
+        }
+
+        then:
+        (destinationDir / sourceFile1.name).text == sourceFile1.text
+        (destinationDir / sourceFile2.name).text == sourceFile2.text
+    }
+
+    def "put() should accept a string content via map"() {
+        given:
+        def text = uuidgen()
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put text: text, into: destinationFile.path
+            }
+        }
+
+        then:
+        destinationFile.text == text
+    }
+
+    def "put() should accept a byte array content via map"() {
+        given:
+        def text = uuidgen()
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put bytes: text.bytes, into: destinationFile.path
+            }
+        }
+
+        then:
+        destinationFile.text == text
+    }
+
     def "put() should overwrite a file if destination already exists"() {
         given:
         def text = uuidgen()
@@ -272,6 +359,76 @@ class FileTransferSpec extends Specification {
         then:
         AssertionError e = thrown()
         e.localizedMessage.contains 'remote'
+    }
+
+    def "put(file) should throw an error if into is not given"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put file: file.path
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'into'
+    }
+
+    def "put(files) should throw an error if into is not given"() {
+        given:
+        def file = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put files: [file.path]
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'into'
+    }
+
+    def "put(text) should throw an error if into is not given"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put text: 'something'
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'into'
+    }
+
+    def "put(bytes) should throw an error if into is not given"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put bytes: 'something'
+            }
+        }
+
+        then:
+        AssertionError e = thrown()
+        e.localizedMessage.contains 'into'
+    }
+
+    def "put(options) should throw an error if options are invalid"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put invalid: 'option', into: 'file'
+            }
+        }
+
+        then:
+        thrown(IllegalArgumentException)
     }
 
 

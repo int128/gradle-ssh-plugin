@@ -49,6 +49,22 @@ class SftpOperations {
     }
 
     /**
+     * Put a content to the remote host.
+     *
+     * @param content
+     * @param remote path
+     */
+    void putContent(byte[] content, String remote) {
+        log.info("Put the content to remote ($remote)")
+        try {
+            def stream = new ByteArrayInputStream(content)
+            channel.put(stream, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
+        } catch (JschSftpException e) {
+            throw new SftpException('Failed to put the content to the remote host', e)
+        }
+    }
+
+    /**
      * Create a directory.
      *
      * @param path
