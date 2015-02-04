@@ -569,16 +569,25 @@ get '/remote/file', 'local_file'
 get '/remote/file', buildDir
 ```
 
-Call the `put` method to put a file or directory into the remote host.
+Call the `put` method to put a file or directory into the remote host. It also accepts content such as a string or byte array.
 
 ```groovy
-put 'local_file', '/remote/file'
+// specify the file path
+put file: 'local_file', into: '/remote/file'
 
-// also accepts a File object
-put buildDir, '/remote/folder'
+// specify a File object
+put file: buildDir, into: '/remote/folder'
 
-// also accepts an Iterable<File>
-put files('local_file1', 'local_file2'), '/remote/folder'
+// specify an Iterable<File>
+put files: files('local_file1', 'local_file2'), into: '/remote/folder'
+
+// specify a string
+put text: '''#!/bin/sh
+echo 'hello world'
+''', into: '/remote/script.sh'
+
+// specify a byte array
+put bytes: [0xff, 0xff] as byte[], into: '/remote/fixture.dat'
 ```
 
 The method throws an exception if an error occurred while the file transfer.
