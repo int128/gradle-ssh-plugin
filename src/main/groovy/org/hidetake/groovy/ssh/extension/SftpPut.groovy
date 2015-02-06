@@ -17,17 +17,15 @@ import static org.hidetake.groovy.ssh.operation.SftpException.Error.*
 class SftpPut {
     @ToString
     private static class PutOptions {
-        def file
-        def files
-        def stream
+        def from
         def text
         def bytes
         def into
 
         static usage = '''put() accepts following signatures:
-put(file: String or File, into: String)  // put a file or directory
-put(files: Iterable<File>, into: String) // put files or directories
-put(file: InputStream, into: String)     // put a stream into the remote file
+put(from: String or File, into: String)  // put a file or directory
+put(from: Iterable<File>, into: String) // put files or directories
+put(from: InputStream, into: String)     // put a stream into the remote file
 put(text: String, into: String)          // put a string into the remote file
 put(bytes: byte[], into: String)         // put a byte array into the remote file'''
 
@@ -48,10 +46,8 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      */
     void put(HashMap map) {
         def options = PutOptions.create(map)
-        if (options.file) {
-            put(options.file, options.into)
-        } else if (options.files) {
-            put(options.files, options.into)
+        if (options.from) {
+            put(options.from, options.into)
         } else if (options.text) {
             def stream = new ByteArrayInputStream(options.text.toString().bytes)
             put(stream, options.into)

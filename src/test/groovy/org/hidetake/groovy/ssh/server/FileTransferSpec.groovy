@@ -136,7 +136,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put file: sourceFile.path, into: destinationFile.path
+                put from: sourceFile.path, into: destinationFile.path
             }
         }
 
@@ -154,7 +154,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put file: sourceFile, into: destinationFile.path
+                put from: sourceFile, into: destinationFile.path
             }
         }
 
@@ -173,7 +173,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put files: [sourceFile1, sourceFile2], into: destinationDir.path
+                put from: [sourceFile1, sourceFile2], into: destinationDir.path
             }
         }
 
@@ -223,7 +223,7 @@ class FileTransferSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 def stream = new ByteArrayInputStream(text.bytes)
-                put file: stream, into: destinationFile.path
+                put from: stream, into: destinationFile.path
             }
         }
 
@@ -410,11 +410,11 @@ class FileTransferSpec extends Specification {
 
         where:
         key      | argument
-        'file'   | [file: 'somefile.txt']
-        'files'  | [files: ['somefile.txt']]
+        'file'   | [from: 'somefile.txt']
+        'files'  | [from: ['somefile.txt']]
+        'stream' | [from: new ByteArrayInputStream([0xff, 0xff] as byte[])]
         'text'   | [text: 'something']
-        'bytes'  | [bytes: 'something']
-        'stream' | [stream: new ByteArrayInputStream([0xff, 0xff] as byte[])]
+        'bytes'  | [bytes: [0xff, 0xff]]
     }
 
     def "put() should throw an error if from is not given"() {
