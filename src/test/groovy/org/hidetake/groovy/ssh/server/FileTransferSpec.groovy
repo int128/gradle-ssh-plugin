@@ -10,6 +10,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 import spock.util.mop.Use
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
@@ -109,6 +110,23 @@ class FileTransferSpec extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
+    def "put() should accept an input stream as source"() {
+        given:
+        def text = uuidgen()
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                def stream = new ByteArrayInputStream(text.bytes)
+                put stream, destinationFile.path
+            }
+        }
+
+        then:
+        destinationFile.text == text
+    }
+
     def "put() should accept a path string via map"() {
         given:
         def text = uuidgen()
@@ -189,6 +207,23 @@ class FileTransferSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 put bytes: text.bytes, into: destinationFile.path
+            }
+        }
+
+        then:
+        destinationFile.text == text
+    }
+
+    def "put() should accept an input stream via map"() {
+        given:
+        def text = uuidgen()
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                def stream = new ByteArrayInputStream(text.bytes)
+                put file: stream, into: destinationFile.path
             }
         }
 
@@ -361,69 +396,32 @@ class FileTransferSpec extends Specification {
         e.localizedMessage.contains 'remote'
     }
 
-    def "put(file) should throw an error if into is not given"() {
-        given:
-        def file = temporaryFolder.newFile()
-
+    @Unroll
+    def "put(#key) should throw an error if into is not given"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put file: file.path
+                put(argument)
             }
         }
 
         then:
-        AssertionError e = thrown()
-        e.localizedMessage.contains 'into'
+        thrown(IllegalArgumentException)
+
+        where:
+        key      | argument
+        'file'   | [file: 'somefile.txt']
+        'files'  | [files: ['somefile.txt']]
+        'text'   | [text: 'something']
+        'bytes'  | [bytes: 'something']
+        'stream' | [stream: new ByteArrayInputStream([0xff, 0xff] as byte[])]
     }
 
-    def "put(files) should throw an error if into is not given"() {
-        given:
-        def file = temporaryFolder.newFile()
-
+    def "put() should throw an error if from is not given"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put files: [file.path]
-            }
-        }
-
-        then:
-        AssertionError e = thrown()
-        e.localizedMessage.contains 'into'
-    }
-
-    def "put(text) should throw an error if into is not given"() {
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put text: 'something'
-            }
-        }
-
-        then:
-        AssertionError e = thrown()
-        e.localizedMessage.contains 'into'
-    }
-
-    def "put(bytes) should throw an error if into is not given"() {
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put bytes: 'something'
-            }
-        }
-
-        then:
-        AssertionError e = thrown()
-        e.localizedMessage.contains 'into'
-    }
-
-    def "put(options) should throw an error if options are invalid"() {
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put invalid: 'option', into: 'file'
+                put into: 'file'
             }
         }
 
@@ -466,6 +464,95 @@ class FileTransferSpec extends Specification {
         then:
         sourceFile.text == text
         destinationFile.text == text
+    }
+
+    def "get() should accept an output stream as destination"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def outputStream = new ByteArrayOutputStream()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get sourceFile.path, outputStream
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        outputStream.toByteArray() == text.bytes
+    }
+
+    def "get() should accept a path string via map"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: sourceFile.path, into: destinationFile.path
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "get() should accept a file object via map"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def destinationFile = temporaryFolder.newFile()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: sourceFile.path, into: destinationFile
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        destinationFile.text == text
+    }
+
+    def "get() should accept an output stream via map"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+        def outputStream = new ByteArrayOutputStream()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: sourceFile.path, into: outputStream
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        outputStream.toByteArray() == text.bytes
+    }
+
+    def "get() should return content if into is not given"() {
+        given:
+        def text = uuidgen()
+        def sourceFile = temporaryFolder.newFile() << text
+
+        when:
+        def content = ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: sourceFile.path
+            }
+        }
+
+        then:
+        sourceFile.text == text
+        content == text
     }
 
     def "get() should overwrite a file if destination already exists"() {
@@ -632,6 +719,18 @@ class FileTransferSpec extends Specification {
         then:
         AssertionError e = thrown()
         e.localizedMessage.contains 'local'
+    }
+
+    def "get() should throw an error if from is not given"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get(into: 'somefile')
+            }
+        }
+
+        then:
+        thrown(IllegalArgumentException)
     }
 
 

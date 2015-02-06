@@ -34,6 +34,21 @@ class SftpOperations {
     }
 
     /**
+     * Get a content from the remote host.
+     *
+     * @param remote
+     * @param stream
+     */
+    void getContent(String remote, OutputStream stream) {
+        log.info("Get content of the remote file ($remote)")
+        try {
+            channel.get(remote, stream, new FileTransferLogger())
+        } catch (JschSftpException e) {
+            throw new SftpException('Failed to get a file from the remote host', e)
+        }
+    }
+
+    /**
      * Put a file to the remote host.
      *
      * @param local
@@ -51,13 +66,12 @@ class SftpOperations {
     /**
      * Put a content to the remote host.
      *
-     * @param content
+     * @param stream
      * @param remote path
      */
-    void putContent(byte[] content, String remote) {
+    void putContent(InputStream stream, String remote) {
         log.info("Put the content to remote ($remote)")
         try {
-            def stream = new ByteArrayInputStream(content)
             channel.put(stream, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
         } catch (JschSftpException e) {
             throw new SftpException('Failed to put the content to the remote host', e)

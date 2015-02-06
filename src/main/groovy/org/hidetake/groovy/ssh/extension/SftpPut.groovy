@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.extension
 
+import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionHandler
@@ -14,30 +15,68 @@ import static org.hidetake.groovy.ssh.operation.SftpException.Error.*
 @Category(SessionHandler)
 @Slf4j
 class SftpPut {
+    @ToString
+    private static class PutOptions {
+        def file
+        def files
+        def stream
+        def text
+        def bytes
+        def into
+
+        static usage = '''put() accepts following signatures:
+put(file: String or File, into: String)  // put a file or directory
+put(files: Iterable<File>, into: String) // put files or directories
+put(file: InputStream, into: String)     // put a stream into the remote file
+put(text: String, into: String)          // put a string into the remote file
+put(bytes: byte[], into: String)         // put a byte array into the remote file'''
+
+        static create(HashMap map) {
+            try {
+                assert map.into, 'into must be given'
+                new PutOptions(map)
+            } catch (MissingPropertyException e) {
+                throw new IllegalArgumentException(usage, e)
+            } catch (AssertionError e) {
+                throw new IllegalArgumentException(usage, e)
+            }
+        }
+    }
+
     /**
      * Put file(s) or content to the remote host.
-     *
-     * @param options file, files, into
      */
-    void put(HashMap options) {
-        assert options.into, 'into must be given'
-
+    void put(HashMap map) {
+        def options = PutOptions.create(map)
         if (options.file) {
             put(options.file, options.into)
         } else if (options.files) {
             put(options.files, options.into)
         } else if (options.text) {
-            sftp(sftpPutContent.curry(options.text.toString().bytes, options.into))
+            def stream = new ByteArrayInputStream(options.text.toString().bytes)
+            put(stream, options.into)
         } else if (options.bytes) {
-            assert options.bytes instanceof byte[], 'bytes must be an array of byte'
-            sftp(sftpPutContent.curry(options.bytes, options.into))
+            def stream = new ByteArrayInputStream(options.bytes as byte[])
+            put(stream, options.into)
         } else {
-            throw new IllegalArgumentException('options of put() must contains file, files, text or bytes')
+            throw new IllegalArgumentException(PutOptions.usage)
         }
     }
 
-    private static final sftpPutContent = { byte[] content, String remoteFile ->
-        putContent(content, remoteFile)
+    private static final sftpPutContent = { InputStream stream, String remoteFile ->
+        putContent(stream, remoteFile)
+    }
+
+    /**
+     * Put a file to the remote host.
+     *
+     * @param local
+     * @param remote
+     */
+    void put(InputStream stream, String remote) {
+        assert remote, 'remote path must be given'
+        assert stream, 'input stream must be given'
+        sftp(sftpPutContent.curry(stream, remote))
     }
 
     /**

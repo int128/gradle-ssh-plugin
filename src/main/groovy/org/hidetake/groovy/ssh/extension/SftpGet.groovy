@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.extension
 
 import com.jcraft.jsch.ChannelSftp.LsEntry
+import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionHandler
@@ -13,6 +14,61 @@ import org.hidetake.groovy.ssh.session.SessionHandler
 @Category(SessionHandler)
 @Slf4j
 class SftpGet {
+    @ToString
+    private static class GetOptions {
+        def from
+        def into
+
+        static usage = '''get() accepts following signatures:
+get(from: String, into: String or File) // get a file or directory recursively
+get(from: String, into: OutputStream)   // get a file into the stream
+get(from: String)                       // get a file and return the content'''
+
+        static create(HashMap map) {
+            try {
+                assert map.from, 'from must be given'
+                new GetOptions(map)
+            } catch (MissingPropertyException e) {
+                throw new IllegalArgumentException(usage, e)
+            } catch (AssertionError e) {
+                throw new IllegalArgumentException(usage, e)
+            }
+        }
+    }
+
+    /**
+     * Get file(s) or content from the remote host.
+     *
+     * @param map {@link GetOptions}
+     * @returns content as a string if <code>into</into> is not given
+     */
+    String get(HashMap map) {
+        def options = GetOptions.create(map)
+        if (options.into) {
+            get(options.from, options.into)
+        } else {
+            def stream = new ByteArrayOutputStream()
+            get(options.from, stream)
+            new String(stream.toByteArray())
+        }
+    }
+
+    private static final sftpGetContent = { String remoteFile, OutputStream stream ->
+        getContent(remoteFile, stream)
+    }
+
+    /**
+     * Get a file from the remote host.
+     *
+     * @param remote
+     * @param stream
+     */
+    void get(String remote, OutputStream stream) {
+        assert remote, 'remote path must be given'
+        assert stream,  'output stream must be given'
+        sftp(sftpGetContent.curry(remote, stream))
+    }
+
     /**
      * Get a file or directory from the remote host.
      *
