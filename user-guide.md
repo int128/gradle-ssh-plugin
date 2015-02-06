@@ -563,10 +563,19 @@ The method throws an exception if an exit status of the shell was not zero.
 Call the `get` method to get a file or directory from the remote host.
 
 ```groovy
-get '/remote/file', 'local_file'
+// specify the file path
+get from: '/remote/file', into: 'local_file'
 
-// also accepts a File object
-get '/remote/file', buildDir
+// specify a File object
+get from: '/remote/file', into: buildDir
+
+// specify an output stream
+file.withOutputStream { stream ->
+  get from: '/remote/file', into: stream
+}
+
+// get content as a string
+def text = get from: '/remote/file'
 ```
 
 Call the `put` method to put a file or directory into the remote host. It also accepts content such as a string or byte array.
@@ -580,6 +589,11 @@ put file: buildDir, into: '/remote/folder'
 
 // specify an Iterable<File>
 put files: files('local_file1', 'local_file2'), into: '/remote/folder'
+
+// specify an input stream
+file.withInputStream { stream ->
+  put file: stream, into: '/remote/file.txt'
+}
 
 // specify a string
 put text: '''#!/bin/sh
