@@ -582,17 +582,17 @@ Call the `put` method to put a file or directory into the remote host. It also a
 
 ```groovy
 // specify the file path
-put file: 'local_file', into: '/remote/file'
+put from: 'local_file', into: '/remote/file'
 
 // specify a File object
-put file: buildDir, into: '/remote/folder'
+put from: buildDir, into: '/remote/folder'
 
 // specify an Iterable<File>
-put files: files('local_file1', 'local_file2'), into: '/remote/folder'
+put from: files('local_file1', 'local_file2'), into: '/remote/folder'
 
 // specify an input stream
 file.withInputStream { stream ->
-  put file: stream, into: '/remote/file.txt'
+  put from: stream, into: '/remote/file.txt'
 }
 
 // specify a string
@@ -601,7 +601,7 @@ echo 'hello world'
 ''', into: '/remote/script.sh'
 
 // specify a byte array
-put bytes: [0xff, 0xff] as byte[], into: '/remote/fixture.dat'
+put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 ```
 
 The method throws an exception if an error occurred while the file transfer.
