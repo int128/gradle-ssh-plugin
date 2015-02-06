@@ -29,8 +29,8 @@ task('feature: execute commands sequentially') << {
             execute "mkdir -vp $remoteWorkDir"
             execute "expr $x + $y > $remoteWorkDir/A"
             execute "expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B"
-            a = execute "cat $remoteWorkDir/A"
-            b = execute "cat $remoteWorkDir/B"
+            a = get from: "$remoteWorkDir/A"
+            b = get from: "$remoteWorkDir/B"
         }
     }
     assert a as int == (x + y)
@@ -79,7 +79,7 @@ task('feature: execute commands concurrently') << {
     // all commands should be completed at this point
     def result = ssh.run {
         session(remotes.localhost) {
-            execute "cat $remoteWorkDir/result"
+            get from: "$remoteWorkDir/result"
         }
     }
     assert result.readLines() == ['0', '1', '2', '3']

@@ -11,12 +11,12 @@ task('feature: put, compute and get files') << {
     ssh.run {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
-            put file: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
-            put file: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
+            put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
+            put from: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
             execute "expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA"
             execute "expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB"
-            get "$remoteWorkDir/RA", "$localWorkDir/LA"
-            get "$remoteWorkDir/RB", "$localWorkDir/LB"
+            get from: "$remoteWorkDir/RA", into: "$localWorkDir/LA"
+            get from: "$remoteWorkDir/RB", into: "$localWorkDir/LB"
         }
     }
 
@@ -57,19 +57,19 @@ task('feature: put a directory recursively') << {
     ssh.run {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir/${localWorkDir.name}/Y"
-            execute "echo dummy1 > $remoteWorkDir/${localWorkDir.name}/Y/yfile"
-            execute "echo dummy2 > $remoteWorkDir/${localWorkDir.name}/Y/yfile2"
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile") == 'dummy1'
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
+            execute "echo -n dummy1 > $remoteWorkDir/${localWorkDir.name}/Y/yfile"
+            execute "echo -n dummy2 > $remoteWorkDir/${localWorkDir.name}/Y/yfile2"
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/Y/yfile") == 'dummy1'
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
         }
         session(remotes.localhost) {
-            put localWorkDir, remoteWorkDir
+            put from: localWorkDir, into: remoteWorkDir
         }
         session(remotes.localhost) {
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/xfile") as int == x
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile") as int == y
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
-            assert execute("cat $remoteWorkDir/${localWorkDir.name}/Y/Z/zfile") as int == z
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/xfile") as int == x
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/Y/yfile") as int == y
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/Y/yfile2") == 'dummy2'
+            assert get(from: "$remoteWorkDir/${localWorkDir.name}/Y/Z/zfile") as int == z
         }
     }
 }
@@ -91,7 +91,7 @@ task('feature: get a directory recursively') << {
             execute "echo $z > $remoteWorkDir/X/Y/Z/zfile"
         }
         session(remotes.localhost) {
-            get remoteWorkDir, localWorkDir
+            get from: remoteWorkDir, into: localWorkDir
         }
     }
 
@@ -109,14 +109,14 @@ task('feature: get a large file and put it back', dependsOn: sideEffect) << {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
             execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
-            get "$remoteWorkDir/result", localWorkDir
+            get from: "$remoteWorkDir/result", into: localWorkDir
         }
     }
     assert file("$localWorkDir/result").size() == 1024 * fileSize
 
     ssh.run {
         session(remotes.localhost) {
-            put "$localWorkDir/result", "$remoteWorkDir/back"
+            put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
             assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
         }
     }
