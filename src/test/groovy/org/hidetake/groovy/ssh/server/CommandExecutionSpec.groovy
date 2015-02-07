@@ -101,6 +101,27 @@ class CommandExecutionSpec extends Specification {
         e.exitStatus == 1
     }
 
+    def "it should ignore the exit status if ignoreError is given"() {
+        given:
+        server.commandFactory = Mock(CommandFactory) {
+            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
+                c.outputStream.withWriter('UTF-8') { it << 'something output' }
+                c.exitCallback.onExit(1)
+            }
+        }
+        server.start()
+
+        when:
+        def resultActual = ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand', ignoreError: true
+            }
+        }
+
+        then:
+        resultActual == 'something output'
+    }
+
     @Unroll
     def "execute should return output of the command: #description"() {
         given:
