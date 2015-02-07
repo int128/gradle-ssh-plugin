@@ -1,20 +1,20 @@
 package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
-import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpException
-import org.hidetake.groovy.ssh.session.SessionHandler
+import org.hidetake.groovy.ssh.session.SessionExtension
+import org.slf4j.LoggerFactory
 
-import static org.hidetake.groovy.ssh.operation.SftpException.Error.*
+import static org.hidetake.groovy.ssh.operation.SftpException.Error.SSH_FX_FAILURE
 
 /**
  * An extension class to put a file or directory via SFTP.
  *
  * @author hidetake.org
  */
-@Category(SessionHandler)
-@Slf4j
-class SftpPut {
+trait SftpPut implements SessionExtension {
+    private static final log = LoggerFactory.getLogger(SftpPut)
+
     @ToString
     private static class PutOptions {
         def from
@@ -59,20 +59,18 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
         }
     }
 
-    private static final sftpPutContent = { InputStream stream, String remoteFile ->
-        putContent(stream, remoteFile)
-    }
-
     /**
      * Put a file to the remote host.
      *
-     * @param local
+     * @param stream
      * @param remote
      */
     void put(InputStream stream, String remote) {
         assert remote, 'remote path must be given'
         assert stream, 'input stream must be given'
-        sftp(sftpPutContent.curry(stream, remote))
+        sftp {
+            putContent(stream, remote)
+        }
     }
 
     /**
@@ -84,7 +82,7 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
     void put(File local, String remote) {
         assert remote, 'remote path must be given'
         assert local,  'local file must be given'
-        sftp(sftpPutRecursive.curry([local], remote))
+        put([local], remote)
     }
 
     /**
@@ -96,26 +94,25 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
     void put(String local, String remote) {
         assert remote, 'remote path must be given'
         assert local,  'local path must be given'
-        sftp(sftpPutRecursive.curry([new File(local)], remote))
+        put(new File(local), remote)
     }
 
     /**
      * Put a collection of a file or directory to the remote host.
      *
-     * @param local
-     * @param remote
+     * @param localFiles
+     * @param remotePath
      */
-    void put(Iterable<File> local, String remote) {
-        assert remote, 'remote path must be given'
-        assert local,  'local path must be given'
-        sftp(sftpPutRecursive.curry(local, remote))
+    void put(Iterable<File> localFiles, String remotePath) {
+        assert remotePath, 'remote path must be given'
+        assert localFiles,  'local files must be given'
+        sftp(putRecursive.curry(localFiles, remotePath))
     }
 
-    private static final sftpPutRecursive = { Iterable<File> localFiles, String remoteFile ->
-        final Closure putInternal
-        putInternal = { File localPath, String remotePath ->
-            if (localPath.directory) {
-                def remoteDir = "$remotePath/${localPath.name}"
+    private static final putRecursive = { Iterable<File> localFiles, String remotePath ->
+        for (File localFile : localFiles) {
+            if (localFile.directory) {
+                def remoteDir = "$remotePath/${localFile.name}"
                 try {
                     mkdir(remoteDir)
                 } catch (SftpException e) {
@@ -125,12 +122,10 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
                         throw new RuntimeException(e)
                     }
                 }
-                localPath.eachFile(putInternal.rcurry(remoteDir))
+                call(localFile.listFiles().toList(), remoteDir)
             } else {
-                putFile(localPath.path, remotePath)
+                putFile(localFile.path, remotePath)
             }
         }
-
-        localFiles.each { localFile -> putInternal(localFile, remoteFile) }
     }
 }
