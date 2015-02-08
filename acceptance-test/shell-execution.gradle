@@ -1,5 +1,5 @@
 
-task('feature: execute a shell') << {
+task('should execute the shell') << {
     ssh.run {
         session(remotes.localhost) {
             shell(interaction: {
@@ -11,7 +11,7 @@ task('feature: execute a shell') << {
     }
 }
 
-task('feature: write output of the shell to a file') << {
+task('should write output of the shell to the file') << {
     def x = randomInt()
     def y = randomInt()
     localWorkDir.mkdir()
@@ -26,7 +26,7 @@ task('feature: write output of the shell to a file') << {
     assert resultFile.text as int == (x + y)
 }
 
-task('feature: write output of the shell to stdout') << {
+task('should write output of the shell to the standard output') << {
     ssh.run {
         session(remotes.localhost) {
             shell outputStream: System.out, interaction: {

@@ -1,5 +1,5 @@
 
-task('feature: execute a command') << {
+task('should execute the command') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {
@@ -9,7 +9,7 @@ task('feature: execute a command') << {
     } as int == (x + y)
 }
 
-task('feature: execute a command with console logging to slf4j') << {
+task('should execute the command with console logging with slf4j') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {
@@ -19,7 +19,7 @@ task('feature: execute a command with console logging to slf4j') << {
     } as int == (x + y)
 }
 
-task('feature: execute commands sequentially') << {
+task('should execute commands sequentially') << {
     def x = randomInt()
     def y = randomInt()
     def a
@@ -37,7 +37,7 @@ task('feature: execute commands sequentially') << {
     assert b as int == (x + x + y)
 }
 
-task('spec: each command should have independent environment') << {
+task('should execute commands in each dedicated environment') << {
     assert ssh.run {
         session(remotes.localhost) {
             execute "export testdata=dummy"
@@ -46,7 +46,7 @@ task('spec: each command should have independent environment') << {
     } == 'testdata is '
 }
 
-task('feature: execute a command with PTY allocation') << {
+task('should execute the command with the PTY allocation') << {
     ssh.run {
         session(remotes.localhost) {
             executeBackground "env | grep -v SSH_TTY"
@@ -59,7 +59,7 @@ task('feature: execute a command with PTY allocation') << {
     }
 }
 
-task('feature: execute commands concurrently') << {
+task('should execute commands concurrently') << {
     ssh.run {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
@@ -85,7 +85,7 @@ task('feature: execute commands concurrently') << {
     assert result.readLines() == ['0', '1', '2', '3']
 }
 
-task('spec: it should throw exception if the command returned error') << {
+task('should throw an exception due to the error exit status') << {
     try {
         ssh.run {
             session(remotes.localhost) {
@@ -98,7 +98,7 @@ task('spec: it should throw exception if the command returned error') << {
     }
 }
 
-task('spec: it should throw exception if the command returned error also on background') << {
+task('should throw an exception due to the error exit status on background') << {
     try {
         ssh.run {
             session(remotes.localhost) {
@@ -111,7 +111,7 @@ task('spec: it should throw exception if the command returned error also on back
     }
 }
 
-task('feature: write output of the command to a file') << {
+task('should write output of the command to the file') << {
     def x = randomInt()
     def y = randomInt()
     localWorkDir.mkdir()
@@ -126,7 +126,7 @@ task('feature: write output of the command to a file') << {
     assert resultFile.text as int == (x + y)
 }
 
-task('feature: write output of the command to standard output') << {
+task('should write output of the command to the standard output') << {
     def x = randomInt()
     def y = randomInt()
     ssh.run {
@@ -136,7 +136,7 @@ task('feature: write output of the command to standard output') << {
     }
 }
 
-task('feature: write error of the command to a file') << {
+task('should write error of the command to the file') << {
     localWorkDir.mkdir()
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->

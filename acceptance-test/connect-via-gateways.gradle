@@ -22,7 +22,7 @@ remotes {
 }
 
 
-task('feature: connect via a gateway host') << {
+task('should connect to the remote host via gateways') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {

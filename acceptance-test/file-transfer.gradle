@@ -1,5 +1,5 @@
 
-task('feature: put, compute and get files') << {
+task('should put, compute and get files') << {
     def x = randomInt()
     def y = randomInt()
 
@@ -24,7 +24,7 @@ task('feature: put, compute and get files') << {
     assert file("$localWorkDir/LB").text as int == (x - y)
 }
 
-task('feature: put contents and compute') << {
+task('should put contents and compute') << {
     def x = randomInt()
     def y = randomInt()
 
@@ -43,7 +43,7 @@ task('feature: put contents and compute') << {
     }
 }
 
-task('feature: put a directory recursively') << {
+task('should put the directory recursively') << {
     def x = randomInt()
     def y = randomInt()
     def z = randomInt()
@@ -74,7 +74,7 @@ task('feature: put a directory recursively') << {
     }
 }
 
-task('feature: get a directory recursively') << {
+task('should get the directory recursively') << {
     def x = randomInt()
     def y = randomInt()
     def z = randomInt()
@@ -101,7 +101,7 @@ task('feature: get a directory recursively') << {
     assert file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/Z/zfile").text as int == z
 }
 
-task('feature: get a large file and put it back', dependsOn: sideEffect) << {
+task('should get the large file and put it back', dependsOn: sideEffect) << {
     def fileSize = 1024 * 256
     localWorkDir.mkdir()
 

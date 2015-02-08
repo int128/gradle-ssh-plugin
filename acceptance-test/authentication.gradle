@@ -14,7 +14,7 @@ remotes {
 }
 
 
-task('feature: authenticate with remote specific identity', dependsOn: sideEffect) {
+task('should authenticate with remote specific identity', dependsOn: sideEffect) {
     dependsOn   'createUserWithAuthorizedKey'
     finalizedBy 'deleteUserWithAuthorizedKey'
     doLast {
@@ -48,7 +48,8 @@ task deleteUserWithAuthorizedKey << {
         }
     }
 }
-task('feature: authenticate with the ssh agent', dependsOn: sshAgent) << {
+
+task('should authenticate with the ssh agent', dependsOn: sshAgent) << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {

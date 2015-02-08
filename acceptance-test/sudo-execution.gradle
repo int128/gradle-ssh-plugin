@@ -12,7 +12,7 @@ remotes {
     }
 }
 
-task('feature: execute a privileged command by sudo', dependsOn: sideEffect) {
+task('should execute the privileged command with sudo password', dependsOn: sideEffect) {
     dependsOn   'createUserForSudoWithPassword'
     finalizedBy 'deleteUserForSudoWithPassword'
     doLast {
@@ -56,7 +56,7 @@ task deleteUserForSudoWithPassword << {
     }
 }
 
-task('feature: execute a command as another user by sudo', dependsOn: sideEffect) {
+task('should execute the command as another user with sudo password', dependsOn: sideEffect) {
     dependsOn   'createUserForSudoAsUserWithPassword'
     finalizedBy 'deleteUserForSudoAsUserWithPassword'
     doLast {
@@ -107,7 +107,7 @@ task deleteUserForSudoAsUserWithPassword << {
     }
 }
 
-task('feature: execute a privileged command by sudo without password', dependsOn: sideEffect) {
+task('should execute the privileged command without sudo password', dependsOn: sideEffect) {
     dependsOn 'createUserForSudoNoPassword'
     finalizedBy 'deleteUserForSudoNoPassword'
     doLast {

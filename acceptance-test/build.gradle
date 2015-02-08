@@ -63,23 +63,23 @@ task cleanupRemoteWorkDir << {
 }
 
 
-// categorize features
-task test               { description = 'run tests' }
-task testWithSideEffect { description = 'run tests which cause side effect' }
-task testWithSshAgent   { description = 'run tests which require SSH agent' }
+// categorize specs
+task test               { description = 'test specs' }
+task testWithSideEffect { description = 'test specs which cause side effect' }
+task testWithSshAgent   { description = 'test specs which require SSH agent' }
 
 afterEvaluate {
-    final features = tasks.matching { it.name.matches ~/(feature|spec): .+/ }
-    final featuresWithSideEffect = features.findAll { it.dependsOn.contains tasks.sideEffect }
-    final featuresWithSshAgent = features.findAll { it.dependsOn.contains tasks.sshAgent }
+    final specs = tasks.matching { it.name.matches ~/^should .+/ }
+    final specsWithSideEffect = specs.findAll { it.dependsOn.contains tasks.sideEffect }
+    final specsWithSshAgent = specs.findAll { it.dependsOn.contains tasks.sshAgent }
 
-    tasks.testWithSideEffect.dependsOn(featuresWithSideEffect)
-    tasks.testWithSshAgent.dependsOn(featuresWithSshAgent)
-    tasks.test.dependsOn(features - featuresWithSideEffect - featuresWithSshAgent)
+    tasks.testWithSideEffect.dependsOn(specsWithSideEffect)
+    tasks.testWithSshAgent.dependsOn(specsWithSshAgent)
+    tasks.test.dependsOn(specs - specsWithSideEffect - specsWithSshAgent)
 
-    features*.dependsOn(tasks.setupLocalWorkDir, tasks.setupRemoteWorkDir)
-    features*.finalizedBy(tasks.cleanupLocalWorkDir, tasks.cleanupRemoteWorkDir)
-    features.each {
+    specs*.dependsOn(tasks.setupLocalWorkDir, tasks.setupRemoteWorkDir)
+    specs*.finalizedBy(tasks.cleanupLocalWorkDir, tasks.cleanupRemoteWorkDir)
+    specs.each {
         it.ext.localWorkDir  = file("$buildDir/${it.hashCode()}")
         it.ext.remoteWorkDir = "${remoteWorkDirBase}/${it.hashCode()}"
     }

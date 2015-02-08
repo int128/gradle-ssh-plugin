@@ -5,7 +5,7 @@ class RemoteFileAssertion {
     }
 }
 
-task('feature: remote file assertion') << {
+task('should extends DSL with the remote file assertion') << {
     def x = randomInt()
     ssh.run {
         settings {
