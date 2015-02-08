@@ -142,7 +142,7 @@ task('feature: write error of the command to a file') << {
     resultFile.withOutputStream { stream ->
         ssh.run {
             session(remotes.localhost) {
-                execute "cat hoge || true", errorStream: stream
+                execute "cat hoge", ignoreError: true, errorStream: stream
             }
         }
     }
