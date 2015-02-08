@@ -462,7 +462,11 @@ execute('uname -a') { result ->
 }
 ```
 
-The method throws an exception if an exit status of the command was not zero.
+The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
+
+```groovy
+execute 'exit 1', ignoreError: true
+```
 
 
 ### Execute a command in background
@@ -504,6 +508,12 @@ executeBackground('ping -c 3 server') { result ->
 The method throws an exception if an exit status of the command is not zero.
 If a background command returned an error, `ssh.run` method waits for any other commands and throws an exception finally.
 
+It ignores the exit status if the `ignoreError` setting is given as follow:
+
+```groovy
+executeBackground 'exit 1', ignoreError: true
+```
+
 
 ### Execute a command with the sudo support
 
@@ -533,7 +543,7 @@ executeSudo('service httpd status') { result ->
 }
 ```
 
-The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure.
+The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.
 
 The sudo support is achieved by the stream interaction support. So the method does not accept an `interaction` setting.
 
@@ -555,7 +565,11 @@ session(remotes.web01) {
 }
 ```
 
-The method throws an exception if an exit status of the shell was not zero.
+The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
+
+```groovy
+shell ignoreError: true, interaction: {...}
+```
 
 
 ### Transfer a file or directory
@@ -615,6 +629,7 @@ Key              | Type     | Description
 -----------------|----------|------------
 `dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
 `pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
+`ignoreError`    | Boolean  | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 `logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 `outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.
 `errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
