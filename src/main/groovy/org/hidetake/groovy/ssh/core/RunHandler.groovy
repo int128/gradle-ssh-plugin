@@ -60,15 +60,12 @@ class RunHandler {
      * Add a session.
      * This method creates a {@link Remote} instance and add a session with it.
      *
-     * @param remoteProperties properties of a {@link Remote}
+     * @param properties properties of a {@link Remote}
      * @param closure closure for {@link SessionHandler}
      */
-    void session(Map remoteProperties, @DelegatesTo(SessionHandler) Closure closure) {
-        assert remoteProperties, 'properties of a remote must be given'
-        assert remoteProperties.host, 'host must be given for the remote'
-        def remote = new Remote(remoteProperties.host as String)
-        remoteProperties.each { k, v -> remote[k as String] = v }
-        session(remote, closure)
+    void session(Map properties, @DelegatesTo(SessionHandler) Closure closure) {
+        assert properties, 'properties of a remote must be given'
+        session(new Remote(properties), closure)
     }
 
     /**

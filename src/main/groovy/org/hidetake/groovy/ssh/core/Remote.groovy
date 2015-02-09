@@ -19,6 +19,13 @@ class Remote {
         assert name
     }
 
+    def Remote(Map<String, Object> properties) {
+        assert properties
+        assert properties.host
+        name = properties.host
+        properties.each { k, v -> setProperty(k, v) }
+    }
+
     /**
      * Port.
      */
