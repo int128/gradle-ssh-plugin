@@ -28,6 +28,8 @@ class SudoCommandExecutionSpec extends Specification {
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
+        server.commandFactory = Mock(CommandFactory)
+        server.start()
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -47,29 +49,38 @@ class SudoCommandExecutionSpec extends Specification {
         server.stop(true)
     }
 
-    def parseSudoCommandLine(String commandline) {
-        def matcher = commandline =~ /^sudo -S -p '(.+?)' (.+)$/
+
+    static parseSudoCommand(String command) {
+        def matcher = command =~ /^sudo -S -p '(.+?)' (.+)$/
         assert matcher.matches()
         def groups = matcher[0] as List
-        [prompt: groups[1], commandline: groups[2]]
+        [prompt: groups[1], command: groups[2]]
+    }
+
+    static commandWithSudoPrompt(String actualCommand,
+                                 String expectedCommand,
+                                 int status,
+                                 String outputMessage = null,
+                                 String errorMessage = null) {
+        SshServerMock.command { CommandContext c ->
+            def parsed = parseSudoCommand(actualCommand)
+            assert parsed.command == expectedCommand
+
+            c.outputStream.withWriter('UTF-8') {
+                it << parsed.prompt
+                it.flush()
+                it << '\n'
+                if (outputMessage) { it << outputMessage }
+            }
+            if (errorMessage) {
+                c.errorStream.withWriter('UTF-8') { it << errorMessage }
+            }
+            c.exitCallback.onExit(status)
+        }
     }
 
 
     def "commands should be executed sequentially in ssh.run"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') { it << sudo.prompt << '\n' }
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -79,30 +90,12 @@ class SudoCommandExecutionSpec extends Specification {
             }
         }
 
-        then: 1 * recorder.call('somecommand1')
-        then: 1 * recorder.call('somecommand2')
-        then: 1 * recorder.call('somecommand3')
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand1', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand2', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand3', 0) }
     }
 
     def "it should throw an exception if sudo returns failure"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << 'Sorry, try again.' << '\n'
-                    }
-                    c.exitCallback.onExit(1)
-                }
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -111,7 +104,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 0, 'Sorry, try again.\n')
+        }
 
         then:
         BadExitStatusException e = thrown()
@@ -119,20 +114,6 @@ class SudoCommandExecutionSpec extends Specification {
     }
 
     def "it should throw an exception if the command exits with non zero status"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') { it << sudo.prompt << '\n' }
-                    c.exitCallback.onExit(1)
-                }
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -141,7 +122,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 1)
+        }
 
         then:
         BadExitStatusException e = thrown()
@@ -149,24 +132,6 @@ class SudoCommandExecutionSpec extends Specification {
     }
 
     def "it should ignore the exit status if ignoreError is given"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << 'something output'
-                    }
-                    c.exitCallback.onExit(1)
-                }
-            }
-        }
-        server.start()
-
         when:
         def resultActual = ssh.run {
             session(ssh.remotes.testServer) {
@@ -175,7 +140,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 1, 'something output')
+        }
 
         then:
         resultActual == 'something output'
@@ -183,35 +150,17 @@ class SudoCommandExecutionSpec extends Specification {
 
     @Unroll
     def "executeSudo should return output of the command: #description"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << outputValue
-                    }
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
-
-        def resultActual
-
         when:
-        ssh.run {
+        def resultActual = ssh.run {
             session(ssh.remotes.testServer) {
-                resultActual = executeSudo 'somecommand'
+                executeSudo 'somecommand'
             }
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 0, outputValue)
+        }
 
         then:
         resultActual == resultExpected
@@ -227,23 +176,6 @@ class SudoCommandExecutionSpec extends Specification {
 
     def "executeSudo can return value via callback closure"() {
         given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << 'something output'
-                    }
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
-
         def resultActual
 
         when:
@@ -256,7 +188,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 0, 'something output')
+        }
 
         then:
         resultActual == 'something output'
@@ -264,23 +198,6 @@ class SudoCommandExecutionSpec extends Specification {
 
     def "executeSudo can return value via callback setting"() {
         given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << 'something output'
-                    }
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
-
         def resultActual
 
         when:
@@ -293,7 +210,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 0, 'something output')
+        }
 
         then:
         resultActual == 'something output'
@@ -303,27 +222,9 @@ class SudoCommandExecutionSpec extends Specification {
     @ConfineMetaClassChanges(DefaultOperations)
     def "executeSudo should write output to logger: #description"() {
         given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
-
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { CommandContext c ->
-                    def sudo = parseSudoCommandLine(commandline)
-                    recorder(sudo.commandline)
-                    c.outputStream.withWriter('UTF-8') {
-                        it << sudo.prompt
-                        it.flush()
-                        it << '\n' << outputValue
-                    }
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
 
         when:
         ssh.run {
@@ -333,7 +234,9 @@ class SudoCommandExecutionSpec extends Specification {
         }
 
         then:
-        1 * recorder.call('somecommand')
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand', 0, outputValue)
+        }
 
         then:
         logMessages.each {
