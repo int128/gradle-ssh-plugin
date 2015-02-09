@@ -77,9 +77,9 @@ class RunHandler {
      */
     void session(Object[] args) {
         if (args.last() instanceof Closure) {
-            def remotes = args.take(args.length - 1)
-            def closure = args.last()
-            remotes.each { remote -> session(remote as Remote, closure as Closure) }
+            def remotes = args.take(args.length - 1) as Collection<Remote>
+            def closure = args.last() as Closure
+            session(remotes, closure)
         } else {
             throw new IllegalArgumentException('''session() allows following arguments:
 session(remote) {}
