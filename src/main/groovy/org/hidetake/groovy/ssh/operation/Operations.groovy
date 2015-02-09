@@ -21,6 +21,7 @@ interface Operations {
      * Perform SFTP operations.
      *
      * @param closure closure for {@link SftpOperations}
+     * @return result of the closure
      */
-    void sftp(@DelegatesTo(SftpOperations) Closure closure)
+    def sftp(@DelegatesTo(SftpOperations) Closure closure)
 }

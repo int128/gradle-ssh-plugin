@@ -23,8 +23,9 @@ trait SessionExtension {
      * Perform SFTP operations.
      *
      * @param closure closure for {@link org.hidetake.groovy.ssh.operation.SftpOperations}
+     * @return result of the closure
      */
-    abstract void sftp(@DelegatesTo(SftpOperations) Closure closure)
+    abstract def sftp(@DelegatesTo(SftpOperations) Closure closure)
 
     /**
      * Return the current {@link Operations}.

@@ -200,17 +200,15 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    void sftp(Closure closure) {
+    def sftp(Closure closure) {
         def channel = connection.createSftpChannel()
         try {
             channel.connect()
             log.info("SFTP has been started on channel #${channel.id}")
-
             callWithDelegate(closure, new SftpOperations(channel))
-
-            log.info("SFTP has been closed on channel #${channel.id}")
         } finally {
             channel.disconnect()
+            log.info("SFTP has been closed on channel #${channel.id}")
         }
     }
 }

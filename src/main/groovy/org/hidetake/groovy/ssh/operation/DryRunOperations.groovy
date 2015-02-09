@@ -32,6 +32,6 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    void sftp(Closure closure) {
+    def sftp(Closure closure) {
     }
 }

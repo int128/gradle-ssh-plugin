@@ -130,4 +130,20 @@ class SessionHandlerSpec extends Specification {
         1 * operations.executeBackground(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', closure)
     }
 
+    def "sftp should return value of the closure"() {
+        given:
+        def closure = Mock(Closure)
+
+        when:
+        def result = defaultSessionHandler.with {
+            sftp(closure)
+        }
+
+        then:
+        1 * operations.sftp(closure) >> 'something'
+
+        then:
+        result == 'something'
+    }
+
 }
