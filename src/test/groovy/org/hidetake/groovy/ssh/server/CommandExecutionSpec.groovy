@@ -16,6 +16,8 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
+
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class CommandExecutionSpec extends Specification {
 
@@ -30,9 +32,11 @@ class CommandExecutionSpec extends Specification {
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
+        server.commandFactory = Mock(CommandFactory)
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
+        server.start()
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -54,18 +58,6 @@ class CommandExecutionSpec extends Specification {
 
 
     def "commands should be executed sequentially in ssh.run"() {
-        given:
-        def recorder = Mock(Closure)
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand(_) >> { String commandline ->
-                SshServerMock.command { SshServerMock.CommandContext c ->
-                    recorder(commandline)
-                    c.exitCallback.onExit(0)
-                }
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -75,20 +67,12 @@ class CommandExecutionSpec extends Specification {
             }
         }
 
-        then: 1 * recorder.call('somecommand1')
-        then: 1 * recorder.call('somecommand2')
-        then: 1 * recorder.call('somecommand3')
+        then: 1 * server.commandFactory.createCommand('somecommand1') >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand('somecommand2') >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand('somecommand3') >> commandWithExit(0)
     }
 
     def "it should throw an exception if the command exits with non zero status"() {
-        given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.exitCallback.onExit(1)
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -97,20 +81,14 @@ class CommandExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(1)
+
+        then:
         BadExitStatusException e = thrown()
         e.exitStatus == 1
     }
 
     def "it should ignore the exit status if ignoreError is given"() {
-        given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'something output' }
-                c.exitCallback.onExit(1)
-            }
-        }
-        server.start()
-
         when:
         def resultActual = ssh.run {
             session(ssh.remotes.testServer) {
@@ -119,27 +97,23 @@ class CommandExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(1, 'something output')
+
+        then:
         resultActual == 'something output'
     }
 
     @Unroll
     def "execute should return output of the command: #description"() {
-        given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << outputValue }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-        def resultActual
-
         when:
-        ssh.run {
+        def resultActual = ssh.run {
             session(ssh.remotes.testServer) {
-                resultActual = execute 'somecommand'
+                execute 'somecommand'
             }
         }
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, outputValue)
 
         then:
         resultActual == resultExpected
@@ -155,13 +129,6 @@ class CommandExecutionSpec extends Specification {
 
     def "execute can return value via callback closure"() {
         given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'something output' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
         def resultActual
 
         when:
@@ -174,18 +141,14 @@ class CommandExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'something output')
+
+        then:
         resultActual == 'something output'
     }
 
-    def "execute can return value via callback setting"() {
+    def "execute can return value via callback with setting"() {
         given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'something output' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
         def resultActual
 
         when:
@@ -198,6 +161,9 @@ class CommandExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'something output')
+
+        then:
         resultActual == 'something output'
     }
 
@@ -205,18 +171,9 @@ class CommandExecutionSpec extends Specification {
     @ConfineMetaClassChanges(DefaultOperations)
     def "execute should write output to logger: #description"() {
         given:
-        def logger = Mock(Logger) {
-            isInfoEnabled() >> true
-        }
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
-
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << outputValue }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
 
         when:
         ssh.run {
@@ -224,6 +181,9 @@ class CommandExecutionSpec extends Specification {
                 execute 'somecommand'
             }
         }
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, outputValue)
 
         then:
         logMessages.each {
@@ -251,21 +211,15 @@ class CommandExecutionSpec extends Specification {
         logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.errorStream.withWriter('UTF-8') { it << 'error' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
                 execute 'somecommand', logging: logging
             }
         }
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
 
         then:
         stdout * System.out.println('testServer|some message')
@@ -288,15 +242,6 @@ class CommandExecutionSpec extends Specification {
     @Unroll
     def "execute should write to file if given: stdout=#stdout, stderr=#stderr"() {
         given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.errorStream.withWriter('UTF-8') { it << 'error' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
         def logFile = temporaryFolder.newFile()
 
         when:
@@ -312,6 +257,9 @@ class CommandExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+
+        then:
         logFile.text == expectedLog
 
         where:
@@ -323,22 +271,15 @@ class CommandExecutionSpec extends Specification {
     }
 
     def "execute can write stdout/stderr to system.out"() {
-        given:
-        server.commandFactory = Mock(CommandFactory) {
-            1 * createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.errorStream.withWriter('UTF-8') { it << 'error' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
                 execute 'somecommand', outputStream: System.out, errorStream: System.err
             }
         }
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
 
         then:
         noExceptionThrown()

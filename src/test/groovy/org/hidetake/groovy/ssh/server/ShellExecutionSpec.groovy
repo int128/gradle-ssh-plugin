@@ -4,17 +4,18 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.session.BadExitStatusException
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.operation.DefaultOperations
-import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
+
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class ShellExecutionSpec extends Specification {
@@ -31,6 +32,8 @@ class ShellExecutionSpec extends Specification {
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
+        server.shellFactory = Mock(Factory)
+        server.start()
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -51,21 +54,7 @@ class ShellExecutionSpec extends Specification {
     }
 
 
-    def successShellMock(String output) {
-        Mock(Factory) {
-            1 * create() >> SshServerMock.command { CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << output }
-                c.exitCallback.onExit(0)
-            }
-        }
-    }
-
-
     def "it should success if the shell exits with zero status"() {
-        given:
-        server.shellFactory = Mock(Factory)
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -74,16 +63,10 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(0)
-        }
+        1 * server.shellFactory.create() >> commandWithExit(0)
     }
 
     def "it should throw an exception if the shell exits with non zero status"() {
-        given:
-        server.shellFactory = Mock(Factory)
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -92,9 +75,7 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(1)
-        }
+        1 * server.shellFactory.create() >> commandWithExit(1)
 
         then:
         BadExitStatusException e = thrown()
@@ -102,10 +83,6 @@ class ShellExecutionSpec extends Specification {
     }
 
     def "it should ignore the exit status if ignoreError is given"() {
-        given:
-        server.shellFactory = Mock(Factory)
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -114,9 +91,7 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(1)
-        }
+        1 * server.shellFactory.create() >> commandWithExit(1)
     }
 
     @Unroll
@@ -127,15 +102,15 @@ class ShellExecutionSpec extends Specification {
         logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        server.shellFactory = successShellMock(outputValue)
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
                 shell(interaction: {})
             }
         }
+
+        then:
+        1 * server.shellFactory.create() >> commandWithExit(0, outputValue)
 
         then:
         logMessages.each {
@@ -161,15 +136,15 @@ class ShellExecutionSpec extends Specification {
         logger.isInfoEnabled() >> true
         DefaultOperations.metaClass.static.getLog = { -> logger }
 
-        server.shellFactory = successShellMock('some message')
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
                 shell logging: logging
             }
         }
+
+        then:
+        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
 
         then:
         stdout * System.out.println('testServer|some message')
@@ -187,9 +162,6 @@ class ShellExecutionSpec extends Specification {
 
     def "shell should write output to file"() {
         given:
-        server.shellFactory = successShellMock('some message')
-        server.start()
-
         def logFile = temporaryFolder.newFile()
 
         when:
@@ -202,14 +174,13 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
+        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
+
+        then:
         logFile.text == 'some message'
     }
 
     def "shell can write output to system.out"() {
-        given:
-        server.shellFactory = successShellMock('some message')
-        server.start()
-
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -218,7 +189,7 @@ class ShellExecutionSpec extends Specification {
         }
 
         then:
-        noExceptionThrown()
+        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
     }
 
 }

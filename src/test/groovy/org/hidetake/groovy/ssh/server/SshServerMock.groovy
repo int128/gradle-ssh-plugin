@@ -44,8 +44,14 @@ class SshServerMock {
         }] as Command
     }
 
-    static commandWithExit(int status) {
+    static commandWithExit(int status, String outputMessage = null, String errorMessage = null) {
         command { CommandContext c ->
+            if (outputMessage) {
+                c.outputStream.withWriter('UTF-8') { it << outputMessage }
+            }
+            if (errorMessage) {
+                c.errorStream.withWriter('UTF-8') { it << errorMessage }
+            }
             c.exitCallback.onExit(status)
         }
     }

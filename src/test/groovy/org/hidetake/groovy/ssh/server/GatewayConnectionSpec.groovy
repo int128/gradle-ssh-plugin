@@ -7,8 +7,9 @@ import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.server.SshServerMock.CommandContext
 import spock.lang.Specification
+
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class GatewayConnectionSpec extends Specification {
@@ -78,9 +79,7 @@ class GatewayConnectionSpec extends Specification {
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
-        1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(0)
-        }
+        1 * targetServer.shellFactory.create() >> commandWithExit(0)
     }
 
     def "it can connect to the target server via more gateway servers"() {
@@ -126,9 +125,7 @@ class GatewayConnectionSpec extends Specification {
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
-        1 * targetServer.shellFactory.create() >> SshServerMock.command { CommandContext c ->
-            c.exitCallback.onExit(0)
-        }
+        1 * targetServer.shellFactory.create() >> commandWithExit(0)
     }
 
 

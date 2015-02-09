@@ -9,6 +9,8 @@ import spock.lang.Specification
 
 import java.security.PublicKey
 
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
+
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
 class AuthenticationSpec extends Specification {
 
@@ -18,6 +20,8 @@ class AuthenticationSpec extends Specification {
 
     def setup() {
         server = SshServerMock.setUpLocalhostServer()
+        server.commandFactory = Mock(CommandFactory)
+
         ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -28,20 +32,9 @@ class AuthenticationSpec extends Specification {
         server.stop(true)
     }
 
-    def successCommandFactory() {
-        Mock(CommandFactory) {
-            1 * createCommand('ls') >> Mock(Command) {
-                setExitCallback(_) >> { ExitCallback callback ->
-                    callback.onExit(0)
-                }
-            }
-        }
-    }
-
     def "password authentication should pass if exact one is given"() {
         given:
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
-        server.commandFactory = successCommandFactory()
         server.start()
 
         ssh.remotes {
@@ -62,12 +55,14 @@ class AuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
     def "password authentication should fail if wrong one is given"() {
         given:
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
-        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -100,7 +95,6 @@ class AuthenticationSpec extends Specification {
     def "public key authentication should pass if valid one is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = successCommandFactory()
         server.start()
 
         ssh.remotes {
@@ -121,12 +115,14 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
     def "identity of public key authentication can be set by global settings"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = successCommandFactory()
         server.start()
 
         ssh.settings {
@@ -150,12 +146,14 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
     def "public key authentication should fail if wrong one is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -188,7 +186,6 @@ class AuthenticationSpec extends Specification {
     def "public key authentication should accept the passphrase of identity"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = successCommandFactory()
         server.start()
 
         ssh.remotes {
@@ -210,12 +207,14 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
     def "identity and passphrase can be set by global settings"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = successCommandFactory()
         server.start()
 
         ssh.settings {
@@ -240,12 +239,14 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
     def "public key authentication should fail if wrong passphrase is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.remotes {
@@ -279,7 +280,6 @@ class AuthenticationSpec extends Specification {
     def "remote specific identity should precede one in global settings"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
-        server.commandFactory = Mock(CommandFactory)
         server.start()
 
         ssh.settings {
@@ -304,6 +304,9 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+
+        then:
+        0 * server.commandFactory.createCommand(_)
 
         then:
         JSchException e = thrown()
