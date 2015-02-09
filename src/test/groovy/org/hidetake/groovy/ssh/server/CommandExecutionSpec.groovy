@@ -5,7 +5,7 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.operation.DefaultOperations
@@ -279,10 +279,10 @@ class CommandExecutionSpec extends Specification {
         System.err = err
 
         where:
-        logging                          | stdout | slf4j
-        OperationSettings.Logging.stdout | 1      | 0
-        OperationSettings.Logging.slf4j  | 0      | 1
-        OperationSettings.Logging.none   | 0      | 0
+        logging        | stdout | slf4j
+        LoggingMethod.stdout | 1      | 0
+        LoggingMethod.slf4j  | 0      | 1
+        LoggingMethod.none   | 0      | 0
     }
 
     @Unroll

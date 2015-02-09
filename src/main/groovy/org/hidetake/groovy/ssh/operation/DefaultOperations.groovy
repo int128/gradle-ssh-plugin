@@ -2,6 +2,7 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
+import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.interaction.Stream
@@ -41,10 +42,10 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
 
         switch (settings.logging) {
-            case OperationSettings.Logging.slf4j:
+            case LoggingMethod.slf4j:
                 standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
                 break
-            case OperationSettings.Logging.stdout:
+            case LoggingMethod.stdout:
                 standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
                 break
         }
@@ -91,11 +92,11 @@ class DefaultOperations implements Operations {
         channel.errStream = standardError
 
         switch (settings.logging) {
-            case OperationSettings.Logging.slf4j:
+            case LoggingMethod.slf4j:
                 standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
                 standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
-            case OperationSettings.Logging.stdout:
+            case LoggingMethod.stdout:
                 standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
                 standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
                 break
@@ -154,11 +155,11 @@ class DefaultOperations implements Operations {
         channel.errStream = standardError
 
         switch (settings.logging) {
-            case OperationSettings.Logging.slf4j:
+            case LoggingMethod.slf4j:
                 standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
                 standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
                 break
-            case OperationSettings.Logging.stdout:
+            case LoggingMethod.stdout:
                 standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
                 standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
                 break
