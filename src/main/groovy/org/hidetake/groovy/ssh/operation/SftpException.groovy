@@ -1,12 +1,14 @@
 package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.SftpException as JschSftpException
+import groovy.transform.CompileStatic
 
 /**
  * Represents SFTP error.
  *
  * @author Hidetake Iwata
  */
+@CompileStatic
 class SftpException extends Exception {
     final SftpError error
 
