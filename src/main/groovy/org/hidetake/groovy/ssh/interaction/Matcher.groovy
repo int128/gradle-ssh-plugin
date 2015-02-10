@@ -16,14 +16,13 @@ class Matcher {
         }
     }
 
-    private static generateEventMatcher(Map condition) {
+    private static generateEventMatcher(Map<String, Object> condition) {
         def supportedKeys = eventMatcherMap.keySet()
-        def eventKeys = supportedKeys.intersect(condition.keySet())
-        assert eventKeys.size() == 1, "Key should be one of $supportedKeys but found $eventKeys"
-        def eventKey = eventKeys.first()
+        def event = condition.find { it.key in supportedKeys }
+        assert event, "Key should be one of $supportedKeys: $condition"
 
-        def eventMatcher = eventMatcherMap[eventKey]
-        def textMatcher = generateTextMatcher(condition[eventKey])
+        def eventMatcher = eventMatcherMap[event.key]
+        def textMatcher = generateTextMatcher(event.value)
         return { Event e, long n, String s ->
             eventMatcher(e, n) && textMatcher(s)
         }
