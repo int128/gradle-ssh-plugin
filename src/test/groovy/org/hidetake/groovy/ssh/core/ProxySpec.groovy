@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.core.Proxy
 import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS

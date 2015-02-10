@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionExtension
 import org.slf4j.LoggerFactory
 
-import static org.hidetake.groovy.ssh.operation.SftpException.Error.SSH_FX_FAILURE
+import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
 
 /**
  * An extension class to put a file or directory via SFTP.
