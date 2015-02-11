@@ -1,6 +1,6 @@
 ---
 layout: page
-title: User Guide
+title: User Guide (0.4.x)
 ---
 
 
@@ -9,11 +9,9 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 1.x. See also following.
+This document is for version 0.4.x. [Latest version is here](/user-guide.html).
 
-* [Migration Guide (from 0.3.x to 0.4.x)](/migration.v4.html)
-* [User Guide (0.4.x)](/user-guide.v4.html)
-* [User Guide (0.3.x)](/user-guide.v3.html)
+See also [migration guide from 0.3.x to 0.4.x](/migration.v4.html).
 
 
 Getting Started
@@ -28,12 +26,12 @@ Getting Started
 
 ### Requirement
 
-Gradle SSH Plugin requires following:
+Gradle SSH Plugin 0.4.x requires following:
 
 * Java 6 or later
 * Gradle 2.0 or later
 
-Old version 0.3.x is still available for Gradle 1.x compatible.
+Gradle SSH Plugin 0.3.x is still available for Gradle 1.x compatible.
 
 
 ### Create a script
@@ -57,7 +55,7 @@ plugins {
 }
 ```
 
-Gradle 2.0 style:
+Gradle 2.0 or earlier style:
 
 ```groovy
 buildscript {
@@ -463,11 +461,7 @@ execute('uname -a') { result ->
 }
 ```
 
-The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
-
-```groovy
-execute 'exit 1', ignoreError: true
-```
+The method throws an exception if an exit status of the command was not zero.
 
 
 ### Execute a command in background
@@ -509,12 +503,6 @@ executeBackground('ping -c 3 server') { result ->
 The method throws an exception if an exit status of the command is not zero.
 If a background command returned an error, `ssh.run` method waits for any other commands and throws an exception finally.
 
-It ignores the exit status if the `ignoreError` setting is given as follow:
-
-```groovy
-executeBackground 'exit 1', ignoreError: true
-```
-
 
 ### Execute a command with the sudo support
 
@@ -544,7 +532,7 @@ executeSudo('service httpd status') { result ->
 }
 ```
 
-The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.
+The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure.
 
 The sudo support is achieved by the stream interaction support. So the method does not accept an `interaction` setting.
 
@@ -566,11 +554,7 @@ session(remotes.web01) {
 }
 ```
 
-The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
-
-```groovy
-shell ignoreError: true, interaction: {...}
-```
+The method throws an exception if an exit status of the shell was not zero.
 
 
 ### Transfer a file or directory
@@ -578,45 +562,22 @@ shell ignoreError: true, interaction: {...}
 Call the `get` method to get a file or directory from the remote host.
 
 ```groovy
-// specify the file path
-get from: '/remote/file', into: 'local_file'
+get '/remote/file', 'local_file'
 
-// specify a File object
-get from: '/remote/file', into: buildDir
-
-// specify an output stream
-file.withOutputStream { stream ->
-  get from: '/remote/file', into: stream
-}
-
-// get content as a string
-def text = get from: '/remote/file'
+// also accepts a File object
+get '/remote/file', buildDir
 ```
 
-Call the `put` method to put a file or directory into the remote host. It also accepts content such as a string or byte array.
+Call the `put` method to put a file or directory into the remote host.
 
 ```groovy
-// specify the file path
-put from: 'local_file', into: '/remote/file'
+put 'local_file', '/remote/file'
 
-// specify a File object
-put from: buildDir, into: '/remote/folder'
+// also accepts a File object
+put buildDir, '/remote/folder'
 
-// specify an Iterable<File>
-put from: files('local_file1', 'local_file2'), into: '/remote/folder'
-
-// specify an input stream
-file.withInputStream { stream ->
-  put from: stream, into: '/remote/file.txt'
-}
-
-// specify a string
-put text: '''#!/bin/sh
-echo 'hello world'
-''', into: '/remote/script.sh'
-
-// specify a byte array
-put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
+// also accepts an Iterable<File>
+put files('local_file1', 'local_file2'), '/remote/folder'
 ```
 
 The method throws an exception if an error occurred while the file transfer.
@@ -630,7 +591,6 @@ Key              | Type     | Description
 -----------------|----------|------------
 `dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
 `pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
-`ignoreError`    | Boolean  | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 `logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 `outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.
 `errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
