@@ -33,8 +33,8 @@ task('should put contents and compute') << {
     ssh.run {
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
-            put text: "$x", into: "$remoteWorkDir/RX"
-            put bytes: "$y".bytes, into: "$remoteWorkDir/RY"
+            put text: x, into: "$remoteWorkDir/RX"
+            put bytes: y.toString().bytes, into: "$remoteWorkDir/RY"
             def a = execute("expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY`") as int
             def b = execute("expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY`") as int
             assert a == (x + y)
