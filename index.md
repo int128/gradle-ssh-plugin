@@ -81,7 +81,7 @@ task deploy << {
 }
 ```
 
-See also [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template).
+See [Getting Started](/getting-started.html) for more information.
 
 </section>
 </section>
