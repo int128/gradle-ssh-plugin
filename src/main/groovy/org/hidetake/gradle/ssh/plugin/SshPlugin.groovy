@@ -22,7 +22,7 @@ class SshPlugin implements Plugin<Project> {
         project.extensions.remotes = createRemoteContainer(project)
         project.extensions.proxies = createProxyContainer(project)
 
-        project.ssh.settings.logging = OperationSettings.Logging.stdout
+        project.ssh.settings.logging = 'stdout'
 
         // TODO: remove in future release
         project.ext.SshTask = SshTask
