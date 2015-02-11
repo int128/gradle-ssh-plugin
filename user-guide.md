@@ -9,9 +9,12 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 1.0.x. See also following.
+This document is for version 1.0.x.
 
-* [Getting Started](/getting-started.html)
+Please read [the getting started](/getting-started.html) at first time.
+
+See also:
+
 * [Migration Guide from 0.4.x to 1.0.x](/migration.v10.html)
 * [Migration Guide from 0.3.x to 0.4.x](/migration.v4.html)
 * [User Guide (version 0.4.x)](/user-guide.v4.html)
@@ -22,7 +25,9 @@ Manage remote hosts
 -------------------
 
 The plugin adds a container of remote hosts to the project.
-The remote hosts container is an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html) and has role support methods extended by the plugin.
+The remote hosts container is
+an [NamedDomainObjectContainer](http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html)
+and has role support methods extended by the plugin.
 
 
 ### Add a remote host
@@ -43,7 +48,7 @@ Following settings can be set in a remote closure.
 Key       | Type              | Description
 ----------|-------------------|------------
 `host`    | String, Mandatory | Hostname or IP address.
-`port`    | Integer           | Port. Default is 22.
+`port`    | Integer           | Port. Defaults to 22.
 `gateway` | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection.
 `proxy`   | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host.
 
@@ -59,9 +64,9 @@ Key            | Type              | Description
 `identity`     | File              | A private key file for public-key authentication.
 `passphrase`   | String            | A pass-phrase of the private key. This can be null.
 `agent`        | Boolean           | If this is set, Putty Agent or ssh-agent will be used on authentication.
-`knownHosts`   | File              | A known hosts file. Default is `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
-`retryCount`   | Integer           | Retry count to establish connection. Default is 0 (no retry).
-`retryWaitSec` | Integer (seconds) | Interval time between each retries. Default is 0 (immediately).
+`knownHosts`   | File              | A known hosts file. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
+`retryWaitSec` | Integer (seconds) | Interval time between each retries. Defaults to 0 (immediately).
 
 
 #### Connect through gateway servers
@@ -78,9 +83,14 @@ remotes {
     host = '192.168.1.101'
     user = 'jenkins'
     gateway = remotes.gw01
+    knownHost = allowAnyHosts
   }
 }
 ```
+
+Currently there is a limitation that strict host key checking must be turned off for remote hosts over the gateway.
+Because the gateway connection is achieved with the port forwarding, `known_hosts` does not work.
+This will be fixed in the future release.
 
 
 #### Connect through a proxy server
@@ -439,14 +449,14 @@ Following settings can be given to operation methods.
 
 Key              | Type     | Description
 -----------------|----------|------------
-`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Default is false.
-`pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Default is false.
+`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Defaults to false.
+`pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Defaults to false.
 `ignoreError`    | Boolean  | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 `logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 `outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.
 `errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
-`encoding`       | String   | Encoding of input and output on the command or shell execution. Default is `UTF-8`.
-`interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Default is no interaction.
+`encoding`       | String   | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+`interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
 `extensions`     | List of classes | List of extension classes. If this is set, classes will be mixed in.
 
 
@@ -639,10 +649,10 @@ execute('sudo service httpd reload', logging: false)
 ```
 
 
-Add custom DSL
---------------
+Extend DSL
+----------
 
-We can extend DSL syntax.
+We can extend DSL syntax. This is an experimental feature.
 
 Declare an extension class and add it to global or method specific settings.
 All methods in the extension class will be available in the session closure.
