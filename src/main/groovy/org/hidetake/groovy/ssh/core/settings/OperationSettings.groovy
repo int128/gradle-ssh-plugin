@@ -9,26 +9,6 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 @ToString
 class OperationSettings implements Settings<OperationSettings> {
     /**
-     * Logging methods.
-     */
-    static enum Logging {
-        /**
-         * Log is sent to SLF4J.
-         */
-        slf4j,
-
-        /**
-         * Log is sent to standard output or error.
-         */
-        stdout,
-
-        /**
-         * Logging is turned off.
-         */
-        none
-    }
-
-    /**
      * Dry-run flag.
      * If <code>true</code>, performs no action.
      */
@@ -48,7 +28,7 @@ class OperationSettings implements Settings<OperationSettings> {
     /**
      * A logging method of the remote command or shell.
      */
-    Logging logging
+    LoggingMethod logging
 
     /**
      * An output stream to forward the standard output.
@@ -80,7 +60,7 @@ class OperationSettings implements Settings<OperationSettings> {
             dryRun: false,
             ignoreError: false,
             pty: false,
-            logging: Logging.slf4j,
+            logging: LoggingMethod.slf4j,
             encoding: 'UTF-8',
             extensions: []
     )

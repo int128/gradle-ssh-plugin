@@ -13,15 +13,19 @@ import org.hidetake.groovy.ssh.operation.SftpOperations
  * @author hidetake.org
  */
 @Slf4j
-class SessionHandler implements SessionExtension {
+class SessionHandler implements CoreExtensions {
     private final Operations operations
 
     private final OperationSettings operationSettings
 
     static def create(Operations operations, OperationSettings operationSettings) {
-        log.debug("Extensions: ${operationSettings.extensions}")
         def handler = new SessionHandler(operations, operationSettings)
-        handler.withTraits(CoreExtensions).withTraits(operationSettings.extensions as Class[])
+        if (operationSettings.extensions) {
+            log.debug("Applying extensions: ${operationSettings.extensions}")
+            handler.withTraits(operationSettings.extensions as Class[])
+        } else {
+            handler
+        }
     }
 
     private def SessionHandler(Operations operations1, OperationSettings operationSettings1) {

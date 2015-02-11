@@ -9,81 +9,57 @@ import java.util.regex.Pattern
  */
 class Matcher {
     static generate(Map condition) {
-        def streamMatcher = StreamMatcher.generate(condition)
-        def eventMatcher = EventMatcher.generate(condition)
+        def streamMatcher = generateStreamMatcher(condition)
+        def eventMatcher = generateEventMatcher(condition)
         return { Stream stream, Event event, long lineNumber, String text ->
             streamMatcher(stream) && eventMatcher(event, lineNumber, text)
         }
     }
 
-    static enum Event {
-        Line,
-        Partial
-    }
+    private static generateEventMatcher(Map<String, Object> condition) {
+        def supportedKeys = eventMatcherMap.keySet()
+        def event = condition.find { it.key in supportedKeys }
+        assert event, "Key should be one of $supportedKeys: $condition"
 
-    private static enum EventMatcher {
-        nextLine ({ Event e, long n -> e == Event.Line && n == 1 }),
-        line     ({ Event e, long n -> e == Event.Line }),
-        partial  ({ Event e, long n -> e == Event.Partial })
-
-        final Closure<Boolean> closure
-
-        private EventMatcher(Closure<Boolean> closure1) {
-            closure = closure1
-        }
-
-        static Closure<Boolean> generate(Map condition) {
-            def supportedKeys = values()*.name()
-            def eventKeys = supportedKeys.intersect(condition.keySet())
-            assert eventKeys.size() == 1, "Key should be one of $supportedKeys but found $eventKeys"
-            def eventKey = eventKeys.first()
-
-            def eventMatcher = valueOf(eventKey).closure
-            def textMatcher = TextMatcher.generate(condition[eventKey])
-            return { Event e, long n, String s ->
-                eventMatcher(e, n) && textMatcher(s)
-            }
+        def eventMatcher = eventMatcherMap[event.key]
+        def textMatcher = generateTextMatcher(event.value)
+        return { Event e, long n, String s ->
+            eventMatcher(e, n) && textMatcher(s)
         }
     }
 
-    private static enum TextMatcher {
-        any     ({ String s -> true }),
-        pattern ({ Pattern e, String s -> s.matches(e) }),
-        exact   ({ String e, String s -> e == s })
+    private static final eventMatcherMap = [
+            nextLine: { Event e, long n -> e == Event.Line && n == 1 },
+            line:     { Event e, long n -> e == Event.Line },
+            partial:  { Event e, long n -> e == Event.Partial }
+    ]
 
-        final Closure<Boolean> closure
-
-        private TextMatcher(Closure<Boolean> closure1) {
-            closure = closure1
-        }
-
-        static Closure<Boolean> generate(expected) {
-            switch (expected) {
-                case Wildcard: return any.closure
-                case Pattern:  return pattern.closure.curry(expected)
-                case String:   return exact.closure.curry(expected)
-                default:       throw new IllegalArgumentException("Invalid value: $expected")
-            }
+    private static generateTextMatcher(expected) {
+        switch (expected) {
+            case Wildcard: return textMatcherMap.any
+            case Pattern:  return textMatcherMap.pattern.curry(expected)
+            case String:   return textMatcherMap.exact.curry(expected)
+            default:       throw new IllegalArgumentException("Invalid value: $expected")
         }
     }
 
-    private static enum StreamMatcher {
-        any   ({ Stream s -> true }),
-        exact ({ Stream e, Stream s -> e == s })
+    private static final textMatcherMap = [
+            any:     { String s -> true },
+            pattern: { Pattern e, String s -> s.matches(e) },
+            exact:   { String e, String s -> e == s }
+    ]
 
-        final Closure<Boolean> closure
-
-        private StreamMatcher(Closure<Boolean> closure1) {
-            closure = closure1
-        }
-
-        static Closure<Boolean> generate(Map condition) {
-            switch (condition.from) {
-                case null:     return any.closure
-                case Wildcard: return any.closure
-                case Stream:   return exact.closure.curry(condition.from)
-                default:       throw new IllegalArgumentException("Invalid stream: from=${condition.from}")
-            }
+    private static generateStreamMatcher(Map condition) {
+        switch (condition.from) {
+            case null:     return streamMatcherMap.any
+            case Wildcard: return streamMatcherMap.any
+            case Stream:   return streamMatcherMap.exact.curry(condition.from)
+            default:       throw new IllegalArgumentException("Invalid stream: from=${condition.from}")
         }
     }
+
+    private static final streamMatcherMap = [
+            any:   { Stream s -> true },
+            exact: { Stream e, Stream s -> e == s }
+    ]
 }

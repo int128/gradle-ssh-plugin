@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.interaction
 
-import org.hidetake.groovy.ssh.interaction.Matcher.Event
 import spock.lang.Specification
 import spock.lang.Unroll
 

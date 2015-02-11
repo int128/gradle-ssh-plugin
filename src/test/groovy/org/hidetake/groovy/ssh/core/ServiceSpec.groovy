@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.session.Plan
 import org.hidetake.groovy.ssh.session.Executor
 import spock.lang.Specification
@@ -44,7 +44,7 @@ class ServiceSpec extends Specification {
         }
 
         then:
-        ssh.settings.logging == OperationSettings.Logging.stdout
+        ssh.settings.logging == LoggingMethod.stdout
     }
 
     @Unroll

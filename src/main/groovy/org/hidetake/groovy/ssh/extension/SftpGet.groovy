@@ -93,7 +93,7 @@ get(from: String)                       // get a file and return the content'''
                 getFile(remote, local.path)
             }
         } catch (SftpException e) {
-            if (e.rawMessage.startsWith('not supported to get directory')) {
+            if (e.cause.message.startsWith('not supported to get directory')) {
                 log.debug(e.localizedMessage)
                 log.debug('Starting to get a directory recursively')
                 sftp(getRecursive.curry(remote, local))

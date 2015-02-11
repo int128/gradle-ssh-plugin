@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.interaction
 
 import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.interaction.Matcher.Event
 
 /**
  * A rule engine for processing stream events.
