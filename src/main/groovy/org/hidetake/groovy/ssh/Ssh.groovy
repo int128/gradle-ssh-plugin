@@ -28,18 +28,12 @@ class Ssh {
         new GroovyShell(binding)
     }
 
-    /**
-     * Product version.
-     * This property should be an empty string if resource is not found.
-     */
     @Lazy
-    static String version = {
-        try {
-            def stream = Ssh.getResourceAsStream('version')
-            stream ? stream.text : ''
-        } catch (IOException e) {
-            log.warn("Could not find the version resource", e)
-            ''
-        }
-    }()
+    static ProductMetadata product = { new ProductMetadata() }()
+
+    static class ProductMetadata {
+        private final ResourceBundle bundle = ResourceBundle.getBundle(Ssh.class.name)
+        final String name = bundle.getString('product.name')
+        final String version = bundle.getString('product.version')
+    }
 }

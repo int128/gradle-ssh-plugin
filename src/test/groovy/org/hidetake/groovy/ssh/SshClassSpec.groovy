@@ -6,10 +6,18 @@ class SshClassSpec extends Specification {
 
     def "version property should be the product version"() {
         when:
-        def version = Ssh.version
+        def version = Ssh.product.version
 
         then:
-        version.matches(/groovy-ssh-(@version@|SNAPSHOT|[0-9\.]+)/)
+        version.matches(/@version@|SNAPSHOT|[0-9\.]+/)
+    }
+
+    def "name property should be the product name"() {
+        when:
+        def version = Ssh.product.version
+
+        then:
+        !version.empty
     }
 
 }

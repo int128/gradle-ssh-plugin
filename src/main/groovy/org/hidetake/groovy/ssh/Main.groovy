@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 class Main {
     static void main(String[] args) {
         def cli = new CliBuilder(
-            footer: Ssh.version,
+            footer: "${Ssh.product.name}-${Ssh.product.version}",
             usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]',
             width: 120
         )
