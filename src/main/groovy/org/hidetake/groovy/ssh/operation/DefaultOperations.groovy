@@ -181,11 +181,11 @@ class DefaultOperations implements Operations {
             engine.attach(standardError, Stream.StandardError)
         }
 
-        channel.connect()
-        log.info("Command has been started on channel #${channel.id} in background ($command)")
-
         def lines = [] as List<String>
         standardOutput.listenLine { String line -> lines << line }
+
+        channel.connect()
+        log.info("Command has been started on channel #${channel.id} in background ($command)")
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
