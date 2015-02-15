@@ -89,6 +89,7 @@ class LineOutputStream extends OutputStream {
      * so it saves last block and write it in the next chance.
      */
     void flush() {
+        log.debug('Flushing the buffer')
         withTryCatch {
             def receivedBlock = new String(byteBuffer.toByteArray(), charset)
             byteBuffer.reset()
@@ -115,9 +116,11 @@ class LineOutputStream extends OutputStream {
                 }
             }
         }
+        log.debug('Flushed the buffer')
     }
 
     void close() {
+        log.debug('Closing the stream')
         withTryCatch {
             def receivedBlock = new String(byteBuffer.toByteArray(), charset)
             byteBuffer.reset()
@@ -138,6 +141,7 @@ class LineOutputStream extends OutputStream {
                 }
             }
         }
+        log.debug('Closed the stream')
     }
 
     private static withTryCatch(Closure closure) {
