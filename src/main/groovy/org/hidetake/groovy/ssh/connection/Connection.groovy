@@ -6,8 +6,10 @@ import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.ChannelShell
 import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 
@@ -67,6 +69,25 @@ class Connection {
         def channel = session.openChannel('sftp') as ChannelSftp
         channels.add(channel)
         channel
+    }
+
+    /**
+     * Set up local port forwarding.
+     *
+     * @param settings
+     * @return local port
+     */
+    int forwardLocalPort(LocalPortForwardSettings settings) {
+        session.setPortForwardingL(settings.bind, settings.port, settings.host, settings.hostPort)
+    }
+
+    /**
+     * Set up remote port forwarding.
+     *
+     * @param settings
+     */
+    void forwardRemotePort(RemotePortForwardSettings settings) {
+        session.setPortForwardingR(settings.bind, settings.port, settings.host, settings.hostPort)
     }
 
     /**

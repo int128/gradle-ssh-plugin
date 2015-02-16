@@ -1,7 +1,9 @@
 package org.hidetake.groovy.ssh.operation
 
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
 /**
  * Dry-run implementation of {@link Operations}.
@@ -29,6 +31,15 @@ class DryRunOperations implements Operations {
     @Override
     void executeBackground(OperationSettings settings, String command, Closure callback) {
         callback?.call('')
+    }
+
+    @Override
+    int forwardLocalPort(LocalPortForwardSettings settings) {
+        0
+    }
+
+    @Override
+    void forwardRemotePort(RemotePortForwardSettings settings) {
     }
 
     @Override
