@@ -66,10 +66,8 @@ class Main {
      */
     private static void configureLogLevel(String level) {
         try {
-            def levelClass = Class.forName('ch.qos.logback.classic.Level')
-            def levelObject = levelClass.invokeMethod('toLevel', level)
             def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-            root.setLevel(levelObject)
+            root.level = Class.forName('ch.qos.logback.classic.Level').toLevel(level)
         } catch (ClassNotFoundException e) {
             log.info("Could not set log level to $level: ${e.localizedMessage}")
         }
