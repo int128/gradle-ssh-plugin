@@ -73,6 +73,23 @@ class MainSpec extends Specification {
         System.out = stdout
     }
 
+    def "main should show version if --version is given"() {
+        given:
+        def stdout = System.out
+        def stdoutBuffer = new ByteArrayOutputStream()
+        System.out = new PrintStream(stdoutBuffer)
+
+        when:
+        Main.main '--version'
+
+        then:
+        stdoutBuffer.toString('UTF-8').trim() == "${Ssh.product.name}-${Ssh.product.version}"
+
+        cleanup:
+        System.out = stdout
+    }
+
+
     def "main should read script from a file is path is given"() {
         given:
         def scriptFile = temporaryFolder.newFile()

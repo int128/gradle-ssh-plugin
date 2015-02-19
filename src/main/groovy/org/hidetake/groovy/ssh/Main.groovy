@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory
 class Main {
     static void main(String[] args) {
         def cli = new CliBuilder(
-            footer: "${Ssh.product.name}-${Ssh.product.version}",
             usage: '[option...] [-e script-text] [script-filename | --stdin] [script-args...]',
             width: 120
         )
@@ -25,10 +24,13 @@ class Main {
         cli._ longOpt: 'stdin', 'Specify standard input as a source.'
         cli.e args: 1,          'Specify a command line script.'
         cli.n longOpt: 'dry-run', 'Do a dry run without connections.'
+        cli._ longOpt: 'version', 'Shows version.'
 
         def options = cli.parse(args)
         if (!options || options.h) {
             cli.usage()
+        } else if (options.version) {
+            println "${Ssh.product.name}-${Ssh.product.version}"
         } else {
             if      (options.d) { configureLogLevel('DEBUG') }
             else if (options.i) { configureLogLevel('INFO') }
