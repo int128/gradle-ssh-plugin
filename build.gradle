@@ -16,8 +16,8 @@ repositories {
     jcenter()
 }
 
-configurations {
-    cliRuntime
+sourceSets {
+    cli
 }
 
 dependencies {
@@ -76,8 +76,8 @@ shadowJar {
     manifest {
         attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'
     }
+    from project.sourceSets.cli.output
     configurations = [project.configurations.runtime, project.configurations.cliRuntime]
-    mergeServiceFiles()
     classifier = ''
     version = ''
 }
