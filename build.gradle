@@ -46,36 +46,13 @@ processResources {
 }
 
 /*
- * Tasks of unit test and server integration test
+ * Tasks and settings for test
  */
-test {
-    useJUnit {
-        excludeCategories 'org.hidetake.groovy.ssh.server.ServerIntegrationTest'
-    }
-}
-
-task serverIntegrationTest(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.server.ServerIntegrationTest'
-    }
-    reports {
-        html.destination = file("$buildDir/reports/server-integration-tests")
-    }
-}
-
 jacoco {
     toolVersion = '0.7.1.201405082137'
 }
 
-task jacocoServerIntegrationTestReport(type: JacocoReport) {
-    executionData serverIntegrationTest
-    sourceSets sourceSets.main
-    reports.html.destination "$buildDir/reports/jacoco/server-integration-tests"
-}
-
-check.dependsOn serverIntegrationTest
 check.dependsOn jacocoTestReport
-check.dependsOn jacocoServerIntegrationTestReport
 
 if (System.getProperty('os.name') == 'Linux') {
     tasks.withType(JavaForkOptions) {
