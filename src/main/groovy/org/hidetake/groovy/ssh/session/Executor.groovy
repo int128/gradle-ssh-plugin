@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.session
 
 import org.hidetake.groovy.ssh.connection.ConnectionManager
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.operation.DryRunOperations
 
@@ -23,27 +22,29 @@ class Executor {
      */
     def <T> List<T> execute(CompositeSettings compositeSettings, List<Plan<T>> plans) {
         if (compositeSettings.dryRun) {
-            plans.collect { plan ->
-                def operations = new DryRunOperations(plan.remote)
-                callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
-            }
+            dryRun(compositeSettings, plans)
         } else {
-            withConnectionManager(compositeSettings.connectionSettings) { ConnectionManager manager ->
-                plans.collect { plan ->
-                    def connection = manager.connect(plan.remote)
-                    def operations = new DefaultOperations(connection)
-                    callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
-                }
-            }
+            wetRun(compositeSettings, plans)
         }
     }
 
-    private static <T> T withConnectionManager(ConnectionSettings connectionSettings, Closure<T> closure) {
-        def connectionManager = new ConnectionManager(connectionSettings)
+    private <T> List<T> dryRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
+        plans.collect { plan ->
+            def operations = new DryRunOperations(plan.remote)
+            callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
+        }
+    }
+
+    private <T> List<T> wetRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
+        def manager = new ConnectionManager(compositeSettings.connectionSettings)
         try {
-            closure.call(connectionManager)
+            plans.collect { plan ->
+                def connection = manager.connect(plan.remote)
+                def operations = new DefaultOperations(connection)
+                callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
+            }
         } finally {
-            connectionManager.waitAndClose()
+            manager.waitAndClose()
         }
     }
 }
