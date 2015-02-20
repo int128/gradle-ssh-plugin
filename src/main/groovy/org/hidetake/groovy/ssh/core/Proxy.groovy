@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.core
 
 /**
- * Represents a connection proxy to use when establishing a {@link Session}. An instance
- * of this class be shared by multiple {@link Remote}s.
+ * Represents a connection proxy to use when establishing a {@link org.hidetake.groovy.ssh.connection.Connection}.
+ * An instance of this class be shared by multiple {@link Remote}s.
  *
  * @author mlipper
  *

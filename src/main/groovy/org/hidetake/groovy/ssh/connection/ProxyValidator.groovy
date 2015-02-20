@@ -6,8 +6,7 @@ import org.hidetake.groovy.ssh.core.ProxyType
 import static ProxyType.SOCKS
 
 /**
- * Basic validation and defaults for proxied connections created by 
- * {@link DefaultConnectionManager}.
+ * Basic validation and defaults for proxied connections created by {@link ConnectionManager}.
  *  
  * @author mlipper
  *
