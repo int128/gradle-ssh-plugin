@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory
  * @author Hidetake Iwata
  */
 trait SudoExecution implements SessionExtension {
-    private static final log = LoggerFactory.getLogger(SudoExecution)
-
     /**
      * Performs a sudo operation, explicitly providing password for the sudo user.
      * This method blocks until channel is closed.
@@ -22,7 +20,6 @@ trait SudoExecution implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        log.info("Execute a command ($command) with sudo support")
         executeSudoInternal(command, remote, [:])
     }
 
@@ -37,7 +34,6 @@ trait SudoExecution implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with sudo support and settings ($settings)")
         executeSudoInternal(command, remote, settings)
     }
 
@@ -51,7 +47,6 @@ trait SudoExecution implements SessionExtension {
     void executeSudo(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        log.info("Execute a command ($command) with sudo support")
         def result = executeSudoInternal(command, remote, [:])
         callback(result)
     }
@@ -68,7 +63,6 @@ trait SudoExecution implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with sudo support and settings ($settings)")
         def result = executeSudoInternal(command, remote, settings)
         callback(result)
     }
@@ -81,18 +75,21 @@ trait SudoExecution implements SessionExtension {
      * @param givenSettings
      */
     private String executeSudoInternal(String command, Remote remote, Map givenSettings) {
-        def prompt = UUID.randomUUID().toString()
-        def lines = []
-        def settings = [:] << givenSettings << [interaction: { log ->
+        final log = LoggerFactory.getLogger(SudoExecution)
+        final prompt = UUID.randomUUID().toString()
+        final lines = []
+
+        final settings = [:] << givenSettings << [interaction: {
             when(partial: prompt, from: standardOutput) {
-                log.info("Sending password for sudo authentication")
+                log.info('Providing the password for sudo authentication')
                 standardInput << remote.password << '\n'
 
                 when(nextLine: _, from: standardOutput) {
                     when(nextLine: 'Sorry, try again.') {
-                        throw new RuntimeException("Sudo authentication failed")
+                        throw new RuntimeException('sudo authentication failed')
                     }
                     when(line: _, from: standardOutput) {
+                        log.info('sudo authentication passed')
                         lines << it
                     }
                 }
@@ -100,8 +97,9 @@ trait SudoExecution implements SessionExtension {
             when(line: _, from: standardOutput) {
                 lines << it
             }
-        }.curry(log)]
+        }]
 
+        log.info('Waiting for the password prompt of sudo')
         execute(settings, "sudo -S -p '$prompt' $command")
 
         lines.join(Utilities.eol())

@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.extension
 
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.session.SessionExtension
-import org.slf4j.LoggerFactory
 
 /**
  * Provides the non-blocking command execution.
@@ -10,8 +9,6 @@ import org.slf4j.LoggerFactory
  * @author Hidetake Iwata
  */
 trait BackgroundCommand implements SessionExtension {
-    private static final log = LoggerFactory.getLogger(BackgroundCommand)
-
     /**
      * Performs an execution operation.
      * This method returns immediately and executes the command concurrently.
@@ -20,7 +17,6 @@ trait BackgroundCommand implements SessionExtension {
      */
     void executeBackground(String command) {
         assert command, 'command must be given'
-        log.info("Execute a command ($command) in background")
         operations.executeBackground(operationSettings, command, null)
     }
 
@@ -34,7 +30,6 @@ trait BackgroundCommand implements SessionExtension {
     void executeBackground(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        log.info("Execute a command ($command) with callback in background")
         operations.executeBackground(operationSettings, command, callback)
     }
 
@@ -48,7 +43,6 @@ trait BackgroundCommand implements SessionExtension {
     void executeBackground(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with settings ($settings) in background")
         operations.executeBackground(operationSettings + new OperationSettings(settings), command, null)
     }
 
@@ -64,7 +58,6 @@ trait BackgroundCommand implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with settings ($settings) and callback in background")
         operations.executeBackground(operationSettings + new OperationSettings(settings), command, callback)
     }
 }

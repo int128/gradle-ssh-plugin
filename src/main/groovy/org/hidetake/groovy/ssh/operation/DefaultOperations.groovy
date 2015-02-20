@@ -19,6 +19,11 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 /**
  * Default implementation of {@link Operations}.
  *
+ * Operations should follow the logging convention, that is,
+ * it should write a log as DEBUG on beginning of an operation,
+ * it should write a log as INFO on success of an operation,
+ * but it does not need to write a log if it is an internal operation.
+
  * @author Hidetake Iwata
  */
 @Slf4j
@@ -36,7 +41,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void shell(OperationSettings settings) {
-        log.debug("Execute a shell with $settings")
+        log.debug("Executing a shell with $settings")
 
         def channel = connection.createShellChannel(settings)
         def standardInput = channel.outputStream
@@ -66,16 +71,16 @@ class DefaultOperations implements Operations {
 
         try {
             channel.connect()
-            log.info("Shell has been started on channel #${channel.id}")
+            log.info("Shell #${channel.id} has been started")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Shell returned exit status $exitStatus on channel #${channel.id}")
+            log.info("Shell #${channel.id} returned exit status $exitStatus")
 
             if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
+                throw new BadExitStatusException("Shell #${channel.id} returned exit status $exitStatus", exitStatus)
             }
         } finally {
             channel.disconnect()
@@ -84,7 +89,7 @@ class DefaultOperations implements Operations {
 
     @Override
     String execute(OperationSettings settings, String command, Closure callback) {
-        log.debug("Execute a command ($command) with $settings")
+        log.debug("Executing the command ($command) with $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -125,16 +130,16 @@ class DefaultOperations implements Operations {
 
         try {
             channel.connect()
-            log.info("Command has been started on channel #${channel.id} ($command)")
+            log.info("Command #${channel.id} started ($command)")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Command returned exit status $exitStatus on channel #${channel.id}")
+            log.info("Command #${channel.id} returned exit status $exitStatus")
 
             if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
+                throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
             }
 
             def result = lines.join(Utilities.eol())
@@ -147,7 +152,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.debug("Execute a command ($command) in background with $settings")
+        log.debug("Executing the command ($command) in background with $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -187,14 +192,14 @@ class DefaultOperations implements Operations {
         standardOutput.listenLine { String line -> lines << line }
 
         channel.connect()
-        log.info("Command has been started on channel #${channel.id} in background ($command)")
+        log.info("Command #${channel.id} started in background ($command)")
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
-            log.info("Command returned exit status $exitStatus on channel #${channel.id}")
+            log.info("Command #${channel.id} returned exit status $exitStatus")
 
             if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Command returned exit status $exitStatus", exitStatus)
+                throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
             }
 
             def result = lines.join(Utilities.eol())
@@ -204,17 +209,21 @@ class DefaultOperations implements Operations {
 
     @Override
     int forwardLocalPort(LocalPortForwardSettings settings) {
-        log.debug("Request port forwarding from local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})")
+        log.debug("Requesting port forwarding from " +
+                  "local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})")
         int port = connection.forwardLocalPort(settings)
-        log.debug("Enabled port forwarding from local (${settings.bind}:${port}) to remote (${settings.host}:${settings.hostPort})")
+        log.info("Enabled port forwarding from " +
+                 "local (${settings.bind}:${port}) to remote (${settings.host}:${settings.hostPort})")
         port
     }
 
     @Override
     void forwardRemotePort(RemotePortForwardSettings settings) {
-        log.debug("Request port forwarding from remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+        log.debug("Requesting port forwarding from " +
+                  "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
         connection.forwardRemotePort(settings)
-        log.debug("Enabled port forwarding from remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+        log.info("Enabled port forwarding from " +
+                 "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
     }
 
     @Override
@@ -222,11 +231,11 @@ class DefaultOperations implements Operations {
         def channel = connection.createSftpChannel()
         try {
             channel.connect()
-            log.info("SFTP has been started on channel #${channel.id}")
+            log.debug("SFTP #${channel.id} started")
             callWithDelegate(closure, new SftpOperations(channel))
         } finally {
             channel.disconnect()
-            log.info("SFTP has been closed on channel #${channel.id}")
+            log.debug("SFTP #${channel.id} closed")
         }
     }
 }
