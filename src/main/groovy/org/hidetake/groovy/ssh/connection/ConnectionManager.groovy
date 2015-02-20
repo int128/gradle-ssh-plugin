@@ -14,7 +14,7 @@ import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 
-import static Retry.retry
+import static org.hidetake.groovy.ssh.util.Utility.retry
 import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS
 
 /**

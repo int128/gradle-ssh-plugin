@@ -1,10 +1,14 @@
 package org.hidetake.groovy.ssh.util
 
+import com.jcraft.jsch.JSchException
+import groovy.util.logging.Slf4j
+
 /**
  * Provides utility methods.
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class Utility {
     /**
      * Find not null item from arguments in order.
@@ -27,5 +31,28 @@ class Utility {
         cloned.resolveStrategy = Closure.DELEGATE_FIRST
         cloned.delegate = delegate
         cloned.call()
+    }
+
+    /**
+     * Execute the closure with retrying.
+     * This method catches only {@link com.jcraft.jsch.JSchException}s.
+     *
+     * @param retryCount
+     * @param retryWaitSec
+     * @param closure
+     */
+    static <T> T retry(int retryCount, int retryWaitSec, Closure<T> closure) {
+        assert closure != null, 'closure should be set'
+        if (retryCount > 0) {
+            try {
+                closure()
+            } catch (JSchException e) {
+                log.warn("Retrying: ${e.getClass().name}: ${e.localizedMessage}")
+                sleep(retryWaitSec * 1000L)
+                retry(retryCount - 1, retryWaitSec, closure)
+            }
+        } else {
+            closure()
+        }
     }
 }
