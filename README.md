@@ -11,10 +11,9 @@ See also [the user guide of Gradle SSH Plugin](https://gradle-ssh-plugin.github.
 Getting Started
 ---------------
 
-Download the release and run. It requires Java 6 or later.
+Download [the release](https://github.com/int128/groovy-ssh/releases) and run. It requires Java 6 or later.
 
 ```sh
-curl -L -O https://github.com/int128/groovy-ssh/releases/download/latest/groovy-ssh.jar
 java -jar groovy-ssh.jar
 ```
 
