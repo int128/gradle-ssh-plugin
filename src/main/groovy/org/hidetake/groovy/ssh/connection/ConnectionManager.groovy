@@ -61,11 +61,13 @@ class ConnectionManager {
      */
     private Session establishViaGateway(Remote remote) {
         if (remote.gateway) {
+            log.debug("Establishing a connection to $remote via $remote.gateway")
             def session = establishViaGateway(remote.gateway)
             def localPort = session.setPortForwardingL(0, remote.host, remote.port)
             log.info("Enabled local port forwarding from $localPort to ${remote.host}:${remote.port}")
             establishSession(remote, LOCALHOST, localPort)
         } else {
+            log.debug("Establishing a connection to $remote")
             establishSession(remote, remote.host, remote.port)
         }
     }
@@ -123,8 +125,9 @@ class ConnectionManager {
             
             session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
 
+            log.debug("Establishing a connection to $remote")
             session.connect()
-            log.info("Established a session to $remote via $host:$port")
+            log.info("Established the connection to $remote")
             session
         }
     }
@@ -144,6 +147,8 @@ class ConnectionManager {
     }
 
     private void waitForPending() {
+        log.debug("Waiting for pending operations")
+
         List<Exception> exceptions = []
         while (connections*.anyPending.any()) {
             connections.each { connection ->
@@ -162,6 +167,8 @@ class ConnectionManager {
                 exceptions.addAll(e.exceptionsOfBackgroundExecution)
             }
         }
+
+        log.debug('Finished all operations including background commands')
 
         if (!exceptions.empty) {
             throw new BackgroundCommandException(exceptions)
