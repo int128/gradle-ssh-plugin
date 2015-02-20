@@ -6,7 +6,7 @@ import groovy.transform.ToString
 /**
  * Represents overall settings configurable in global or task.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @EqualsAndHashCode
 @ToString

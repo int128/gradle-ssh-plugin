@@ -5,7 +5,7 @@ import groovy.util.logging.Slf4j
 /**
  * An implementation of line oriented {@link OutputStream}.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class LineOutputStream extends OutputStream {

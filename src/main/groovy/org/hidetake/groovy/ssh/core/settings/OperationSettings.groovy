@@ -5,6 +5,11 @@ import groovy.transform.ToString
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
+/**
+ * Settings for SSH operations.
+ *
+ * @author Hidetake Iwata
+ */
 @EqualsAndHashCode
 @ToString
 class OperationSettings implements Settings<OperationSettings> {

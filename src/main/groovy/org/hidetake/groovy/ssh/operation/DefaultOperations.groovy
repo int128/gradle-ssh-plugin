@@ -19,7 +19,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 /**
  * Default implementation of {@link Operations}.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class DefaultOperations implements Operations {

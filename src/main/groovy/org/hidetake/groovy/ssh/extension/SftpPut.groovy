@@ -10,7 +10,7 @@ import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
 /**
  * An extension class to put a file or directory via SFTP.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 trait SftpPut implements SessionExtension {
     private static final log = LoggerFactory.getLogger(SftpPut)

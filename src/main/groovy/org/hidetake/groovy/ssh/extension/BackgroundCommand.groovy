@@ -4,6 +4,11 @@ import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.session.SessionExtension
 import org.slf4j.LoggerFactory
 
+/**
+ * Provides the non-blocking command execution.
+ *
+ * @author Hidetake Iwata
+ */
 trait BackgroundCommand implements SessionExtension {
     private static final log = LoggerFactory.getLogger(BackgroundCommand)
 

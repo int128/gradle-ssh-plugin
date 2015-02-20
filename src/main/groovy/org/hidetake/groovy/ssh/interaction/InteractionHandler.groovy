@@ -5,7 +5,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 /**
  * A handler of the {@link org.hidetake.groovy.ssh.core.settings.OperationSettings#interaction} closure.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 class InteractionHandler {
     /**

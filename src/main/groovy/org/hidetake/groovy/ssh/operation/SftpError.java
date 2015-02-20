@@ -5,6 +5,7 @@ package org.hidetake.groovy.ssh.operation;
  * Implemented as Java native enum for Gradle 1.x compatibility.
  *
  * @link http://tools.ietf.org/html/draft-ietf-secsh-filexfer-13#section-9.1
+ * @author Hidetake Iwata
  */
 public enum SftpError {
     SSH_FX_OK(0, "Successful completion of the operation"),

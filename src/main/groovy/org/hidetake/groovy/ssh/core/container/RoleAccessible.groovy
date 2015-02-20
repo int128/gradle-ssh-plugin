@@ -2,6 +2,11 @@ package org.hidetake.groovy.ssh.core.container
 
 import org.hidetake.groovy.ssh.core.Remote
 
+/**
+ * Provides role access for remote hosts.
+ *
+ * @author Hidetake Iwata
+ */
 trait RoleAccessible implements Map<String, Remote> {
     /**
      * Find remote hosts associated with given roles.

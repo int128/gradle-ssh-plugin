@@ -9,7 +9,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 /**
  * A handler of {@link Service#run(groovy.lang.Closure)}.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 class RunHandler {
     /**

@@ -20,7 +20,7 @@ import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS
 /**
  * A manager of {@link Connection}s.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class ConnectionManager {

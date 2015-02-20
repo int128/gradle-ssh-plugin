@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 /**
  * An exception class thrown if the remote command returns bad exit status.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @CompileStatic
 class BadExitStatusException extends RuntimeException {

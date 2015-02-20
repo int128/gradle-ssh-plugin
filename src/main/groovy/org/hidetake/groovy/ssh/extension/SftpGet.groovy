@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 /**
  * An extension class to get a file or directory via SFTP.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 trait SftpGet implements SessionExtension {
     private static final log = LoggerFactory.getLogger(SftpGet)

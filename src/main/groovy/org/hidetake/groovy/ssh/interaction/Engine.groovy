@@ -6,7 +6,7 @@ import groovy.util.logging.Slf4j
 /**
  * A rule engine for processing stream events.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class Engine {

@@ -1,5 +1,10 @@
 package org.hidetake.groovy.ssh.util
 
+/**
+ * Provides utility methods.
+ *
+ * @author Hidetake Iwata
+ */
 class Utility {
     /**
      * Find not null item from arguments in order.

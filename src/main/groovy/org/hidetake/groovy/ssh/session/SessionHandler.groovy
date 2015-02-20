@@ -10,7 +10,7 @@ import org.hidetake.groovy.ssh.operation.SftpOperations
 /**
  * A handler of {@link org.hidetake.groovy.ssh.core.RunHandler#session(Remote, groovy.lang.Closure)}.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class SessionHandler implements CoreExtensions {

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 /**
  * An extension class of sudo command execution.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 trait SudoExecution implements SessionExtension {
     private static final log = LoggerFactory.getLogger(SudoExecution)

@@ -16,7 +16,7 @@ import org.hidetake.groovy.ssh.session.BadExitStatusException
 /**
  * A SSH connection.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class Connection {

@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 /**
  * An exception thrown if at least one background command occurs any error.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @CompileStatic
 class BackgroundCommandException extends RuntimeException {

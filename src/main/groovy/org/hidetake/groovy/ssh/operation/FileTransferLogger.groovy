@@ -14,7 +14,7 @@ import java.text.NumberFormat
  * <li>Transferred bytes in each {@link FileTransferLogger#LOG_INTERVAL_MILLIS}</li>
  * <li>End of transferring</li>
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class FileTransferLogger implements SftpProgressMonitor {

@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 /**
  * Matcher classes.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 class Matcher {
     static generate(Map condition) {

@@ -9,8 +9,7 @@ import org.apache.sshd.server.ExitCallback
 /**
  * A helper class for server-based integration tests.
  *
- * @author hidetake.org
- *
+ * @author Hidetake Iwata
  */
 class SshServerMock {
 

@@ -6,6 +6,11 @@ import org.hidetake.groovy.ssh.core.Proxy
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
+/**
+ * Settings for establishing the SSH connection.
+ *
+ * @author Hidetake Iwata
+ */
 @EqualsAndHashCode
 @ToString(excludes = 'password, passphrase, allowAnyHosts')
 class ConnectionSettings implements Settings<ConnectionSettings> {

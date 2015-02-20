@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 /**
  * An aggregate of core SSH operations.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 interface Operations {
     Remote getRemote()

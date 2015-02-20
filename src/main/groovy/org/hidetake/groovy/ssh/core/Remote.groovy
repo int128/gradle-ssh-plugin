@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 /**
  * Represents a remote host.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  *
  */
 class Remote {

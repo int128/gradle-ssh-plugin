@@ -5,7 +5,7 @@ import groovy.transform.Immutable
 /**
  * A rule of interaction with the stream.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Immutable
 class InteractionRule {

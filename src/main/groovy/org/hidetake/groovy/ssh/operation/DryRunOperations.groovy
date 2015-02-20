@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 /**
  * Dry-run implementation of {@link Operations}.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 class DryRunOperations implements Operations {
     final Remote remote

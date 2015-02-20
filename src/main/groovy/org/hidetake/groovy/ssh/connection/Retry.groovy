@@ -3,6 +3,11 @@ package org.hidetake.groovy.ssh.connection
 import com.jcraft.jsch.JSchException
 import groovy.util.logging.Slf4j
 
+/**
+ * Utility for retrying.
+ *
+ * @author Hidetake Iwata
+ */
 @Slf4j
 class Retry {
     /**

@@ -7,7 +7,7 @@ import groovy.util.logging.Slf4j
 /**
  * An aggregate of file transfer operations.
  *
- * @author hidetake.org
+ * @author Hidetake Iwata
  */
 @Slf4j
 class SftpOperations {
