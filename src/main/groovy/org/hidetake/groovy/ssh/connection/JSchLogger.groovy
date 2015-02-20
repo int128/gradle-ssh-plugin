@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 
 /**
  * A logger which bridges JSch and SLF4J.
+ * It does not redirect DEBUG log because it is too detail and verbose.
  *
  * @author Hidetake Iwata
  */
@@ -14,7 +15,6 @@ class JSchLogger implements Logger {
     @Override
     boolean isEnabled(int logLevel) {
         switch (logLevel) {
-            case DEBUG: return log.isDebugEnabled()
             case INFO:  return log.isDebugEnabled()
             case WARN:  return log.isInfoEnabled()
             case ERROR: return log.isWarnEnabled()
@@ -26,9 +26,6 @@ class JSchLogger implements Logger {
     @Override
     void log(int logLevel, String message) {
         switch (logLevel) {
-            case DEBUG:
-                log.debug("JSch: $message")
-                break
             case INFO:
                 log.debug("JSch: $message")
                 break
