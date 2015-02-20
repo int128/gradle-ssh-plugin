@@ -1,16 +1,14 @@
 package org.hidetake.groovy.ssh
 
-import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+import static org.hidetake.groovy.ssh.LogbackConfig.configureLogback
 
 /**
  * CLI main class.
  *
  * @author Hidetake Iwata
  */
-@Slf4j
 class Main {
     static void main(String[] args) {
         def cli = new CliBuilder(
@@ -32,10 +30,7 @@ class Main {
         } else if (options.version) {
             println "${Ssh.product.name}-${Ssh.product.version}"
         } else {
-            if      (options.d) { configureLogLevel('DEBUG') }
-            else if (options.i) { configureLogLevel('INFO') }
-            else if (options.q) { configureLogLevel('WARN') }
-            else                { configureLogLevel('INFO') }
+            configureLogback(level: logLevel(options), pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')
 
             def shell = newShellWith(options)
             def extra = options.arguments()
@@ -47,6 +42,13 @@ class Main {
         }
     }
 
+    private static logLevel(options) {
+        if      (options.d) { 'DEBUG' }
+        else if (options.i) { 'INFO' }
+        else if (options.q) { 'WARN' }
+        else                { 'INFO' }
+    }
+
     private static newShellWith(options) {
         def shell = Ssh.newShell()
         if (options.n) {
@@ -55,21 +57,7 @@ class Main {
                 dryRun = true
             }
         }
+        shell.setVariable('logback', new LogbackConfig())
         shell
-    }
-
-    /**
-     * Configure log level of Logback.
-     * This method should not fail if Logback is not loaded.
-     *
-     * @param level log level as a string
-     */
-    private static void configureLogLevel(String level) {
-        try {
-            def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-            root.level = Class.forName('ch.qos.logback.classic.Level').toLevel(level)
-        } catch (ClassNotFoundException e) {
-            log.info("Could not set log level to $level: ${e.localizedMessage}")
-        }
     }
 }
