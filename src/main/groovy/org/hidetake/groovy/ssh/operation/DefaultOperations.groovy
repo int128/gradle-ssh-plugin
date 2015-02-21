@@ -9,7 +9,6 @@ import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 import org.hidetake.groovy.ssh.interaction.Interaction
-import org.hidetake.groovy.ssh.interaction.LineOutputStream
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate

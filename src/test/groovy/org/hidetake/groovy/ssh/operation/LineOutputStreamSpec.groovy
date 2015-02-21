@@ -1,5 +1,6 @@
-package org.hidetake.groovy.ssh.interaction
+package org.hidetake.groovy.ssh.operation
 
+import org.hidetake.groovy.ssh.operation.LineOutputStream
 import spock.lang.Specification
 import spock.lang.Unroll
 

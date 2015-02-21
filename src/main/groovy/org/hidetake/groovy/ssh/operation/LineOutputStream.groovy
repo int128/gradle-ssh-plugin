@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.interaction
+package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 

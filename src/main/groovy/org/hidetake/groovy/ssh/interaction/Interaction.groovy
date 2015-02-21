@@ -1,5 +1,7 @@
 package org.hidetake.groovy.ssh.interaction
 
+import org.hidetake.groovy.ssh.operation.LineOutputStream
+
 /**
  * An entry point of interaction support classes.
  *
