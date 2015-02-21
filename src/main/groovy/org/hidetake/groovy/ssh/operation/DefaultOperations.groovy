@@ -45,14 +45,7 @@ class DefaultOperations implements Operations {
         def standardOutput = new LineOutputStream(settings.encoding)
         channel.outputStream = standardOutput
 
-        switch (settings.logging) {
-            case LoggingMethod.slf4j:
-                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
-                break
-            case LoggingMethod.stdout:
-                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
-                break
-        }
+        enableLogging(settings.logging, standardOutput)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -90,16 +83,7 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        switch (settings.logging) {
-            case LoggingMethod.slf4j:
-                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
-                standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
-                break
-            case LoggingMethod.stdout:
-                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
-                standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
-                break
-        }
+        enableLogging(settings.logging, standardOutput, standardError)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -147,16 +131,7 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        switch (settings.logging) {
-            case LoggingMethod.slf4j:
-                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
-                standardError.listenLogging  { String m -> log.error("${remote.name}|$m") }
-                break
-            case LoggingMethod.stdout:
-                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
-                standardError.listenLogging  { String m -> System.err.println("${remote.name}|$m") }
-                break
-        }
+        enableLogging(settings.logging, standardOutput, standardError)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -216,6 +191,21 @@ class DefaultOperations implements Operations {
         } finally {
             channel.disconnect()
             log.debug("SFTP #${channel.id} closed")
+        }
+    }
+
+    private void enableLogging(LoggingMethod loggingMethod,
+                               LineOutputStream standardOutput,
+                               LineOutputStream standardError = null) {
+        switch (loggingMethod) {
+            case LoggingMethod.slf4j:
+                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
+                standardError?.listenLogging { String m -> log.error("${remote.name}|$m") }
+                break
+            case LoggingMethod.stdout:
+                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
+                standardError?.listenLogging { String m -> System.err.println("${remote.name}|$m") }
+                break
         }
     }
 }

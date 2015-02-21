@@ -25,12 +25,10 @@ class Interaction {
         def engine = new Engine(evaluator, interaction)
 
         standardOutput.listenLine { String line -> engine.processLine(Stream.StandardOutput, line) }
-        standardOutput.listenPartial { String block -> engine.processPartial(Stream.StandardOutput, block) }
+        standardError?.listenLine { String line -> engine.processLine(Stream.StandardError, line) }
 
-        if (standardError) {
-            standardError.listenLine { String line -> engine.processLine(Stream.StandardError, line) }
-            standardError.listenPartial { String block -> engine.processPartial(Stream.StandardError, block) }
-        }
+        standardOutput.listenPartial { String block -> engine.processPartial(Stream.StandardOutput, block) }
+        standardError?.listenPartial { String block -> engine.processPartial(Stream.StandardError, block) }
     }
 
 }
