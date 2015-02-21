@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh
 
+import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 
 import static org.hidetake.groovy.ssh.LogbackConfig.configureLogback
@@ -9,6 +10,7 @@ import static org.hidetake.groovy.ssh.LogbackConfig.configureLogback
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class Main {
     static void main(String[] args) {
         def cli = new CliBuilder(
@@ -23,6 +25,7 @@ class Main {
         cli.e args: 1,          'Specify a command line script.'
         cli.n longOpt: 'dry-run', 'Do a dry run without connections.'
         cli._ longOpt: 'version', 'Shows version.'
+        cli.s longOpt: 'stacktrace', 'Print out the stacktrace for the exception.'
 
         def options = cli.parse(args)
         if (!options || options.h) {
@@ -31,6 +34,13 @@ class Main {
             println "${Ssh.product.name}-${Ssh.product.version}"
         } else {
             configureLogback(level: logLevel(options), pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')
+
+            if (!options.s) {
+                Thread.currentThread().uncaughtExceptionHandler = { Thread t, Throwable e ->
+                    log.error("Error: $e")
+                    log.info('Run with -s or --stacktrace option to get the stack trace')
+                }
+            }
 
             def shell = newShellWith(options)
             def extra = options.arguments()
