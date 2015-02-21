@@ -6,6 +6,10 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.0'
 }
 
+description = 'Groovy SSH library'
+group = 'org.hidetake'
+version = 'SNAPSHOT'
+
 // Set product version if tag is given on Travis CI
 System.getenv('TRAVIS_TAG')?.eachMatch(/^v([\d.]+)$/) { m -> project.version = m[1] }
 
@@ -87,27 +91,29 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+
+            final github = 'https://github.com/int128/groovy-ssh'
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
                     name project.name
                     description project.description
-                    url project.property('pom.url')
+                    url github
                     scm {
-                        url project.property('pom.scm.url')
-                        connection project.property('pom.scm.connection')
+                        url "${github}.git"
+                        connection "scm:git:${github}.git"
                     }
                     licenses {
                         license {
-                            name project.property('pom.license.name')
-                            url project.property('pom.license.url')
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                             distribution 'repo'
                         }
                     }
                     developers {
                         developer {
-                            id project.property('pom.developer.id')
-                            name project.property('pom.developer.name')
+                            id 'int128'
+                            name 'int128'
                         }
                     }
                 }
