@@ -13,49 +13,12 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineMetaClassChanges(DefaultOperations)
+import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
+
 class MainSpec extends Specification {
-
-    SshServer server
-
-    Logger logger
-
-    String script
 
     @Rule
     TemporaryFolder temporaryFolder
-
-    def setup() {
-        server = SshServerMock.setUpLocalhostServer()
-        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            authenticate('someuser', 'somepassword', _) >> true
-        }
-        server.commandFactory = Mock(CommandFactory) {
-            createCommand('somecommand') >> SshServerMock.command { SshServerMock.CommandContext c ->
-                c.outputStream.withWriter('UTF-8') { it << 'some message' }
-                c.errorStream.withWriter('UTF-8') { it << 'error' }
-                c.exitCallback.onExit(0)
-            }
-        }
-        server.start()
-
-        def hostKey = MainSpec.getResourceAsStream('/hostkey.pub').text
-        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
-        script = "ssh.run {" +
-                "session(host: 'localhost'," +
-                " port: ${server.port}," +
-                " knownHosts: new File('${knownHostsFile.path}')," +
-                " user: 'someuser'," +
-                " password: 'somepassword')" +
-                "{ execute('somecommand') }" +
-                "}"
-
-        logger = Mock(Logger)
-        logger.isInfoEnabled() >> true
-        logger.isErrorEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
-    }
-
 
     def "main should show usage if no arg is given"() {
         given:
@@ -90,8 +53,17 @@ class MainSpec extends Specification {
     }
 
 
+    @ConfineMetaClassChanges(DefaultOperations)
     def "main should read script from a file is path is given"() {
         given:
+        def server = createServer()
+        def script = createScript(server)
+
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
+        logger.isErrorEnabled() >> true
+        DefaultOperations.metaClass.static.getLog = { -> logger }
+
         def scriptFile = temporaryFolder.newFile()
         scriptFile << script
 
@@ -101,19 +73,44 @@ class MainSpec extends Specification {
         then:
         1 * logger.info ('localhost|some message')
         1 * logger.error('localhost|error')
+
+        cleanup:
+        server.stop()
     }
 
+    @ConfineMetaClassChanges(DefaultOperations)
     def "main should evaluate a script line if -e is given"() {
+        given:
+        def server = createServer()
+        def script = createScript(server)
+
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
+        logger.isErrorEnabled() >> true
+        DefaultOperations.metaClass.static.getLog = { -> logger }
+
         when:
         Main.main '-e', script
 
         then:
         1 * logger.info ('localhost|some message')
         1 * logger.error('localhost|error')
+
+        cleanup:
+        server.stop()
     }
 
+    @ConfineMetaClassChanges(DefaultOperations)
     def "main should read script from standard input if --stdin is given"() {
         given:
+        def server = createServer()
+        def script = createScript(server)
+
+        def logger = Mock(Logger)
+        logger.isInfoEnabled() >> true
+        logger.isErrorEnabled() >> true
+        DefaultOperations.metaClass.static.getLog = { -> logger }
+
         def stdin = System.in
         System.in = new ByteArrayInputStream(script.bytes)
 
@@ -126,6 +123,7 @@ class MainSpec extends Specification {
 
         cleanup:
         System.in = stdin
+        server.stop()
     }
 
 
@@ -164,9 +162,32 @@ class MainSpec extends Specification {
     }
 
 
+    private SshServer createServer() {
+        def server = SshServerMock.setUpLocalhostServer()
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
+        server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+        server.commandFactory = Mock(CommandFactory)
+        server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+        server.start()
+        server
+    }
+
+    private String createScript(SshServer server) {
+        def hostKey = MainSpec.getResourceAsStream('/hostkey.pub').text
+        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
+        "ssh.run {" +
+                " session(host: 'localhost'," +
+                "  port: ${server.port}," +
+                "  knownHosts: new File('${knownHostsFile.path}')," +
+                "  user: 'someuser'," +
+                "  password: 'somepassword')" +
+                " { execute('somecommand') }" +
+                "}"
+    }
+
 
     private static final logbackLogLevel(String level) {
-        Class.forName('ch.qos.logback.classic.Level').invokeMethod('toLevel', level)
+        Class.forName('ch.qos.logback.classic.Level').toLevel(level)
     }
 
 }
