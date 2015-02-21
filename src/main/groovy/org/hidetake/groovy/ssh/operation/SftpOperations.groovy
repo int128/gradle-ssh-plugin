@@ -7,6 +7,11 @@ import groovy.util.logging.Slf4j
 /**
  * An aggregate of file transfer operations.
  *
+ * Operations should follow the logging convention, that is,
+ * it should write a log as DEBUG on beginning of an operation,
+ * it should write a log as INFO on success of an operation,
+ * but it does not need to write an INFO log if it is an internal operation.
+ *
  * @author Hidetake Iwata
  */
 @Slf4j
@@ -25,9 +30,10 @@ class SftpOperations {
      * @param local
      */
     void getFile(String remote, String local) {
-        log.info("Get a remote file ($remote) to local ($local)")
+        log.debug("Getting the remote file ($remote) as the local file ($local)")
         try {
             channel.get(remote, local, new FileTransferLogger())
+            log.info("Got the remote file ($remote) as the local file ($local)")
         } catch (JschSftpException e) {
             throw new SftpException('Failed to get a file from the remote host', e)
         }
@@ -40,9 +46,10 @@ class SftpOperations {
      * @param stream
      */
     void getContent(String remote, OutputStream stream) {
-        log.info("Get content of the remote file ($remote)")
+        log.debug("Getting the content of the remote file ($remote)")
         try {
             channel.get(remote, stream, new FileTransferLogger())
+            log.info("Got the content of the remote file ($remote)")
         } catch (JschSftpException e) {
             throw new SftpException('Failed to get a file from the remote host', e)
         }
@@ -55,11 +62,12 @@ class SftpOperations {
      * @param remote
      */
     void putFile(String local, String remote) {
-        log.info("Put a local file ($local) to remote ($remote)")
+        log.debug("Putting the local file ($local) into the remote file ($remote)")
         try {
             channel.put(local, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
+            log.info("Sent the local file ($local) into the remote file ($remote)")
         } catch (JschSftpException e) {
-            throw new SftpException('Failed to put a file into the remote host', e)
+            throw new SftpException("Failed to put $local into $remote", e)
         }
     }
 
@@ -70,11 +78,12 @@ class SftpOperations {
      * @param remote path
      */
     void putContent(InputStream stream, String remote) {
-        log.info("Put the content to remote ($remote)")
+        log.debug("Putting the content into the remote file ($remote)")
         try {
             channel.put(stream, remote, new FileTransferLogger(), ChannelSftp.OVERWRITE)
+            log.info("Sent the content into the remote file ($remote)")
         } catch (JschSftpException e) {
-            throw new SftpException('Failed to put the content to the remote host', e)
+            throw new SftpException("Failed to put the content to $remote", e)
         }
     }
 
@@ -84,11 +93,12 @@ class SftpOperations {
      * @param path
      */
     void mkdir(String path) {
-        log.info("Create a directory ($path)")
+        log.debug("Creating a directory ($path)")
         try {
             channel.mkdir(path)
+            log.info("Created a directory ($path)")
         } catch (JschSftpException e) {
-            throw new SftpException('Failed to create a directory on the remote host', e)
+            throw new SftpException("Failed to create a directory: $path", e)
         }
     }
 
@@ -99,11 +109,11 @@ class SftpOperations {
      * @return list of files or directories
      */
     List<ChannelSftp.LsEntry> ls(String path) {
-        log.info("Get a directory listing of ($path)")
+        log.debug("Requesting the directory list of ($path)")
         try {
             channel.ls(path).toList()
         } catch (JschSftpException e) {
-            throw new SftpException('Failed to fetch a directory listing on the remote host', e)
+            throw new SftpException("Failed to fetch the directory list of $path", e)
         }
     }
 
@@ -113,11 +123,11 @@ class SftpOperations {
      * @param path
      */
     void cd(String path) {
-        log.info("Change current directory to ($path)")
+        log.debug("Changing the current directory to ($path)")
         try {
             channel.cd(path)
         } catch (JschSftpException e) {
-            throw new SftpException('Failed to change directory on the remote host', e)
+            throw new SftpException("Failed to change the current directory to $path", e)
         }
     }
 }

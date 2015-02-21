@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.extension
 
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.session.SessionExtension
-import org.slf4j.LoggerFactory
 
 /**
  * Provides the blocking command execution.
@@ -10,8 +9,6 @@ import org.slf4j.LoggerFactory
  * @author Hidetake Iwata
  */
 trait Command implements SessionExtension {
-    private static final log = LoggerFactory.getLogger(Command)
-
     /**
      * Performs an execution operation.
      * This method blocks until channel is closed.
@@ -21,7 +18,6 @@ trait Command implements SessionExtension {
      */
     String execute(String command) {
         assert command, 'command must be given'
-        log.info("Execute a command ($command)")
         operations.execute(operationSettings, command, null)
     }
 
@@ -36,7 +32,6 @@ trait Command implements SessionExtension {
     void execute(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        log.info("Execute a command ($command) with callback")
         operations.execute(operationSettings, command, callback)
     }
 
@@ -51,7 +46,6 @@ trait Command implements SessionExtension {
     String execute(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with settings ($settings)")
         operations.execute(operationSettings + new OperationSettings(settings), command, null)
     }
 
@@ -68,7 +62,6 @@ trait Command implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        log.info("Execute a command ($command) with settings ($settings) and callback")
         operations.execute(operationSettings + new OperationSettings(settings), command, callback)
     }
 }

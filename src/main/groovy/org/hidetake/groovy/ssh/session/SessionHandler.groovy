@@ -51,7 +51,6 @@ class SessionHandler implements CoreExtensions {
     @Override
     def sftp(@DelegatesTo(SftpOperations) Closure closure) {
         assert closure, 'closure must be given'
-        log.info("Execute a SFTP subsystem")
         operations.sftp(closure)
     }
 }
