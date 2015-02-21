@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.interaction
 
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 
 /**
@@ -10,52 +9,58 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class Engine {
-    private final InteractionHandler interactionDelegate
+    private final Evaluator evaluator
 
-    protected List<InteractionRule> interactionRules = []
+    private final Closure interaction
 
-    private depth = new Counter()
+    private List<Rule> rules = []
 
-    def Engine(InteractionHandler interactionDelegate1) {
-        interactionDelegate = interactionDelegate1
-        assert interactionDelegate
+    private long depth = 0
+
+    private long lineNumber = 0
+
+    /**
+     * Constructor.
+     *
+     * @param evaluator
+     * @param interaction interaction DSL closure for initial state
+     */
+    def Engine(Evaluator evaluator, Closure interaction) {
+        this.evaluator = evaluator
+        this.interaction = interaction
+        assert evaluator
+        assert interaction
     }
 
-    void attach(LineOutputStream lineOutputStream, Stream stream) {
-        def counter = new Counter()
-        lineOutputStream.listenLine { String line -> processLine(stream, counter, line) }
-        lineOutputStream.listenPartial { String block -> processPartial(stream, counter, block) }
-    }
-
-    void alterInteractionRules(List<InteractionRule> alternative) {
-        interactionRules = alternative
-        depth++
-        log.debug("Rules have been altered (depth=$depth, rules=$interactionRules)")
-    }
-
-    void processLine(Stream stream, Counter lineNumber, String text) {
+    void processLine(Stream stream, String text) {
+        initializeRulesOnFirstTime()
         lineNumber++
-        def rule = interactionRules.find { it.matcher(stream, Event.Line, lineNumber.value, text) }
+        def rule = rules.find { it.matcher(stream, Event.Line, lineNumber, text) }
         if (rule) {
             log.debug("Rule matched at line $lineNumber from $stream: $rule")
-            def evaluated = interactionDelegate.evaluate(rule.action.curry(text))
-            if (!evaluated.empty) {
-                alterInteractionRules(evaluated)
-                lineNumber.reset()
+            def evaluatedRules = evaluator.evaluate(rule.action.curry(text))
+            if (!evaluatedRules.empty) {
+                rules = evaluatedRules
+                depth++
+                lineNumber = 0
+                log.debug("Altered interaction rules on depth $depth: $rules")
             }
         } else {
             log.debug("No rule matched at line $lineNumber from $stream")
         }
     }
 
-    boolean processPartial(Stream stream, Counter lineNumber, String text) {
-        def rule = interactionRules.find { it.matcher(stream, Event.Partial, lineNumber.value, text) }
+    boolean processPartial(Stream stream, String text) {
+        initializeRulesOnFirstTime()
+        def rule = rules.find { it.matcher(stream, Event.Partial, lineNumber, text) }
         if (rule) {
             log.debug("Rule matched at line $lineNumber from $stream: $rule")
-            def evaluated = interactionDelegate.evaluate(rule.action.curry(text))
-            if (!evaluated.empty) {
-                alterInteractionRules(evaluated)
-                lineNumber.reset()
+            def evaluatedRules = evaluator.evaluate(rule.action.curry(text))
+            if (!evaluatedRules.empty) {
+                rules = evaluatedRules
+                depth++
+                lineNumber = 0
+                log.debug("Altered interaction rules on depth $depth: $rules")
             }
             true
         } else {
@@ -63,25 +68,11 @@ class Engine {
         }
     }
 
-    @TupleConstructor
-    static class Counter {
-        private long value = 0
-
-        long getValue() {
-            value
-        }
-
-        def next() {
-            value++
-            this
-        }
-
-        void reset() {
-            value = 0
-        }
-
-        String toString() {
-            value.toString()
+    private void initializeRulesOnFirstTime() {
+        if (depth == 0) {
+            rules = evaluator.evaluate(interaction)
+            depth++
+            log.debug("Initialized interaction rules: $rules")
         }
     }
 }

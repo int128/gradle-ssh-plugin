@@ -324,7 +324,7 @@ class LineOutputStreamSpec extends Specification {
     }
 
     @Unroll
-    def "flush in the middle of line, #f times"() {
+    def "listener should be called on each lines if it flushed in the middle of line, #f times"() {
         when:
         utf8bytes('lin').each { stream.write(it) }
         repeat(f) { stream.flush() }
@@ -354,7 +354,7 @@ class LineOutputStreamSpec extends Specification {
     }
 
     @Unroll
-    def "flush in the middle of line, #f times, partial matched"() {
+    def "listener should be called on each lines if it flushed in the middle of line, #f times, partial matched"() {
         when:
         utf8bytes('lin').each { stream.write(it) }
         repeat(f) { stream.flush() }
@@ -386,7 +386,7 @@ class LineOutputStreamSpec extends Specification {
     }
 
 
-    def "with left shift operator"() {
+    def "listener should be called even by left shift operator"() {
         when:
         stream << utf8bytes('line3\nline4\nline5')
         stream.close()
@@ -402,7 +402,7 @@ class LineOutputStreamSpec extends Specification {
         1 * loggingListener.call('line5')
     }
 
-    def "with a writer"() {
+    def "listener should be called even with a writer"() {
         when:
         stream.withWriter('UTF-8') { it << 'line3\nline4\nline5' }
 
@@ -417,7 +417,7 @@ class LineOutputStreamSpec extends Specification {
         1 * loggingListener.call('line5')
     }
 
-    def "new-line character for multi-platforms"() {
+    def "listener should handle new-line character of multi-platforms"() {
         when:
         stream << utf8bytes('line1\r\n\rline2\u2028line3\n\u2029line4\u0085line5')
         stream.close()
@@ -445,7 +445,7 @@ class LineOutputStreamSpec extends Specification {
         1 * loggingListener.call('line5')
     }
 
-    def "explicit charset"() {
+    def "listener should recognize charset"() {
         given:
         stream = new LineOutputStream('Shift_JIS')
         stream.listenLine(lineListener)
@@ -459,14 +459,6 @@ class LineOutputStreamSpec extends Specification {
         then: 1 * lineListener.call('日本語です')
     }
 
-
-
-    def "specification of repeat()"() {
-        when: repeat(n) { lineListener.call() }
-        then: n * lineListener.call()
-        where:
-        n << (0..3)
-    }
 
     static repeat(int n, Closure doing) {
         assert n >= 0

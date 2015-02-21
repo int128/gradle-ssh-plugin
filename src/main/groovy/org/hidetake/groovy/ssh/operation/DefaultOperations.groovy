@@ -2,17 +2,15 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
-import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
-import org.hidetake.groovy.ssh.interaction.Stream
-import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.connection.Connection
-import org.hidetake.groovy.ssh.interaction.Engine
-import org.hidetake.groovy.ssh.interaction.InteractionHandler
+import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.LoggingMethod
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
+import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
+import org.hidetake.groovy.ssh.interaction.Interaction
 import org.hidetake.groovy.ssh.interaction.LineOutputStream
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -60,13 +58,8 @@ class DefaultOperations implements Operations {
         if (settings.outputStream) {
             standardOutput.linkStream(settings.outputStream)
         }
-
         if (settings.interaction) {
-            def delegate = new InteractionHandler(standardInput)
-            def rules = delegate.evaluate(settings.interaction)
-            def engine = new Engine(delegate)
-            engine.alterInteractionRules(rules)
-            engine.attach(standardOutput, Stream.StandardOutput)
+            Interaction.enable(settings.interaction, standardInput, standardOutput)
         }
 
         try {
@@ -115,14 +108,8 @@ class DefaultOperations implements Operations {
         if (settings.errorStream) {
             standardError.linkStream(settings.errorStream)
         }
-
         if (settings.interaction) {
-            def delegate = new InteractionHandler(standardInput)
-            def rules = delegate.evaluate(settings.interaction)
-            def engine = new Engine(delegate)
-            engine.alterInteractionRules(rules)
-            engine.attach(standardOutput, Stream.StandardOutput)
-            engine.attach(standardError, Stream.StandardError)
+            Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
         }
 
         def lines = [] as List<String>
@@ -178,14 +165,8 @@ class DefaultOperations implements Operations {
         if (settings.errorStream) {
             standardError.linkStream(settings.errorStream)
         }
-
         if (settings.interaction) {
-            def delegate = new InteractionHandler(standardInput)
-            def rules = delegate.evaluate(settings.interaction)
-            def engine = new Engine(delegate)
-            engine.alterInteractionRules(rules)
-            engine.attach(standardOutput, Stream.StandardOutput)
-            engine.attach(standardError, Stream.StandardError)
+            Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
         }
 
         def lines = [] as List<String>

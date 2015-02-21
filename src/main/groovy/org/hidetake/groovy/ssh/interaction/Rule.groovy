@@ -8,7 +8,7 @@ import groovy.transform.Immutable
  * @author Hidetake Iwata
  */
 @Immutable
-class InteractionRule {
+class Rule {
     /**
      * A map of condition.
      */
@@ -34,6 +34,6 @@ class InteractionRule {
     final Closure action
 
     String toString() {
-        "${InteractionRule.getSimpleName()}${condition}"
+        "${Rule.getSimpleName()}${condition}"
     }
 }

@@ -1,129 +1,191 @@
 package org.hidetake.groovy.ssh.interaction
 
-import org.hidetake.groovy.ssh.interaction.Engine.Counter
 import spock.lang.Specification
 
 class EngineSpec extends Specification {
 
-    def 'received a line, no rule matched'() {
-        given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
+    private static final dummyAction = {}
+    private static final dummyInteraction = {}
 
-        when:
-        engine.processLine(Stream.StandardOutput, counter, 'unknownLine')
-
-        then:
-        0 * interactionDelegate.evaluate(_)
-        0 * counter.reset()
-        engine.interactionRules == [rule1]
-    }
-
-    def 'received a line, rule matched, action has no rule'() {
-        given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
-
-        when:
-        engine.processLine(Stream.StandardOutput, counter, 'someLine')
-
-        then:
-        1 * interactionDelegate.evaluate(_) >> []
-
-        then:
-        0 * counter.reset()
-        engine.interactionRules == [rule1]
-    }
-
-    def 'received a line, rule matched, action declares new rules'() {
-        given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
-
-        when:
-        engine.processLine(Stream.StandardOutput, counter, 'someLine')
-
-        then:
-        1 * interactionDelegate.evaluate(_) >> [rule2]
-
-        then:
-        1 * counter.reset()
-        engine.interactionRules.size() == 1
-        engine.interactionRules[0].condition == [key: 'rule2']
+    private static matcher(Closure<Boolean> closure = { -> false }) {
+        { Stream stream, Event event, long lineNumber, String text -> closure() }
     }
 
 
-    def 'offered partial block, no rule matched'() {
-        given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
-
+    def 'initial properties should be following'() {
         when:
-        boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'unknownLine')
+        def evaluator = Mock(Evaluator)
+        def interaction = Mock(Closure)
+        def engine = new Engine(evaluator, interaction)
 
         then:
-        0 * interactionDelegate.evaluate(_)
-        0 * counter.reset()
+        engine.interaction == interaction
+        engine.lineNumber == 0
+        engine.depth == 0
+        engine.rules == []
+    }
 
+
+    def 'lineNumber and depth should be +1 if it received a line'() {
+        given:
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
+
+        when:
+        engine.processLine(Stream.StandardOutput, 'unknownLine')
+
+        then:
+        1 * evaluator.evaluate(_) >> [rule1]
+
+        then:
+        1 * matcher1.call() >> false
+
+        then:
+        engine.lineNumber == 1
+        engine.depth == 1
+        engine.rules == [rule1]
+
+        when:
+        engine.processLine(Stream.StandardOutput, 'unknownLine')
+
+        then:
+        engine.lineNumber == 2
+    }
+
+    def 'depth should be kept if it received a line but current rule has no child rule'() {
+        given:
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
+
+        when:
+        engine.processLine(Stream.StandardOutput, 'someLine')
+
+        then:
+        1 * evaluator.evaluate(_) >> [rule1]
+
+        then:
+        1 * matcher1.call() >> true
+
+        then:
+        1 * evaluator.evaluate(_) >> []
+
+        then:
+        engine.lineNumber == 1
+        engine.depth == 1
+        engine.rules == [rule1]
+    }
+
+    def 'depth should be +1 if it received a line and current rule has child rules'() {
+        given:
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+        def rule2 = new Rule(key: 'rule2', matcher(), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
+
+        when:
+        engine.processLine(Stream.StandardOutput, 'someLine')
+
+        then:
+        1 * evaluator.evaluate(_) >> [rule1]
+
+        then:
+        1 * matcher1.call() >> true
+
+        then:
+        1 * evaluator.evaluate(_) >> [rule2]
+
+        then:
+        engine.lineNumber == 0
+        engine.depth == 2
+        engine.rules == [rule2]
+    }
+
+
+    def 'lineNumber and depth should kept if it received a partial block but none matched'() {
+        given:
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
+
+        when:
+        boolean matched = engine.processPartial(Stream.StandardOutput, 'unknownLine')
+
+        then:
+        1 * evaluator.evaluate(_) >> [rule1]
+
+        then:
+        1 * matcher1.call() >> false
+
+        then:
         !matched
-        engine.interactionRules == [rule1]
+        engine.lineNumber == 0
+        engine.depth == 1
+        engine.rules == [rule1]
     }
 
-    def 'offered partial block, rule matched, action has no rule'() {
+    def 'depth should be kept if it received a partial block but current rule has no child rule'() {
         given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
 
         when:
-        boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'someLine')
+        boolean matched = engine.processPartial(Stream.StandardOutput, 'someLine')
 
         then:
-        1 * interactionDelegate.evaluate(_) >> []
+        1 * evaluator.evaluate(_) >> [rule1]
 
         then:
-        0 * counter.reset()
+        1 * matcher1.call() >> true
 
+        then:
+        1 * evaluator.evaluate(_) >> []
+
+        then:
         matched
-        engine.interactionRules == [rule1]
+        engine.lineNumber == 0
+        engine.depth == 1
+        engine.rules == [rule1]
     }
 
-    def 'offered partial block, rule matched, action declares new rules'() {
+    def 'depth should be +1 if it received a partial block and current rule has child rules'() {
         given:
-        def counter = Spy(Counter)
-        def rule1 = new InteractionRule(key: 'rule1', { a, b, c, d -> true }, {})
-        def rule2 = new InteractionRule(key: 'rule2', { a, b, c, d -> false }, {})
-        def interactionDelegate = Mock(InteractionHandler)
-        def engine = new Engine(interactionDelegate)
-        engine.alterInteractionRules([rule1])
+        def matcher1 = Mock(Closure)
+        def rule1 = new Rule(key: 'rule1', matcher(matcher1), dummyAction)
+        def rule2 = new Rule(key: 'rule2', matcher(), dummyAction)
+
+        def evaluator = Mock(Evaluator)
+        def engine = new Engine(evaluator, dummyInteraction)
 
         when:
-        boolean matched = engine.processPartial(Stream.StandardOutput, counter, 'someLine')
+        boolean matched = engine.processPartial(Stream.StandardOutput, 'someLine')
 
         then:
-        1 * interactionDelegate.evaluate(_) >> [rule2]
+        1 * evaluator.evaluate(_) >> [rule1]
 
         then:
-        1 * counter.reset()
+        1 * matcher1.call() >> true
 
+        then:
+        1 * evaluator.evaluate(_) >> [rule2]
+
+        then:
         matched
-        engine.interactionRules.size() == 1
-        engine.interactionRules[0].condition == [key: 'rule2']
+        engine.lineNumber == 0
+        engine.depth == 2
+        engine.rules == [rule2]
     }
 
 }

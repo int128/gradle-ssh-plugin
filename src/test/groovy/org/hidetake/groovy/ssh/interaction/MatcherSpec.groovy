@@ -7,7 +7,7 @@ class MatcherSpec extends Specification {
 
     static final WILDCARD = Wildcard.instance
 
-    def "event parameter required"() {
+    def "generate should throw error if event is not given"() {
         when:
         Matcher.generate(condition)
 
@@ -20,7 +20,7 @@ class MatcherSpec extends Specification {
     }
 
     @Unroll
-    def "line match"() {
+    def "matcher (line: #expected) should return #matched on #actual, #event, #lineNumber"() {
         given:
         def matcher = Matcher.generate(line: expected)
 
@@ -44,7 +44,7 @@ class MatcherSpec extends Specification {
         ~/.+me$/ | 'none' | Event.Partial | 1          | false
     }
 
-    def "line match requires non-null"() {
+    def "generate should throw error if line is null"() {
         when:
         Matcher.generate(line: null)
 
@@ -53,7 +53,7 @@ class MatcherSpec extends Specification {
     }
 
     @Unroll
-    def "next line match"() {
+    def "matcher (nextLine: #expected) should return #matched on #actual, #event, #lineNumber"() {
         given:
         def matcher = Matcher.generate(nextLine: expected)
 
@@ -80,7 +80,7 @@ class MatcherSpec extends Specification {
         ~/.+me$/ | 'none' | Event.Partial | 1          | false
     }
 
-    def "next line match requires non-null"() {
+    def "generate should throw error if nextLine is null"() {
         when:
         Matcher.generate(nextLine: null)
 
@@ -89,7 +89,7 @@ class MatcherSpec extends Specification {
     }
 
     @Unroll
-    def "partial match"() {
+    def "matcher (partial: #expected) should return #matched on #actual, #event, #lineNumber"() {
         given:
         def matcher = Matcher.generate(partial: expected)
 
@@ -113,15 +113,17 @@ class MatcherSpec extends Specification {
         ~/.+me$/ | 'none' | Event.Line    | 1          | false
     }
 
-    def "partial match requires non-null"() {
+    def "generate should throw error if partial is null"() {
         when:
-        Matcher.generate(line: null)
+        Matcher.generate(partial: null)
 
         then:
         thrown(IllegalArgumentException)
     }
 
-    def "stream match"() {
+
+    @Unroll
+    def "matcher (from: #expected) should return #matched on the event from #actual"() {
         given:
         def matcher = Matcher.generate(line: WILDCARD, from: expected)
 
