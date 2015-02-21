@@ -55,7 +55,7 @@ class DefaultOperations implements Operations {
         }
 
         if (settings.outputStream) {
-            standardOutput.linkStream(settings.outputStream)
+            standardOutput.pipe(settings.outputStream)
         }
         if (settings.interaction) {
             Interaction.enable(settings.interaction, standardInput, standardOutput)
@@ -102,10 +102,10 @@ class DefaultOperations implements Operations {
         }
 
         if (settings.outputStream) {
-            standardOutput.linkStream(settings.outputStream)
+            standardOutput.pipe(settings.outputStream)
         }
         if (settings.errorStream) {
-            standardError.linkStream(settings.errorStream)
+            standardError.pipe(settings.errorStream)
         }
         if (settings.interaction) {
             Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
@@ -159,10 +159,10 @@ class DefaultOperations implements Operations {
         }
 
         if (settings.outputStream) {
-            standardOutput.linkStream(settings.outputStream)
+            standardOutput.pipe(settings.outputStream)
         }
         if (settings.errorStream) {
-            standardError.linkStream(settings.errorStream)
+            standardError.pipe(settings.errorStream)
         }
         if (settings.interaction) {
             Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
