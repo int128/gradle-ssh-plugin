@@ -9,7 +9,7 @@ script:
 - GRADLE_VERSION=1.12  ./acceptance-test/run-test.sh
 
 after_success:
-- test ${TRAVIS_TAG} && ./gradlew -Pversion=${TRAVIS_TAG#v} bintrayUpload
+- test ${TRAVIS_TAG} && ./gradlew bintrayUpload
 
 env:
   global:
