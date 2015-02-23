@@ -1,20 +1,43 @@
 
-class RemoteFileAssertion {
-    def assertFileContains(String path, String regexp) {
-        execute "egrep '$regexp' '$path'"
-    }
-}
-
-task('should extends DSL with the remote file assertion') << {
-    def x = randomInt()
+task('should extends DSL with the remote file extension') << {
     ssh.run {
         settings {
-            extensions.add RemoteFileAssertion
+            extensions = [RemoteFileExtension]
         }
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
-            execute "echo 'port $x' > $remoteWorkDir/config"
-            assertFileContains "$remoteWorkDir/config", "port $x"
+            put text: 1, into: "$remoteWorkDir/a"
+            put text: 2, into: "$remoteWorkDir/b"
+            put text: 3, into: "$remoteWorkDir/c"
+
+            eachFile(remoteWorkDir) {
+                println it.filename
+            }
         }
     }
+}
+
+// workaround to give access
+ProjectInjection.project = project
+
+// dependency which the extension needs
+repositories {
+    jcenter()
+}
+configurations {
+    groovyRuntime
+}
+dependencies {
+    groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
+}
+
+task('should extends DSL with the extension which accesses to the project') << {
+    assert ssh.run {
+        settings {
+            extensions = [ScriptExtension, ProjectInjection]
+        }
+        session(remotes.localhost) {
+            executeGroovyScript 'println GroovySystem.version'
+        }
+    } == '2.3.9'
 }
