@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath "org.hidetake:gradle-ssh-plugin:$version"
 
-        // apply backports if Gradle version is 1.x
+        // apply backports on Gradle 1.x
         if (GradleVersion.current().version.startsWith('1.')) {
             classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
         }
@@ -25,21 +25,17 @@ remotes {
 }
 
 
-// apply scripts in this directory
-task sideEffect { description = '(internal task)' }
-task sshAgent   { description = '(internal task)' }
-
-project.ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
-
-fileTree(projectDir) {
-    include '*.gradle'
-    exclude 'build.gradle'
-}.each {
-    apply from: it
+afterEvaluate {
+    ext.specs = tasks.matching { it.name.startsWith 'should ' }
+    ext.specs.ext.findBy = { tag -> specs.findAll { it.dependsOn.contains tag } }
 }
 
+// add utility methods for specs
+ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
 
-// add tasks to manage the working directory
+// setup and cleanup a working directory on each spec
+ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
+
 task setupLocalWorkDir << {
     delete buildDir
     buildDir.mkdirs()
@@ -48,8 +44,6 @@ task setupLocalWorkDir << {
 task cleanupLocalWorkDir << {
     delete buildDir
 }
-
-final remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
 
 task setupRemoteWorkDir << {
     ssh.run {
@@ -67,25 +61,41 @@ task cleanupRemoteWorkDir << {
     }
 }
 
-
-// categorize specs
-task test               { description = 'test specs' }
-task testWithSideEffect { description = 'test specs which cause side effect' }
-task testWithSshAgent   { description = 'test specs which require SSH agent' }
-
 afterEvaluate {
-    final specs = tasks.matching { it.name.matches ~/^should .+/ }
-    final specsWithSideEffect = specs.findAll { it.dependsOn.contains tasks.sideEffect }
-    final specsWithSshAgent = specs.findAll { it.dependsOn.contains tasks.sshAgent }
-
-    tasks.testWithSideEffect.dependsOn(specsWithSideEffect)
-    tasks.testWithSshAgent.dependsOn(specsWithSshAgent)
-    tasks.test.dependsOn(specs - specsWithSideEffect - specsWithSshAgent)
-
-    specs*.dependsOn(tasks.setupLocalWorkDir, tasks.setupRemoteWorkDir)
-    specs*.finalizedBy(tasks.cleanupLocalWorkDir, tasks.cleanupRemoteWorkDir)
-    specs.each {
-        it.ext.localWorkDir  = file("$buildDir/${it.hashCode()}")
-        it.ext.remoteWorkDir = "${remoteWorkDirBase}/${it.hashCode()}"
+    specs.each { spec ->
+        spec.dependsOn tasks.setupLocalWorkDir
+        spec.dependsOn tasks.setupRemoteWorkDir
+        spec.finalizedBy tasks.cleanupLocalWorkDir
+        spec.finalizedBy tasks.cleanupRemoteWorkDir
+        spec.ext.localWorkDir  = file("$buildDir/${spec.hashCode()}")
+        spec.ext.remoteWorkDir = "$remoteWorkDirBase/${spec.hashCode()}"
     }
 }
+
+// categorize specs
+final tags = [
+    project.task('sideEffect', description: 'specs which may cause side effect'),
+    project.task('sshAgent',   description: 'specs which require the SSH agent'),
+]
+
+task test {
+    description = "Test all specs except ${tags*.name}"
+}
+
+afterEvaluate {
+    tags.each { tag -> project.task "testWith${tag.name.capitalize()}",
+        description: "Test $tag.description",
+        dependsOn: specs.findBy(tag)
+    }
+
+    test.dependsOn specs - tags.collect { specs.findBy it }.flatten()
+}
+
+// apply specs in this directory
+fileTree(projectDir) {
+    include '*.gradle'
+    exclude 'build.gradle'
+}.each {
+    apply from: it
+}
+
