@@ -1,4 +1,7 @@
 buildscript {
+    // Set product version if tag is given on Travis CI
+    System.getenv('TRAVIS_TAG')?.eachMatch(/^v([\d.]+)$/) { m -> project.version = m[1] }
+
     repositories {
         mavenLocal()
         jcenter()
