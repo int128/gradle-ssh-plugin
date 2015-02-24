@@ -1,8 +1,14 @@
-class ProjectInjection {
+class ProjectLocator {
     static project
 }
 
-class RemoteFileExtension {
+trait ProjectInjection {
+    def getProject() {
+        ProjectLocator.project
+    }
+}
+
+trait RemoteFileExtension {
     void eachFile(String directory, Closure closure) {
         sftp {
             ls(directory).each(closure)
@@ -10,7 +16,7 @@ class RemoteFileExtension {
     }
 }
 
-class ScriptExtension {
+trait ScriptExtension {
     def executeGroovyScript(String script) {
         def temporaryPath = "/tmp/${UUID.randomUUID()}"
         try {

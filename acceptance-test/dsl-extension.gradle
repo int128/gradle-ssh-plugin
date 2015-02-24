@@ -1,5 +1,7 @@
 
-task('should extends DSL with the remote file extension') << {
+task('should extends DSL with the remote file extension') {
+    onlyIf { GradleVersion.current().version.startsWith('2.') }
+} << {
     ssh.run {
         settings {
             extensions = [RemoteFileExtension]
@@ -17,9 +19,6 @@ task('should extends DSL with the remote file extension') << {
     }
 }
 
-// workaround to give access
-ProjectInjection.project = project
-
 // dependency which the extension needs
 repositories {
     jcenter()
@@ -31,7 +30,12 @@ dependencies {
     groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
 }
 
-task('should extends DSL with the extension which accesses to the project') << {
+task('should extends DSL with the extension which accesses to the project') {
+    onlyIf { GradleVersion.current().version.startsWith('2.') }
+} << {
+    // workaround to give access
+    ProjectLocator.project = project
+
     assert ssh.run {
         settings {
             extensions = [ScriptExtension, ProjectInjection]
