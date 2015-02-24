@@ -1,5 +1,5 @@
 
-final runOnGradle2 = { GradleVersion.current().version.startsWith('2.') }
+final runOnGradle2 = { gradle.gradleVersion.startsWith('2.') }
 
 task('should extends DSL with the remote file extension') { onlyIf runOnGradle2 } << {
     ssh.run {
