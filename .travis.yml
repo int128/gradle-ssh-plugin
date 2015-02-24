@@ -5,7 +5,7 @@ install:
 - ./gradlew install
 script:
 - ./gradlew check
-- GRADLE_VERSION=2.2.1 ./acceptance-test/run-test.sh
+- GRADLE_VERSION=2.3 ./acceptance-test/run-test.sh
 - GRADLE_VERSION=1.12  ./acceptance-test/run-test.sh
 
 after_success:
