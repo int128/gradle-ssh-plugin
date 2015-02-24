@@ -1,6 +1,6 @@
 ---
 layout: page
-title: User Guide
+title: User Guide (1.0.x)
 ---
 
 
@@ -9,16 +9,14 @@ Overview
 
 Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
 
-This document is for version 1.1.x.
+This document is for version 1.0.x.
 
 Please read [the getting started](/getting-started.html) at first time.
 
 See also:
 
-* [Migration Guide from 1.0.x to 1.1.x](/migration.v11.html)
 * [Migration Guide from 0.4.x to 1.0.x](/migration.v10.html)
 * [Migration Guide from 0.3.x to 0.4.x](/migration.v4.html)
-* [User Guide (version 1.0.x)](/user-guide.v10.html)
 * [User Guide (version 0.4.x)](/user-guide.v4.html)
 * [User Guide (version 0.3.x)](/user-guide.v3.html)
 
@@ -445,73 +443,6 @@ put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 The method throws an exception if an error occurred while the file transfer.
 
 
-### Enable the port forwarding
-
-Call the `forwardLocalPort` method to forward a local port to a remote port.
-
-```groovy
-// Forward localhost:18080 to remote:8080
-forwardLocalPort port: 18080, hostPort: 8080
-
-// Forward localhost:(allocated port) to remote:8080
-int port = forwardLocalPort hostPort: 8080
-
-// Forward localhost:18080 to 172.16.1.1:8080
-forwardLocalPort port: 18080, host: '172.16.1.1', hostPort: 8080
-
-// Forward *:18080 (listen to all) to 172.16.1.1:8080
-forwardLocalPort bind: '0.0.0.0', port: 18080, host: '172.16.1.1', hostPort: 8080
-```
-
-The method accepts following settings:
-
-Key              | Type               | Description
------------------|--------------------|------------
-port             | Integer            | Local port to bind. Defaults to 0, automatically allocated a free port.
-bind             | String             | Local address to bind. Defaults to `localhost`.
-hostPort         | Integer, Mandatory | Remote port to connect.
-host             | String             | Remote address to connect. Default to `localhost` of the remote host.
-
-
-Call the `forwardRemotePort` method to forward a local port to a remote port.
-
-```groovy
-// Forward remote:30000 to localhost:8080
-forwardRemotePort port: 30000, hostPort: 8080
-
-// Forward remote:30000 to 192.168.1.5:8080
-forwardRemotePort port: 30000, host: '192.168.1.5', hostPort: 8080
-
-// Forward remote:30000 (listen to all) to 192.168.1.5:8080
-forwardRemotePort bind: '0.0.0.0', port: 30000, host: '192.168.1.5', hostPort: 8080
-```
-
-The method accepts following settings:
-
-Key              | Type               | Description
------------------|--------------------|------------
-port             | Integer, Mandatory | Remote port to bind.
-bind             | String             | Remote address to bind. Defaults to `localhost` of the remote host.
-hostPort         | Integer, Mandatory | Local port to connect.
-host             | String             | Local address to connect. Default to `localhost`.
-
-The port forwarding is valid until all sessions are finished.
-So we can connect to a server via a tunnel in the `ssh.run` method.
-
-```groovy
-import groovyx.net.http.RESTClient
-
-ssh.run {
-  session(remotes.web01) {
-    forwardLocalPort port: 8080, hostPort: 8080
-
-    // access to the HTTP server via the tunnel
-    new RESTClient('http://localhost:8080').get(path: '/')
-  }
-}
-```
-
-
 ### Operation settings
 
 Following settings can be given to operation methods.
@@ -718,123 +649,30 @@ execute('sudo service httpd reload', logging: false)
 ```
 
 
-DSL extension system
---------------------
+Extend DSL
+----------
 
-We can extend DSL vocabulary using the extension system.
+We can extend DSL syntax. This is an experimental feature.
 
-
-### Start from a simple extension
-
-Create an extension trait in the `buildSrc/src/main/groovy` directory.
+Declare an extension class and add it to global or method specific settings.
+All methods in the extension class will be available in the session closure.
 
 ```groovy
-// buildSrc/src/main/groovy/extensions.groovy
-trait RemoteFileExtension {
-  void eachFile(String directory, Closure closure) {
-    sftp {
-      ls(directory).each(closure)
-    }
+class RemoteFileAssertion {
+  def assertFileContains(String path, String regexp) {
+    execute("egrep '$regexp' '$path'")
   }
-}
-```
-
-Now properties and methods in the trait are available in the session closure.
-
-```groovy
-// build.gradle
-ssh.run {
-  settings {
-    extensions << RemoteFileExtension
-  }
-  session(remotes.localhost) {
-    eachFile('/webapps') {
-      println it.filename
-    }
-  }
-}
-```
-
-
-### Private members in an extension
-
-Private properties and methods of an extension are hidden in the session closure.
-
-```groovy
-trait SomeExtension {
-  private def someHelper() {
-  }
-  def something() {
-    someHelper()
-  }
-}
-```
-
-```groovy
-ssh.run {
-  session(remotes.web01) {
-    something()   // accessible
-    someHelper()  // not accessible form here
-  }
-}
-```
-
-
-### Use project in an extension
-
-We can access to the project instance in an extension.
-
-```groovy
-// buildSrc/src/main/groovy/extensions.groovy
-trait ScriptExtension {
-  /**
-   * Execute a Groovy script on the remote host.
-   * Groovy dependency must be set as the configuration groovyRuntime.
-   */
-  def executeGroovyScript(String script) {
-    def temporaryPath = "/tmp/${UUID.randomUUID()}"
-    try {
-      execute "mkdir -vp $temporaryPath"
-      put from: project.configurations.groovyRuntime, into: temporaryPath
-      put text: script, into: "$temporaryPath/script.groovy"
-      execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
-    } finally {
-      execute "rm -vfr $temporaryPath"
-    }
-  }
-}
-```
-
-```groovy
-// build.gradle
-repositories {
-  jcenter()
-}
-
-configurations {
-  groovyRuntime
-}
-
-dependencies {
-  // Groovy dependency used by the extension
-  groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
 }
 
 ssh.settings {
-  extensions << ScriptExtension
+  extensions.add RemoteFileAssertion
 }
 
-task example << {
+task checkApacheConfig << {
   ssh.run {
     session(remotes.webServer) {
-
+      assertFileContains '/etc/httpd/conf/httpd.conf', 'listen 80'
     }
   }
 }
 ```
-
-
-### Restriction of extension system
-
-DSL extension system is supported on Gradle 2.0 or later.
-An extension must be a trait and placed in the `buildSrc/src/main/groovy` directory.
