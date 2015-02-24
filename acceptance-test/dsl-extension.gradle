@@ -1,10 +1,10 @@
 
 final runOnGradle2 = { gradle.gradleVersion.startsWith('2.') }
 
-task('should extends DSL with the remote file extension') { onlyIf runOnGradle2 } << {
+task('should apply the remote file extension') { onlyIf runOnGradle2 } << {
     ssh.run {
         settings {
-            extensions = [RemoteFileExtension]
+            extensions << RemoteFileExtension
         }
         session(remotes.localhost) {
             execute "mkdir -vp $remoteWorkDir"
@@ -30,13 +30,10 @@ dependencies {
     groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
 }
 
-task('should extends DSL with the extension which accesses to the project') { onlyIf runOnGradle2 } << {
-    // workaround to give access
-    ProjectLocator.project = project
-
+task('should apply the extension which accesses to the project') { onlyIf runOnGradle2 } << {
     assert ssh.run {
         settings {
-            extensions = [ScriptExtension, ProjectInjection]
+            extensions << ScriptExtension
         }
         session(remotes.localhost) {
             executeGroovyScript 'println GroovySystem.version'
