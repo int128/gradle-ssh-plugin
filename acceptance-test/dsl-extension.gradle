@@ -1,7 +1,7 @@
 
-task('should extends DSL with the remote file extension') {
-    onlyIf { GradleVersion.current().version.startsWith('2.') }
-} << {
+final runOnGradle2 = { GradleVersion.current().version.startsWith('2.') }
+
+task('should extends DSL with the remote file extension') { onlyIf runOnGradle2 } << {
     ssh.run {
         settings {
             extensions = [RemoteFileExtension]
@@ -30,9 +30,7 @@ dependencies {
     groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
 }
 
-task('should extends DSL with the extension which accesses to the project') {
-    onlyIf { GradleVersion.current().version.startsWith('2.') }
-} << {
+task('should extends DSL with the extension which accesses to the project') { onlyIf runOnGradle2 } << {
     // workaround to give access
     ProjectLocator.project = project
 
