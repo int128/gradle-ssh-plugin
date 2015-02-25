@@ -20,11 +20,9 @@ class SessionHandler implements CoreExtensions {
 
     static def create(Operations operations, OperationSettings operationSettings) {
         def handler = new SessionHandler(operations, operationSettings)
-        if (operationSettings.extensions) {
-            log.debug("Applying extensions: ${operationSettings.extensions}")
-            handler.withTraits(operationSettings.extensions as Class[])
-        } else {
-            handler
+        operationSettings.extensions.inject(handler) { applied, extension ->
+            log.debug("Applying extension: $extension")
+            applied.withTraits(extension)
         }
     }
 
