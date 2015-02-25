@@ -1,3 +1,0 @@
-if (gradle.gradleVersion.startsWith('1.')) {
-    sourceSets.main.groovy { exclude 'extensions.groovy' }
-}
