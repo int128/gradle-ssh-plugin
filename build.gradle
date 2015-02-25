@@ -81,6 +81,7 @@ shadowJar {
         attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'
     }
     configurations = [project.configurations.runtime, project.configurations.cliRuntime]
+    baseName = 'gssh'
     classifier = ''
     version = ''
 }

@@ -11,10 +11,11 @@ See also [the user guide of Gradle SSH Plugin](https://gradle-ssh-plugin.github.
 Getting Started
 ---------------
 
-Download [the release](https://github.com/int128/groovy-ssh/releases) and run. It requires Java 6 or later.
+Download the latest `gssh.jar` from [releases](https://github.com/int128/groovy-ssh/releases).
+It requires Java 6 or later.
 
 ```sh
-java -jar groovy-ssh.jar
+java -jar gssh.jar
 ```
 
 Create a following script as `deploy.groovy`.
@@ -39,7 +40,7 @@ ssh.run {
 Run Groovy SSH with the script path.
 
 ```sh
-java -jar groovy-ssh.jar deploy.groovy
+java -jar gssh.jar deploy.groovy
 ```
 
 ### Dockerized
