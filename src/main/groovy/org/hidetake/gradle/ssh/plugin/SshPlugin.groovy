@@ -23,11 +23,6 @@ class SshPlugin implements Plugin<Project> {
 
         project.ssh.settings.logging = 'stdout'
 
-        if (GroovySystem.version >= '2.3') {
-            ProjectInjection.Locator.project = project
-            project.ssh.settings.extensions << ProjectInjection
-        }
-
         // TODO: remove in future release
         project.ext.SshTask = SshTask
     }
