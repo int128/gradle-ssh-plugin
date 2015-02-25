@@ -35,6 +35,10 @@ class SessionExtensionSpec extends Specification {
         }
     }
 
+    static final extensionMap1 = [performSomething: { command -> execute "$command something" }]
+
+    static final extensionMap2 = [performAnother: { command -> performSomething "$command another" }]
+
 
     @Unroll
     def "method in the #type should be available in the session"() {
@@ -55,6 +59,7 @@ class SessionExtensionSpec extends Specification {
         type    | extensions
         'trait' | [ExtensionTrait1]
         'class' | [ExtensionClass1]
+        'map'   | [extensionMap1]
     }
 
     @Unroll
@@ -76,8 +81,17 @@ class SessionExtensionSpec extends Specification {
         type              | extensions
         'traits'          | [ExtensionTrait1, ExtensionTrait2]
         'classes'         | [ExtensionClass1, ExtensionClass2]
+        'maps'            | [extensionMap1,   extensionMap2]
         'trait and class' | [ExtensionTrait1, ExtensionClass2]
+        'trait and map'   | [ExtensionTrait1, extensionMap2]
         'class and trait' | [ExtensionClass1, ExtensionTrait2]
+        'class and map'   | [ExtensionClass1, extensionMap2]
+
+        'maps (reverse ordered)' | [extensionMap2, extensionMap1]
+
+        // These combinations will fail:
+        //'map and trait' | [extensionMap1,   ExtensionTrait2]
+        //'map and class' | [extensionMap1,   ExtensionClass2]
     }
 
     @Unroll
