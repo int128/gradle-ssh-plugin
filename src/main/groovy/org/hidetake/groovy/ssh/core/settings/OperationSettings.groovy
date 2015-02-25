@@ -57,9 +57,9 @@ class OperationSettings implements Settings<OperationSettings> {
     Closure interaction
 
     /**
-     * Extension classes to mixin to {@link org.hidetake.groovy.ssh.session.SessionHandler}.
+     * Extensions for {@link org.hidetake.groovy.ssh.session.SessionHandler}.
      */
-    List<Class> extensions = []
+    List extensions = []
 
     static final DEFAULT = new OperationSettings(
             dryRun: false,

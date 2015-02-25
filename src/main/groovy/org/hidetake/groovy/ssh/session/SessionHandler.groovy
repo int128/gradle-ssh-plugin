@@ -20,11 +20,20 @@ class SessionHandler implements CoreExtensions {
 
     static def create(Operations operations, OperationSettings operationSettings) {
         def handler = new SessionHandler(operations, operationSettings)
-        if (operationSettings.extensions) {
-            log.debug("Applying extensions: ${operationSettings.extensions}")
-            handler.withTraits(operationSettings.extensions as Class[])
-        } else {
-            handler
+        operationSettings.extensions.inject(handler) { applied, extension ->
+            if (extension instanceof Class) {
+                log.debug("Applying extension: $extension")
+                applied.withTraits(extension)
+            } else if (extension instanceof Map<String, Closure>) {
+                extension.each { String name, Closure implementation ->
+                    log.debug("Applying extension method: $name")
+                    applied.metaClass[name] = implementation
+                }
+                applied
+            } else {
+                log.error("Ignored unknown extension: $extension")
+                applied
+            }
         }
     }
 
