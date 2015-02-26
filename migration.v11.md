@@ -12,40 +12,25 @@ This document explains how to migrate from 1.0.x to 1.1.x.
 
 ### Port forwarding
 
-Port forwarding is supported now.
-See [the user guide](/user-guide.html#enable-the-port-forwarding) for details.
+[Port forwarding](/user-guide.html#Enable-the-port-forwarding) is supported now.
 
 
-### Improvement of DSL extension system
+### Map based DSL extension system
 
-Any private properties and methods of an extension are hidden in the session closure.
+We can extend DSL with a map of method name and implementation.
+Following example adds the method `restartAppServer`.
 
 ```groovy
-trait SomeExtension {
-  private def someHelper() {
-  }
-  def something() {
-    someHelper()
+ssh.settings {
+  extensions.add restartAppServer: {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
   }
 }
-```
 
-```groovy
 ssh.run {
-  session(remotes.web01) {
-    something()   // accessible
-    someHelper()  // not accessible form here
-  }
-}
-```
-
-Also we can access to the project instance in an extension.
-
-```groovy
-trait SomeExtension {
-  def something() {
-    // we can access to the project instance here
-    project.name
+  session(ssh.remotes.testServer) {
+    restartAppServer()
   }
 }
 ```
@@ -53,40 +38,33 @@ trait SomeExtension {
 
 ## No backward compatible change
 
-### DSL extension system
+### Class based DSL extension system
 
-DSL extension system is changed from the class mixin to the trait.
+Any extension classes in the build script will no longer work.
+They must be placed in the `buildSrc/src/main/groovy` directory.
 
-An extension class, for example:
+So we recommend to use the map based extension instead of the class based extension.
 
-```groovy
-class SomeExtension {
-  def something() { /* ... */ }
-}
-ssh.settings {
-  extensions << SomeExtension
-}
-```
-
-should be migrated to a trait:
+For example, following extension:
 
 ```groovy
 // buildSrc/src/main/groovy/extensions.groovy
-trait SomeExtension {
-  def something() {
-    // we can access to the project instance here (since this version)
-    project.name
+class TomcatExtension {
+  def restartAppServer() {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
   }
 }
 ```
 
+can be migrated to:
+
 ```groovy
 // build.gradle
 ssh.settings {
-  extensions << SomeExtension
+  extensions.add restartAppServer: {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
+  }
 }
 ```
-
-All extensions must be placed in the `buildSrc/src/main/groovy` directory.
-
-DSL extension system is no longer supported on Gradle 1.x.
