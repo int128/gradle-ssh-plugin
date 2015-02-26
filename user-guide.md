@@ -526,7 +526,7 @@ Key              | Type     | Description
 `errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
 `encoding`       | String   | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
 `interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
-`extensions`     | List of classes | List of extension classes. If this is set, classes will be mixed in.
+`extensions`     | List     | List of extension trait or map. If a trait is given, it is applied to the session closure. It a map is given, key and value must be a method name and an implementation closure, all keys are added as methods in the session closure. Defaults to an empty.
 
 
 ### The stream interaction support
@@ -722,9 +722,74 @@ DSL extension system
 --------------------
 
 We can extend DSL vocabulary using the extension system.
-
+This feature is still experimental and may be improved in the future.
 
 ### Start from a simple extension
+
+Add a map to `extension` of the operation settings.
+Following example adds the method `restartAppServer` and it is available in the session closure.
+
+```groovy
+ssh.settings {
+  extensions.add restartAppServer: {
+    execute 'sudo service tomcat restart'
+  }
+}
+
+ssh.run {
+  session(ssh.remotes.testServer) {
+    restartAppServer()
+  }
+}
+```
+
+### Use Gradle feature in an extension
+
+We can use project properties such as configurations and dependencies from the extension.
+Following example transfers the `groovy-all` jar and execute a script on the remote host.
+
+```groovy
+repositories {
+  jcenter()
+}
+
+configurations {
+  groovyRuntime
+}
+
+dependencies {
+  groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
+}
+
+ssh.settings {
+  /**
+   * Execute a Groovy script on the remote host.
+   * Groovy dependency must be set as the configuration groovyRuntime.
+   */
+  extensions.add executeGroovyScript: { String script ->
+    def temporaryPath = "/tmp/${UUID.randomUUID()}"
+    try {
+      execute "mkdir -vp $temporaryPath"
+      put from: project.configurations.groovyRuntime, into: temporaryPath
+      put text: script, into: "$temporaryPath/script.groovy"
+      execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
+    } finally {
+      execute "rm -vfr $temporaryPath"
+    }
+  }
+}
+
+task example << {
+  ssh.run {
+    session(remotes.webServer) {
+      // Execute a script on the remote host
+      executeGroovyScript 'println GroovySystem.version'
+    }
+  }
+}
+```
+
+### Alternative: Trait based extension
 
 Create an extension trait in the `buildSrc/src/main/groovy` directory.
 
@@ -739,13 +804,13 @@ trait RemoteFileExtension {
 }
 ```
 
-Now properties and methods in the trait are available in the session closure.
+Properties and methods in the trait are available in the session closure.
 
 ```groovy
 // build.gradle
 ssh.run {
   settings {
-    extensions << RemoteFileExtension
+    extensions.add RemoteFileExtension
   }
   session(remotes.localhost) {
     eachFile('/webapps') {
@@ -755,86 +820,4 @@ ssh.run {
 }
 ```
 
-
-### Private members in an extension
-
-Private properties and methods of an extension are hidden in the session closure.
-
-```groovy
-trait SomeExtension {
-  private def someHelper() {
-  }
-  def something() {
-    someHelper()
-  }
-}
-```
-
-```groovy
-ssh.run {
-  session(remotes.web01) {
-    something()   // accessible
-    someHelper()  // not accessible form here
-  }
-}
-```
-
-
-### Use project in an extension
-
-We can access to the project instance in an extension.
-
-```groovy
-// buildSrc/src/main/groovy/extensions.groovy
-trait ScriptExtension {
-  /**
-   * Execute a Groovy script on the remote host.
-   * Groovy dependency must be set as the configuration groovyRuntime.
-   */
-  def executeGroovyScript(String script) {
-    def temporaryPath = "/tmp/${UUID.randomUUID()}"
-    try {
-      execute "mkdir -vp $temporaryPath"
-      put from: project.configurations.groovyRuntime, into: temporaryPath
-      put text: script, into: "$temporaryPath/script.groovy"
-      execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
-    } finally {
-      execute "rm -vfr $temporaryPath"
-    }
-  }
-}
-```
-
-```groovy
-// build.gradle
-repositories {
-  jcenter()
-}
-
-configurations {
-  groovyRuntime
-}
-
-dependencies {
-  // Groovy dependency used by the extension
-  groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
-}
-
-ssh.settings {
-  extensions << ScriptExtension
-}
-
-task example << {
-  ssh.run {
-    session(remotes.webServer) {
-
-    }
-  }
-}
-```
-
-
-### Restriction of extension system
-
-DSL extension system is supported on Gradle 2.0 or later.
-An extension must be a trait and placed in the `buildSrc/src/main/groovy` directory.
+An extension trait must be placed in the `buildSrc/src/main/groovy` directory.
