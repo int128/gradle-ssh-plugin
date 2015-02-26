@@ -13,7 +13,7 @@ This document explains how to migrate from 1.0.x to 1.1.x.
 ### Port forwarding
 
 Port forwarding is supported now.
-See [the user guide](/user-guide.html#Enable-the-port-forwarding) for details.
+See [the user guide](/user-guide.html#enable-the-port-forwarding) for details.
 
 
 ### Improvement of DSL extension system
