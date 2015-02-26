@@ -1,26 +1,16 @@
 Groovy SSH [![Build Status](https://travis-ci.org/int128/groovy-ssh.svg?branch=master)](https://travis-ci.org/int128/groovy-ssh)
 ==========
 
-Groovy SSH is an automation tool based on intuitive DSL.
-
-It provides the remote command execution and file transfer.
-
-See also [the user guide of Gradle SSH Plugin](https://gradle-ssh-plugin.github.io/user-guide.html) for details of DSL syntax.
+Groovy SSH is an automation tool based on DSL providing the remote command execution and file transfer.
 
 
-Getting Started
----------------
+DSL example
+-----------
 
-Download the latest `gssh.jar` from [releases](https://github.com/int128/groovy-ssh/releases).
-It requires Java 6 or later.
-
-```sh
-java -jar gssh.jar
-```
-
-Create a following script as `deploy.groovy`.
+Here is an example script for the typical deployment scenario.
 
 ```groovy
+// deploy.groovy
 ssh.remotes {
   webServer {
     host = '192.168.1.101'
@@ -37,33 +27,64 @@ ssh.run {
 }
 ```
 
-Run Groovy SSH with the script path.
+See [document of Gradle SSH Plugin](https://gradle-ssh-plugin.github.io) for details of DSL.
+
+
+Run the DSL script
+------------------
+
+We have following methods to run the script.
+
+### Homebrew
+
+Install `gssh` from Homebrew and run the script.
+
+```sh
+brew install gssh
+gssh deploy.groovy
+```
+
+### Download the release
+
+Download the latest `gssh.jar` from [releases](https://github.com/int128/groovy-ssh/releases) and run the script.
 
 ```sh
 java -jar gssh.jar deploy.groovy
 ```
 
-### Dockerized
+### Grape
 
-Groovy SSH is available on Docker Hub. Run a container as follows:
+Add following header to the script for using [Grape](http://groovy.codehaus.org/Grape),
 
-```sh
-docker run --rm int128/groovy-ssh
+```groovy
+@Grab('org.hidetake:groovy-ssh:x.y.z')
+@Grab('ch.qos.logback:logback-classic:1.1.2')
+def ssh = org.hidetake.groovy.ssh.Ssh.newService()
 ```
 
-Embed SSH library in your App
+and run the script on Groovy.
+
+```sh
+groovy deploy.groovy
+```
+
+
+Embed the Library in your App
 -----------------------------
 
-You can embed Groovy SSH library in your Groovy application.
+We can embed Groovy SSH library in the Groovy application.
 
-The library is available on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22) and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
+The library is available
+on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22)
+and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
 
 ```groovy
 // Gradle
 compile 'org.hidetake:groovy-ssh:x.y.z'
 ```
 
-Instantiate a [Service](src/main/groovy/org/hidetake/groovy/ssh/core/Service.groovy) by [`Ssh#newService()`](src/main/groovy/org/hidetake/groovy/ssh/Ssh.groovy)
+Instantiate a [Service](src/main/groovy/org/hidetake/groovy/ssh/core/Service.groovy)
+by [`Ssh#newService()`](src/main/groovy/org/hidetake/groovy/ssh/Ssh.groovy)
 and run the script as follows.
 
 ```groovy
@@ -86,8 +107,9 @@ ssh.run {
 }
 ```
 
+
 Contributions
 -------------
 
 This is an open source software licensed under the Apache License Version 2.0.
-Send me an issue or pull request.
+Feel free to open issues or pull requests.
