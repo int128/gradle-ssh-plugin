@@ -12,7 +12,7 @@ This document explains how to migrate from 1.0.x to 1.1.x.
 
 ### Port forwarding
 
-[Port forwarding](/user-guide.html#Enable-the-port-forwarding) is supported now.
+[Port forwarding](/user-guide.html#enable-the-port-forwarding) is supported now.
 
 
 ### Map based DSL extension system
