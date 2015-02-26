@@ -14,7 +14,7 @@ class ExtensionSpec extends Specification {
             apply plugin: 'org.hidetake.ssh'
             ssh.settings {
                 dryRun = true
-                extensions << ExampleExtension
+                extensions << [example: { project.name }]
             }
             remotes {
                 testServer {
