@@ -20,13 +20,13 @@ class ContainerBuilder<T> {
     }
 
     T methodMissing(String name, args) {
-        assert name
-
         assert args instanceof Object[]
-        assert args.length == 1
-        assert args[0] instanceof Closure
-        def closure = args[0] as Closure
 
+        if (!(args.length == 1 && args[0] instanceof Closure)) {
+            throw new MissingMethodException(name, ContainerBuilder, args)
+        }
+
+        def closure = args[0] as Closure
         T namedObject = clazz.newInstance(name)
         callWithDelegate(closure, namedObject)
         container.add(namedObject)

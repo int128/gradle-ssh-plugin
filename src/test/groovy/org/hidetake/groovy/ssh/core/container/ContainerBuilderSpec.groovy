@@ -66,7 +66,8 @@ class ContainerBuilderSpec extends Specification {
         callWithDelegate(closure, builder)
 
         then:
-        thrown(AssertionError)
+        MissingMethodException e = thrown()
+        e.method == 'unknownSymbol'
     }
 
     def "missing method with a wrong arg should cause an error"() {
@@ -79,7 +80,8 @@ class ContainerBuilderSpec extends Specification {
         callWithDelegate(closure, builder)
 
         then:
-        thrown(AssertionError)
+        MissingMethodException e = thrown()
+        e.method == 'unknownSymbol'
     }
 
     def "missing property in the child closure should cause an error"() {
@@ -131,7 +133,8 @@ class ContainerBuilderSpec extends Specification {
         callWithDelegate(closure, builder)
 
         then:
-        thrown(AssertionError)
+        MissingMethodException e = thrown()
+        e.method == 'unknownSymbol'
     }
 
     def "missing method with a wrong in the child closure arg should cause an error"() {
@@ -147,7 +150,8 @@ class ContainerBuilderSpec extends Specification {
         callWithDelegate(closure, builder)
 
         then:
-        thrown(AssertionError)
+        MissingMethodException e = thrown()
+        e.method == 'unknownSymbol'
     }
 
 }
