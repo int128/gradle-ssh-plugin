@@ -1,5 +1,7 @@
 package org.hidetake.groovy.ssh.core.container
 
+import groovy.util.logging.Slf4j
+
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
@@ -9,6 +11,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class ContainerBuilder<T> {
     private final Class<T> clazz
 
@@ -22,7 +25,13 @@ class ContainerBuilder<T> {
     T methodMissing(String name, args) {
         assert args instanceof Object[]
 
-        if (!(args.length == 1 && args[0] instanceof Closure)) {
+        try {
+            assert args.length == 1 && args[0] instanceof Closure,
+                    'ContainerBuilder handles a method only if argument is one closure'
+            assert args[0].delegate instanceof Closure && !clazz.isInstance(args[0].delegate.delegate),
+                    "ContainerBuilder does not handle any methods in the closure of $clazz"
+        } catch (AssertionError e) {
+            log.debug(e.localizedMessage)
             throw new MissingMethodException(name, ContainerBuilder, args)
         }
 
@@ -30,7 +39,6 @@ class ContainerBuilder<T> {
         T namedObject = clazz.newInstance(name)
         callWithDelegate(closure, namedObject)
         container.add(namedObject)
-
         namedObject
     }
 }

@@ -56,6 +56,25 @@ class ContainerBuilderSpec extends Specification {
         remotes.testServer.user == 'someUser'
     }
 
+    def "missing method with a closure should work even in another closure"() {
+        given:
+        def closure = {
+            (1..100).each { id ->
+                "testServer$id" {
+                    host = 'someHost'
+                    user = "user$id"
+                }
+            }
+        }
+
+        when:
+        callWithDelegate(closure, builder)
+
+        then:
+        remotes.size() == 100
+        remotes.testServer50.user == 'user50'
+    }
+
     def "missing method with no arg should cause an error"() {
         given:
         def closure = {
@@ -101,7 +120,7 @@ class ContainerBuilderSpec extends Specification {
         e.property == 'unknownSymbol'
     }
 
-    def "missing method with a closure in the child closure should cause no error"() {
+    def "missing method with a closure in the child closure should cause an error"() {
         given:
         def closure = {
             testServer {
@@ -115,9 +134,8 @@ class ContainerBuilderSpec extends Specification {
         callWithDelegate(closure, builder)
 
         then:
-        // MissingMethodException should be thrown
-        // but currently there is no way to check the nest of closures
-        remotes.size() == 2
+        MissingMethodException e = thrown()
+        e.method == 'unknownSymbol'
     }
 
     def "missing method with no arg in the child closure should cause an error"() {
