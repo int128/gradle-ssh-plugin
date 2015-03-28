@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
+import org.hidetake.groovy.ssh.fixture.HostKeyFixture
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock
 import org.junit.Rule
@@ -173,7 +174,7 @@ class MainSpec extends Specification {
     }
 
     private String createScript(SshServer server) {
-        def hostKey = MainSpec.getResourceAsStream('/hostkey.pub').text
+        def hostKey = HostKeyFixture.publicKey().text
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
         "ssh.run {" +
                 " session(host: 'localhost'," +

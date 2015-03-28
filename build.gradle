@@ -27,7 +27,7 @@ sourceSets {
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.3.6'
     compile 'org.slf4j:slf4j-api:1.7.7'
-    compile 'com.jcraft:jsch:0.1.51'
+    compile 'com.jcraft:jsch:0.1.52'
     compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.7'
     compile 'com.jcraft:jsch.agentproxy.jsch:0.0.7'
 
@@ -35,7 +35,7 @@ dependencies {
     cliRuntime 'commons-cli:commons-cli:1.2'
 
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
-    testCompile 'org.apache.sshd:sshd-core:0.12.0'
+    testCompile 'org.apache.sshd:sshd-core:0.14.0'
     testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
     testRuntime 'cglib:cglib-nodep:3.1'
