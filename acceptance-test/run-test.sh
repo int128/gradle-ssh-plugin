@@ -23,15 +23,15 @@ ln -vsf  "gradle-${GRADLE_VERSION}/bin/gradle"
 
 # enable public key authentication
 mkdir -m 700 -p -v $HOME/.ssh
-[ -f $HOME/.ssh/id_rsa ]          || ssh-keygen -t rsa -N ''            -f $HOME/.ssh/id_rsa
-[ -f $HOME/.ssh/id_rsa_pass ]     || ssh-keygen -t rsa -N 'pass_phrase' -f $HOME/.ssh/id_rsa_pass
-[ -f $HOME/.ssh/authorized_keys ] || cat $HOME/.ssh/id_rsa.pub           > $HOME/.ssh/authorized_keys
+[ -f $HOME/.ssh/id_ecdsa ]          || ssh-keygen -t rsa -N ''            -f $HOME/.ssh/id_ecdsa
+[ -f $HOME/.ssh/id_ecdsa_pass ]     || ssh-keygen -t rsa -N 'pass_phrase' -f $HOME/.ssh/id_ecdsa_pass
+[ -f $HOME/.ssh/authorized_keys ] || cat $HOME/.ssh/id_ecdsa.pub           > $HOME/.ssh/authorized_keys
 
 # generate a known hosts file
 ssh -o StrictHostKeyChecking=no \
     -o HostKeyAlgorithms=ssh-rsa \
     -o UserKnownHostsFile=$HOME/.ssh/known_hosts \
-    -i $HOME/.ssh/id_rsa \
+    -i $HOME/.ssh/id_ecdsa \
     localhost id
 ssh-keygen -H -F localhost
 
@@ -40,6 +40,6 @@ ssh-keygen -H -F localhost
 
 # run tests with ssh-agent
 eval $(ssh-agent)
-ssh-add $HOME/.ssh/id_rsa
+ssh-add $HOME/.ssh/id_ecdsa
 ./gradle -s -Pversion="${version:-SNAPSHOT}" testWithSshAgent
 ssh-agent -k

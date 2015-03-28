@@ -3,19 +3,19 @@ remotes {
     gw1 {
         host = 'localhost'
         user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+        identity = file("${System.getProperty('user.home')}/.ssh/id_ecdsa")
     }
     gw2 {
         host = 'localhost'
         user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+        identity = file("${System.getProperty('user.home')}/.ssh/id_ecdsa")
         gateway = remotes.gw1
         knownHosts = allowAnyHosts
     }
     viaGateway {
         host = 'localhost'
         user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+        identity = file("${System.getProperty('user.home')}/.ssh/id_ecdsa")
         gateway = remotes.gw2
         knownHosts = allowAnyHosts
     }
