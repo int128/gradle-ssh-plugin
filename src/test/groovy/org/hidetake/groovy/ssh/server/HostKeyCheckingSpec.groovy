@@ -19,6 +19,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 import static org.hidetake.groovy.ssh.fixture.HostKeyFixture.KeyType.dsa
+import static org.hidetake.groovy.ssh.fixture.HostKeyFixture.KeyType.ecdsa
 import static org.hidetake.groovy.ssh.fixture.HostKeyFixture.KeyType.rsa
 import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
 
@@ -120,6 +121,7 @@ class HostKeyCheckingSpec extends Specification {
         keyType | keyTypeSshd
         dsa     | KeyPairProvider.SSH_DSS
         rsa     | KeyPairProvider.SSH_RSA
+        ecdsa   | KeyPairProvider.ECDSA_SHA2_NISTP256
     }
 
     @Unroll
@@ -152,6 +154,7 @@ class HostKeyCheckingSpec extends Specification {
         keyType | keyTypeSshd
         dsa     | KeyPairProvider.SSH_DSS
         rsa     | KeyPairProvider.SSH_RSA
+        ecdsa   | KeyPairProvider.ECDSA_SHA2_NISTP256
     }
 
     def "strict host key checking should fail if an empty known-hosts is given"() {

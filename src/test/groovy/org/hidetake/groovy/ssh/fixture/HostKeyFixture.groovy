@@ -4,7 +4,8 @@ class HostKeyFixture {
 
     static enum KeyType {
         dsa,
-        rsa
+        rsa,
+        ecdsa
     }
 
     static privateKey(KeyType keyType = KeyType.dsa) {
