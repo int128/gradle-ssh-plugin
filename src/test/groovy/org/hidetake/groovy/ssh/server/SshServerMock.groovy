@@ -5,6 +5,7 @@ import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 import org.apache.sshd.server.Command
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.ExitCallback
+import org.hidetake.groovy.ssh.fixture.HostKeyFixture
 
 /**
  * A helper class for server-based integration tests.
@@ -59,7 +60,7 @@ class SshServerMock {
         SshServer.setUpDefaultServer().with {
             host = 'localhost'
             port = pickUpFreePort()
-            keyPairProvider = new FileKeyPairProvider(SshServerMock.getResource('/hostkey').file)
+            keyPairProvider = new FileKeyPairProvider(HostKeyFixture.privateKey().path)
             it
         }
     }
