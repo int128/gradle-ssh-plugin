@@ -5,10 +5,15 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.server.*
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import org.hidetake.groovy.ssh.fixture.UserKeyFixture
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.security.PublicKey
 
+import static org.hidetake.groovy.ssh.fixture.UserKeyFixture.KeyType.ecdsa
+import static org.hidetake.groovy.ssh.fixture.UserKeyFixture.KeyType.rsa
+import static org.hidetake.groovy.ssh.fixture.UserKeyFixture.KeyType.rsa_pass
 import static org.hidetake.groovy.ssh.server.SshServerMock.commandWithExit
 
 @org.junit.experimental.categories.Category(ServerIntegrationTest)
@@ -92,7 +97,8 @@ class AuthenticationSpec extends Specification {
         e.message == 'Auth fail'
     }
 
-    def "public key authentication should pass if valid one is given"() {
+    @Unroll
+    def "public key authentication should pass if valid #keyType is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.start()
@@ -102,7 +108,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = identityFile('id_rsa')
+                identity = UserKeyFixture.privateKey(keyType)
             }
         }
 
@@ -114,10 +120,16 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        (1.._) * server.publickeyAuthenticator.authenticate(
+                'someuser', { PublicKey k -> k.algorithm == keyTypeSshd } as PublicKey, _) >> true
 
         then:
         1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+
+        where:
+        keyType | keyTypeSshd
+        rsa     | 'RSA'
+        ecdsa   | 'EC'
     }
 
     def "identity of public key authentication can be set by global settings"() {
@@ -126,7 +138,7 @@ class AuthenticationSpec extends Specification {
         server.start()
 
         ssh.settings {
-            identity = identityFile('id_rsa')
+            identity = UserKeyFixture.privateKey()
         }
 
         ssh.remotes {
@@ -145,7 +157,8 @@ class AuthenticationSpec extends Specification {
         }
 
         then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        (1.._) * server.publickeyAuthenticator.authenticate(
+                'someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
 
         then:
         1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
@@ -161,7 +174,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = identityFile('id_rsa')
+                identity = UserKeyFixture.privateKey()
             }
         }
 
@@ -193,7 +206,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = identityFile('id_rsa_pass')
+                identity = UserKeyFixture.privateKey(rsa_pass)
                 passphrase = "gradle"
             }
         }
@@ -218,7 +231,7 @@ class AuthenticationSpec extends Specification {
         server.start()
 
         ssh.settings {
-            identity = identityFile('id_rsa_pass')
+            identity = UserKeyFixture.privateKey(rsa_pass)
             passphrase = "gradle"
         }
 
@@ -254,7 +267,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = identityFile('id_rsa_pass')
+                identity = UserKeyFixture.privateKey(rsa_pass)
                 passphrase = "wrong"
             }
         }
@@ -283,7 +296,7 @@ class AuthenticationSpec extends Specification {
         server.start()
 
         ssh.settings {
-            identity = identityFile('id_rsa')
+            identity = UserKeyFixture.privateKey(rsa)
         }
 
         ssh.remotes {
@@ -291,7 +304,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = identityFile('id_rsa_pass')
+                identity = UserKeyFixture.privateKey(rsa_pass)
             }
         }
 
@@ -311,10 +324,6 @@ class AuthenticationSpec extends Specification {
         then:
         JSchException e = thrown()
         e.message == 'USERAUTH fail'
-    }
-
-    static identityFile(String name) {
-        new File(AuthenticationSpec.getResource("/${name}").file)
     }
 
 }
