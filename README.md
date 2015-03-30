@@ -25,7 +25,7 @@ remotes {
   webServer {
     host = '192.168.1.101'
     user = 'jenkins'
-    identity = file('id_rsa')
+    identity = file('id_ecdsa')
   }
 }
 
