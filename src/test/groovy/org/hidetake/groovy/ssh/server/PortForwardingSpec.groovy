@@ -106,7 +106,7 @@ class PortForwardingSpec extends Specification {
         def response = ssh.run {
             session(ssh.remotes.some) {
                 int port = SshServerMock.pickUpFreePort()
-                forwardLocalPort(bind: '0.0.0.0', port: port, host: '0.0.0.0', hostPort: httpServerPort)
+                forwardLocalPort(bind: '0.0.0.0', port: port, host: 'localhost', hostPort: httpServerPort)
                 new RESTClient("http://localhost:$port").get(path: '/')
             }
         }
