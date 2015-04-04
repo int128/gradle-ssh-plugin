@@ -6,6 +6,7 @@ import org.apache.sshd.server.sftp.SftpSubsystem
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.operation.SftpException
+import org.hidetake.groovy.ssh.util.FilenameUtils
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
@@ -23,7 +24,7 @@ class FileTransferSpec extends Specification {
     Service ssh
 
     @Rule
-    TemporaryFolder temporaryFolder
+    TemporaryFolder temporaryFolder=new TemporaryFolder(new File("build"))
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
@@ -64,7 +65,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile.path, destinationFile.path)
+                put(sourceFile.path, FilenameUtils.toUnixSeparator(destinationFile.path))
             }
         }
 
@@ -82,7 +83,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, destinationFile.path)
+                put(sourceFile, FilenameUtils.toUnixSeparator(destinationFile.path))
             }
         }
 
