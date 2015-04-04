@@ -65,7 +65,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile.path, FilenameUtils.toUnixSeparator(destinationFile.path))
+                put(sourceFile.path, toUnixSeparator(destinationFile.path))
             }
         }
 
@@ -83,7 +83,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, FilenameUtils.toUnixSeparator(destinationFile.path))
+                put(sourceFile, toUnixSeparator(destinationFile.path))
             }
         }
 
@@ -102,7 +102,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put([sourceFile1, sourceFile2], destinationDir.path)
+                put([sourceFile1, sourceFile2], toUnixSeparator(destinationDir.path))
             }
         }
 
@@ -120,7 +120,7 @@ class FileTransferSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 def stream = new ByteArrayInputStream(text.bytes)
-                put stream, destinationFile.path
+                put stream, toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -137,7 +137,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile.path, into: destinationFile.path
+                put from: sourceFile.path, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -155,7 +155,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile, into: destinationFile.path
+                put from: sourceFile, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -174,7 +174,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: [sourceFile1, sourceFile2], into: destinationDir.path
+                put from: [sourceFile1, sourceFile2], into: toUnixSeparator(destinationDir.path)
             }
         }
 
@@ -191,7 +191,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put text: text, into: destinationFile.path
+                put text: text, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -207,7 +207,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put bytes: text.bytes, into: destinationFile.path
+                put bytes: text.bytes, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -224,7 +224,7 @@ class FileTransferSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 def stream = new ByteArrayInputStream(text.bytes)
-                put from: stream, into: destinationFile.path
+                put from: stream, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -241,7 +241,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile.path, destinationFile.path)
+                put(sourceFile.path, toUnixSeparator(destinationFile.path))
             }
         }
 
@@ -259,7 +259,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, destinationDir.path)
+                put(sourceFile, toUnixSeparator(destinationDir.path))
             }
         }
 
@@ -280,7 +280,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, destinationDir.path)
+                put(sourceFile, toUnixSeparator(destinationDir.path))
             }
         }
 
@@ -304,7 +304,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(source1Dir, destinationDir.path)
+                put(source1Dir, toUnixSeparator(destinationDir.path))
             }
         }
 
@@ -334,7 +334,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(source1Dir, destination0Dir.path)
+                put(source1Dir, toUnixSeparator(destination0Dir.path))
             }
         }
 
@@ -357,7 +357,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceDir, destinationDir.path)
+                put(sourceDir, toUnixSeparator(destinationDir.path))
             }
         }
 
@@ -440,7 +440,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceFile.path, destinationFile.path)
+                get(toUnixSeparator(sourceFile.path), destinationFile.path)
             }
         }
 
@@ -458,7 +458,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceFile.path, destinationFile)
+                get(toUnixSeparator(sourceFile.path), destinationFile)
             }
         }
 
@@ -476,7 +476,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get sourceFile.path, outputStream
+                get toUnixSeparator(sourceFile.path), outputStream
             }
         }
 
@@ -494,7 +494,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: sourceFile.path, into: destinationFile.path
+                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -512,7 +512,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: sourceFile.path, into: destinationFile
+                get from: toUnixSeparator(sourceFile.path), into: destinationFile
             }
         }
 
@@ -530,7 +530,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: sourceFile.path, into: outputStream
+                get from: toUnixSeparator(sourceFile.path), into: outputStream
             }
         }
 
@@ -547,7 +547,7 @@ class FileTransferSpec extends Specification {
         when:
         def content = ssh.run {
             session(ssh.remotes.testServer) {
-                get from: sourceFile.path
+                get from: toUnixSeparator(sourceFile.path)
             }
         }
 
@@ -565,7 +565,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceFile.path, destinationFile.path)
+                get(toUnixSeparator(sourceFile.path), destinationFile.path)
             }
         }
 
@@ -583,7 +583,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceFile.path, destinationDir)
+                get(toUnixSeparator(sourceFile.path), destinationDir)
             }
         }
 
@@ -605,7 +605,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceFile.path, destinationDir)
+                get(toUnixSeparator(sourceFile.path), destinationDir)
             }
         }
 
@@ -629,7 +629,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(source1Dir.path, destinationDir)
+                get(toUnixSeparator(source1Dir.path), destinationDir)
             }
         }
 
@@ -659,7 +659,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(source1Dir.path, destination0Dir)
+                get(toUnixSeparator(source1Dir.path), destination0Dir)
             }
         }
 
@@ -682,7 +682,7 @@ class FileTransferSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(sourceDir.path, destinationDir)
+                get(toUnixSeparator(sourceDir.path), destinationDir)
             }
         }
 
@@ -768,6 +768,10 @@ class FileTransferSpec extends Specification {
 
     static uuidgen() {
         UUID.randomUUID().toString()
+    }
+
+    static String toUnixSeparator(String path){
+        FilenameUtils.toUnixSeparator(path)
     }
 
 }
