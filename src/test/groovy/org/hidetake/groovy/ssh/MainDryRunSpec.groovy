@@ -48,7 +48,7 @@ class MainDryRunSpec extends Specification {
         then:
         JSchException e = thrown()
         e.cause instanceof ConnectException
-        e.cause.message == 'Connection refused'
+        e.cause.message.startsWith 'Connection refused'
     }
 
     @Unroll
