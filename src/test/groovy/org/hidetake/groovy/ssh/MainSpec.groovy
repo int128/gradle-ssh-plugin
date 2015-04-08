@@ -6,6 +6,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.fixture.HostKeyFixture
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.server.SshServerMock
+import org.hidetake.groovy.ssh.util.FilenameUtils
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
@@ -179,7 +180,7 @@ class MainSpec extends Specification {
         "ssh.run {" +
                 " session(host: 'localhost'," +
                 "  port: ${server.port}," +
-                "  knownHosts: new File('${knownHostsFile.path}')," +
+                "  knownHosts: new File('${FilenameUtils.toUnixSeparator(knownHostsFile.path)}')," +
                 "  user: 'someuser'," +
                 "  password: 'somepassword')" +
                 " { execute('somecommand') }" +
