@@ -18,7 +18,7 @@ class Main {
             width: 120
         )
         cli.h longOpt: 'help',  'Shows this help message.'
-        cli.q longOpt: 'quite', 'Set log level to warn.'
+        cli.q longOpt: 'quiet', 'Set log level to warn.'
         cli.i longOpt: 'info',  'Set log level to info. (default)'
         cli.d longOpt: 'debug', 'Set log level to debug.'
         cli._ longOpt: 'stdin', 'Specify standard input as a source.'
