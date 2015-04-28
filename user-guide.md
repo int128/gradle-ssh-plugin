@@ -93,6 +93,7 @@ remotes {
 ```
 
 It will:
+
 * establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
 * establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
 
@@ -118,6 +119,7 @@ remotes {
 ```
 
 It will:
+
 * establish a connection to `10.2.3.4` (frontgw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `172.16.1.2:22`.
 * establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
 * establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
