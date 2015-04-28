@@ -85,7 +85,7 @@ remotes {
     host = '192.168.1.101'
     user = 'jenkins'
     gateway = remotes.gw01
-    knownHost = allowAnyHosts
+    knownHosts = allowAnyHosts
   }
 }
 ```
