@@ -75,6 +75,8 @@ Key            | Type              | Description
 
 A remote host can be connected through one or more gateway servers.
 
+##### Through one gateway
+
 ```groovy
 remotes {
   gw01 {
@@ -90,9 +92,40 @@ remotes {
 }
 ```
 
-Currently there is a limitation that strict host key checking must be turned off for remote hosts over the gateway.
+It will:
+* establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
+* establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
+
+##### Through two-hop gateways
+
+```groovy
+remotes {
+  frontgw01 {
+    host = '10.2.3.4'
+    user = 'frontgwuser'
+  }
+  gw01 {
+    host = '172.16.1.2'
+    user = 'gwuser'
+    gateway = remotes.frontgw01
+  }
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    gateway = remotes.gw01
+  }
+}
+```
+
+It will:
+* establish a connection to `10.2.3.4` (frontgw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `172.16.1.2:22`.
+* establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
+* establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
+
+##### Limitation
+
+Strict host key checking must be turned off for remote hosts over the gateway.
 Because the gateway connection is achieved with the port forwarding, `known_hosts` does not work.
-This will be fixed in the future release.
 
 
 #### Connect through a proxy server
