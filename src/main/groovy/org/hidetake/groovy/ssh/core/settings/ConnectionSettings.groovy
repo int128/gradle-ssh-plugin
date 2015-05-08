@@ -14,10 +14,6 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 @EqualsAndHashCode
 @ToString(excludes = 'password, passphrase, allowAnyHosts')
 class ConnectionSettings implements Settings<ConnectionSettings> {
-    static class Constants {
-        static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
-    }
-
     /**
      * Remote user.
      */
@@ -41,6 +37,12 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
     String passphrase
 
     /**
+     * Proxy configuration for connecting to a host.
+     * This may be null.
+     */
+    Proxy proxy
+
+    /**
      * Use agent flag.
      * If <code>true</code>, Putty Agent or ssh-agent will be used to authenticate.
      */
@@ -53,32 +55,33 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
     File knownHosts
 
     /**
-     * Represents that strict host key checking is turned off and any host is allowed.
-     * @see ConnectionSettings#knownHosts
-     */
-    final File allowAnyHosts = Constants.allowAnyHosts
-
-    /**
      * Retry count for connecting to a host.
      */
     Integer retryCount
-    
-    /**
-     * Proxy configuration for connecting to a host.
-     * This may be null. 
-     */
-    Proxy proxy
 
     /**
      * Interval time in seconds between retries.
      */
     Integer retryWaitSec
 
+
+    /**
+     * Represents that strict host key checking is turned off and any host is allowed.
+     * @see ConnectionSettings#knownHosts
+     */
+    final File allowAnyHosts = Constants.allowAnyHosts
+
+    static class Constants {
+        static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
+    }
+
+
     static final DEFAULT = new ConnectionSettings(
             user: null,
             password: null,
             identity: null,
             passphrase: null,
+            proxy: null,
             agent: false,
             knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
             retryCount: 0,
@@ -91,11 +94,11 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
                 password:     findNotNull(right.password, password),
                 identity:     findNotNull(right.identity, identity),
                 passphrase:   plusOfPassphrase(right),
+                proxy:        findNotNull(right.proxy, proxy),
                 agent:        findNotNull(right.agent, agent),
                 knownHosts:   findNotNull(right.knownHosts, knownHosts),
                 retryCount:   findNotNull(right.retryCount, retryCount),
                 retryWaitSec: findNotNull(right.retryWaitSec, retryWaitSec),
-                proxy:        findNotNull(right.proxy, proxy)
         )
     }
 
