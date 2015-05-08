@@ -87,13 +87,16 @@ class ConnectionManager {
         assert settings.knownHosts   != null, 'knownHosts must not be null'
         assert settings.retryCount   != null, 'retryCount must not be null'
         assert settings.retryWaitSec != null, 'retryWaitSec must not be null'
+        assert settings.keepAliveSec != null, 'keepAliveMillis must not be null'
         assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
         assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
+        assert settings.keepAliveSec >= 0, "keepAliveMillis must be zero or positive (remote ${remote.name})"
 
         JSch.logger = JSchLogger.instance
         def jsch = new JSch()
         def session = jsch.getSession(settings.user, host, port)
         session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
+        session.setServerAliveInterval(settings.keepAliveSec * 1000)
 
         if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
             session.setConfig('StrictHostKeyChecking', 'no')

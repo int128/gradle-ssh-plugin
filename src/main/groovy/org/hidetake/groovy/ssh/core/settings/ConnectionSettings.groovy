@@ -64,6 +64,11 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
      */
     Integer retryWaitSec
 
+    /**
+     * Interval time in seconds between keep-alive packets.
+     */
+    Integer keepAliveSec
+
 
     /**
      * Represents that strict host key checking is turned off and any host is allowed.
@@ -85,7 +90,8 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
             agent: false,
             knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
             retryCount: 0,
-            retryWaitSec: 0
+            retryWaitSec: 0,
+            keepAliveSec: 60,
     )
 
     ConnectionSettings plus(ConnectionSettings right) {
@@ -99,6 +105,7 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
                 knownHosts:   findNotNull(right.knownHosts, knownHosts),
                 retryCount:   findNotNull(right.retryCount, retryCount),
                 retryWaitSec: findNotNull(right.retryWaitSec, retryWaitSec),
+                keepAliveSec: findNotNull(right.keepAliveSec, keepAliveSec),
         )
     }
 
