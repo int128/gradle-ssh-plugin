@@ -1,9 +1,7 @@
----
-layout: page
-title: Getting Started
----
+= Getting Started
 
-This document explains how to use Gradle SSH Plugin version {{ site.product.version }}.
+
+This document explains how to use Gradle SSH Plugin version {project-version}.
 
 
 Requirement
@@ -23,7 +21,7 @@ Create a project
 
 ### Clone the template project
 
-Get the [Gradle SSH Plugin Template Project](https://github.com/gradle-ssh-plugin/template) for quick start.
+Get the https://github.com/gradle-ssh-plugin/template[Gradle SSH Plugin Template Project] for quick start.
 The project contains Gradle wrapper, so Gradle installation is not needed.
 
 We can clone the template project as follows:
@@ -50,47 +48,50 @@ Gradle will fetch the plugin from Internet.
 
 Add the plugin to your script as follows:
 
-```groovy
+[source,groovy,subs="+attributes"]
+----
 plugins {
-  id 'org.hidetake.ssh' version '{{ site.product.version }}'
+  id 'org.hidetake.ssh' version '{project-version}'
 }
-```
+----
 
 Gradle 2.0 style:
 
-```groovy
+[source,groovy,subs="+attributes"]
+----
 buildscript {
   repositories {
     jcenter()
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:{{ site.product.version }}'
+    classpath 'org.hidetake:gradle-ssh-plugin:{project-version}'
   }
 }
 
 apply plugin: 'org.hidetake.ssh'
-```
+----
 
 
 ### Gradle 1.x support
 
 The plugin also works on Gradle 1.x with the backports library:
 
-```groovy
+[source,groovy,subs="+attributes"]
+----
 buildscript {
   repositories {
     jcenter()
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:{{ site.product.version }}'
+    classpath 'org.hidetake:gradle-ssh-plugin:{project-version}'
     classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
   }
 }
 
 apply plugin: 'org.hidetake.ssh'
-```
+----
 
-Gradle 1.x support is since [version 1.0.5](https://github.com/int128/gradle-ssh-plugin/releases/tag/v1.0.5)
+Gradle 1.x support is since https://github.com/int128/gradle-ssh-plugin/releases/tag/v1.0.5[version 1.0.5]
 and still experimental.
 
 
@@ -120,7 +121,7 @@ remotes {
 We can specify each remote host by `remotes.web01` or `remotes.web02`.
 Also we can specify the remote host _web01_ by a role such as `remotes.role('masterNode')`.
 
-All settings of a remote host are available on [the user guide](/user-guide.html#add-a-remote-host).
+All settings of a remote host are available on link:user-guide.html#add-a-remote-host[the user guide].
 
 
 Run a SSH session in the task
@@ -242,7 +243,7 @@ Following methods are available in a session closure.
 * `put` - Put a file or directory into the remote host.
 * `get` - Get a file or directory from the remote host.
 
-See [the user guide](/user-guide.html#perform-operations) for details.
+See link:user-guide.html#perform-operations[the user guide] for details.
 
 
 Run the script
@@ -250,9 +251,10 @@ Run the script
 
 Now the script is ready.
 
-```groovy
+[source,groovy,subs="+attributes"]
+----
 plugins {
-  id 'org.hidetake.ssh' version '{{ site.product.version }}'
+  id 'org.hidetake.ssh' version '{project-version}'
 }
 
 ssh.settings {
@@ -281,7 +283,7 @@ task reload << {
     }
   }
 }
-```
+----
 
 Invoke the task to run.
 
@@ -305,4 +307,4 @@ so invoke the task with `dryRun` property to perform dry-run.
 Furthermore
 -----------
 
-See also [the user guide](/user-guide.html).
+See also link:user-guide.html[the user guide].

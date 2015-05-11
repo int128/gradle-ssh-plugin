@@ -1,14 +1,12 @@
----
-layout: page
-title: Migration Guide (from 0.4.x to 1.0.x)
----
+= Migration Guide (from 0.4.x to 1.0.x)
 
-# Migration Guide
+
+== Introduction
 
 This document explains how to migrate from 0.4.x to 1.0.x.
 
 
-## No backward compatible changes
+== No backward compatible changes
 
 `sshexec` is no longer supported. Use `ssh.run` instead.
 

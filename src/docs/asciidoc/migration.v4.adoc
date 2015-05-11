@@ -1,17 +1,12 @@
----
-layout: page
-title: Migration Guide (from 0.3.x to 0.4.x)
----
+= Migration Guide (from 0.3.x to 0.4.x)
 
-# Migration Guide
+
+== Introduction
 
 This document explains how to migrate from 0.3.x to 0.4.x.
 
-
-## Introduction
-
 Since 0.4.0, core code has been separated to the SSH library
-[groovy-ssh](https://github.com/int128/groovy-ssh) and removed from the plugin.
+https://github.com/int128/groovy-ssh[groovy-ssh] and removed from the plugin.
 
 It introduces new style which is common between the plugin and the SSH library.
 It also causes no backward compatible changes.
@@ -19,9 +14,9 @@ It also causes no backward compatible changes.
 Please let me know if there is any problem.
 
 
-## New style
+== New style
 
-### Global settings
+=== Global settings
 
 `ssh` method has been deprecated.
 
@@ -39,7 +34,7 @@ ssh.settings {
 }
 ```
 
-### SSH execution
+=== SSH execution
 
 `SshTask` and `sshexec` method have been deprecated.
 
@@ -87,22 +82,26 @@ task testTask1 << {
 ```
 
 
-## No backward compatible changes
+== No backward compatible changes
 
-### Logging settings
+=== Logging settings
 
 Following settings have been removed.
 
-Key              | Type     | Description
------------------|----------|------------
-`outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
-`errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
+[options="header"]
+|===
+|Key              | Type     | Description
+|`outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
+|`errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
+|===
 
 Instead use `logging` setting to enable verbose logging.
 
-Key              | Type     | Description
------------------|----------|------------
-`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+[options="header"]
+|===
+|Key              | Type     | Description
+|`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+|===
 
 e.g.
 

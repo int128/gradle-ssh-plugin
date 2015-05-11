@@ -1,21 +1,19 @@
----
-layout: page
-title: Migration Guide (from 1.0.x to 1.1.x)
----
+= Migration Guide (from 1.0.x to 1.1.x)
 
-# Migration Guide
+
+== Introduction
 
 This document explains how to migrate from 1.0.x to 1.1.x.
 
 
-## New features
+== New features
 
-### Port forwarding
+=== Port forwarding
 
-[Port forwarding](/user-guide.html#enable-the-port-forwarding) is supported now.
+link:user-guide.html#enable-the-port-forwarding[Port forwarding] is supported now.
 
 
-### Map based DSL extension system
+=== Map based DSL extension system
 
 We can extend DSL with a map of method name and implementation.
 Following example adds the method `restartAppServer`.
@@ -36,9 +34,9 @@ ssh.run {
 ```
 
 
-## No backward compatible change
+== No backward compatible change
 
-### Class based DSL extension system
+=== Class based DSL extension system
 
 Any extension classes in the build script will no longer work.
 They must be placed in the `buildSrc/src/main/groovy` directory.
