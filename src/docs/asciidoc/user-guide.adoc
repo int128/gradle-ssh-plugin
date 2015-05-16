@@ -1,3 +1,5 @@
+= User Guide
+
 == Manage remote hosts
 
 The plugin adds a container of remote hosts to the project.
@@ -680,7 +682,7 @@ execute('passwd', pty: true, interaction: {
 ```
 
 
-## Override settings
+== Override settings
 
 Connection settings and operation settings can be set globally
 and overridden by each remote hosts, methods or operation methods.

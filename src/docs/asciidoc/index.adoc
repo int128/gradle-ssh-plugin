@@ -1,8 +1,11 @@
-= Gradle SSH Plugin User Guide
+= Gradle SSH Plugin Document
 Hidetake Iwata <https://github.com/int128>
+:doctype: book
 
-A Gradle plugin which provides SSH facilities for continuous delivery.
+This document explains Gradle SSH Plugin, that is a Gradle plugin providing SSH facilities for continuous delivery. It also explains Groovy SSH, that is a SSH automation tool and library, internally used by Gradle SSH Plugin.
 
+
+include::introduction.adoc[]
 
 include::getting-started.adoc[]
 

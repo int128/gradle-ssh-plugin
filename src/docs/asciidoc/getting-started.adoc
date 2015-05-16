@@ -1,7 +1,6 @@
-== Getting Started
+= Getting Started
 
-This document explains how to use Gradle SSH Plugin version {project-version}.
-
+== Use Gradle SSH Plugin
 
 === Requirement
 
@@ -296,6 +295,6 @@ so invoke the task with `dryRun` property to perform dry-run.
 ```
 
 
-=== Furthermore
+== Use Groovy SSH
 
-See also link:user-guide.html[the user guide].
+NOTE: work in progress
