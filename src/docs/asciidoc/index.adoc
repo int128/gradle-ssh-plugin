@@ -1,0 +1,9 @@
+= Gradle SSH Plugin User Guide
+Hidetake Iwata <https://github.com/int128>
+
+A Gradle plugin which provides SSH facilities for continuous delivery.
+
+
+include::getting-started.adoc[]
+
+include::user-guide.adoc[]

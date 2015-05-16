@@ -1,27 +1,4 @@
-= User Guide
-
-
-Overview
---------
-
-Gradle SSH Plugin is a Gradle plugin which provides remote execution and file transfer features.
-
-This document is for version 1.1.x.
-
-Please read link:getting-started.html[the getting started] at first time.
-
-See also:
-
-* link:migration.v11.html[Migration Guide from 1.0.x to 1.1.x]
-* link:migration.v10.html[Migration Guide from 0.4.x to 1.0.x]
-* link:migration.v4.html[Migration Guide from 0.3.x to 0.4.x]
-* link:user-guide.v10.html[User Guide (version 1.0.x)]
-* link:user-guide.v4.html[User Guide (version 0.4.x)]
-* link:user-guide.v3.html[User Guide (version 0.3.x)]
-
-
-Manage remote hosts
--------------------
+== Manage remote hosts
 
 The plugin adds a container of remote hosts to the project.
 The remote hosts container is
@@ -29,7 +6,7 @@ an http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectCo
 and has role support methods extended by the plugin.
 
 
-### Add a remote host
+=== Add a remote host
 
 Following code adds a remote host to the remote hosts container:
 
@@ -54,7 +31,7 @@ Following settings can be set in a remote closure.
 |===
 
 
-#### Set connection settings
+==== Set connection settings
 
 Also following settings can be set in a remote closure. These can be set globally in the project.
 
@@ -72,11 +49,11 @@ Also following settings can be set in a remote closure. These can be set globall
 |===
 
 
-#### Connect through gateway servers
+==== Connect through gateway servers
 
 A remote host can be connected through one or more gateway servers.
 
-##### Through one gateway
+===== Through one gateway
 
 ```groovy
 remotes {
@@ -98,7 +75,7 @@ It will:
 * establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
 * establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
 
-##### Through two-hop gateways
+===== Through two-hop gateways
 
 ```groovy
 remotes {
@@ -125,13 +102,13 @@ It will:
 * establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
 * establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
 
-##### Limitation
+===== Limitation
 
 Strict host key checking must be turned off for remote hosts over the gateway.
 Because the gateway connection is achieved with the port forwarding, `known_hosts` does not work.
 
 
-#### Connect through a proxy server
+==== Connect through a proxy server
 
 A remote host can specify that connections should be made through a proxy server.
 Individual proxy server connections are configured in the `proxies` container provided by the plugin.
@@ -224,7 +201,7 @@ task jarSearch << {
 ```
 
 
-### Associate with roles
+=== Associate with roles
 
 Call `role` method to associate the host with one or more roles.
 
@@ -252,7 +229,7 @@ session(remotes.role('webServer', 'appServer')) {
 ```
 
 
-### Manipulate on execution phase
+=== Manipulate on execution phase
 
 A remote host can be defined on execution phase by `remotes.create(name)`.
 
@@ -281,8 +258,7 @@ task something(dependsOn: setupRemote) << {
 ```
 
 
-Perform operations
-------------------
+== Perform operations
 
 Following methods are available in a session closure.
 
@@ -294,7 +270,7 @@ Following methods are available in a session closure.
 * `get` - Get a file or directory from the remote host.
 
 
-### Execute a command
+=== Execute a command
 
 Call the `execute` method with a command to execute.
 
@@ -331,7 +307,7 @@ execute 'exit 1', ignoreError: true
 ```
 
 
-### Execute a command in background
+=== Execute a command in background
 
 Call the `executeBackground` method with a command to execute in background.
 
@@ -377,7 +353,7 @@ executeBackground 'exit 1', ignoreError: true
 ```
 
 
-### Execute a command with the sudo support
+=== Execute a command with the sudo support
 
 Call the `executeSudo` method with a command to execute with the sudo support.
 The method prepends `sudo -S -p` to the command and will provide a password for sudo prompt.
@@ -410,7 +386,7 @@ The method throws an exception if an exit status of the command was not zero, in
 The sudo support is achieved by the stream interaction support. So the method does not accept an `interaction` setting.
 
 
-### Execute a shell
+=== Execute a shell
 
 Call the `shell` method to execute a shell.
 The method is useful for a limited environment which supports only a shell such as Cisco IOS.
@@ -434,7 +410,7 @@ shell ignoreError: true, interaction: {...}
 ```
 
 
-### Transfer a file or directory
+=== Transfer a file or directory
 
 Call the `get` method to get a file or directory from the remote host.
 
@@ -483,7 +459,7 @@ put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 The method throws an exception if an error occurred while the file transfer.
 
 
-### Enable the port forwarding
+=== Enable the port forwarding
 
 Call the `forwardLocalPort` method to forward a local port to a remote port.
 
@@ -554,7 +530,7 @@ ssh.run {
 ```
 
 
-### Operation settings
+=== Operation settings
 
 Following settings can be given to operation methods.
 
@@ -573,14 +549,14 @@ Following settings can be given to operation methods.
 |===
 
 
-### The stream interaction support
+=== The stream interaction support
 
 The execute method can interact with the stream of command executed on the remote host.
 The shell method can do same.
 This feature is useful for providing a password or yes/no answer.
 
 
-#### Declare interaction rules
+==== Declare interaction rules
 
 Call the execute or shell method with an `interaction` setting which contains one or more interaction rules.
 Interaction rules will be evaluated in order.
@@ -603,7 +579,7 @@ interaction: {
 ```
 
 
-#### An interaction rule is
+==== An interaction rule is
 
 An interaction rule consists of a pattern match and an action closure.
 The action closure will be executed if the pattern match is satisfied.
@@ -661,7 +637,7 @@ interaction: {
 ```
 
 
-#### Example: handle the prompt
+==== Example: handle the prompt
 
 Let's take a look at the following example.
 
@@ -688,7 +664,7 @@ If the shell prompt is `sh$`, pattern matching will work as follows.
 6. The pattern match is evaluated and matched. The closure is executed.
 
 
-#### Example: handle more prompts
+==== Example: handle more prompts
 
 TODO
 
@@ -704,8 +680,7 @@ execute('passwd', pty: true, interaction: {
 ```
 
 
-Override settings
------------------
+## Override settings
 
 Connection settings and operation settings can be set globally
 and overridden by each remote hosts, methods or operation methods.
@@ -764,13 +739,12 @@ execute('sudo service httpd reload', logging: false)
 ```
 
 
-DSL extension system
---------------------
+== DSL extension system
 
 We can extend DSL vocabulary using the extension system.
 This feature is still experimental and may be improved in the future.
 
-### Start from a simple extension
+=== Start from a simple extension
 
 Add a map to `extension` of the operation settings.
 Following example adds the method `restartAppServer` and it is available in the session closure.
@@ -789,7 +763,7 @@ ssh.run {
 }
 ```
 
-### Use Gradle feature in an extension
+=== Use Gradle feature in an extension
 
 We can use project properties such as configurations and dependencies from the extension.
 Following example transfers the `groovy-all` jar and execute a script on the remote host.
@@ -835,7 +809,7 @@ task example << {
 }
 ```
 
-### Alternative: Trait based extension
+=== Alternative: Trait based extension
 
 Create an extension trait in the `buildSrc/src/main/groovy` directory.
 

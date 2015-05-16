@@ -1,11 +1,9 @@
-= Getting Started
-
+== Getting Started
 
 This document explains how to use Gradle SSH Plugin version {project-version}.
 
 
-Requirement
------------
+=== Requirement
 
 Gradle SSH Plugin requires following:
 
@@ -16,10 +14,9 @@ Gradle 1.x is still supported with the backports library.
 See later section for details.
 
 
-Create a project
-----------------
+=== Create a project
 
-### Clone the template project
+==== Clone the template project
 
 Get the https://github.com/gradle-ssh-plugin/template[Gradle SSH Plugin Template Project] for quick start.
 The project contains Gradle wrapper, so Gradle installation is not needed.
@@ -35,13 +32,12 @@ cd awesome-ssh
 We can open the project with an IDE such as IntelliJ IDEA.
 
 
-### Use an existent project
+==== Use an existent project
 
 Of course we can add the plugin to an existent project.
 
 
-Add the plugin dependency
--------------------------
+=== Add the plugin dependency
 
 The plugin is available on the Gradle plugin registry.
 Gradle will fetch the plugin from Internet.
@@ -72,7 +68,7 @@ apply plugin: 'org.hidetake.ssh'
 ----
 
 
-### Gradle 1.x support
+==== Gradle 1.x support
 
 The plugin also works on Gradle 1.x with the backports library:
 
@@ -95,8 +91,7 @@ Gradle 1.x support is since https://github.com/int128/gradle-ssh-plugin/releases
 and still experimental.
 
 
-Add a remote host
------------------
+=== Add a remote host
 
 The plugin adds a container of remote hosts to the project.
 One or more remote hosts can be added in the `remotes` closure.
@@ -124,8 +119,7 @@ Also we can specify the remote host _web01_ by a role such as `remotes.role('mas
 All settings of a remote host are available on link:user-guide.html#add-a-remote-host[the user guide].
 
 
-Run a SSH session in the task
------------------------------
+=== Run a SSH session in the task
 
 Call `ssh.run` method to run one or more SSH sessions as follows.
 
@@ -146,7 +140,7 @@ task checkWebServer << {
 and evaluate each closure of sessions in order.
 
 
-### Obtain a result of command
+==== Obtain a result of command
 
 `ssh.run` method will return the result of last declared session.
 So we can use the method to retrieve a result of remote command as like:
@@ -169,7 +163,7 @@ task syncKernelParam << {
 ```
 
 
-### More about sessions
+==== More about sessions
 
 A session consists of a remote host to connect and a closure.
 Following code declares a session which connects to _web01_ and executes a command.
@@ -213,8 +207,7 @@ session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
 ```
 
 
-Describe SSH operations
------------------------
+=== Describe SSH operations
 
 We can describe SSH operations in the session closure.
 
@@ -246,8 +239,7 @@ Following methods are available in a session closure.
 See link:user-guide.html#perform-operations[the user guide] for details.
 
 
-Run the script
---------------
+=== Run the script
 
 Now the script is ready.
 
@@ -292,7 +284,7 @@ Invoke the task to run.
 ```
 
 
-### Dry run the script
+==== Dry run the script
 
 We can run the script without any actual connections.
 
@@ -304,7 +296,6 @@ so invoke the task with `dryRun` property to perform dry-run.
 ```
 
 
-Furthermore
------------
+=== Furthermore
 
 See also link:user-guide.html[the user guide].
