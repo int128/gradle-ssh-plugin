@@ -23,7 +23,7 @@ remotes {
 
 Following settings can be set in a remote closure.
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key       | Type              | Description
 |`host`    | String, Mandatory | Hostname or IP address.
@@ -37,7 +37,7 @@ Following settings can be set in a remote closure.
 
 Also following settings can be set in a remote closure. These can be set globally in the project.
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key            | Type              | Description
 |`user`         | String, Mandatory | User name.
@@ -129,7 +129,7 @@ proxies {
 
 The following settings are used to configure how a proxied connection is established within a proxy closure.
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key            | Type                 | Description
 |`host`         | String, Mandatory    | Hostname or IP address.
@@ -481,7 +481,7 @@ forwardLocalPort bind: '0.0.0.0', port: 18080, host: '172.16.1.1', hostPort: 808
 
 The method accepts following settings:
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key              | Type               | Description
 |port             | Integer            | Local port to bind. Defaults to 0, automatically allocated a free port.
@@ -506,7 +506,7 @@ forwardRemotePort bind: '0.0.0.0', port: 30000, host: '192.168.1.5', hostPort: 8
 
 The method accepts following settings:
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key              | Type               | Description
 |port             | Integer, Mandatory | Remote port to bind.
@@ -536,7 +536,7 @@ ssh.run {
 
 Following settings can be given to operation methods.
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Key              | Type     | Description
 |`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Defaults to false.
@@ -688,7 +688,7 @@ Connection settings and operation settings can be set globally
 and overridden by each remote hosts, methods or operation methods.
 
 
-[options="header"]
+[options="header,autowidth"]
 |===
 |Category            | Global | Per method | Per remote | Per operation
 |Connection settings | x      | x          | x          | -
