@@ -10,3 +10,7 @@ include::introduction.adoc[]
 include::getting-started.adoc[]
 
 include::user-guide.adoc[]
+
+++++
+<script src="/public/site.js"></script>
+++++
