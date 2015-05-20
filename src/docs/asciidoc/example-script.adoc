@@ -1,0 +1,28 @@
+= Example
+:doctype: article
+
+[source,groovy,subs="+attributes"]
+----
+// build.gradle
+
+plugins {
+  id 'org.hidetake.ssh' version '{project-version}'
+}
+
+remotes {
+  webServer {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+}
+
+task deploy << {
+  ssh.run {
+    session(remotes.webServer) {
+      put from: 'example.war', into: '/webapps'
+      execute 'sudo service tomcat restart'
+    }
+  }
+}
+----

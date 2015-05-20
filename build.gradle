@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.0'
     id 'com.github.johnrengelman.shadow' version '1.2.0'
+    id 'org.asciidoctor.convert' version '1.5.2'
 }
 
 description = 'Groovy SSH library'
@@ -61,6 +62,18 @@ if (System.getProperty('os.name') == 'Linux') {
     tasks.withType(JavaForkOptions) {
         systemProperty 'java.security.egd', 'file:/dev/./urandom'
     }
+}
+
+/*
+ * Settings for document
+ */
+asciidoctor {
+    attributes(
+        'source-highlighter': 'coderay',
+        toc: 'right',
+        numbered: true,
+        icons: 'font',
+    )
 }
 
 /*
