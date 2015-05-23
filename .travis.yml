@@ -14,7 +14,3 @@ deploy:
   on:
     tags: true
     all_branches: true
-
-env:
-  global:
-  - TERM=dumb
