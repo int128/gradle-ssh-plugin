@@ -2,6 +2,10 @@ sudo: false
 language: java
 jdk: oraclejdk7
 
+after_success:
+- ./gradlew asciidoctor
+- ./gradle/release-docs.sh
+
 before_deploy:
 - ./gradlew shadowJar bintrayUpload
 deploy:

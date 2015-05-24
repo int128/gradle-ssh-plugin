@@ -68,12 +68,9 @@ if (System.getProperty('os.name') == 'Linux') {
  * Settings for document
  */
 asciidoctor {
-    attributes(
-        'source-highlighter': 'coderay',
-        toc: 'right',
-        numbered: true,
-        icons: 'font',
-    )
+    sources {
+        include 'index.adoc'
+    }
 }
 
 /*
