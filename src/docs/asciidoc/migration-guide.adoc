@@ -1,0 +1,213 @@
+= Migration Guide
+
+== Migration from 1.0.x to 1.1.x
+
+This section explains how to migrate from 1.0.x to 1.1.x.
+
+=== New features
+
+==== Port forwarding
+
+Port forwarding is supported now.
+See <<Enable the port forwarding>>.
+
+==== Map based DSL extension system
+
+We can extend DSL with a map of method name and implementation.
+Following example adds the method `restartAppServer`.
+
+```groovy
+ssh.settings {
+  extensions.add restartAppServer: {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
+  }
+}
+
+ssh.run {
+  session(ssh.remotes.testServer) {
+    restartAppServer()
+  }
+}
+```
+
+=== No backward compatible change
+
+==== Class based DSL extension system
+
+Any extension classes in the build script will no longer work.
+They must be placed in the `buildSrc/src/main/groovy` directory.
+
+So we recommend to use the map based extension instead of the class based extension.
+
+For example, following extension:
+
+```groovy
+// buildSrc/src/main/groovy/extensions.groovy
+class TomcatExtension {
+  def restartAppServer() {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
+  }
+}
+```
+
+can be migrated to:
+
+```groovy
+// build.gradle
+ssh.settings {
+  extensions.add restartAppServer: {
+    execute "/opt/${project.name}/tomcat/bin/shutdown.sh"
+    execute "/opt/${project.name}/tomcat/bin/startup.sh"
+  }
+}
+```
+
+
+== Migration from 0.4.x to 1.0.x
+
+This section explains how to migrate from 0.4.x to 1.0.x.
+
+=== No backward compatible changes
+
+`sshexec` is no longer supported. Use `ssh.run` instead.
+
+```groovy
+task example << {
+  // FIXME: sshexec is no longer supported
+  sshexec {
+    session(...) {...}
+  }
+
+  // use ssh.run instead
+  ssh.run {
+    session(...) {...}
+  }
+}
+```
+
+`ssh {}` is no longer supported. Use `ssh.settings {}` instead.
+
+```groovy
+// FIXME: ssh is no longer supported
+ssh {
+  knownHosts = allowAnyHosts
+}
+
+// use ssh.settings instead
+ssh.settings {
+  knownHosts = allowAnyHosts
+}
+```
+
+
+== Migration from 0.3.x to 0.4.x
+
+This section explains how to migrate from 0.3.x to 0.4.x.
+
+Since 0.4.0, core code has been separated to the SSH library
+https://github.com/int128/groovy-ssh[groovy-ssh] and removed from the plugin.
+
+It introduces new style which is common between the plugin and the SSH library.
+It also causes no backward compatible changes.
+
+Please let me know if there is any problem.
+
+=== New style
+
+==== Global settings
+
+`ssh` method has been deprecated.
+
+```groovy
+ssh {
+  // apply global settings here
+}
+```
+
+Instead, use `ssh.settings`.
+
+```groovy
+ssh.settings {
+  // apply global settings here
+}
+```
+
+==== SSH execution
+
+`SshTask` and `sshexec` method have been deprecated.
+
+```groovy
+// Deprecated
+task testTask1(type: SshTask) {
+  ssh {
+    dryRun = true
+  }
+  session(remotes.webServer) {
+    execute 'ls'
+  }
+}
+```
+
+```groovy
+task testTask1 << {
+  // Deprecated
+  sshexec {
+    ssh {
+      dryRun = true
+    }
+    session(remotes.webServer) {
+      execute 'ls'
+    }
+  }
+}
+```
+
+Instead, use `ssh.run` method in the task.
+
+```groovy
+task testTask1 << {
+  ssh.run {
+    settings {
+      // apply one-time settings here
+      dryRun = true
+    }
+    session(ssh.remotes.webServer) {
+      // describe operations here
+      execute 'ls'
+    }
+  }
+}
+```
+
+=== No backward compatible changes
+
+==== Logging settings
+
+Following settings have been removed.
+
+[options="header"]
+|===
+|Key              | Type     | Description
+|`outputLogLevel` | LogLevel | Log level of the standard output on the command or shell execution. Default is `LogLevel.QUIET`.
+|`errorLogLevel`  | LogLevel | Log level of the standard error on the command or shell execution. Default is `LogLevel.ERROR`.
+|===
+
+Instead use `logging` setting to enable verbose logging.
+
+[options="header"]
+|===
+|Key              | Type     | Description
+|`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+|===
+
+e.g.
+
+```groovy
+ssh.settings {
+  logging = 'stdout'
+}
+ssh.run {
+}
+```
