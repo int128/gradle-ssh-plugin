@@ -6,7 +6,7 @@
 // build.gradle
 
 plugins {
-  id 'org.hidetake.ssh' version '{project-version}'
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
 }
 
 remotes {

@@ -46,7 +46,7 @@ Add the plugin to your script as follows:
 [source,groovy,subs="+attributes"]
 ----
 plugins {
-  id 'org.hidetake.ssh' version '{project-version}'
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
 }
 ----
 
@@ -59,7 +59,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:{project-version}'
+    classpath 'org.hidetake:gradle-ssh-plugin:{gradle-ssh-version}'
   }
 }
 
@@ -78,7 +78,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'org.hidetake:gradle-ssh-plugin:{project-version}'
+    classpath 'org.hidetake:gradle-ssh-plugin:{gradle-ssh-version}'
     classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
   }
 }
@@ -245,7 +245,7 @@ Now the script is ready.
 [source,groovy,subs="+attributes"]
 ----
 plugins {
-  id 'org.hidetake.ssh' version '{project-version}'
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
 }
 
 ssh.settings {
