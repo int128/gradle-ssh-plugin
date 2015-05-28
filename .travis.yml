@@ -2,12 +2,11 @@ sudo: false
 language: java
 jdk: oraclejdk7
 
-after_success:
-- ./gradlew asciidoctor
-- ./gradle/release-docs.sh
+install:       ./gradlew -v
+script:        ./gradlew check asciidoctor
+after_success: ./gradle/release-docs.sh
+before_deploy: ./gradlew shadowJar bintrayUpload
 
-before_deploy:
-- ./gradlew shadowJar bintrayUpload
 deploy:
   provider: releases
   api_key:

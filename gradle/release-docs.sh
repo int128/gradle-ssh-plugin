@@ -1,7 +1,13 @@
 #!/bin/bash -xe
-HUB=2.2.0
+HUB="2.2.0"
+PR_SOURCE="build/asciidoc/html5"
 PR_REPO="gradle-ssh-plugin/gradle-ssh-plugin.github.io"
-PR_BRANCH="${TRAVIS_BRANCH}-${TRAVIS_BUILD_NUMBER}"
+PR_BRANCH="travis-${TRAVIS_BUILD_NUMBER}"
+PR_MESSAGE="Release document"
+
+# Release only from master branch
+test "$TRAVIS_BRANCH" = "master"
+test -d "$PR_SOURCE"
 
 # Set credential
 mkdir -p "$HOME/.config"
@@ -30,9 +36,9 @@ hub clone "$PR_REPO" _
 cd _
 hub checkout -b "$PR_BRANCH"
 hub rm -r docs
-cp -a ../build/asciidoc/html5 docs
+cp -a "../$PR_SOURCE" docs
 hub add .
-hub commit -m "Release from $TRAVIS_BRANCH"
+hub commit -m "$PR_MESSAGE"
 hub push origin "$PR_BRANCH"
-hub pull-request -m "Release from $TRAVIS_BRANCH"
+hub pull-request -m "$PR_MESSAGE"
 cd ..
