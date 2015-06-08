@@ -48,6 +48,7 @@ Also following settings can be set in a remote closure. These can be set globall
 |`knownHosts`   | File              | A known hosts file. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
 |`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
 |`retryWaitSec` | Integer (seconds) | Interval time between each retries. Defaults to 0 (immediately).
+|`keepAliveSec` | Integer (seconds) | Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
 |===
 
 
