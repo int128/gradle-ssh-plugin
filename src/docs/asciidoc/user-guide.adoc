@@ -75,8 +75,8 @@ remotes {
 
 It will:
 
-* establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
-* establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
+. establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
+. establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
 
 ===== Through two-hop gateways
 
@@ -101,9 +101,9 @@ remotes {
 
 It will:
 
-* establish a connection to `10.2.3.4` (frontgw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `172.16.1.2:22`.
-* establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
-* establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
+. establish a connection to `10.2.3.4` (frontgw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `172.16.1.2:22`.
+. establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
+. establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
 
 ===== Limitation
 
@@ -659,12 +659,12 @@ The example will execute a shell and provide the exit if the prompt appears.
 
 If the shell prompt is `sh$`, pattern matching will work as follows.
 
-1. The stream gives `s` and the line buffer becomes `s`.
-2. The pattern match is evaluated but not matched.
-3. The stream gives `h` and the line buffer becomes `sh`.
-4. The pattern match is evaluated but not matched.
-5. The stream gives `$` and the line buffer becomes `sh$`..
-6. The pattern match is evaluated and matched. The closure is executed.
+. The stream gives `s` and the line buffer becomes `s`.
+. The pattern match is evaluated but not matched.
+. The stream gives `h` and the line buffer becomes `sh`.
+. The pattern match is evaluated but not matched.
+. The stream gives `$` and the line buffer becomes `sh$`..
+. The pattern match is evaluated and matched. The closure is executed.
 
 
 ==== Example: handle more prompts
