@@ -2,7 +2,7 @@ plugins {
     id 'groovy'
     id 'jacoco'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.0'
+    id 'com.jfrog.bintray' version '1.2'
     id 'com.github.johnrengelman.shadow' version '1.2.0'
     id 'org.asciidoctor.convert' version '1.5.2'
 }
@@ -150,5 +150,5 @@ tasks.bintrayUpload.doFirst {
 task install(dependsOn: 'publishMavenPublicationToMavenLocal')
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.5'
 }
