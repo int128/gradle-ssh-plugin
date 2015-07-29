@@ -1,5 +1,6 @@
 = Example
 :doctype: article
+:source-highlighter: coderay
 
 [source,groovy,subs="+attributes"]
 ----
