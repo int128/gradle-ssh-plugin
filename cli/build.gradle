@@ -1,0 +1,37 @@
+plugins {
+    id 'groovy'
+    id 'com.github.johnrengelman.shadow' version '1.2.0'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
+
+dependencies {
+    compile project(':core')
+
+    runtime 'ch.qos.logback:logback-classic:1.1.2'
+    runtime 'commons-cli:commons-cli:1.2'
+
+    testCompile project(':server-integration-test')
+
+    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.3'
+    testRuntime 'cglib:cglib-nodep:3.1'
+    testRuntime 'org.objenesis:objenesis:2.1'
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'
+    }
+    baseName = 'gssh'
+    classifier = ''
+    version = ''
+}
+
+if (System.getProperty('os.name') == 'Linux') {
+    tasks.withType(JavaForkOptions) {
+        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+    }
+}
