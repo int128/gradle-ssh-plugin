@@ -15,7 +15,6 @@ import org.hidetake.groovy.ssh.test.SshServerMock
 import spock.lang.Shared
 import spock.lang.Specification
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Slf4j
 class PortForwardingSpec extends Specification {
 

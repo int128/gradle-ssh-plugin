@@ -15,7 +15,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.Use
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Use(FileDivCategory)
 class FileTransferSpec extends Specification {
 

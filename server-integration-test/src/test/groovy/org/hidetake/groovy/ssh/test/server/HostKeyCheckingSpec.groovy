@@ -21,7 +21,6 @@ import javax.crypto.spec.SecretKeySpec
 import static org.hidetake.groovy.ssh.test.HostKeyFixture.KeyType.*
 import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
 

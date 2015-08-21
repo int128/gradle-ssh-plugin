@@ -12,7 +12,6 @@ import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class GatewayConnectionSpec extends Specification {
 
     SshServer targetServer

@@ -15,7 +15,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class SudoCommandExecutionSpec extends Specification {
 
     private static final NL = Utilities.eol()

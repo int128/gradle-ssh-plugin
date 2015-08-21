@@ -18,7 +18,6 @@ import spock.util.mop.ConfineMetaClassChanges
 
 import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
 
-@org.junit.experimental.categories.Category(ServerIntegrationTest)
 class ShellExecutionSpec extends Specification {
 
     SshServer server
