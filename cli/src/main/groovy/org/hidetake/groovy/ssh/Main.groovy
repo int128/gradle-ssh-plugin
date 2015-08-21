@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh
 
+import ch.qos.logback.classic.Level
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 
@@ -33,7 +34,8 @@ class Main {
         } else if (options.version) {
             println "${Ssh.product.name}-${Ssh.product.version}"
         } else {
-            configureLogback(level: logLevel(options), pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')
+            configureLogback(level: logLevel(options) as String,
+                    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')
 
             if (!options.s) {
                 Thread.currentThread().uncaughtExceptionHandler = { Thread t, Throwable e ->
@@ -53,10 +55,10 @@ class Main {
     }
 
     private static logLevel(options) {
-        if      (options.d) { 'DEBUG' }
-        else if (options.i) { 'INFO' }
-        else if (options.q) { 'WARN' }
-        else                { 'INFO' }
+        if      (options.d) { Level.DEBUG }
+        else if (options.i) { Level.INFO }
+        else if (options.q) { Level.WARN }
+        else                { Level.INFO }
     }
 
     private static newShellWith(options) {

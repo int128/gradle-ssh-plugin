@@ -1,16 +1,17 @@
 package org.hidetake.groovy.ssh
 
-import groovy.util.logging.Slf4j
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.ConsoleAppender
+import org.slf4j.Logger as Slf4jLogger
+import org.slf4j.LoggerFactory as Slf4jLoggerFactory
 
 /**
  * Logback configurator.
- * These method should not fail if Logback is not found.
  *
  * @author Hidetake Iwata
  */
-@Slf4j
 class LogbackConfig {
     /**
      * Configure Logback.
@@ -28,31 +29,28 @@ class LogbackConfig {
      * @param map level: log level (string), pattern: format (string)
      */
     static void configureLogback(Map settings) {
-        try {
-            def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
-            def originalLevel = root.level
+        def root = Slf4jLoggerFactory.getLogger(Slf4jLogger.ROOT_LOGGER_NAME)
+        assert root instanceof Logger
+        def originalLevel = root.level
 
-            def encoder = Class.forName('ch.qos.logback.classic.encoder.PatternLayoutEncoder').newInstance()
-            encoder.context = root.loggerContext
-            encoder.pattern = settings.pattern
-            encoder.start()
+        def encoder = new PatternLayoutEncoder()
+        encoder.context = root.loggerContext
+        encoder.pattern = settings.pattern
+        encoder.start()
 
-            def appender = Class.forName('ch.qos.logback.core.ConsoleAppender').newInstance()
-            appender.context = root.loggerContext
-            appender.encoder = encoder
-            appender.name = 'console'
-            appender.start()
+        def appender = new ConsoleAppender()
+        appender.context = root.loggerContext
+        appender.encoder = encoder
+        appender.name = 'console'
+        appender.start()
 
-            root.loggerContext.reset()
-            root.addAppender(appender)
+        root.loggerContext.reset()
+        root.addAppender(appender)
 
-            if (settings.level) {
-                root.level = Class.forName('ch.qos.logback.classic.Level').toLevel(settings.level)
-            } else {
-                root.level = originalLevel
-            }
-        } catch (ClassNotFoundException e) {
-            log.info("Could not configure Logback: ${e.localizedMessage}")
+        if (settings.level) {
+            root.level = Level.toLevel(settings.level as String)
+        } else {
+            root.level = originalLevel
         }
     }
 }

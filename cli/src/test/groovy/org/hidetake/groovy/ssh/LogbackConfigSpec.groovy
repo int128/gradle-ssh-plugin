@@ -1,14 +1,17 @@
 package org.hidetake.groovy.ssh
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import org.slf4j.Logger as Slf4jLogger
+import org.slf4j.LoggerFactory as Slf4jLoggerFactory
 import spock.lang.Specification
 
 class LogbackConfigSpec extends Specification {
 
     def "log level can be set by logback method in the script"() {
         given:
-        def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        def root = Slf4jLoggerFactory.getLogger(Slf4jLogger.ROOT_LOGGER_NAME)
+        assert root instanceof Logger
 
         when:
         Main.main '-e', '''
@@ -16,12 +19,7 @@ class LogbackConfigSpec extends Specification {
         '''
 
         then:
-        root.level == logbackLogLevel('ERROR')
-    }
-
-
-    private static final logbackLogLevel(String level) {
-        Class.forName('ch.qos.logback.classic.Level').invokeMethod('toLevel', level)
+        root.level == Level.ERROR
     }
 
 }

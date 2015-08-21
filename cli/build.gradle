@@ -8,8 +8,8 @@ targetCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
     compile project(':core')
+    compile 'ch.qos.logback:logback-classic:1.1.2'
 
-    runtime 'ch.qos.logback:logback-classic:1.1.2'
     runtime 'commons-cli:commons-cli:1.2'
 
     testCompile project(':server-integration-test')
