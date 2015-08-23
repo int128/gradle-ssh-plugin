@@ -29,6 +29,16 @@ install:
 - unset GH_USER_NAME
 - unset GH_TOKEN
 
+- mkdir -m 700 -p -v $HOME/.ssh
+- ssh-keygen -t rsa -N ''              -f $HOME/.ssh/id_rsa
+- ssh-keygen -t rsa -N 'pass_phrase'   -f $HOME/.ssh/id_rsa_pass
+- ssh-keygen -t ecdsa -N ''            -f $HOME/.ssh/id_ecdsa
+- ssh-keygen -t ecdsa -N 'pass_phrase' -f $HOME/.ssh/id_ecdsa_pass
+- cat $HOME/.ssh/id_*.pub               > $HOME/.ssh/authorized_keys
+- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
+- ssh-keygen -H -F localhost
+
+
 script:        ./gradlew check asciidoctor
 after_success: ./core/src/docs/shell/release.sh
 before_deploy: ./gradlew shadowJar bintrayUpload
