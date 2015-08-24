@@ -6,9 +6,14 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.helper.Utilities.*
+import static org.hidetake.groovy.ssh.test.helper.Helper.*
 
-class CommandExecutionSpec extends Specification {
+/**
+ * Check if command execution works with real OS commands.
+ *
+ * @author Hidetake Iwata
+ */
+class CommandSpec extends Specification {
 
     Service ssh
 
@@ -19,8 +24,7 @@ class CommandExecutionSpec extends Specification {
         ssh = Ssh.newService()
         ssh.remotes {
             localhost {
-                role 'testServers'
-                host = 'localhost'
+                host = hostName()
                 user = userName()
                 identity = privateKey()
             }
@@ -43,50 +47,12 @@ class CommandExecutionSpec extends Specification {
         r == (x + y)
     }
 
-    def 'should execute the command with console logging with slf4j'() {
-        given:
-        def x = randomInt()
-        def y = randomInt()
-
-        when:
-        def r = ssh.run {
-            session(ssh.remotes.localhost) {
-                execute "expr $x + $y", logging: 'slf4j'
-            }
-        } as int
-
-        then:
-        r == (x + y)
-    }
-
-    def 'should execute commands sequentially'() {
-        given:
-        def x = randomInt()
-        def y = randomInt()
-        def remoteWorkDir = temporaryFolder.newFolder().path
-
-        when:
-        def a
-        def b
-        ssh.run {
-            session(ssh.remotes.localhost) {
-                execute "expr $x + $y > $remoteWorkDir/A"
-                execute "expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B"
-                a = get from: "$remoteWorkDir/A"
-                b = get from: "$remoteWorkDir/B"
-            }
-        }
-
-        then:
-        a as int == (x + y)
-        b as int == (x + x + y)
-    }
-
     def 'should execute commands by multi-line string'() {
         given:
         def x = randomInt()
         def y = randomInt()
-        def remoteWorkDir = temporaryFolder.newFolder().path
+        def remoteA = remoteTmpPath()
+        def remoteB = remoteTmpPath()
 
         when:
         def a
@@ -94,11 +60,11 @@ class CommandExecutionSpec extends Specification {
         ssh.run {
             session(ssh.remotes.localhost) {
                 execute """
-expr $x + $y > $remoteWorkDir/A
-expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
+expr $x + $y > $remoteA
+expr $x + `cat $remoteA` > $remoteB
 """
-                a = get from: "$remoteWorkDir/A"
-                b = get from: "$remoteWorkDir/B"
+                a = get from: remoteA
+                b = get from: remoteB
             }
         }
 
@@ -122,13 +88,6 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
 
     def 'should execute the command with the PTY allocation in foreground'() {
         when:
-        def envWithoutPty = ssh.run {
-            session(ssh.remotes.localhost) {
-                execute 'env'
-            }
-        }
-
-        and:
         def envWithPty = ssh.run {
             session(ssh.remotes.localhost) {
                 execute 'env', pty: true
@@ -136,8 +95,19 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
         }
 
         then:
-        !envWithoutPty.contains('SSH_TTY=')
         envWithPty.contains('SSH_TTY=')
+    }
+
+    def 'should execute the command without the PTY allocation in foreground'() {
+        when:
+        def envWithoutPty = ssh.run {
+            session(ssh.remotes.localhost) {
+                execute 'env'
+            }
+        }
+
+        then:
+        !envWithoutPty.contains('SSH_TTY=')
     }
 
     def 'should execute the command with the PTY allocation in background'() {
@@ -150,8 +120,6 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
                 executeBackground('env') { result ->
                     envWithoutPty = result
                 }
-            }
-            session(ssh.remotes.localhost) {
                 executeBackground('env', pty: true) { result ->
                     envWithPty = result
                 }
@@ -165,25 +133,25 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
 
     def 'should execute commands concurrently'() {
         given:
-        def remoteWorkDir = temporaryFolder.newFolder().path
+        def remoteX = remoteTmpPath()
 
         when:
         ssh.run {
             // task should start sessions concurrently
             session(ssh.remotes.localhost) {
-                executeBackground "sleep 2 && echo 2 >> $remoteWorkDir/result"
+                executeBackground "sleep 2 && echo 2 >> $remoteX"
             }
             session(ssh.remotes.localhost) {
-                executeBackground "sleep 3 && echo 3 >> $remoteWorkDir/result"
-                executeBackground "sleep 1 && echo 1 >> $remoteWorkDir/result"
-                executeBackground "echo 0 >> $remoteWorkDir/result"
+                executeBackground "sleep 3 && echo 3 >> $remoteX"
+                executeBackground "sleep 1 && echo 1 >> $remoteX"
+                executeBackground "echo 0 >> $remoteX"
             }
         }
 
         // all commands should be completed at this point
         def result = ssh.run {
             session(ssh.remotes.localhost) {
-                get from: "$remoteWorkDir/result"
+                get from: remoteX
             }
         }
 
@@ -219,12 +187,11 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
 
     def 'should write output of the command to the file'() {
         given:
-        def localWorkDir = temporaryFolder.newFolder().path
+        def resultFile = temporaryFolder.newFile()
         def x = randomInt()
         def y = randomInt()
 
         when:
-        def resultFile = new File("$localWorkDir/result")
         resultFile.withOutputStream { stream ->
             ssh.run {
                 session(ssh.remotes.localhost) {
@@ -237,28 +204,11 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
         resultFile.text as int == (x + y)
     }
 
-    def 'should write output of the command to the standard output'() {
-        given:
-        def x = randomInt()
-        def y = randomInt()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.localhost) {
-                execute "expr $x + $y", outputStream: System.out
-            }
-        }
-
-        then:
-        noExceptionThrown()
-    }
-
     def 'should write error of the command to the file'() {
         given:
-        def localWorkDir = temporaryFolder.newFolder().path
+        def resultFile = temporaryFolder.newFile()
 
         when:
-        def resultFile = new File("$localWorkDir/result")
         resultFile.withOutputStream { stream ->
             ssh.run {
                 session(ssh.remotes.localhost) {

@@ -30,13 +30,12 @@ install:
 - unset GH_TOKEN
 
 - mkdir -m 700 -p -v $HOME/.ssh
-- ssh-keygen -t rsa -N ''              -f $HOME/.ssh/id_rsa
-- ssh-keygen -t rsa -N 'pass_phrase'   -f $HOME/.ssh/id_rsa_pass
-- ssh-keygen -t ecdsa -N ''            -f $HOME/.ssh/id_ecdsa
-- ssh-keygen -t ecdsa -N 'pass_phrase' -f $HOME/.ssh/id_ecdsa_pass
-- cat $HOME/.ssh/id_*.pub               > $HOME/.ssh/authorized_keys
-- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
-- ssh-keygen -H -F localhost
+- echo '-----BEGIN RSA PRIVATE KEY-----'        >> $HOME/.ssh/id_rsa
+- echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> $HOME/.ssh/id_rsa
+- echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_rsa
+- chmod -v 600 $HOME/.ssh/id_rsa
+- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" date
+- ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
 
 
 script:        ./gradlew check asciidoctor
