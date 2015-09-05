@@ -40,7 +40,7 @@ install:
 
 
 script:        ./gradlew check asciidoctor
-after_success: ./core/src/docs/shell/release.sh
+after_success: ./docs/src/docs/shell/release.sh
 before_deploy: ./gradlew shadowJar bintrayUpload
 
 deploy:

@@ -2,7 +2,6 @@ plugins {
     id 'groovy'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.2'
-    id 'org.asciidoctor.convert' version '1.5.2'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
@@ -22,13 +21,6 @@ dependencies {
 
 processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
-}
-
-asciidoctor {
-    sources {
-        include 'index.adoc'
-        include 'example-script.adoc'
-    }
 }
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {

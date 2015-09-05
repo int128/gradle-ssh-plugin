@@ -2,7 +2,7 @@
 
 test "$TRAVIS_BRANCH" = "master"
 
-PR_SOURCE="core/build/asciidoc/html5"
+PR_SOURCE="docs/build/asciidoc/html5"
 PR_REPO="gradle-ssh-plugin/gradle-ssh-plugin.github.io"
 PR_BRANCH="travis-${TRAVIS_BUILD_NUMBER}"
 PR_MESSAGE="Release document"

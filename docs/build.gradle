@@ -1,0 +1,10 @@
+plugins {
+    id 'org.asciidoctor.convert' version '1.5.2'
+}
+
+asciidoctor {
+    sources {
+        include 'index.adoc'
+        include 'example-script.adoc'
+    }
+}
