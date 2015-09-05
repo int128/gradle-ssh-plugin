@@ -41,6 +41,7 @@ install:
 
 script:        ./gradlew check asciidoctor
 after_success: ./gradle/release-docs.sh
+after_script:  ./gradle/release-reports.sh
 before_deploy: ./gradlew shadowJar bintrayUpload
 
 deploy:
