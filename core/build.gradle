@@ -4,10 +4,6 @@ plugins {
     id 'com.jfrog.bintray' version '1.2'
 }
 
-ext {
-    github = 'https://github.com/int128/groovy-ssh'
-}
-
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
 
@@ -43,28 +39,27 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
-                    name project.name
-                    description project.description
-                    url github
+                    name rootProject.name
+                    description rootProject.description
+                    url rootProject.vcsUrl
                     scm {
-                        url "${github}.git"
-                        connection "scm:git:${github}.git"
+                        url rootProject.vcsUrl
+                        connection "scm:git:$rootProject.vcsUrl"
                     }
                     licenses {
                         license {
-                            name 'The Apache Software License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name rootProject.license
+                            url rootProject.licenseUrl
                             distribution 'repo'
                         }
                     }
                     developers {
                         developer {
-                            id 'int128'
-                            name 'int128'
+                            id rootProject.group
+                            name rootProject.group
                         }
                     }
                 }
@@ -80,10 +75,10 @@ bintray {
     pkg {
         repo = 'maven'
         name = rootProject.name
-        licenses = ['Apache-2.0']
-        vcsUrl = "${github}.git"
+        licenses = [rootProject.license]
+        vcsUrl = rootProject.vcsUrl
         version {
-            name = project.version
+            name = rootProject.version
         }
     }
 }
