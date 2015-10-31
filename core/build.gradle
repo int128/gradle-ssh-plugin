@@ -79,7 +79,7 @@ bintray {
     publications = ['maven']
     pkg {
         repo = 'maven'
-        name = project.name
+        name = rootProject.name
         licenses = ['Apache-2.0']
         vcsUrl = "${github}.git"
         version {
