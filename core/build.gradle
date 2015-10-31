@@ -39,6 +39,8 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+            groupId rootProject.group
+            artifactId rootProject.name
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
