@@ -93,38 +93,39 @@ class ConnectionManager {
         assert settings.keepAliveSec >= 0, "keepAliveMillis must be zero or positive (remote ${remote.name})"
 
         JSch.logger = JSchLogger.instance
-        def jsch = new JSch()
-        def session = jsch.getSession(settings.user, host, port)
-        session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
-        session.setServerAliveInterval(settings.keepAliveSec * 1000)
-
-        if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
-            session.setConfig('StrictHostKeyChecking', 'no')
-            log.warn('Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
-        } else {
-            jsch.setKnownHosts(settings.knownHosts.path)
-            session.setConfig('StrictHostKeyChecking', 'yes')
-            log.debug("Using known-hosts file: ${settings.knownHosts.path}")
-        }
-
-        if (settings.password) {
-            session.password = settings.password
-        }
-        if (settings.agent) {
-            jsch.identityRepository = remoteIdentityRepository
-        } else {
-            jsch.identityRepository = null    /* null means the default repository */
-            jsch.removeAllIdentity()
-            if (settings.identity) {
-                jsch.addIdentity(settings.identity.path, settings.passphrase as String)
-            }
-        }
-        if (settings.proxy) {
-            validate(settings.proxy)
-            session.setProxy(asJschProxy(settings.proxy))
-        }
 
         retry(settings.retryCount, settings.retryWaitSec) {
+            def jsch = new JSch()
+            def session = jsch.getSession(settings.user, host, port)
+            session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
+            session.setServerAliveInterval(settings.keepAliveSec * 1000)
+
+            if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
+                session.setConfig('StrictHostKeyChecking', 'no')
+                log.warn('Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
+            } else {
+                jsch.setKnownHosts(settings.knownHosts.path)
+                session.setConfig('StrictHostKeyChecking', 'yes')
+                log.debug("Using known-hosts file: ${settings.knownHosts.path}")
+            }
+
+            if (settings.password) {
+                session.password = settings.password
+            }
+            if (settings.agent) {
+                jsch.identityRepository = remoteIdentityRepository
+            } else {
+                jsch.identityRepository = null    /* null means the default repository */
+                jsch.removeAllIdentity()
+                if (settings.identity) {
+                    jsch.addIdentity(settings.identity.path, settings.passphrase as String)
+                }
+            }
+            if (settings.proxy) {
+                validate(settings.proxy)
+                session.setProxy(asJschProxy(settings.proxy))
+            }
+
             log.debug("Establishing a connection to $remote")
             session.connect()
             log.info("Established the connection to $remote")
