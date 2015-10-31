@@ -4,6 +4,10 @@ plugins {
     id 'com.jfrog.bintray' version '1.2'
 }
 
+ext {
+    github = 'https://github.com/int128/groovy-ssh'
+}
+
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
 
@@ -40,7 +44,6 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
 
-            final github = 'https://github.com/int128/groovy-ssh'
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
@@ -77,6 +80,11 @@ bintray {
     pkg {
         repo = 'maven'
         name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = "${github}.git"
+        version {
+            name = project.version
+        }
     }
 }
 
