@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'ivy-publish'
-    id 'com.jfrog.bintray' version '1.2'
+    id 'com.jfrog.bintray' version '1.4'
 }
 
 ext.property = { String key, String defaultValue ->
@@ -13,6 +13,10 @@ ext.property = { String key, String defaultValue ->
 description = 'Gradle SSH Plugin provides remote execution and file transfer capabilities'
 group = 'org.hidetake'
 version = 'SNAPSHOT'
+
+ext.license = 'Apache-2.0'
+ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+ext.vcsUrl = 'https://github.com/int128/gradle-ssh-plugin.git'
 
 // Set product version if tag is given on Travis CI
 System.getenv('TRAVIS_TAG')?.eachMatch(/^v([\d.]+)$/) { m -> project.version = m[1] }
@@ -58,29 +62,29 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-
-            final github = 'https://github.com/int128/gradle-ssh-plugin'
+            groupId rootProject.group
+            artifactId rootProject.name
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
-                    name project.name
-                    description project.description
-                    url github
+                    name rootProject.name
+                    description rootProject.description
+                    url rootProject.vcsUrl
                     scm {
-                        url "${github}.git"
-                        connection "scm:git:${github}.git"
+                        url rootProject.vcsUrl
+                        connection "scm:git:$rootProject.vcsUrl"
                     }
                     licenses {
                         license {
-                            name 'The Apache Software License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name rootProject.license
+                            url rootProject.licenseUrl
                             distribution 'repo'
                         }
                     }
                     developers {
                         developer {
-                            id 'int128'
-                            name 'int128'
+                            id rootProject.group
+                            name rootProject.group
                         }
                     }
                 }
@@ -95,9 +99,11 @@ bintray {
     publications = ['maven']
     pkg {
         repo = 'maven'
-        name = project.name
+        name = rootProject.name
+        licenses = [rootProject.license]
+        vcsUrl = rootProject.vcsUrl
         version {
-            attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
+            name = rootProject.version
         }
     }
 }
