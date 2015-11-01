@@ -4,10 +4,6 @@ plugins {
     id 'com.jfrog.bintray' version '1.4'
 }
 
-ext.property = { String key, String defaultValue ->
-    project.hasProperty(key) ? project.property(key) : defaultValue
-}
-
 description = 'Gradle SSH Plugin provides remote execution and file transfer capabilities'
 group = 'org.hidetake'
 version = 'SNAPSHOT'
@@ -30,7 +26,7 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile("org.hidetake:groovy-ssh:${project.property 'groovy-ssh-version', '1.1.7'}") {
+    compile("org.hidetake:groovy-ssh:${getProjectProperty 'groovy-ssh-version', '1.1.7'}") {
         exclude module: 'groovy-all'
     }
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
@@ -87,8 +83,8 @@ publishing {
 }
 
 bintray {
-    user = System.getenv('BINTRAY_USER') ?: project.properties.bintrayUser
-    key  = System.getenv('BINTRAY_KEY')  ?: project.properties.bintrayKey
+    user = System.getenv('BINTRAY_USER') ?: getProjectProperty('bintrayUser')
+    key  = System.getenv('BINTRAY_KEY')  ?: getProjectProperty('bintrayKey')
     publications = ['maven']
     pkg {
         repo = 'maven'
@@ -106,3 +102,7 @@ tasks.bintrayUpload.doFirst {
 }
 
 task install(dependsOn: 'publishMavenPublicationToMavenLocal')
+
+def getProjectProperty(String key, String defaultValue = null) {
+    project.hasProperty(key) ? project.property(key) : defaultValue
+}
