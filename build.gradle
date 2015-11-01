@@ -1,8 +1,6 @@
 plugins {
     id 'groovy'
-    id 'jacoco'
     id 'maven-publish'
-    id 'ivy-publish'
     id 'com.jfrog.bintray' version '1.4'
 }
 
@@ -40,11 +38,6 @@ dependencies {
     }
     testCompile 'cglib:cglib-nodep:3.1'
 }
-
-jacoco {
-    toolVersion = '0.7.1.201405082137'
-}
-check.dependsOn jacocoTestReport
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
