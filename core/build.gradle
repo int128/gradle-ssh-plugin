@@ -71,8 +71,8 @@ publishing {
 }
 
 bintray {
-    user = System.getenv('BINTRAY_USER') ?: project.properties.bintrayUser
-    key  = System.getenv('BINTRAY_KEY')  ?: project.properties.bintrayKey
+    user = System.getenv('BINTRAY_USER') ?: getProjectProperty('bintrayUser')
+    key  = System.getenv('BINTRAY_KEY')  ?: getProjectProperty('bintrayKey')
     publications = ['maven']
     pkg {
         repo = 'maven'
@@ -87,4 +87,8 @@ bintray {
 
 tasks.bintrayUpload.doFirst {
     assert !project.version.contains('SNAPSHOT')
+}
+
+def getProjectProperty(String key, String defaultValue = null) {
+    project.hasProperty(key) ? project.property(key) : defaultValue
 }
