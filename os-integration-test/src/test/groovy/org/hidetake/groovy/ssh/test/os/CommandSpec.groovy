@@ -139,12 +139,12 @@ expr $x + `cat $remoteA` > $remoteB
         ssh.run {
             // task should start sessions concurrently
             session(ssh.remotes.localhost) {
-                executeBackground "sleep 2 && echo 2 >> $remoteX"
+                executeBackground "sleep 3 && echo C >> $remoteX"
             }
             session(ssh.remotes.localhost) {
-                executeBackground "sleep 3 && echo 3 >> $remoteX"
-                executeBackground "sleep 1 && echo 1 >> $remoteX"
-                executeBackground "echo 0 >> $remoteX"
+                executeBackground "sleep 5 && echo D >> $remoteX"
+                executeBackground "sleep 1 && echo B >> $remoteX"
+                executeBackground "sleep 0 && echo A >> $remoteX"
             }
         }
 
@@ -156,7 +156,7 @@ expr $x + `cat $remoteA` > $remoteB
         }
 
         then:
-        result.readLines() == ['0', '1', '2', '3']
+        result.readLines() == ['A', 'B', 'C', 'D']
     }
 
     def 'should throw an exception due to the error exit status'() {
