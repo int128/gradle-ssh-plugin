@@ -92,6 +92,7 @@ bintray {
         licenses = [rootProject.license]
         vcsUrl = rootProject.vcsUrl
         version {
+            attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
             name = rootProject.version
         }
     }
