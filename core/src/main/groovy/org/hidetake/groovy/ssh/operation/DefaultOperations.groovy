@@ -183,14 +183,15 @@ class DefaultOperations implements Operations {
 
     @Override
     def sftp(Closure closure) {
+        log.debug("Requesting SFTP subsystem")
         def channel = connection.createSftpChannel()
+        channel.connect()
         try {
-            channel.connect()
-            log.debug("SFTP #${channel.id} started")
+            log.debug("Started SFTP #${channel.id}")
             callWithDelegate(closure, new SftpOperations(channel))
+            log.debug("Finished SFTP #${channel.id}")
         } finally {
             channel.disconnect()
-            log.debug("SFTP #${channel.id} closed")
         }
     }
 

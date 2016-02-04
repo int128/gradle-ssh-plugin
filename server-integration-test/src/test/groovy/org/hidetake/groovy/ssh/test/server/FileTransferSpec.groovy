@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
+import com.jcraft.jsch.JSchException
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
@@ -751,6 +752,26 @@ class FileTransferSpec extends Specification {
         then:
         SftpException e = thrown()
         e.message.contains('create a directory')
+    }
+
+    def "sftp should fail if sftp subsystem is disabled"() {
+        given:
+        server.stop(true)
+        server.subsystemFactories.clear()
+        server.start()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                sftp {
+                    ls('.')
+                }
+            }
+        }
+
+        then:
+        JSchException e = thrown()
+        e.message == 'failed to send channel request'
     }
 
 
