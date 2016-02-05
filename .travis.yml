@@ -34,6 +34,12 @@ install:
 - echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> $HOME/.ssh/id_rsa
 - echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_rsa
 - chmod -v 600 $HOME/.ssh/id_rsa
+- echo '-----BEGIN RSA PRIVATE KEY-----'                      >> $HOME/.ssh/id_rsa_passphrase
+- echo "DEK-Info:" "$INTEGRATION_TEST_SSH_PASSPHRASE_KEY_DEK" >> $HOME/.ssh/id_rsa_passphrase
+- echo                                                        >> $HOME/.ssh/id_rsa_passphrase
+- echo "$INTEGRATION_TEST_SSH_PASSPHRASE_KEY" | fold -w 76    >> $HOME/.ssh/id_rsa_passphrase
+- echo '-----END RSA PRIVATE KEY-----'                        >> $HOME/.ssh/id_rsa_passphrase
+- chmod -v 600 $HOME/.ssh/id_rsa_passphrase
 - ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" date
 - ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
 

@@ -15,7 +15,17 @@ class Helper {
     }
 
     static privateKey() {
-        new File("${System.getProperty('user.home')}/.ssh/id_rsa")
+        new File(System.getenv('INTEGRATION_TEST_SSH_KEY_PATH')
+                ?: "${System.getProperty('user.home')}/.ssh/id_rsa")
+    }
+
+    static privateKeyWithPassphrase() {
+        new File(System.getenv('INTEGRATION_TEST_SSH_PASSPHRASE_KEY_PATH')
+                ?: "${System.getProperty('user.home')}/.ssh/id_rsa_passphrase")
+    }
+
+    static passphraseOfPrivateKey() {
+        'pass1234'
     }
 
     static remoteTmpPath() {
