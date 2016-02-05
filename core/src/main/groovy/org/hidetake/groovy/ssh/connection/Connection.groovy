@@ -137,7 +137,7 @@ class Connection {
      * @return true if at least one is pending
      */
     boolean isAnyPending() {
-        channels.any { channel -> !channel.closed }
+        channels.any { channel -> channel.connected && !channel.closed }
     }
 
     /**

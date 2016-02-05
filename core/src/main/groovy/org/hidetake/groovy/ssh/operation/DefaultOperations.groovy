@@ -54,16 +54,15 @@ class DefaultOperations implements Operations {
             Interaction.enable(settings.interaction, standardInput, standardOutput)
         }
 
+        channel.connect()
         try {
-            channel.connect()
-            log.info("Shell #${channel.id} has been started")
+            log.info("Started the shell #${channel.id}")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Shell #${channel.id} returned exit status $exitStatus")
-
+            log.info("Finished the shell #${channel.id} with exit status $exitStatus")
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Shell #${channel.id} returned exit status $exitStatus", exitStatus)
             }
@@ -98,16 +97,15 @@ class DefaultOperations implements Operations {
         def lines = [] as List<String>
         standardOutput.listenLine { String line -> lines << line }
 
+        channel.connect()
         try {
-            channel.connect()
-            log.info("Command #${channel.id} started ($command)")
+            log.info("Started the command #${channel.id} ($command)")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Command #${channel.id} returned exit status $exitStatus")
-
+            log.info("Finished the command #${channel.id} with exit status $exitStatus")
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
             }
@@ -147,12 +145,11 @@ class DefaultOperations implements Operations {
         standardOutput.listenLine { String line -> lines << line }
 
         channel.connect()
-        log.info("Command #${channel.id} started in background ($command)")
+        log.info("Started the command #${channel.id} in background ($command)")
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
-            log.info("Command #${channel.id} returned exit status $exitStatus")
-
+            log.info("Finished the command #${channel.id} with exit status $exitStatus")
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
             }
@@ -183,14 +180,15 @@ class DefaultOperations implements Operations {
 
     @Override
     def sftp(Closure closure) {
+        log.debug("Requesting SFTP subsystem")
         def channel = connection.createSftpChannel()
+        channel.connect()
         try {
-            channel.connect()
-            log.debug("SFTP #${channel.id} started")
+            log.debug("Started SFTP #${channel.id}")
             callWithDelegate(closure, new SftpOperations(channel))
+            log.debug("Finished SFTP #${channel.id}")
         } finally {
             channel.disconnect()
-            log.debug("SFTP #${channel.id} closed")
         }
     }
 
