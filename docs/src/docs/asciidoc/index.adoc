@@ -8,7 +8,7 @@ Hidetake Iwata <https://github.com/int128>
 :icons: font
 
 :gradle-ssh-version: 1.1.4
-:groovy-ssh-version: 1.1.8
+:groovy-ssh-version: 1.1.9
 
 
 This document explains Gradle SSH Plugin {gradle-ssh-version} and Groovy SSH {groovy-ssh-version}.
