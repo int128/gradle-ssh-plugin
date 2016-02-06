@@ -15,7 +15,17 @@ class Helper {
     }
 
     static privateKey() {
-        new File("${System.getProperty('user.home')}/.ssh/id_rsa")
+        final dotSsh = new File("${System.getProperty('user.home')}/.ssh")
+        new File(dotSsh, System.getenv('INTEGRATION_TEST_SSH_KEY_NAME') ?: 'id_rsa')
+    }
+
+    static privateKeyWithPassphrase() {
+        final dotSsh = new File("${System.getProperty('user.home')}/.ssh")
+        new File(dotSsh, System.getenv('INTEGRATION_TEST_SSH_PASSPHRASE_KEY_NAME') ?: 'id_rsa_passphrase')
+    }
+
+    static passphraseOfPrivateKey() {
+        'pass1234'
     }
 
     static remoteTmpPath() {
