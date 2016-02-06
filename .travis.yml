@@ -1,12 +1,26 @@
+sudo: false
 language: java
 jdk: oraclejdk7
 
 install:
-- ./gradlew install
+- mkdir -m 700 -p -v $HOME/.ssh
+- ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa
+- cat $HOME/.ssh/id_rsa.pub > $HOME/.ssh/authorized_keys
+- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
+- ssh-keygen -H -F localhost
+ 
+
 script:
-- ./gradlew check
-- GRADLE_VERSION=2.3 ./acceptance-test/run-test.sh
-- GRADLE_VERSION=1.12  ./acceptance-test/run-test.sh
+- ./gradlew check install
+
+- cd acceptance-test
+- ../gradlew --version
+- ../gradlew -s -Pversion=SNAPSHOT test
+
+- sed -i -e 's,gradle-[0-9.]*-,gradle-1.12-,g' ../gradle/wrapper/gradle-wrapper.properties
+- ../gradlew --version
+- ../gradlew -s -Pversion=SNAPSHOT test
+
 
 after_success:
 - test ${TRAVIS_TAG} && ./gradlew bintrayUpload
