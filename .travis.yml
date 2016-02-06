@@ -39,8 +39,16 @@ install:
 - ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" date
 - ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
 
+- unset INTEGRATION_TEST_SSH_KEY
 
-script:        ./gradlew check asciidoctor
+
+script:
+- ./gradlew check asciidoctor
+- eval $(ssh-agent)
+- ssh-add $HOME/.ssh/id_rsa
+- ./gradlew :os-integration-test-with-agent:check
+- ssh-agent -k
+
 after_success: ./gradle/release-docs.sh
 after_script:  ./gradle/release-reports.sh
 before_deploy: ./gradlew shadowJar bintrayUpload
