@@ -3,7 +3,7 @@ remotes {
         role 'testServers'
         host = 'localhost'
         user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_ecdsa")
+        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
 

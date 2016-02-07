@@ -3,7 +3,7 @@ remotes {
     dedicatedIdentity {
         host = 'localhost'
         user = "user${randomInt()}n"
-        identity = file("${System.getProperty('user.home')}/.ssh/id_ecdsa_pass")
+        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa_pass")
         passphrase = 'pass_phrase'
     }
     usingAgent {
@@ -34,7 +34,7 @@ task createUserWithAuthorizedKey {
                 def username = remotes.dedicatedIdentity.user
                 execute "sudo useradd -m $username"
                 execute "sudo -u $username mkdir ~$username/.ssh"
-                execute "sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_ecdsa_pass.pub"
+                execute "sudo -u $username tee ~$username/.ssh/authorized_keys < ~/.ssh/id_rsa_pass.pub"
             }
         }
     }
