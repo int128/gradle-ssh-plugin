@@ -14,7 +14,7 @@ Add the plugin into your build script.
 
 ```groovy
 plugins {
-  id 'org.hidetake.ssh' version '1.1.4'
+  id 'org.hidetake.ssh' version '1.1.5'
 }
 ```
 
