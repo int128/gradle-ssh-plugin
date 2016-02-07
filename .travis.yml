@@ -13,13 +13,15 @@ install:
 script:
 - ./gradlew check install
 
-- cd acceptance-test
-- ../gradlew --version
-- ../gradlew -s -Pversion=SNAPSHOT test
+- ./gradlew --version
+- ./gradlew -p acceptance-test -s -Pversion=SNAPSHOT test
 
-- sed -i -e 's,gradle-[0-9.]*-,gradle-1.12-,g' ../gradle/wrapper/gradle-wrapper.properties
-- ../gradlew --version
-- ../gradlew -s -Pversion=SNAPSHOT test
+- sed -i -e 's,gradle-[0-9.]*-,gradle-1.12-,g' gradle/wrapper/gradle-wrapper.properties
+- ./gradlew --version
+- ./gradlew -p acceptance-test -s -Pversion=SNAPSHOT test
+
+- git reset --hard
+- ./gradlew --version
 
 
 after_success:
