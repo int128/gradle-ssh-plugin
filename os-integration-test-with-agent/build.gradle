@@ -1,0 +1,14 @@
+plugins {
+    id 'groovy'
+}
+
+dependencies {
+    compile project(':core')
+    compile project(':os-integration-test')
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.3'
+
+    testRuntime 'ch.qos.logback:logback-classic:1.1.2'
+}
+
+test.onlyIf { System.getenv('SSH_AGENT_PID') }

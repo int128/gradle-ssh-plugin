@@ -1,16 +1,12 @@
 package org.hidetake.groovy.ssh.test.os
 
+import com.jcraft.jsch.JSchException
+import com.jcraft.jsch.agentproxy.AgentProxyException
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.helper.Helper.hostName
-import static org.hidetake.groovy.ssh.test.helper.Helper.passphraseOfPrivateKey
-import static org.hidetake.groovy.ssh.test.helper.Helper.privateKeyWithPassphrase
-import static org.hidetake.groovy.ssh.test.helper.Helper.randomInt
-import static org.hidetake.groovy.ssh.test.helper.Helper.userName
+import static org.hidetake.groovy.ssh.test.helper.Helper.*
 
 /**
  * Check if authentication works with real OS environment.
@@ -21,9 +17,6 @@ class AuthenticationSpec extends Specification {
 
     Service ssh
 
-    @Rule
-    TemporaryFolder temporaryFolder
-
     def setup() {
         ssh = Ssh.newService()
         ssh.remotes {
@@ -32,6 +25,11 @@ class AuthenticationSpec extends Specification {
                 user = userName()
                 identity = privateKeyWithPassphrase()
                 passphrase = passphraseOfPrivateKey()
+            }
+            localhostWithAgent {
+                host = hostName()
+                user = userName()
+                agent = true
             }
         }
     }
@@ -50,6 +48,18 @@ class AuthenticationSpec extends Specification {
 
         then:
         r == (x + y)
+    }
+
+    def 'should fail if agent is not available'() {
+        when:
+        ssh.run {
+            session(ssh.remotes.localhostWithAgent) {
+                execute "id"
+            }
+        }
+
+        then:
+        thrown(AgentProxyException)
     }
 
 }
