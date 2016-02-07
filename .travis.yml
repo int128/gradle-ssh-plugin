@@ -24,9 +24,3 @@ script:
 
 after_success:
 - test ${TRAVIS_TAG} && ./gradlew bintrayUpload
-
-env:
-  global:
-  - TERM=dumb
-  - secure: O1woxzaGDbP7FjbnfCryVwfjOqqTU8Ix7dieAdOSwdfLS21RxV5vBdk7rgep+Gpgj0bhMILHpnlmuH6oh5oLNykQL2DKhC4atjyWjTZBVKMBvDabPDKXrsT8pvexYzwTUlMACcEU8/iBvNjqJjkJzQy1TuIrknqXp4GdTzlyyko=
-  - secure: hUWvSso9YoE9v1FDiJUzsURae4dpNFK5J59UqeKqyD17Mz4tefZtTzMcsbx9qe+6Y7VT6RsH/MAryosJz53OzDQQX0NBWWNsCpxNU97/cSbmw2Tl3523pKc5irjbv43+vFF5kSya16AmRcAAymbAzpNnvKDFujXONRYbnhYRYV8=
