@@ -95,7 +95,7 @@ class ConnectionSettingsSpec extends Specification {
         then:
         result.contains('theUser')
         !result.contains('thePassword')
-        result.contains('theIdentity')
+        !result.contains('theIdentity')
         !result.contains('thePassphrase')
     }
 

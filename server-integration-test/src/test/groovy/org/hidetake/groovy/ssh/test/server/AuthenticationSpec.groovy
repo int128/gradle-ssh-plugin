@@ -98,7 +98,7 @@ class AuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "public key authentication should pass if valid #keyType is given"() {
+    def "public key authentication should pass if valid #keyType #type is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.start()
@@ -108,7 +108,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = UserKeyFixture.privateKey(keyType)
+                identity = identitySetting
             }
         }
 
@@ -121,24 +121,27 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate(
-                'someuser', { PublicKey k -> k.algorithm == keyTypeSshd } as PublicKey, _) >> true
+                'someuser', { PublicKey k -> k.algorithm == keyType } as PublicKey, _) >> true
 
         then:
         1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
 
         where:
-        keyType | keyTypeSshd
-        rsa     | 'RSA'
-        ecdsa   | 'EC'
+        keyType | type      | identitySetting
+        'RSA'   | 'File'   | UserKeyFixture.privateKey(rsa)
+        'RSA'   | 'String' | UserKeyFixture.privateKey(rsa).text
+        'EC'    | 'File'   | UserKeyFixture.privateKey(ecdsa)
+        'EC'    | 'String' | UserKeyFixture.privateKey(ecdsa).text
     }
 
-    def "identity of public key authentication can be set by global settings"() {
+    @Unroll
+    def "public key authentication should pass if valid #keyType #type is given in global settings"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.start()
 
         ssh.settings {
-            identity = UserKeyFixture.privateKey()
+            identity = identitySetting
         }
 
         ssh.remotes {
@@ -158,13 +161,21 @@ class AuthenticationSpec extends Specification {
 
         then:
         (1.._) * server.publickeyAuthenticator.authenticate(
-                'someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+                'someuser', { PublicKey k -> k.algorithm == keyType } as PublicKey, _) >> true
 
         then:
         1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+
+        where:
+        keyType | type      | identitySetting
+        'RSA'   | 'File'   | UserKeyFixture.privateKey(rsa)
+        'RSA'   | 'String' | UserKeyFixture.privateKey(rsa).text
+        'EC'    | 'File'   | UserKeyFixture.privateKey(ecdsa)
+        'EC'    | 'String' | UserKeyFixture.privateKey(ecdsa).text
     }
 
-    def "public key authentication should fail if wrong one is given"() {
+    @Unroll
+    def "public key authentication should fail if wrong key #type is given"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
         server.start()
@@ -194,6 +205,11 @@ class AuthenticationSpec extends Specification {
         and:
         JSchException e = thrown()
         e.message == 'Auth fail'
+
+        where:
+        type      | identitySetting
+        'File'   | UserKeyFixture.privateKey()
+        'String' | UserKeyFixture.privateKey().text
     }
 
     def "public key authentication should accept the passphrase of identity"() {

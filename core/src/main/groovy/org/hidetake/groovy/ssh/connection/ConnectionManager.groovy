@@ -91,6 +91,8 @@ class ConnectionManager {
         assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
         assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
         assert settings.keepAliveSec >= 0, "keepAliveMillis must be zero or positive (remote ${remote.name})"
+        assert settings.identity instanceof File || settings.identity instanceof String || settings.identity == null,
+                'identity must be a File, String or null'
 
         JSch.logger = JSchLogger.instance
 
@@ -118,7 +120,12 @@ class ConnectionManager {
                 jsch.identityRepository = null    /* null means the default repository */
                 jsch.removeAllIdentity()
                 if (settings.identity) {
-                    jsch.addIdentity(settings.identity.path, settings.passphrase as String)
+                    final identity = settings.identity
+                    if (identity instanceof File) {
+                        jsch.addIdentity(identity.path, settings.passphrase as String)
+                    } else if (identity instanceof String) {
+                        jsch.addIdentity("identity-${identity.hashCode()}", identity.bytes, null, settings.passphrase?.bytes)
+                    }
                 }
             }
             if (settings.proxy) {
