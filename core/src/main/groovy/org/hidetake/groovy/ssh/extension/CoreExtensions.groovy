@@ -5,5 +5,5 @@ package org.hidetake.groovy.ssh.extension
  *
  * @author Hidetake Iwata
  */
-trait CoreExtensions implements Command, BackgroundCommand, Shell, SudoExecution, SftpGet, SftpPut, PortForward {
+trait CoreExtensions implements Command, BackgroundCommand, Shell, Sudo, SftpGet, SftpPut, PortForward {
 }

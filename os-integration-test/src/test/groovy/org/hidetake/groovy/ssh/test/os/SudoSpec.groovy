@@ -8,7 +8,7 @@ import spock.lang.Unroll
 import static org.hidetake.groovy.ssh.test.helper.Helper.*
 
 /**
- * Check if {@link org.hidetake.groovy.ssh.extension.SudoExecution} works with Linux system.
+ * Check if {@link org.hidetake.groovy.ssh.extension.Sudo} works with Linux system.
  * Password authentication must be enabled on sshd_config to run tests.
  *
  * @author Hidetake Iwata
