@@ -6,14 +6,13 @@ plugins {
 
 description = 'Gradle SSH Plugin provides remote execution and file transfer capabilities'
 group = 'org.hidetake'
-version = 'SNAPSHOT'
+
+// Set product version if tag is given on Travis CI
+version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
 
 ext.license = 'Apache-2.0'
 ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
 ext.vcsUrl = 'https://github.com/int128/gradle-ssh-plugin.git'
-
-// Set product version if tag is given on Travis CI
-System.getenv('TRAVIS_TAG')?.eachMatch(/^v([\d.]+)$/) { m -> project.version = m[1] }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
