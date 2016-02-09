@@ -11,10 +11,11 @@ Getting Started
 ---------------
 
 Add the plugin into your build script.
+Check the latest version in [releases](https://github.com/int128/gradle-ssh-plugin/releases).
 
 ```groovy
 plugins {
-  id 'org.hidetake.ssh' version '1.1.5'
+  id 'org.hidetake.ssh' version 'x.y.z'
 }
 ```
 
