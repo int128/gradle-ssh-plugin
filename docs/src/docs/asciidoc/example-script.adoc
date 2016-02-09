@@ -2,6 +2,10 @@
 :doctype: article
 :source-highlighter: coderay
 
+
+include::version-loader.adoc[]
+
+
 [source,groovy,subs="+attributes"]
 ----
 // build.gradle

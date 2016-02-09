@@ -7,8 +7,4 @@ asciidoctor {
         include 'index.adoc'
         include 'example-script.adoc'
     }
-    attributes(
-            'groovy-ssh-version': '1.2.0',
-            'gradle-ssh-version': '1.1.5',
-    )
 }

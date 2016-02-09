@@ -8,6 +8,9 @@ Hidetake Iwata <https://github.com/int128>
 :icons: font
 
 
+include::version-loader.adoc[]
+
+
 This document explains Gradle SSH Plugin {gradle-ssh-version} and Groovy SSH {groovy-ssh-version}.
 
 
