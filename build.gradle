@@ -1,14 +1,13 @@
 allprojects {
     description = 'Groovy SSH library'
     group = 'org.hidetake'
-    version = 'SNAPSHOT'
+
+    // Set product version if tag is given on Travis CI
+    version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
 
     ext.license = 'Apache-2.0'
     ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
     ext.vcsUrl = 'https://github.com/int128/groovy-ssh.git'
-
-    // Set product version if tag is given on Travis CI
-    System.getenv('TRAVIS_TAG')?.eachMatch(/^v([\d.]+)$/) { m -> version = m[1] }
 
     repositories {
         jcenter()
