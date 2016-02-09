@@ -12,7 +12,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-@ToString(excludes = 'password, passphrase, allowAnyHosts')
+@ToString(excludes = 'password, identity, passphrase, allowAnyHosts')
 class ConnectionSettings implements Settings<ConnectionSettings> {
     /**
      * Remote user.
@@ -21,14 +21,16 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
 
     /**
      * Password.
-     * Leave as null if public key authentication.
+     * Leave as null if the password authentication is not needed.
      */
     String password
 
     /**
      * Identity key file for public-key authentication.
+     * This must be a {@link File}, {@link String} or null.
+     * Leave as null if the public key authentication is not needed.
      */
-    File identity
+    def identity
 
     /**
      * Pass-phrase for the identity key.
