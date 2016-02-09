@@ -4,7 +4,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.helper.Helper.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
  * Check if authentication works with real SSH agent.

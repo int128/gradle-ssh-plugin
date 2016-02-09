@@ -6,7 +6,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.helper.Helper.*
+import static Fixture.*
 
 /**
  * Check if command execution works with real OS commands.

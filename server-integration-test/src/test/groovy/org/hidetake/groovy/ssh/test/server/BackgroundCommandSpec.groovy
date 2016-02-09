@@ -10,7 +10,6 @@ import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.test.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
@@ -18,9 +17,9 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
+import static SshServerMock.commandWithExit
 
-class BackgroundCommandExecutionSpec extends Specification {
+class BackgroundCommandSpec extends Specification {
 
     private static final NL = Utilities.eol()
 

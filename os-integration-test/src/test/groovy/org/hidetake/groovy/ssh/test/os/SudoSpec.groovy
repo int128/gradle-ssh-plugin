@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static org.hidetake.groovy.ssh.test.helper.Helper.*
+import static Fixture.*
 
 /**
  * Check if {@link org.hidetake.groovy.ssh.extension.Sudo} works with Linux system.

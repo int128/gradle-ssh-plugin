@@ -7,14 +7,14 @@ import org.apache.sshd.server.sftp.SftpSubsystem
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.operation.SftpException
-import org.hidetake.groovy.ssh.test.FilenameUtils
-import org.hidetake.groovy.ssh.test.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.Use
+
+import static FilenameUtils.toUnixSeparator
 
 @Use(FileDivCategory)
 class FileTransferSpec extends Specification {
@@ -775,13 +775,6 @@ class FileTransferSpec extends Specification {
     }
 
 
-    @Category(File)
-    static class FileDivCategory {
-        File div(String child) {
-            new File(this as File, child)
-        }
-    }
-
     static mkdir(File dir) {
         assert dir.mkdir()
         dir
@@ -789,10 +782,6 @@ class FileTransferSpec extends Specification {
 
     static uuidgen() {
         UUID.randomUUID().toString()
-    }
-
-    static String toUnixSeparator(String path){
-        FilenameUtils.toUnixSeparator(path)
     }
 
 }

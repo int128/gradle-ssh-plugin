@@ -1,12 +1,11 @@
 package org.hidetake.groovy.ssh.test.os
 
-import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.agentproxy.AgentProxyException
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.helper.Helper.*
+import static Fixture.*
 
 /**
  * Check if authentication works with real OS environment.

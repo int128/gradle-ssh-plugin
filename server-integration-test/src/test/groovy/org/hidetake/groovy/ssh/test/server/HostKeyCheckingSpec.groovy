@@ -8,8 +8,6 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.test.HostKeyFixture
-import org.hidetake.groovy.ssh.test.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -18,8 +16,8 @@ import spock.lang.Unroll
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-import static org.hidetake.groovy.ssh.test.HostKeyFixture.KeyType.*
-import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
+import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.*
 
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
@@ -98,10 +96,10 @@ class HostKeyCheckingSpec extends Specification {
     @Unroll
     def "strict host key checking should pass with a valid known-hosts of #keyType host key"() {
         given:
-        server.keyPairProvider = HostKeyFixture.keyPairProvider(keyType)
+        server.keyPairProvider = keyPairProvider(keyType)
         assert server.keyPairProvider.keyTypes == keyTypeSshd
 
-        def hostKey = HostKeyFixture.publicKey(keyType)
+        def hostKey = publicKey(keyType)
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
         ssh.settings {
             knownHosts = knownHostsFile
@@ -115,23 +113,23 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        keyType | keyTypeSshd
-        dsa     | KeyPairProvider.SSH_DSS
-        rsa     | KeyPairProvider.SSH_RSA
-        ecdsa   | KeyPairProvider.ECDSA_SHA2_NISTP256
+        keyType       | keyTypeSshd
+        KeyType.dsa   | KeyPairProvider.SSH_DSS
+        KeyType.rsa   | KeyPairProvider.SSH_RSA
+        KeyType.ecdsa | KeyPairProvider.ECDSA_SHA2_NISTP256
     }
 
     @Unroll
     def "strict host key checking should accept a hashed known-hosts of #keyType host key"() {
         given:
-        server.keyPairProvider = HostKeyFixture.keyPairProvider(keyType)
+        server.keyPairProvider = keyPairProvider(keyType)
         assert server.keyPairProvider.keyTypes == keyTypeSshd
 
         def hostname = "[localhost]:${server.port}"
         def salt = randomBytes(20)
         def hash = hmacSha1(salt, hostname.getBytes())
 
-        def hostKey = HostKeyFixture.publicKey(keyType)
+        def hostKey = publicKey(keyType)
         def knownHostsItem = "|1|${salt.encodeBase64()}|${hash.encodeBase64()} ${hostKey}"
         def knownHostsFile = temporaryFolder.newFile() << knownHostsItem
         log.debug(knownHostsItem)
@@ -148,10 +146,10 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        keyType | keyTypeSshd
-        dsa     | KeyPairProvider.SSH_DSS
-        rsa     | KeyPairProvider.SSH_RSA
-        ecdsa   | KeyPairProvider.ECDSA_SHA2_NISTP256
+        keyType       | keyTypeSshd
+        KeyType.dsa   | KeyPairProvider.SSH_DSS
+        KeyType.rsa   | KeyPairProvider.SSH_RSA
+        KeyType.ecdsa | KeyPairProvider.ECDSA_SHA2_NISTP256
     }
 
     def "strict host key checking should fail if an empty known-hosts is given"() {

@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.test
+package org.hidetake.groovy.ssh.test.server
 
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 

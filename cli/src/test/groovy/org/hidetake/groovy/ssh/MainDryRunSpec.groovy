@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh
 
 import com.jcraft.jsch.JSchException
-import org.hidetake.groovy.ssh.test.SshServerMock
+import org.hidetake.groovy.ssh.test.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared

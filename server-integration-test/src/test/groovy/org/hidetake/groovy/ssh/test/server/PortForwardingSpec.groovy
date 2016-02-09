@@ -11,7 +11,6 @@ import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.test.SshServerMock
 import spock.lang.Shared
 import spock.lang.Specification
 

@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.test
+package org.hidetake.groovy.ssh.test.server
 
 class UserKeyFixture {
 

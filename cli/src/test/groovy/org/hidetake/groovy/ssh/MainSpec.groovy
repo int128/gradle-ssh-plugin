@@ -5,8 +5,8 @@ import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.operation.DefaultOperations
-import org.hidetake.groovy.ssh.test.FilenameUtils
-import org.hidetake.groovy.ssh.test.SshServerMock
+import org.hidetake.groovy.ssh.test.server.FilenameUtils
+import org.hidetake.groovy.ssh.test.server.SshServerMock
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
@@ -16,6 +16,7 @@ import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static SshServerMock.commandWithExit
+import static FilenameUtils.toUnixSeparator
 
 class MainSpec extends Specification {
 
@@ -181,7 +182,7 @@ class MainSpec extends Specification {
         "ssh.run {" +
                 " session(host: 'localhost'," +
                 "  port: ${server.port}," +
-                "  knownHosts: new File('${FilenameUtils.toUnixSeparator(knownHostsFile.path)}')," +
+                "  knownHosts: new File('${toUnixSeparator(knownHostsFile.path)}')," +
                 "  user: 'someuser'," +
                 "  password: 'somepassword')" +
                 " { execute('somecommand') }" +

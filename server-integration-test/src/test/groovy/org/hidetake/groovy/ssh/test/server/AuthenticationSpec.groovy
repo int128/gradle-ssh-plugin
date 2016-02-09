@@ -7,15 +7,14 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.PublickeyAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.test.SshServerMock
-import org.hidetake.groovy.ssh.test.UserKeyFixture
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.security.PublicKey
 
-import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
-import static org.hidetake.groovy.ssh.test.UserKeyFixture.KeyType.*
+import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.KeyType
+import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.privateKey
 
 class AuthenticationSpec extends Specification {
 
@@ -128,10 +127,10 @@ class AuthenticationSpec extends Specification {
 
         where:
         keyType | type      | identitySetting
-        'RSA'   | 'File'   | UserKeyFixture.privateKey(rsa)
-        'RSA'   | 'String' | UserKeyFixture.privateKey(rsa).text
-        'EC'    | 'File'   | UserKeyFixture.privateKey(ecdsa)
-        'EC'    | 'String' | UserKeyFixture.privateKey(ecdsa).text
+        'RSA'   | 'File'   | privateKey(KeyType.rsa)
+        'RSA'   | 'String' | privateKey(KeyType.rsa).text
+        'EC'    | 'File'   | privateKey(KeyType.ecdsa)
+        'EC'    | 'String' | privateKey(KeyType.ecdsa).text
     }
 
     @Unroll
@@ -168,10 +167,10 @@ class AuthenticationSpec extends Specification {
 
         where:
         keyType | type      | identitySetting
-        'RSA'   | 'File'   | UserKeyFixture.privateKey(rsa)
-        'RSA'   | 'String' | UserKeyFixture.privateKey(rsa).text
-        'EC'    | 'File'   | UserKeyFixture.privateKey(ecdsa)
-        'EC'    | 'String' | UserKeyFixture.privateKey(ecdsa).text
+        'RSA'   | 'File'   | privateKey(KeyType.rsa)
+        'RSA'   | 'String' | privateKey(KeyType.rsa).text
+        'EC'    | 'File'   | privateKey(KeyType.ecdsa)
+        'EC'    | 'String' | privateKey(KeyType.ecdsa).text
     }
 
     @Unroll
@@ -185,7 +184,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = UserKeyFixture.privateKey()
+                identity = privateKey()
             }
         }
 
@@ -208,8 +207,8 @@ class AuthenticationSpec extends Specification {
 
         where:
         type      | identitySetting
-        'File'   | UserKeyFixture.privateKey()
-        'String' | UserKeyFixture.privateKey().text
+        'File'   | privateKey()
+        'String' | privateKey().text
     }
 
     def "public key authentication should accept the passphrase of identity"() {
@@ -222,7 +221,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = UserKeyFixture.privateKey(rsa_pass)
+                identity = privateKey(KeyType.rsa_pass)
                 passphrase = "gradle"
             }
         }
@@ -247,7 +246,7 @@ class AuthenticationSpec extends Specification {
         server.start()
 
         ssh.settings {
-            identity = UserKeyFixture.privateKey(rsa_pass)
+            identity = privateKey(KeyType.rsa_pass)
             passphrase = "gradle"
         }
 
@@ -283,7 +282,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = UserKeyFixture.privateKey(rsa_pass)
+                identity = privateKey(KeyType.rsa_pass)
                 passphrase = "wrong"
             }
         }
@@ -312,7 +311,7 @@ class AuthenticationSpec extends Specification {
         server.start()
 
         ssh.settings {
-            identity = UserKeyFixture.privateKey(rsa)
+            identity = privateKey(KeyType.rsa)
         }
 
         ssh.remotes {
@@ -320,7 +319,7 @@ class AuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = UserKeyFixture.privateKey(rsa_pass)
+                identity = privateKey(KeyType.rsa_pass)
             }
         }
 

@@ -7,12 +7,11 @@ import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.test.SshServerMock
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.SshServerMock.commandWithExit
+import static SshServerMock.commandWithExit
 
-class GatewayConnectionSpec extends Specification {
+class GatewaySpec extends Specification {
 
     SshServer targetServer
     SshServer gateway1Server

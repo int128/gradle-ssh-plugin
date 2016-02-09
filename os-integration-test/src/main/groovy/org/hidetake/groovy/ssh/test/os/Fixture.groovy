@@ -1,6 +1,6 @@
-package org.hidetake.groovy.ssh.test.helper
+package org.hidetake.groovy.ssh.test.os
 
-class Helper {
+class Fixture {
 
     static randomInt(int max = 10000) {
         (Math.random() * max) as int

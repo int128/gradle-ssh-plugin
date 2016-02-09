@@ -8,14 +8,13 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.test.SshServerMock
-import org.hidetake.groovy.ssh.test.SshServerMock.CommandContext
+import org.hidetake.groovy.ssh.test.server.SshServerMock.CommandContext
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-class SudoCommandExecutionSpec extends Specification {
+class SudoSpec extends Specification {
 
     private static final NL = Utilities.eol()
 
