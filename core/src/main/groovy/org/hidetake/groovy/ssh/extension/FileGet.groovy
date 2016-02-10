@@ -2,18 +2,20 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.extension.helper.ScpGetHelper
+import org.hidetake.groovy.ssh.extension.settings.FileTransferMethod
 import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
- * An extension class to get a file or directory via SFTP.
+ * An extension class to get a file or directory.
  *
  * @author Hidetake Iwata
  */
 @Slf4j
-trait SftpGet implements SessionExtension {
+trait FileGet implements SessionExtension {
     @ToString
     private static class GetOptions {
         def from
@@ -54,7 +56,7 @@ get(from: String)                       // get a file and return the content'''
     }
 
     /**
-     * Get a file from the remote host.
+     * Get a file or directory from the remote host.
      *
      * @param remotePath
      * @param stream
@@ -62,8 +64,15 @@ get(from: String)                       // get a file and return the content'''
     void get(String remotePath, OutputStream stream) {
         assert remotePath, 'remote path must be given'
         assert stream,  'output stream must be given'
-        sftp {
-            getContent(remotePath, stream)
+        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
+            sftp {
+                getContent(remotePath, stream)
+            }
+        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
+            def helper = new ScpGetHelper(operations, mergedSettings)
+            helper.getFileContent(remotePath, stream)
+        } else {
+            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
         log.info("Received content from $remote.name: $remotePath")
     }
@@ -81,7 +90,7 @@ get(from: String)                       // get a file and return the content'''
     }
 
     /**
-     * Get a file or directory from the remote host.
+     * Get a file from the remote host.
      *
      * @param remotePath
      * @param localFile
@@ -89,6 +98,19 @@ get(from: String)                       // get a file and return the content'''
     void get(String remotePath, File localFile) {
         assert remotePath, 'remote path must be given'
         assert localFile,  'local file must be given'
+        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
+            sftpGet(remotePath, localFile)
+        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
+            scpGet(remotePath, localFile)
+        } else {
+            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
+        }
+    }
+
+
+    private void sftpGet(String remotePath, File localFile) {
+        assert remotePath, 'remote path must be given'
+        assert localFile, 'local file must be given'
         try {
             sftp {
                 getFile(remotePath, localFile.path)
@@ -97,7 +119,7 @@ get(from: String)                       // get a file and return the content'''
         } catch (SftpFailureException e) {
             if (e.cause.message.startsWith('not supported to get directory')) {
                 log.debug("Found directory on $remote.name: $remotePath")
-                getRecursive(remotePath, localFile)
+                sftpGetRecursive(remotePath, localFile)
                 log.info("Received directory $remote.name: $remotePath -> $localFile.path")
             } else {
                 throw e
@@ -105,7 +127,7 @@ get(from: String)                       // get a file and return the content'''
         }
     }
 
-    private void getRecursive(String baseRemoteDir, File baseLocalDir) {
+    private void sftpGetRecursive(String baseRemoteDir, File baseLocalDir) {
         sftp {
             currySelf { Closure self, String remoteDir, File localDir ->
                 def remoteDirName = remoteDir.find(~'[^/]+/?$')
@@ -128,6 +150,21 @@ get(from: String)                       // get a file and return the content'''
                 log.debug("Leaving directory on $remote.name: $remoteDir")
                 cd('..')
             }.call(baseRemoteDir, baseLocalDir)
+        }
+    }
+
+    private void scpGet(String remotePath, File localPath) {
+        def helper = new ScpGetHelper(operations, mergedSettings)
+        if (localPath.directory) {
+            log.debug("Receiving file recursively from $remote.name: $remotePath -> $localPath")
+            helper.get(remotePath, localPath)
+            log.info("Received file recursively from $remote.name: $remotePath -> $localPath")
+        } else {
+            log.debug("Receiving file from $remote.name: $remotePath -> $localPath")
+            localPath.withOutputStream { stream ->
+                helper.getFileContent(remotePath, stream)
+            }
+            log.info("Received file from $remote.name: $remotePath -> $localPath")
         }
     }
 }

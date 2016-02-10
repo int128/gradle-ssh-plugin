@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.core.settings
 
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
+import org.hidetake.groovy.ssh.extension.settings.FileTransferSettings
 import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.ShellSettings
@@ -18,7 +19,8 @@ trait CompositeSettings implements
         SessionSettings,
         CommandSettings,
         ShellSettings,
-        SudoSettings
+        SudoSettings,
+        FileTransferSettings
 {
     static class With implements CompositeSettings, ToStringProperties {
         def With() {}
@@ -34,6 +36,7 @@ trait CompositeSettings implements
                     CommandSettings.With.DEFAULT,
                     ShellSettings.With.DEFAULT,
                     SudoSettings.With.DEFAULT,
+                    FileTransferSettings.With.DEFAULT,
             )
         }
     }

@@ -51,6 +51,7 @@ Settings can be set in global and overridden by each `ssh.run` method, remote ho
 |Command settings       | x      | x              | x           | x
 |Shell settings         | x      | x              | x           | x
 |Sudo settings          | x      | x              | x           | x
+|File transfer settings | x      | x              | x           | -
 |Remote settings        | -      | -              | x           | -
 |Proxy settings         | -      | -              | x           | -
 |Local port forwarding settings  | -      | -     | -           | x
@@ -776,6 +777,15 @@ put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 ----
 
 The method throws an exception if an error occurred while the file transfer.
+
+Following settings can be set in global, per-method or per-remote.
+
+.File transfer settings
+[options="header,autowidth"]
+|===
+|Key                  | Type   | Description
+|`fileTransferMethod` | String | File transfer method, `sftp` or `scp`. Defaults to `sftp`.
+|===
 
 
 === Remove a file or directory

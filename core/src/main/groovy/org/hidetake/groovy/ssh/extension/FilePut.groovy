@@ -2,18 +2,20 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
+import org.hidetake.groovy.ssh.extension.helper.ScpPutHelper
+import org.hidetake.groovy.ssh.extension.settings.FileTransferMethod
 import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
- * An extension class to put a file or directory via SFTP.
+ * An extension class to put a file or directory.
  *
  * @author Hidetake Iwata
  */
 @Slf4j
-trait SftpPut implements SessionExtension {
+trait FilePut extends SessionExtension {
     @ToString
     private static class PutOptions {
         def from
@@ -65,10 +67,27 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      * @param remotePath
      */
     void put(InputStream stream, String remotePath) {
-        assert remotePath, 'remote path must be given'
         assert stream, 'input stream must be given'
-        sftp {
-            putContent(stream, remotePath)
+        assert remotePath, 'remote path must be given'
+        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
+            sftp {
+                putContent(stream, remotePath)
+            }
+        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
+            def m = (~'(.*/)(.+?)').matcher(remotePath)
+            if (m.matches()) {
+                def bytes = stream.bytes
+                def dirname = m.group(1)
+                def filename = m.group(2)
+                new ByteArrayInputStream(bytes).withStream { byteStream ->
+                    def helper = new ScpPutHelper(operations, mergedSettings)
+                    helper.createFile(dirname, filename, byteStream, bytes.length)
+                }
+            } else {
+                throw new IllegalArgumentException("Remote path must be an absolute path: $remotePath")
+            }
+        } else {
+            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
         log.info("Sent content to $remote.name: $remotePath")
     }
@@ -81,7 +100,7 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      */
     void put(File localFile, String remotePath) {
         assert remotePath, 'remote path must be given'
-        assert localFile,  'local file must be given'
+        assert localFile, 'local file must be given'
         put([localFile], remotePath)
     }
 
@@ -93,7 +112,7 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      */
     void put(String localPath, String remotePath) {
         assert remotePath, 'remote path must be given'
-        assert localPath,  'local path must be given'
+        assert localPath, 'local path must be given'
         put(new File(localPath), remotePath)
     }
 
@@ -105,11 +124,17 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      */
     void put(Iterable<File> localFiles, String remotePath) {
         assert remotePath, 'remote path must be given'
-        assert localFiles,  'local files must be given'
-        putRecursive(localFiles, remotePath)
+        assert localFiles, 'local files must be given'
+        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
+            sftpPutRecursive(localFiles, remotePath)
+        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
+            scpPutRecursive(localFiles, remotePath)
+        } else {
+            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
+        }
     }
 
-    private void putRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
+    private void sftpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
         sftp {
             currySelf { Closure self, Iterable<File> localFiles, String remotePath ->
                 localFiles.findAll { !it.directory }.each { localFile ->
@@ -130,5 +155,10 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
                 }
             }.call(baseLocalFiles, baseRemotePath)
         }
+    }
+
+    private void scpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
+        def helper = new ScpPutHelper(operations, mergedSettings)
+        helper.put(baseLocalFiles, baseRemotePath)
     }
 }
