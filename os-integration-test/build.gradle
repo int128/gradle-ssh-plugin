@@ -9,3 +9,5 @@ dependencies {
 
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
+
+test.onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }

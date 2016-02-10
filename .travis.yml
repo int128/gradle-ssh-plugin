@@ -35,9 +35,9 @@ install:
 - echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_rsa
 - chmod -v 600 $HOME/.ssh/id_rsa
 - cp -av $HOME/.ssh/id_rsa{,_passphrase}
-- ssh-keygen -p -N pass1234 -f "$HOME/.ssh/id_rsa_passphrase"
-- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" date
-- ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
+- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id; fi
+- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"; fi
+- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-keygen -p -N pass1234 -f "$HOME/.ssh/id_rsa_passphrase"; fi
 
 - unset INTEGRATION_TEST_SSH_KEY
 
