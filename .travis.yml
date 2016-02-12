@@ -45,8 +45,8 @@ install:
 script:
 - ./gradlew check asciidoctor
 - eval $(ssh-agent)
-- ssh-add $HOME/.ssh/id_rsa
-- ./gradlew :os-integration-test-with-agent:check
+- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-add $HOME/.ssh/id_rsa; fi
+- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ./gradlew :os-integration-test-with-agent:check; fi
 - ssh-agent -k
 
 after_success: ./gradle/release-docs.sh
