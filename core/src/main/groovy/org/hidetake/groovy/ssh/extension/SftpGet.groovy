@@ -4,7 +4,10 @@ import com.jcraft.jsch.ChannelSftp.LsEntry
 import groovy.transform.ToString
 import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionExtension
+import org.hidetake.groovy.ssh.util.Utility
 import org.slf4j.LoggerFactory
+
+import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
  * An extension class to get a file or directory via SFTP.
@@ -95,35 +98,36 @@ get(from: String)                       // get a file and return the content'''
         } catch (SftpException e) {
             if (e.cause.message.startsWith('not supported to get directory')) {
                 log.debug(e.localizedMessage)
-                log.debug('Starting to get a directory recursively')
-                sftp(getRecursive.curry(remote, local))
+                getRecursive(remote, local)
             } else {
                 throw new RuntimeException(e)
             }
         }
     }
 
-    private static final getRecursive = { String remoteDir, File localDir ->
-        def remoteDirName = remoteDir.find(~'[^/]+/?$')
-        def localChildDir = new File(localDir, remoteDirName)
-        localChildDir.mkdirs()
+    private void getRecursive(String baseRemoteDir, File baseLocalDir) {
+        sftp {
+            currySelf { Closure self, String remoteDir, File localDir ->
+                def remoteDirName = remoteDir.find(~'[^/]+/?$')
+                def localChildDir = new File(localDir, remoteDirName)
+                localChildDir.mkdirs()
 
-        cd(remoteDir)
-        List<LsEntry> children = ls('.')
+                log.debug("Entering directory $remoteDir")
+                cd(remoteDir)
 
-        for (LsEntry child : children.findAll { !it.attrs.dir }) {
-            getFile(child.filename, localChildDir.path)
+                ls('.').each { child ->
+                    if (!child.attrs.dir) {
+                        getFile(child.filename, localChildDir.path)
+                    } else if (child.filename in ['.', '..']) {
+                        log.debug("Ignored directory entry: ${child.longname}")
+                    } else {
+                        self.call(self, child.filename, localChildDir)
+                    }
+                }
+
+                log.debug("Leaving directory $remoteDir")
+                cd('..')
+            }.call(baseRemoteDir, baseLocalDir)
         }
-        for (LsEntry child : children.findAll { it.attrs.dir }) {
-            switch (child.filename) {
-                case '.':
-                case '..':
-                    log.debug("Ignored directory entry: ${child.longname}")
-                    break
-                default:
-                    call(child.filename, localChildDir)
-            }
-        }
-        cd('..')
     }
 }

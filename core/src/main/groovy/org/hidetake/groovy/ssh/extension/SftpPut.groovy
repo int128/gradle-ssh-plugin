@@ -6,6 +6,7 @@ import org.hidetake.groovy.ssh.session.SessionExtension
 import org.slf4j.LoggerFactory
 
 import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
+import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
  * An extension class to put a file or directory via SFTP.
@@ -106,26 +107,32 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
     void put(Iterable<File> localFiles, String remotePath) {
         assert remotePath, 'remote path must be given'
         assert localFiles,  'local files must be given'
-        sftp(putRecursive.curry(localFiles, remotePath))
+        putRecursive(localFiles, remotePath)
     }
 
-    private static final putRecursive = { Iterable<File> localFiles, String remotePath ->
-        for (File localFile : localFiles) {
-            if (localFile.directory) {
-                def remoteDir = "$remotePath/${localFile.name}"
-                try {
-                    mkdir(remoteDir)
-                } catch (SftpException e) {
-                    if (e.error == SSH_FX_FAILURE) {
-                        log.info("Remote directory already exists: ${e.localizedMessage}")
-                    } else {
-                        throw new RuntimeException(e)
-                    }
+    private void putRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
+        sftp {
+            currySelf { Closure self, Iterable<File> localFiles, String remotePath ->
+                localFiles.findAll { !it.directory }.each { localFile ->
+                    putFile(localFile.path, remotePath)
                 }
-                call(localFile.listFiles().toList(), remoteDir)
-            } else {
-                putFile(localFile.path, remotePath)
-            }
+                localFiles.findAll { it.directory }.each { localDir ->
+                    log.debug("Entering directory $localDir.path")
+                    def remoteDir = "$remotePath/${localDir.name}"
+                    try {
+                        mkdir(remoteDir)
+                    } catch (SftpException e) {
+                        if (e.error == SSH_FX_FAILURE) {
+                            log.info("Remote directory already exists: ${e.localizedMessage}")
+                        } else {
+                            throw new RuntimeException(e)
+                        }
+                    }
+
+                    self.call(self, localDir.listFiles().toList(), remoteDir)
+                    log.debug("Leaving directory $localDir.path")
+                }
+            }.call(baseLocalFiles, baseRemotePath)
         }
     }
 }
