@@ -1,5 +1,9 @@
 package org.hidetake.groovy.ssh.extension
 
+import groovy.util.logging.Slf4j
+import org.codehaus.groovy.tools.Utilities
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
@@ -17,9 +21,7 @@ trait Sudo implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        def interaction = new SudoInteraction()
-        execute(interaction.settings(remote.password), interaction.command(command))
-        interaction.text
+        Internal.sudo(operations, operationSettings + new OperationSettings(), command, null)
     }
 
     /**
@@ -33,9 +35,7 @@ trait Sudo implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        def interaction = new SudoInteraction()
-        execute(interaction.settings(remote.password, settings), interaction.command(command))
-        interaction.text
+        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command, null)
     }
 
     /**
@@ -48,9 +48,7 @@ trait Sudo implements SessionExtension {
     void executeSudo(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        def interaction = new SudoInteraction()
-        execute(interaction.settings(remote.password), interaction.command(command))
-        callback(interaction.text)
+        Internal.sudo(operations, operationSettings + new OperationSettings(), command, callback)
     }
 
     /**
@@ -65,8 +63,41 @@ trait Sudo implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        def interaction = new SudoInteraction()
-        execute(interaction.settings(remote.password, settings), interaction.command(command))
-        callback(interaction.text)
+        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command, callback)
+    }
+
+
+    @Slf4j
+    private static class Internal {
+        static sudo(Operations operations, OperationSettings settings, String command, Closure callback) {
+            final prompt = UUID.randomUUID().toString()
+            final lines = []
+            final interationSettings = new OperationSettings(interaction: {
+                when(partial: prompt, from: standardOutput) {
+                    log.info('Providing the password for sudo authentication')
+                    standardInput << operations.remote.password << '\n'
+
+                    when(nextLine: _, from: standardOutput) {
+                        when(nextLine: 'Sorry, try again.') {
+                            throw new RuntimeException('sudo authentication failed')
+                        }
+                        when(line: _, from: standardOutput) {
+                            log.info('sudo authentication passed')
+                            lines << it
+                        }
+                    }
+                }
+                when(line: _, from: standardOutput) {
+                    lines << it
+                }
+            })
+
+            final sudoCommand = "sudo -S -p '$prompt' $command"
+            operations.execute(settings + interationSettings, sudoCommand, null)
+
+            def result = lines.join(Utilities.eol())
+            callback?.call(result)
+            result
+        }
     }
 }
