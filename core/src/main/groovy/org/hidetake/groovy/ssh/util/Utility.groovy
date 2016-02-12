@@ -33,6 +33,10 @@ class Utility {
         cloned.call()
     }
 
+    static <T> Closure<T> currySelf(Closure<T> closure) {
+        closure.curry(closure)
+    }
+
     /**
      * Execute the closure with retrying.
      * This method catches only {@link com.jcraft.jsch.JSchException}s.
