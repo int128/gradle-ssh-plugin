@@ -26,9 +26,8 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    String execute(OperationSettings settings, String command, Closure callback) {
+    String execute(OperationSettings settings, String command) {
         log.info("Executing command on $remote: $command")
-        callback?.call('')
         ''
     }
 

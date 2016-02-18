@@ -15,7 +15,7 @@ interface Operations {
 
     void shell(OperationSettings settings)
 
-    String execute(OperationSettings settings, String command, Closure callback)
+    String execute(OperationSettings settings, String command)
 
     void executeBackground(OperationSettings settings, String command, Closure callback)
 

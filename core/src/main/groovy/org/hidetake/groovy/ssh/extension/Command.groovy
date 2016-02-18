@@ -18,7 +18,7 @@ trait Command implements SessionExtension {
      */
     String execute(String command) {
         assert command, 'command must be given'
-        operations.execute(operationSettings, command, null)
+        operations.execute(operationSettings, command)
     }
 
     /**
@@ -32,7 +32,7 @@ trait Command implements SessionExtension {
     void execute(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        operations.execute(operationSettings, command, callback)
+        callback.call(operations.execute(operationSettings, command))
     }
 
     /**
@@ -46,7 +46,7 @@ trait Command implements SessionExtension {
     String execute(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        operations.execute(operationSettings + new OperationSettings(settings), command, null)
+        operations.execute(operationSettings + new OperationSettings(settings), command)
     }
 
     /**
@@ -62,6 +62,6 @@ trait Command implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        operations.execute(operationSettings + new OperationSettings(settings), command, callback)
+        callback.call(operations.execute(operationSettings + new OperationSettings(settings), command))
     }
 }

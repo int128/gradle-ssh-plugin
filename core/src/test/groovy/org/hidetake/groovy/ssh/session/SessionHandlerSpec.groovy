@@ -45,7 +45,7 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', null)
+        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l')
     }
 
     def "execute a command with callback"() {
@@ -58,7 +58,10 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l', closure)
+        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(dryRun: true), 'ls -l')
+
+        then:
+        1 * closure.call(_)
     }
 
     def "execute a command with options"() {
@@ -68,7 +71,7 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', null)
+        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l')
     }
 
     def "execute a command with options and callback"() {
@@ -81,7 +84,10 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l', closure)
+        1 * operations.execute(OperationSettings.DEFAULT + new OperationSettings(pty: true, dryRun: true), 'ls -l')
+
+        then:
+        1 * closure.call(_)
     }
 
     def "execute a command in background"() {

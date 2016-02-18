@@ -52,7 +52,7 @@ class SessionExtensionSpec extends Specification {
             performSomething('command')
         }
 
-        then: 1 * operations.execute(operationSettings, 'command something', null) >> 'result'
+        then: 1 * operations.execute(operationSettings, 'command something') >> 'result'
         then: result == 'result'
 
         where:
@@ -74,7 +74,7 @@ class SessionExtensionSpec extends Specification {
             performAnother('command')
         }
 
-        then: 1 * operations.execute(operationSettings, 'command another something', null) >> 'result'
+        then: 1 * operations.execute(operationSettings, 'command another something') >> 'result'
         then: result == 'result'
 
         where:

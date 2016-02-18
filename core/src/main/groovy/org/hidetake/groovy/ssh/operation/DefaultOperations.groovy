@@ -76,7 +76,7 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    String execute(OperationSettings settings, String command, Closure callback) {
+    String execute(OperationSettings settings, String command) {
         log.debug("Executing command on $remote: $command: $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
@@ -119,9 +119,7 @@ class DefaultOperations implements Operations {
                 }
             }
 
-            def result = lines.join(Utilities.eol())
-            callback?.call(result)
-            result
+            lines.join(Utilities.eol())
         } finally {
             channel.disconnect()
         }

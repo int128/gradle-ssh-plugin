@@ -21,7 +21,7 @@ trait Sudo implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        Internal.sudo(operations, operationSettings + new OperationSettings(), command, null)
+        Internal.sudo(operations, operationSettings + new OperationSettings(), command)
     }
 
     /**
@@ -35,7 +35,7 @@ trait Sudo implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command, null)
+        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command)
     }
 
     /**
@@ -48,7 +48,7 @@ trait Sudo implements SessionExtension {
     void executeSudo(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        Internal.sudo(operations, operationSettings + new OperationSettings(), command, callback)
+        callback.call(Internal.sudo(operations, operationSettings + new OperationSettings(), command))
     }
 
     /**
@@ -63,13 +63,13 @@ trait Sudo implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command, callback)
+        callback.call(Internal.sudo(operations, operationSettings + new OperationSettings(settings), command))
     }
 
 
     @Slf4j
     private static class Internal {
-        static sudo(Operations operations, OperationSettings settings, String command, Closure callback) {
+        static sudo(Operations operations, OperationSettings settings, String command) {
             final prompt = UUID.randomUUID().toString()
             final lines = []
             final interationSettings = new OperationSettings(interaction: {
@@ -94,11 +94,9 @@ trait Sudo implements SessionExtension {
             })
 
             final sudoCommand = "sudo -S -p '$prompt' $command"
-            operations.execute(settings + interationSettings, sudoCommand, null)
+            operations.execute(settings + interationSettings, sudoCommand)
 
-            def result = lines.join(Utilities.eol())
-            callback?.call(result)
-            result
+            lines.join(Utilities.eol())
         }
     }
 }
