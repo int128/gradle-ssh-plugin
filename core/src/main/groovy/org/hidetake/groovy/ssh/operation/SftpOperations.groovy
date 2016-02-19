@@ -103,6 +103,36 @@ class SftpOperations {
     }
 
     /**
+     * Removes one or several files.
+     *
+     * @param path
+     */
+    void rm(String path) {
+        log.debug("Removing file(s) ($path)")
+        try {
+            channel.rm(path)
+            log.info("Removed file(s) ($path)")
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to remove file(s): $path", e)
+        }
+    }
+
+    /**
+     * Removes one or several directories.
+     *
+     * @param path
+     */
+    void rmdir(String path) {
+        log.debug("Removing directory ($path)")
+        try {
+            channel.rmdir(path)
+            log.info("Removed directory ($path)")
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to remove directory: $path", e)
+        }
+    }
+
+    /**
      * Get a directory listing.
      *
      * @param path
