@@ -4,6 +4,7 @@ import org.apache.sshd.SshServer
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
+import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.test.server.FilenameUtils
 import org.hidetake.groovy.ssh.test.server.SshServerMock
@@ -56,7 +57,7 @@ class MainSpec extends Specification {
     }
 
 
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "main should read script from a file is path is given"() {
         given:
         def server = createServer()
@@ -65,7 +66,7 @@ class MainSpec extends Specification {
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         def scriptFile = temporaryFolder.newFile()
         scriptFile << script
@@ -81,7 +82,7 @@ class MainSpec extends Specification {
         server.stop()
     }
 
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "main should evaluate a script line if -e is given"() {
         given:
         def server = createServer()
@@ -90,7 +91,7 @@ class MainSpec extends Specification {
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         when:
         Main.main '-e', script
@@ -103,7 +104,7 @@ class MainSpec extends Specification {
         server.stop()
     }
 
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "main should read script from standard input if --stdin is given"() {
         given:
         def server = createServer()
@@ -112,7 +113,7 @@ class MainSpec extends Specification {
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         def stdin = System.in
         System.in = new ByteArrayInputStream(script.bytes)

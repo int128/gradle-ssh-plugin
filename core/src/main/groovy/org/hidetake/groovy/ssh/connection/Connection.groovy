@@ -32,14 +32,10 @@ class Connection {
     /**
      * Create an execution channel.
      *
-     * @param command
-     * @param operationSettings
      * @return a channel
      */
-    ChannelExec createExecutionChannel(String command, OperationSettings operationSettings) {
+    ChannelExec createExecutionChannel() {
         def channel = session.openChannel('exec') as ChannelExec
-        channel.command = command
-        channel.pty = operationSettings.pty
         channels.add(channel)
         channel
     }
@@ -50,7 +46,7 @@ class Connection {
      * @param operationSettings
      * @return a channel
      */
-    ChannelShell createShellChannel(OperationSettings operationSettings) {
+    ChannelShell createShellChannel() {
         def channel = session.openChannel('shell') as ChannelShell
         channels.add(channel)
         channel

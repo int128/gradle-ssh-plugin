@@ -7,7 +7,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.test.server.SshServerMock.CommandContext
 import org.slf4j.Logger
@@ -229,12 +229,12 @@ class SudoSpec extends Specification {
     }
 
     @Unroll
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "executeSudo should write output to logger: #description"() {
         given:
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         when:
         ssh.run {

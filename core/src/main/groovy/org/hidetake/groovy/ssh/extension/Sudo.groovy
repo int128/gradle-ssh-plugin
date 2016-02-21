@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.operation.Operations
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
@@ -69,7 +70,7 @@ trait Sudo implements SessionExtension {
 
     @Slf4j
     private static class Internal {
-        static sudo(Operations operations, OperationSettings settings, String command) {
+        static sudo(Operations operations, OperationSettings settings, String commandLine) {
             final prompt = UUID.randomUUID().toString()
             final lines = []
             final interationSettings = new OperationSettings(interaction: {
@@ -93,9 +94,11 @@ trait Sudo implements SessionExtension {
                 }
             })
 
-            final sudoCommand = "sudo -S -p '$prompt' $command"
-            operations.execute(settings + interationSettings, sudoCommand)
-
+            final sudoCommandLine = "sudo -S -p '$prompt' $commandLine"
+            final exitStatus = operations.command(settings + interationSettings, sudoCommandLine).startSync()
+            if (exitStatus != 0 && !settings.ignoreError) {
+                throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
+            }
             lines.join(Utilities.eol())
         }
     }

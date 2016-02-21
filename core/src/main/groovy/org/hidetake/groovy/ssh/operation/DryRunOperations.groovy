@@ -21,20 +21,15 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    void shell(OperationSettings settings) {
+    Operation shell(OperationSettings settings) {
         log.info("Executing shell on $remote")
+        new DryRunOperation()
     }
 
     @Override
-    String execute(OperationSettings settings, String command) {
-        log.info("Executing command on $remote: $command")
-        ''
-    }
-
-    @Override
-    void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.info("Executing command on $remote: $command")
-        callback?.call('')
+    Operation command(OperationSettings settings, String commandLine) {
+        log.info("Executing command on $remote: $commandLine")
+        new DryRunOperation()
     }
 
     @Override
