@@ -88,12 +88,12 @@ task('should execute commands concurrently') << {
     ssh.run {
         // task should start sessions concurrently
         session(remotes.localhost) {
-            executeBackground "sleep 2 && echo 2 >> $remoteWorkDir/result"
+            executeBackground "sleep 3 && echo C >> $remoteWorkDir/result"
         }
         session(remotes.localhost) {
-            executeBackground "sleep 3 && echo 3 >> $remoteWorkDir/result"
-            executeBackground "sleep 1 && echo 1 >> $remoteWorkDir/result"
-            executeBackground "echo 0 >> $remoteWorkDir/result"
+            executeBackground "sleep 5 && echo D >> $remoteWorkDir/result"
+            executeBackground "sleep 1 && echo B >> $remoteWorkDir/result"
+            executeBackground "sleep 0 && echo A >> $remoteWorkDir/result"
         }
     }
     // all commands should be completed at this point
@@ -102,7 +102,7 @@ task('should execute commands concurrently') << {
             get from: "$remoteWorkDir/result"
         }
     }
-    assert result.readLines() == ['0', '1', '2', '3']
+    assert result.readLines() == ['A', 'B', 'C', 'D']
 }
 
 task('should throw an exception due to the error exit status') << {
