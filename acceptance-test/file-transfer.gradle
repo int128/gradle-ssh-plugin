@@ -101,7 +101,7 @@ task('should get the directory recursively') << {
     assert file("$localWorkDir/${file(remoteWorkDir).name}/X/Y/Z/zfile").text as int == z
 }
 
-task('should get the large file and put it back', dependsOn: sideEffect) << {
+task('should get the large file and put it back') << {
     def fileSize = 1024 * 256
     localWorkDir.mkdir()
 

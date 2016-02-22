@@ -1,20 +1,20 @@
 
 remotes {
     gw1 {
-        host = 'localhost'
-        user = System.getProperty('user.name')
+        host = System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
+        user = System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
         identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
     gw2 {
-        host = 'localhost'
-        user = System.getProperty('user.name')
+        host = System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
+        user = System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
         identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
         gateway = remotes.gw1
         knownHosts = allowAnyHosts
     }
     viaGateway {
-        host = 'localhost'
-        user = System.getProperty('user.name')
+        host = System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
+        user = System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
         identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
         gateway = remotes.gw2
         knownHosts = allowAnyHosts

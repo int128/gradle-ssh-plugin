@@ -28,11 +28,6 @@ remotes {
 }
 
 
-afterEvaluate {
-    ext.specs = tasks.matching { it.name.startsWith 'should ' }
-    ext.specs.ext.findBy = { tag -> specs.findAll { it.dependsOn.contains tag } }
-}
-
 // add utility methods for specs
 ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
 
@@ -64,8 +59,12 @@ task cleanupRemoteWorkDir << {
     }
 }
 
+task test {
+    description = 'Test all specs'
+}
+
 afterEvaluate {
-    specs.each { spec ->
+    tasks.matching { it.name.startsWith 'should ' }.each { spec ->
         spec.dependsOn tasks.setupLocalWorkDir
         spec.dependsOn tasks.setupRemoteWorkDir
         spec.finalizedBy tasks.cleanupLocalWorkDir
@@ -73,25 +72,6 @@ afterEvaluate {
         spec.ext.localWorkDir  = file("$buildDir/${spec.hashCode()}")
         spec.ext.remoteWorkDir = "$remoteWorkDirBase/${spec.hashCode()}"
     }
-}
-
-// categorize specs
-final tags = [
-    project.task('sideEffect', description: 'specs which may cause side effect'),
-    project.task('sshAgent',   description: 'specs which require the SSH agent'),
-]
-
-task test {
-    description = "Test all specs except ${tags*.name}"
-}
-
-afterEvaluate {
-    tags.each { tag -> project.task "testWith${tag.name.capitalize()}",
-        description: "Test $tag.description",
-        dependsOn: specs.findBy(tag)
-    }
-
-    test.dependsOn specs - tags.collect { specs.findBy it }.flatten()
 }
 
 // apply specs in this directory
