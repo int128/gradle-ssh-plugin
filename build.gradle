@@ -97,12 +97,6 @@ bintray {
     }
 }
 
-tasks.bintrayUpload.doFirst {
-    assert !project.version.contains('SNAPSHOT')
-}
-
-task install(dependsOn: 'publishMavenPublicationToMavenLocal')
-
 def getProjectProperty(String key, String defaultValue = null) {
     project.hasProperty(key) ? project.property(key) : defaultValue
 }
