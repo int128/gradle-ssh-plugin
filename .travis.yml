@@ -35,9 +35,9 @@ install:
 - echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_rsa
 - chmod -v 600 $HOME/.ssh/id_rsa
 - cp -av $HOME/.ssh/id_rsa{,_passphrase}
-- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id; fi
-- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"; fi
-- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-keygen -p -N pass1234 -f "$HOME/.ssh/id_rsa_passphrase"; fi
+- test "$INTEGRATION_TEST_SSH_HOST" && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
+- test "$INTEGRATION_TEST_SSH_HOST" && ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
+- test "$INTEGRATION_TEST_SSH_HOST" && ssh-keygen -p -N pass1234 -f "$HOME/.ssh/id_rsa_passphrase"
 
 - unset INTEGRATION_TEST_SSH_KEY
 
@@ -45,8 +45,8 @@ install:
 script:
 - ./gradlew check asciidoctor
 - eval $(ssh-agent)
-- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ssh-add $HOME/.ssh/id_rsa; fi
-- if [ "$INTEGRATION_TEST_SSH_HOST" ]; then ./gradlew :os-integration-test-with-agent:check; fi
+- test "$INTEGRATION_TEST_SSH_HOST" && ssh-add $HOME/.ssh/id_rsa
+- test "$INTEGRATION_TEST_SSH_HOST" && ./gradlew :os-integration-test-with-agent:check
 - ssh-agent -k
 
 after_success: ./gradle/release-docs.sh
