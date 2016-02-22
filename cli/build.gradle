@@ -1,6 +1,6 @@
 plugins {
     id 'groovy'
-    id 'com.github.johnrengelman.shadow' version '1.2.0'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
