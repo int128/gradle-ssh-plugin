@@ -64,7 +64,7 @@ task test {
 }
 
 afterEvaluate {
-    tasks.matching { it.name.startsWith 'should ' }.each { spec ->
+    test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
         spec.dependsOn tasks.setupLocalWorkDir
         spec.dependsOn tasks.setupRemoteWorkDir
         spec.finalizedBy tasks.cleanupLocalWorkDir
