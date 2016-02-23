@@ -271,6 +271,7 @@ Following methods are available in a session closure.
 * `shell` - Execute a shell.
 * `put` - Put a file or directory into the remote host.
 * `get` - Get a file or directory from the remote host.
+* `remove` - Remove a file or directory on the remote host.
 
 
 === Execute a command
@@ -460,6 +461,23 @@ put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 ```
 
 The method throws an exception if an error occurred while the file transfer.
+
+
+=== Remove a file or directory
+
+Call the `remove` method to remove a file or directory on the remote host.
+It accepts 2 or more paths.
+
+```groovy
+// specify a file
+remove '/remote/file'
+
+// specify a directory to remove recursively
+remove '/remote/directory'
+
+// specify more paths
+remove '/remote/file', '/remote/directory'
+```
 
 
 === Enable the port forwarding

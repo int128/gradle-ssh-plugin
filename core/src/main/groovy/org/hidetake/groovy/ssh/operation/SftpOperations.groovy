@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.SftpATTRS
 import com.jcraft.jsch.SftpException as JschSftpException
 import groovy.util.logging.Slf4j
 
@@ -144,6 +145,21 @@ class SftpOperations {
             channel.ls(path).toList()
         } catch (JschSftpException e) {
             throw new SftpException("Failed to fetch the directory list of $path", e)
+        }
+    }
+
+    /**
+     * Get a directory entry.
+     *
+     * @param path
+     * @return directory entry
+     */
+    SftpATTRS stat(String path) {
+        log.debug("Requesting the directory entry of ($path)")
+        try {
+            channel.stat(path)
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to fetch the directory entry of $path", e)
         }
     }
 

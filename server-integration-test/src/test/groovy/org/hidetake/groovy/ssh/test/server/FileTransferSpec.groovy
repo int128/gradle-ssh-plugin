@@ -14,7 +14,9 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.Use
 
-import static FilenameUtils.toUnixSeparator
+import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
+import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixSeparator
+import static org.hidetake.groovy.ssh.test.server.Helper.uuidgen
 
 @Use(FileDivCategory)
 class FileTransferSpec extends Specification {
@@ -294,8 +296,8 @@ class FileTransferSpec extends Specification {
     def "put() should put a whole directory if both are directories"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = mkdir(source1Dir / uuidgen())
-        def source3Dir = mkdir(source2Dir / uuidgen())
+        def source2Dir = source1Dir / uuidgen() / DIRECTORY
+        def source3Dir = source2Dir / uuidgen() / DIRECTORY
 
         def source1File = source1Dir / uuidgen() << uuidgen()
         def source2File = source2Dir / uuidgen() << uuidgen()
@@ -318,16 +320,16 @@ class FileTransferSpec extends Specification {
     def "put() should merge and overwrite a directory to a directory if it is not empty"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = mkdir(source1Dir / uuidgen())
-        def source3Dir = mkdir(source2Dir / uuidgen())
+        def source2Dir = source1Dir / uuidgen() / DIRECTORY
+        def source3Dir = source2Dir / uuidgen() / DIRECTORY
 
         def source1File = source1Dir / uuidgen() << uuidgen()
         def source2File = source2Dir / uuidgen() << uuidgen()
 
         def destination0Dir = temporaryFolder.newFolder()
-        def destination1Dir = mkdir(destination0Dir / source1Dir.name)
-        def destination2Dir = mkdir(destination1Dir / source2Dir.name)
-        def destination3Dir = mkdir(destination2Dir / source3Dir.name)
+        def destination1Dir = destination0Dir / source1Dir.name / DIRECTORY
+        def destination2Dir = destination1Dir / source2Dir.name / DIRECTORY
+        def destination3Dir = destination2Dir / source3Dir.name / DIRECTORY
 
         def destination1File = destination1Dir / source1File.name << uuidgen()
         def destination2File = destination2Dir / source2File.name << uuidgen()
@@ -619,8 +621,8 @@ class FileTransferSpec extends Specification {
     def "get() should get a whole directory if source is a directory"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = mkdir(source1Dir / uuidgen())
-        def source3Dir = mkdir(source2Dir / uuidgen())
+        def source2Dir = source1Dir / uuidgen() / DIRECTORY
+        def source3Dir = source2Dir / uuidgen() / DIRECTORY
 
         def source1File = source1Dir / uuidgen() << uuidgen()
         def source2File = source2Dir / uuidgen() << uuidgen()
@@ -643,16 +645,16 @@ class FileTransferSpec extends Specification {
     def "get() should merge and overwrite a directory to a directory if it is not empty"() {
         given:
         def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = mkdir(source1Dir / uuidgen())
-        def source3Dir = mkdir(source2Dir / uuidgen())
+        def source2Dir = source1Dir / uuidgen() / DIRECTORY
+        def source3Dir = source2Dir / uuidgen() / DIRECTORY
 
         def source1File = source1Dir / uuidgen() << uuidgen()
         def source2File = source2Dir / uuidgen() << uuidgen()
 
         def destination0Dir = temporaryFolder.newFolder()
-        def destination1Dir = mkdir(destination0Dir / source1Dir.name)
-        def destination2Dir = mkdir(destination1Dir / source2Dir.name)
-        def destination3Dir = mkdir(destination2Dir / source3Dir.name)
+        def destination1Dir = destination0Dir / source1Dir.name / DIRECTORY
+        def destination2Dir = destination1Dir / source2Dir.name / DIRECTORY
+        def destination3Dir = destination2Dir / source3Dir.name / DIRECTORY
 
         def destination1File = destination1Dir / source1File.name << uuidgen()
         def destination2File = destination2Dir / source2File.name << uuidgen()
@@ -772,16 +774,6 @@ class FileTransferSpec extends Specification {
         then:
         JSchException e = thrown()
         e.message == 'failed to send channel request'
-    }
-
-
-    static mkdir(File dir) {
-        assert dir.mkdir()
-        dir
-    }
-
-    static uuidgen() {
-        UUID.randomUUID().toString()
     }
 
 }
