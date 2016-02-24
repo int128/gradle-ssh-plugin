@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.SftpATTRS
 import com.jcraft.jsch.SftpException as JschSftpException
 import groovy.util.logging.Slf4j
 
@@ -103,6 +104,36 @@ class SftpOperations {
     }
 
     /**
+     * Removes one or several files.
+     *
+     * @param path
+     */
+    void rm(String path) {
+        log.debug("Removing file(s) ($path)")
+        try {
+            channel.rm(path)
+            log.info("Removed file(s) ($path)")
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to remove file(s): $path", e)
+        }
+    }
+
+    /**
+     * Removes one or several directories.
+     *
+     * @param path
+     */
+    void rmdir(String path) {
+        log.debug("Removing directory ($path)")
+        try {
+            channel.rmdir(path)
+            log.info("Removed directory ($path)")
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to remove directory: $path", e)
+        }
+    }
+
+    /**
      * Get a directory listing.
      *
      * @param path
@@ -114,6 +145,21 @@ class SftpOperations {
             channel.ls(path).toList()
         } catch (JschSftpException e) {
             throw new SftpException("Failed to fetch the directory list of $path", e)
+        }
+    }
+
+    /**
+     * Get a directory entry.
+     *
+     * @param path
+     * @return directory entry
+     */
+    SftpATTRS stat(String path) {
+        log.debug("Requesting the directory entry of ($path)")
+        try {
+            channel.stat(path)
+        } catch (JschSftpException e) {
+            throw new SftpException("Failed to fetch the directory entry of $path", e)
         }
     }
 
