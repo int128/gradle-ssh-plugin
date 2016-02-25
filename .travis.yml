@@ -43,16 +43,13 @@ install:
 
 
 script:
-- ./gradlew check asciidoctor publishMavenPublicationToMavenLocal
-
-- hub clone int128/gradle-ssh-plugin
-- (cd gradle-ssh-plugin && ./gradlew -Pgroovy-ssh-version=${TRAVIS_TAG:-SNAPSHOT} check publishMavenPublicationToMavenLocal)
-- test "$INTEGRATION_TEST_SSH_HOST" && (cd gradle-ssh-plugin && ./gradle/acceptance-test.sh)
+- ./gradlew check asciidoctor publishMavenPublicationToMavenLocal shadowJar
+- java -jar cli/build/libs/gssh.jar gradle-plugin-integration-test.groovy
 
 
 after_success: ./gradle/release-docs.sh
 after_script:  ./gradle/release-reports.sh
-before_deploy: ./gradlew shadowJar bintrayUpload
+before_deploy: ./gradlew bintrayUpload
 
 deploy:
   provider: releases
