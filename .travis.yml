@@ -45,11 +45,6 @@ install:
 script:
 - ./gradlew check asciidoctor publishMavenPublicationToMavenLocal
 
-- eval $(ssh-agent)
-- test "$INTEGRATION_TEST_SSH_HOST" && ssh-add $HOME/.ssh/id_rsa
-- test "$INTEGRATION_TEST_SSH_HOST" && ./gradlew :os-integration-test-with-agent:check
-- ssh-agent -k
-
 - hub clone int128/gradle-ssh-plugin
 - (cd gradle-ssh-plugin && ./gradlew -Pgroovy-ssh-version=${TRAVIS_TAG:-SNAPSHOT} check publishMavenPublicationToMavenLocal)
 - test "$INTEGRATION_TEST_SSH_HOST" && (cd gradle-ssh-plugin && ./gradle/acceptance-test.sh)
