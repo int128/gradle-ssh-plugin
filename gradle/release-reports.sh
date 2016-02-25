@@ -1,9 +1,9 @@
 #!/bin/bash -xe
 
-hub clone gradle-ssh-plugin/reports _
+git clone https://github.com/gradle-ssh-plugin/reports _
 cd _
 
-hub rm -fr *
+git rm -fr *
 for component in cli core os-integration-test server-integration-test
 do
     if [ -d ../$component/build/reports/tests ]
@@ -12,9 +12,9 @@ do
     fi
 done
 
-hub add .
-hub commit -m "Build reports from $TRAVIS_BRANCH of $TRAVIS_REPO_SLUG"
-hub push origin gh-pages
+git add .
+git commit -m "Build reports from $TRAVIS_BRANCH of $TRAVIS_REPO_SLUG"
+git push origin gh-pages
 
 cd ..
 rm -fr _

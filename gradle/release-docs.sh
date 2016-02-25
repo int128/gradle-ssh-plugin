@@ -2,15 +2,15 @@
 
 test "$TRAVIS_BRANCH" = "master"
 
-hub clone gradle-ssh-plugin/docs _
+git clone https://github.com/gradle-ssh-plugin/docs _
 cd _
 
-hub rm -fr *
+git rm -fr *
 cp -av ../docs/build/asciidoc/html5/* .
 
-hub add .
-hub commit -m "Documents from $TRAVIS_BRANCH of $TRAVIS_REPO_SLUG"
-hub push origin gh-pages
+git add .
+git commit -m "Documents from $TRAVIS_BRANCH of $TRAVIS_REPO_SLUG"
+git push origin gh-pages
 
 cd ..
 rm -fr _

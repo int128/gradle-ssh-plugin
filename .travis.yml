@@ -2,27 +2,15 @@ sudo: false
 language: java
 jdk: oraclejdk7
 
-env:
-  global:
-  - HUB=2.2.0
-
 install:
-- curl -LO "https://github.com/github/hub/releases/download/v$HUB/hub-linux-amd64-$HUB.tar.gz"
-- tar -C "$HOME" -zxf "hub-linux-amd64-$HUB.tar.gz"
-- export PATH="$PATH:$HOME/hub-linux-amd64-$HUB"
-
 - mkdir -p "$HOME/.config"
 - echo "https://${GH_TOKEN}:@github.com" > "$HOME/.config/git-credential"
-- echo "github.com:" > "$HOME/.config/hub"
-- echo "-" "oauth_token:" "$GH_TOKEN" >> "$HOME/.config/hub"
 
-- hub config --global user.name  "${GH_USER}"
-- hub config --global user.email "${GH_USER}@users.noreply.github.com"
-- hub config --global hub.protocol "https"
-- hub config --global hub.user "$GH_USER"
-- hub config --global credential.helper "store --file=$HOME/.config/git-credential"
-- hub config --global core.autocrlf "input"
-- hub config --global push.default "current"
+- git config --global user.name  "${GH_USER}"
+- git config --global user.email "${GH_USER}@users.noreply.github.com"
+- git config --global credential.helper "store --file=$HOME/.config/git-credential"
+- git config --global core.autocrlf "input"
+- git config --global push.default "current"
 
 - unset GH_USER
 - unset GH_USER_EMAIL
