@@ -35,7 +35,18 @@ script:
 - java -jar cli/build/libs/gssh.jar gradle-plugin-integration-test.groovy
 
 
-after_success: ./gradle/release-docs.sh
+after_success:
+- test "$TRAVIS_BRANCH" = "master"
+  && cd docs/build/asciidoc/html5
+  && git init
+  && git add .
+  && git commit -m "Release from $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH"
+  && git remote add origin https://github.com/gradle-ssh-plugin/docs
+  && git branch -m gh-pages
+  && git push -f origin gh-pages
+  && cd ..
+
+
 after_script:  ./gradle/release-reports.sh
 before_deploy: ./gradlew bintrayUpload
 
