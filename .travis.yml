@@ -38,7 +38,14 @@ install:
 
 script:
 - ./gradlew check asciidoctor publishMavenPublicationToMavenLocal shadowJar
-- java -jar cli/build/libs/gssh.jar gradle-plugin-integration-test.groovy
+
+- git clone --depth 1 https://github.com/int128/gradle-ssh-plugin
+  && cd gradle-ssh-plugin
+  && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
+  && git diff
+  && ./gradlew check publishMavenPublicationToMavenLocal
+  && cd ..
+  && java -jar cli/build/libs/gssh.jar gradle-plugin-integration-test.groovy
 
 
 after_success:

@@ -40,11 +40,7 @@ try {
             execute 'ssh-keygen -H -F localhost'
 
             put from: "${System.getProperty('user.home')}/.m2", into: '.'
-            execute 'git clone --depth 1 https://github.com/int128/gradle-ssh-plugin.git'
-            execute 'cd gradle-ssh-plugin && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:' + (System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT') + ',g" build.gradle'
-            execute 'cd gradle-ssh-plugin && git diff'
-
-            execute "cd gradle-ssh-plugin && ./gradlew check publishMavenPublicationToMavenLocal"
+            execute 'git clone --depth 1 https://github.com/int128/gradle-ssh-plugin'
             execute 'cd gradle-ssh-plugin && TERM=dumb ./gradle/acceptance-test.sh', pty: true
             execute 'cd gradle-ssh-plugin && TERM=dumb ./gradle/acceptance-test.sh 1.12', pty: true
         }
