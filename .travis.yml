@@ -47,7 +47,19 @@ after_success:
   && cd ..
 
 
-after_script:  ./gradle/release-reports.sh
+after_script:
+- mkdir -vp build/reports
+  && for d in */build/reports/tests; do cp -av "$d" "build/reports/${d%%/*}"; done
+  && cd build/reports
+  && git init
+  && git add .
+  && git commit -m "Release from $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH"
+  && git remote add origin https://github.com/gradle-ssh-plugin/reports
+  && git branch -m gh-pages
+  && git push -f origin gh-pages
+  && cd ..
+
+
 before_deploy: ./gradlew bintrayUpload
 
 deploy:
