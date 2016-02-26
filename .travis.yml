@@ -2,6 +2,11 @@ sudo: false
 language: java
 jdk: oraclejdk7
 
+cache:
+  directories:
+  - $HOME/.gradle/wrapper
+  - $HOME/.gradle/caches/modules-2
+
 install:
 - mkdir -p "$HOME/.config"
 - echo "https://${GH_TOKEN}:@github.com" > "$HOME/.config/git-credential"
