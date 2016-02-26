@@ -18,16 +18,22 @@ install:
 - unset GH_TOKEN
 
 - mkdir -m 700 -p -v $HOME/.ssh
-- echo '-----BEGIN RSA PRIVATE KEY-----'        >> $HOME/.ssh/id_rsa
-- echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> $HOME/.ssh/id_rsa
-- echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_rsa
-- chmod -v 600 $HOME/.ssh/id_rsa
-- cp -av $HOME/.ssh/id_rsa{,_passphrase}
-- test "$INTEGRATION_TEST_SSH_HOST" && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
-- test "$INTEGRATION_TEST_SSH_HOST" && ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
-- test "$INTEGRATION_TEST_SSH_HOST" && ssh-keygen -p -N pass1234 -f "$HOME/.ssh/id_rsa_passphrase"
+  && ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa
+  && cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
+  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
+  && ssh-keygen -H -F localhost
 
-- unset INTEGRATION_TEST_SSH_KEY
+- cp -av $HOME/.ssh/id_rsa{,_passphrase}
+  && ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
+
+- test "$INTEGRATION_TEST_SSH_HOST"
+  && echo '-----BEGIN RSA PRIVATE KEY-----'        >> $HOME/.ssh/id_ec2
+  && echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> $HOME/.ssh/id_ec2
+  && echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_ec2
+  && chmod -v 600 $HOME/.ssh/id_ec2
+  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_ec2 "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
+  && ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
+  && unset INTEGRATION_TEST_SSH_KEY
 
 
 script:

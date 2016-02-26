@@ -8,7 +8,7 @@ ssh.remotes {
     ec2 {
         host = System.getenv('INTEGRATION_TEST_SSH_HOST')
         user = System.getenv('INTEGRATION_TEST_SSH_USER')
-        identity = new File("${System.getProperty('user.home')}/.ssh/id_rsa")
+        identity = new File("${System.getProperty('user.home')}/.ssh/id_ec2")
     }
     tester {
         host = System.getenv('INTEGRATION_TEST_SSH_HOST')

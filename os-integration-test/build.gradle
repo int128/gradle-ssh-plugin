@@ -10,4 +10,48 @@ dependencies {
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
-test.onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
+test {
+    useJUnit {
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequirePrivilege'
+    }
+}
+
+task testWithSudo(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequirePrivilege'
+    }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+}
+
+task startSshAgent(type: Exec) {
+    commandLine 'ssh-agent'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+        standardOutput.toString().eachMatch(~/(.+?)=(.+?);/) { all, k, v ->
+            assert k in ['SSH_AGENT_PID', 'SSH_AUTH_SOCK']
+            [addKeyToSshAgent, testWithAgent, stopSshAgent]*.environment(k, v)
+        }
+    }
+}
+
+task addKeyToSshAgent(type: Exec) {
+    dependsOn startSshAgent
+    commandLine 'ssh-add', "${System.getProperty('user.home')}/.ssh/id_rsa"
+}
+
+task stopSshAgent(type: Exec) {
+    dependsOn startSshAgent
+    commandLine 'ssh-agent', '-k'
+}
+
+task testWithAgent(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
+    }
+    dependsOn addKeyToSshAgent
+    finalizedBy stopSshAgent
+}
+
+check.dependsOn testWithSudo, testWithAgent
