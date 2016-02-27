@@ -23,13 +23,13 @@ install:
 - unset GH_TOKEN
 
 - mkdir -m 700 -p -v $HOME/.ssh
-  && ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa
-  && cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
-  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
-  && ssh-keygen -H -F localhost
+- ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa
+- cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
+- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
+- ssh-keygen -H -F localhost
 
 - cp -av $HOME/.ssh/id_rsa{,_passphrase}
-  && ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
+- ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
 
 - test "$INTEGRATION_TEST_SSH_HOST"
   && export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
@@ -46,49 +46,50 @@ script:
 - ./gradlew check asciidoctor publishMavenPublicationToMavenLocal shadowJar
 
 - git clone --depth 1 https://github.com/int128/gradle-ssh-plugin
-  && cd gradle-ssh-plugin
+  && pushd gradle-ssh-plugin
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
   && git diff
   && ./gradlew publishMavenPublicationToMavenLocal
   && ./gradle/acceptance-test.sh 1.12
-  && cd ..
+- popd
 
 
 after_success:
 - test "$TRAVIS_BRANCH" = "master"
-  && cd docs/build/asciidoc/html5
+  && pushd docs/build/asciidoc/html5
   && git init
   && git add .
   && git commit -m "Release from $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH"
   && git remote add origin https://github.com/gradle-ssh-plugin/docs
   && git branch -m gh-pages
   && git push -f origin gh-pages
-  && cd ..
+- popd
 
 
 after_script:
 - mkdir -vp build/reports
   && for d in */build/reports/tests; do cp -av "$d" "build/reports/${d%%/*}"; done
-  && cd build/reports
+  && pushd build/reports
   && git init
   && git add .
   && git commit -m "Release from $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH"
   && git remote add origin https://github.com/gradle-ssh-plugin/reports
   && git branch -m gh-pages
   && git push -f origin gh-pages
-  && cd ..
+- popd
 
 
 before_deploy:
 - ./gradlew bintrayUpload
+
 - git clone --depth=1 https://github.com/int128/gradle-ssh-plugin
-  && cd gradle-ssh-plugin
+  && pushd gradle-ssh-plugin
   && git checkout -b "groovy-ssh-$TRAVIS_TAG"
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:$TRAVIS_TAG,g" build.gradle
   && git add .
   && git commit -m "Groovy SSH $TRAVIS_TAG"
   && git push origin "groovy-ssh-$TRAVIS_TAG"
-  && cd ..
+- popd
 
 
 deploy:
