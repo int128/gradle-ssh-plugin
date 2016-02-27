@@ -32,12 +32,13 @@ install:
   && ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
 
 - test "$INTEGRATION_TEST_SSH_HOST"
-  && echo '-----BEGIN RSA PRIVATE KEY-----'        >> $HOME/.ssh/id_ec2
-  && echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> $HOME/.ssh/id_ec2
-  && echo '-----END RSA PRIVATE KEY-----'          >> $HOME/.ssh/id_ec2
-  && chmod -v 600 $HOME/.ssh/id_ec2
-  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_ec2 "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
-  && ssh-keygen -H -F "${INTEGRATION_TEST_SSH_HOST}"
+  && export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
+  && echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+  && echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+  && echo '-----END RSA PRIVATE KEY-----'          >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+  && chmod -v 600 "$INTEGRATION_TEST_SSH_KEY_PATH"
+  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$INTEGRATION_TEST_SSH_KEY_PATH" "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
+  && ssh-keygen -H -F "$INTEGRATION_TEST_SSH_HOST"
   && unset INTEGRATION_TEST_SSH_KEY
 
 
