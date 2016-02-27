@@ -23,3 +23,24 @@ task('should put, compute and get files') << {
     assert file("$localWorkDir/LA").text as int == (x + y)
     assert file("$localWorkDir/LB").text as int == (x - y)
 }
+
+task('should get the large file and put it back') << {
+    def fileSize = 1024 * 256
+    localWorkDir.mkdir()
+
+    ssh.run {
+        session(remotes.localhost) {
+            execute "mkdir -vp $remoteWorkDir"
+            execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
+            get from: "$remoteWorkDir/result", into: localWorkDir
+        }
+    }
+    assert file("$localWorkDir/result").size() == 1024 * fileSize
+
+    ssh.run {
+        session(remotes.localhost) {
+            put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
+            assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+        }
+    }
+}
