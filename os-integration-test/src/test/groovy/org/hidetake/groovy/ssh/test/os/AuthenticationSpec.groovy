@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
  * Check if authentication works with real OS environment.
@@ -19,10 +19,15 @@ class AuthenticationSpec extends Specification {
     def setup() {
         ssh = Ssh.newService()
         ssh.remotes {
-            localhostWithPassphrase {
+            localhostECDSA {
                 host = hostName()
                 user = userName()
-                identity = privateKeyWithPassphrase()
+                identity = privateKeyECDSA()
+            }
+            localhostRSAWithPassphrase {
+                host = hostName()
+                user = userName()
+                identity = privateKeyRSAWithPassphrase()
                 passphrase = passphraseOfPrivateKey()
             }
             localhostWithAgent {
@@ -33,14 +38,30 @@ class AuthenticationSpec extends Specification {
         }
     }
 
-    def 'should authenticate by pass-phrased private key'() {
+    def 'should authenticate by ECDSA key'() {
         given:
         def x = randomInt()
         def y = randomInt()
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.localhostWithPassphrase) {
+            session(ssh.remotes.localhostECDSA) {
+                execute "expr $x + $y"
+            }
+        } as int
+
+        then:
+        r == (x + y)
+    }
+
+    def 'should authenticate by pass-phrased RSA key'() {
+        given:
+        def x = randomInt()
+        def y = randomInt()
+
+        when:
+        def r = ssh.run {
+            session(ssh.remotes.localhostRSAWithPassphrase) {
                 execute "expr $x + $y"
             }
         } as int

@@ -6,7 +6,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
  * Check if command execution works with real OS commands.
@@ -26,7 +26,7 @@ class CommandSpec extends Specification {
             localhost {
                 host = hostName()
                 user = userName()
-                identity = privateKey()
+                identity = privateKeyRSA()
             }
         }
     }

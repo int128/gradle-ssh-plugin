@@ -6,7 +6,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 class ShellSpec extends Specification {
 
@@ -21,7 +21,7 @@ class ShellSpec extends Specification {
             localhost {
                 host = hostName()
                 user = userName()
-                identity = privateKey()
+                identity = privateKeyRSA()
             }
         }
     }
