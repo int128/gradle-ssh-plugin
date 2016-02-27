@@ -48,9 +48,9 @@ script:
   && cd gradle-ssh-plugin
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
   && git diff
-  && ./gradlew check publishMavenPublicationToMavenLocal
+  && ./gradlew publishMavenPublicationToMavenLocal
+  && ./gradle/acceptance-test.sh 1.12
   && cd ..
-  && java -jar cli/build/libs/gssh.jar gradle-plugin-integration-test.groovy
 
 
 after_success:
