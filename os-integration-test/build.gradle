@@ -23,6 +23,7 @@ task testWithSudo(type: Test) {
     }
     onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
     onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
 }
 
 task startSshAgent(type: Exec) {

@@ -29,7 +29,7 @@ class Fixture {
     }
 
     static privateKeyForPrivilegeAccess() {
-        new File(dotSsh, 'id_ec2')
+        new File(System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'))
     }
 
     static privateKeyWithPassphrase() {
