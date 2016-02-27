@@ -19,24 +19,6 @@ task('should execute the command with console logging with slf4j') << {
     } as int == (x + y)
 }
 
-task('should execute commands sequentially') << {
-    def x = randomInt()
-    def y = randomInt()
-    def a
-    def b
-    ssh.run {
-        session(remotes.localhost) {
-            execute "mkdir -vp $remoteWorkDir"
-            execute "expr $x + $y > $remoteWorkDir/A"
-            execute "expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B"
-            a = get from: "$remoteWorkDir/A"
-            b = get from: "$remoteWorkDir/B"
-        }
-    }
-    assert a as int == (x + y)
-    assert b as int == (x + x + y)
-}
-
 task('should execute commands by multi-line string') << {
     def x = randomInt()
     def y = randomInt()
@@ -57,15 +39,6 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
     assert b as int == (x + x + y)
 }
 
-task('should execute commands in each dedicated environment') << {
-    assert ssh.run {
-        session(remotes.localhost) {
-            execute "export testdata=dummy"
-            execute 'echo "testdata is $testdata"'
-        }
-    } == 'testdata is '
-}
-
 task('should execute the command with the PTY allocation') << {
     ssh.run {
         session(remotes.localhost) {
@@ -77,32 +50,6 @@ task('should execute the command with the PTY allocation') << {
             execute "env | grep SSH_TTY", pty: true
         }
     }
-}
-
-task('should execute commands concurrently') << {
-    ssh.run {
-        session(remotes.localhost) {
-            execute "mkdir -vp $remoteWorkDir"
-        }
-    }
-    ssh.run {
-        // task should start sessions concurrently
-        session(remotes.localhost) {
-            executeBackground "sleep 3 && echo C >> $remoteWorkDir/result"
-        }
-        session(remotes.localhost) {
-            executeBackground "sleep 5 && echo D >> $remoteWorkDir/result"
-            executeBackground "sleep 1 && echo B >> $remoteWorkDir/result"
-            executeBackground "sleep 0 && echo A >> $remoteWorkDir/result"
-        }
-    }
-    // all commands should be completed at this point
-    def result = ssh.run {
-        session(remotes.localhost) {
-            get from: "$remoteWorkDir/result"
-        }
-    }
-    assert result.readLines() == ['A', 'B', 'C', 'D']
 }
 
 task('should throw an exception due to the error exit status') << {
