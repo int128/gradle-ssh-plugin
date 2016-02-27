@@ -44,6 +44,10 @@ class Fixture {
         'pass1234'
     }
 
+    static knownHostsECDSA() {
+        new File(dotSsh, 'known_hosts_ecdsa')
+    }
+
     static remoteTmpPath() {
         "/tmp/groovy-ssh.os-integration-test.${UUID.randomUUID()}"
     }

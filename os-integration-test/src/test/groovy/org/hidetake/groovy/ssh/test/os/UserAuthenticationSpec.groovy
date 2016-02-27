@@ -8,11 +8,11 @@ import spock.lang.Specification
 import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
- * Check if authentication works with real OS environment.
+ * Check if user authentication works with real OS environment.
  *
  * @author Hidetake Iwata
  */
-class AuthenticationSpec extends Specification {
+class UserAuthenticationSpec extends Specification {
 
     Service ssh
 

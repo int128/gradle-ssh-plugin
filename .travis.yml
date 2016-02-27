@@ -26,8 +26,10 @@ install:
 - ssh-keygen -t rsa   -N '' -f $HOME/.ssh/id_rsa
 - ssh-keygen -t ecdsa -N '' -f $HOME/.ssh/id_ecdsa
 - cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
-- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
-- ssh-keygen -H -F localhost
+- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa localhost id
+- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
+- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts_ecdsa -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ecdsa-sha2-nistp256 localhost id
+- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts_ecdsa -i $HOME/.ssh/id_rsa localhost id
 
 - cp -av $HOME/.ssh/id_rsa{,_passphrase}
 - ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
