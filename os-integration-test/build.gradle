@@ -55,4 +55,13 @@ task testWithAgent(type: Test) {
     finalizedBy stopSshAgent
 }
 
-check.dependsOn testWithSudo, testWithAgent
+tasks.withType(Test) {
+    reports.html.enabled = false
+}
+
+task testReport(type: TestReport) {
+    destinationDir = testReportDir
+    reportOn tasks.withType(Test)
+}
+
+check.dependsOn testReport
