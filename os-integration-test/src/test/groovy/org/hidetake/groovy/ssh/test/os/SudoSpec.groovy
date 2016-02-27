@@ -2,10 +2,11 @@ package org.hidetake.groovy.ssh.test.os
 
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
  * Check if {@link org.hidetake.groovy.ssh.extension.Sudo} works with Linux system.
@@ -13,6 +14,7 @@ import static Fixture.*
  *
  * @author Hidetake Iwata
  */
+@Category(RequirePrivilege)
 class SudoSpec extends Specification {
 
     Service ssh
@@ -21,9 +23,9 @@ class SudoSpec extends Specification {
         ssh = Ssh.newService()
         ssh.remotes {
             localhost {
-                host = hostName()
-                user = userName()
-                identity = privateKey()
+                host = hostNameForPrivilegeAccess()
+                user = userNameForPrivilegeAccess()
+                identity = privateKeyForPrivilegeAccess()
             }
         }
     }
@@ -36,7 +38,7 @@ class SudoSpec extends Specification {
         createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
         ssh.remotes {
             sudoHost {
-                host = hostName()
+                host = hostNameForPrivilegeAccess()
                 user = sudoUser
                 password = sudoPassword
             }
@@ -67,7 +69,7 @@ class SudoSpec extends Specification {
         createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
         ssh.remotes {
             sudoHost {
-                host = hostName()
+                host = hostNameForPrivilegeAccess()
                 user = sudoUser
                 password = sudoPassword
             }

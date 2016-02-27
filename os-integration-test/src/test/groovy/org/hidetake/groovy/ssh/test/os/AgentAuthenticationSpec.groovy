@@ -1,7 +1,8 @@
-package org.hidetake.groovy.ssh.test.os.agent
+package org.hidetake.groovy.ssh.test.os
 
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.test.os.Fixture.*
@@ -11,7 +12,8 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.*
  *
  * @author Hidetake Iwata
  */
-class AuthenticationSpec extends Specification {
+@Category(RequireAgent)
+class AgentAuthenticationSpec extends Specification {
 
     Service ssh
 

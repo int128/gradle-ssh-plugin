@@ -2,26 +2,38 @@ package org.hidetake.groovy.ssh.test.os
 
 class Fixture {
 
+    static dotSsh = new File("${System.getProperty('user.home')}/.ssh")
+
     static randomInt(int max = 10000) {
         (Math.random() * max) as int
     }
 
     static hostName() {
-        System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
+        'localhost'
     }
 
     static userName() {
-        System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
+        System.getProperty('user.name')
     }
 
     static privateKey() {
-        final dotSsh = new File("${System.getProperty('user.home')}/.ssh")
-        new File(dotSsh, System.getenv('INTEGRATION_TEST_SSH_KEY_NAME') ?: 'id_rsa')
+        new File(dotSsh, 'id_rsa')
+    }
+
+    static hostNameForPrivilegeAccess() {
+        System.getenv('INTEGRATION_TEST_SSH_HOST')
+    }
+
+    static userNameForPrivilegeAccess() {
+        System.getenv('INTEGRATION_TEST_SSH_USER')
+    }
+
+    static privateKeyForPrivilegeAccess() {
+        new File(dotSsh, 'id_ec2')
     }
 
     static privateKeyWithPassphrase() {
-        final dotSsh = new File("${System.getProperty('user.home')}/.ssh")
-        new File(dotSsh, System.getenv('INTEGRATION_TEST_SSH_PASSPHRASE_KEY_NAME') ?: 'id_rsa_passphrase')
+        new File(dotSsh, 'id_rsa_passphrase')
     }
 
     static passphraseOfPrivateKey() {
