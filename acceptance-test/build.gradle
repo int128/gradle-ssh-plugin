@@ -21,8 +21,8 @@ apply plugin: 'org.hidetake.ssh'
 remotes {
     localhost {
         role 'testServers'
-        host = System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
-        user = System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
+        host = 'localhost'
+        user = System.getProperty('user.name')
         identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
