@@ -55,13 +55,14 @@ task testWithAgent(type: Test) {
     finalizedBy stopSshAgent
 }
 
-tasks.withType(Test) {
-    reports.html.enabled = false
-}
-
 task testReport(type: TestReport) {
     destinationDir = testReportDir
-    reportOn tasks.withType(Test)
+    reportOn tasks.withType(Test)*.binResultsDir
 }
 
-check.dependsOn testReport
+tasks.withType(Test) {
+    reports.html.enabled = false
+    finalizedBy testReport
+}
+
+check.dependsOn tasks.withType(Test)
