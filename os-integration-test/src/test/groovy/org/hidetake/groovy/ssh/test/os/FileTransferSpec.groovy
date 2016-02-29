@@ -7,7 +7,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
  * Check if file transfer works with SFTP subsystem of OpenSSH.
@@ -27,7 +27,7 @@ class FileTransferSpec extends Specification {
             localhost {
                 host = hostName()
                 user = userName()
-                identity = privateKey()
+                identity = privateKeyRSA()
             }
         }
     }

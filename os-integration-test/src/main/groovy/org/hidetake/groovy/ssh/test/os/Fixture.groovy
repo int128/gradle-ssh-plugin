@@ -16,8 +16,16 @@ class Fixture {
         System.getProperty('user.name')
     }
 
-    static privateKey() {
+    static privateKeyRSA() {
         new File(dotSsh, 'id_rsa')
+    }
+
+    static privateKeyRSAWithPassphrase() {
+        new File(dotSsh, 'id_rsa_passphrase')
+    }
+
+    static privateKeyECDSA() {
+        new File(dotSsh, 'id_ecdsa')
     }
 
     static hostNameForPrivilegeAccess() {
@@ -30,10 +38,6 @@ class Fixture {
 
     static privateKeyForPrivilegeAccess() {
         new File(System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'))
-    }
-
-    static privateKeyWithPassphrase() {
-        new File(dotSsh, 'id_rsa_passphrase')
     }
 
     static passphraseOfPrivateKey() {
