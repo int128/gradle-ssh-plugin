@@ -1,21 +1,20 @@
 package org.hidetake.groovy.ssh.connection
 
-import com.jcraft.jsch.JSch
+import com.jcraft.jsch.*
 import com.jcraft.jsch.Proxy as JschProxy
-import com.jcraft.jsch.ProxyHTTP
-import com.jcraft.jsch.ProxySOCKS4
-import com.jcraft.jsch.ProxySOCKS5
-import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.ConnectorFactory
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 
-import static org.hidetake.groovy.ssh.util.Utility.retry
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+
 import static org.hidetake.groovy.ssh.core.ProxyType.SOCKS
+import static org.hidetake.groovy.ssh.util.Utility.retry
 
 /**
  * A manager of {@link Connection}s.
@@ -107,6 +106,13 @@ class ConnectionManager {
                 log.warn('Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
             } else {
                 jsch.setKnownHosts(settings.knownHosts.path)
+
+                def keyTypes = findKeyTypes(session.hostKeyRepository, host, port).join(',')
+                if (keyTypes) {
+                    session.setConfig('server_host_key', keyTypes)
+                    log.debug("Using server host key: $keyTypes")
+                }
+
                 session.setConfig('StrictHostKeyChecking', 'yes')
                 log.debug("Using known-hosts file: ${settings.knownHosts.path}")
             }
@@ -208,4 +214,30 @@ class ConnectionManager {
 			validator.warnings().each { warning -> log.info(warning) }
 		}
 	}	
+
+    private static List<String> findKeyTypes(HostKeyRepository repository, String host, int port) {
+        repository.hostKey.findAll { knownHostsItem ->
+            knownHostsItem.host == host ||
+            knownHostsItem.host == "[$host]:$port" as String ||
+            compareHashedKnownHostsItem(knownHostsItem.host, host) ||
+            compareHashedKnownHostsItem(knownHostsItem.host, "[$host]:$port")
+        }.collect { knownHostsItem ->
+            knownHostsItem.type
+        }.unique()
+    }
+
+    private static boolean compareHashedKnownHostsItem(String knownHostsItem, String host) {
+        def matched = false
+        knownHostsItem.eachMatch(~/^\|1\|(.+?)\|(.+?)$/) { all, String salt, String hash ->
+            matched = hmacSha1(salt.decodeBase64(), host.bytes) == hash.decodeBase64()
+        }
+        matched
+    }
+
+    private static hmacSha1(byte[] salt, byte[] data) {
+        def key = new SecretKeySpec(salt, 'HmacSHA1')
+        def mac = Mac.getInstance(key.algorithm)
+        mac.init(key)
+        mac.doFinal(data)
+    }
 }
