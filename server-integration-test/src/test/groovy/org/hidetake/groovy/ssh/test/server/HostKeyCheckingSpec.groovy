@@ -3,7 +3,6 @@ package org.hidetake.groovy.ssh.test.server
 import com.jcraft.jsch.JSchException
 import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
-import org.apache.sshd.common.KeyPairProvider
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
@@ -17,7 +16,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 import static SshServerMock.commandWithExit
-import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.*
+import static org.apache.sshd.common.KeyPairProvider.*
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
 
 @Slf4j
 class HostKeyCheckingSpec extends Specification {
@@ -94,13 +95,14 @@ class HostKeyCheckingSpec extends Specification {
     }
 
     @Unroll
-    def "strict host key checking should pass with a valid known-hosts of #keyType host key"() {
+    def "strict host key checking should pass with known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
-        server.keyPairProvider = keyPairProvider(keyType)
-        assert server.keyPairProvider.keyTypes == keyTypeSshd
+        server.keyPairProvider = keyPairProvider(serverKeyType)
 
-        def hostKey = publicKey(keyType)
-        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${hostKey}"
+        def knownHostsFile = temporaryFolder.newFile()
+        publicKeys(knownHostsType).each { publicKey ->
+            knownHostsFile << "[$server.host]:$server.port ${publicKey}"
+        }
         ssh.settings {
             knownHosts = knownHostsFile
         }
@@ -113,27 +115,36 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        keyType       | keyTypeSshd
-        KeyType.dsa   | KeyPairProvider.SSH_DSS
-        KeyType.rsa   | KeyPairProvider.SSH_RSA
-        KeyType.ecdsa | KeyPairProvider.ECDSA_SHA2_NISTP256
+        serverKeyType         | knownHostsType
+        [SSH_DSS]             | [SSH_DSS]
+        [SSH_RSA]             | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
+
+        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
+
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
     @Unroll
-    def "strict host key checking should accept a hashed known-hosts of #keyType host key"() {
+    def "strict host key checking should pass with hashed known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
-        server.keyPairProvider = keyPairProvider(keyType)
-        assert server.keyPairProvider.keyTypes == keyTypeSshd
+        server.keyPairProvider = keyPairProvider(serverKeyType)
 
-        def hostname = "[localhost]:${server.port}"
-        def salt = randomBytes(20)
-        def hash = hmacSha1(salt, hostname.getBytes())
-
-        def hostKey = publicKey(keyType)
-        def knownHostsItem = "|1|${salt.encodeBase64()}|${hash.encodeBase64()} ${hostKey}"
-        def knownHostsFile = temporaryFolder.newFile() << knownHostsItem
-        log.debug(knownHostsItem)
-
+        def knownHostsFile = temporaryFolder.newFile()
+        publicKeys(knownHostsType).each { publicKey ->
+            knownHostsFile << "${hashHost(server.host, server.port)} ${publicKey}"
+        }
         ssh.settings {
             knownHosts = knownHostsFile
         }
@@ -146,10 +157,25 @@ class HostKeyCheckingSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        keyType       | keyTypeSshd
-        KeyType.dsa   | KeyPairProvider.SSH_DSS
-        KeyType.rsa   | KeyPairProvider.SSH_RSA
-        KeyType.ecdsa | KeyPairProvider.ECDSA_SHA2_NISTP256
+        serverKeyType         | knownHostsType
+        [SSH_DSS]             | [SSH_DSS]
+        [SSH_RSA]             | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
+
+        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
+
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
+
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
     def "strict host key checking should fail if an empty known-hosts is given"() {
@@ -170,6 +196,13 @@ class HostKeyCheckingSpec extends Specification {
         then:
         JSchException e = thrown()
         e.message.contains 'reject HostKey'
+    }
+
+    private static hashHost(String host, int port) {
+        def hostname = "[$host]:$port"
+        def salt = randomBytes(20)
+        def hash = hmacSha1(salt, hostname.getBytes())
+        "|1|${salt.encodeBase64()}|${hash.encodeBase64()}"
     }
 
     private static randomBytes(int size) {
