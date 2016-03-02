@@ -13,7 +13,7 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.*
  * @author Hidetake Iwata
  */
 @Category(RequireAgent)
-class AgentAuthenticationSpec extends Specification {
+class UserAuthenticationWithAgentSpec extends Specification {
 
     Service ssh
 
