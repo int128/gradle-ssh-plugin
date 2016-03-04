@@ -112,8 +112,8 @@ class ShellSpec extends Specification {
         1 * server.shellFactory.create() >> commandWithExit(0, outputValue)
 
         then:
-        logMessages.each {
-            1 * logger.info("testServer|$it")
+        logMessages.each { logMessage ->
+            1 * logger.info({ it =~ /testServer#\d+?\|$logMessage/ })
         }
 
         where:
@@ -146,8 +146,8 @@ class ShellSpec extends Specification {
         1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
 
         then:
-        stdout * System.out.println('testServer|some message')
-        slf4j * logger.info('testServer|some message')
+        stdout * System.out.println({ it =~ /testServer#\d+?\|some message/ })
+        slf4j * logger.info({ it =~ /testServer#\d+?\|some message/ })
 
         cleanup:
         System.out = out

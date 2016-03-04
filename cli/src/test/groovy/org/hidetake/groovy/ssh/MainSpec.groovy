@@ -15,8 +15,8 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static SshServerMock.commandWithExit
 import static FilenameUtils.toUnixSeparator
+import static SshServerMock.commandWithExit
 
 class MainSpec extends Specification {
 
@@ -74,8 +74,8 @@ class MainSpec extends Specification {
         Main.main scriptFile.path
 
         then:
-        1 * logger.info ('localhost|some message')
-        1 * logger.error('localhost|error')
+        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
+        1 * logger.error({ it =~ /localhost#\d+?\|error/})
 
         cleanup:
         server.stop()
@@ -96,8 +96,8 @@ class MainSpec extends Specification {
         Main.main '-e', script
 
         then:
-        1 * logger.info ('localhost|some message')
-        1 * logger.error('localhost|error')
+        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
+        1 * logger.error({ it =~ /localhost#\d+?\|error/})
 
         cleanup:
         server.stop()
@@ -121,8 +121,8 @@ class MainSpec extends Specification {
         Main.main '--stdin'
 
         then:
-        1 * logger.info ('localhost|some message')
-        1 * logger.error('localhost|error')
+        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
+        1 * logger.error({ it =~ /localhost#\d+?\|error/})
 
         cleanup:
         System.in = stdin

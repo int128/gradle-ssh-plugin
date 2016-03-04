@@ -38,14 +38,14 @@ class DefaultOperations implements Operations {
 
     @Override
     void shell(OperationSettings settings) {
-        log.debug("Executing a shell with $settings")
+        log.debug("Executing shell on $remote: $settings")
 
         def channel = connection.createShellChannel(settings)
         def standardInput = channel.outputStream
         def standardOutput = new LineOutputStream(settings.encoding)
         channel.outputStream = standardOutput
 
-        enableLogging(settings.logging, standardOutput)
+        enableLogging(settings.logging, channel.id, standardOutput)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -56,15 +56,19 @@ class DefaultOperations implements Operations {
 
         channel.connect()
         try {
-            log.info("Started the shell #${channel.id}")
+            log.info("Started shell $remote.name#$channel.id")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Finished the shell #${channel.id} with exit status $exitStatus")
-            if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Shell #${channel.id} returned exit status $exitStatus", exitStatus)
+            if (exitStatus == 0) {
+                log.info("Success shell $remote.name#$channel.id")
+            } else {
+                log.error("Failed shell $remote.name#$channel.id with status $exitStatus")
+                if (!settings.ignoreError) {
+                    throw new BadExitStatusException("Shell $remote.name#$channel.id returned status $exitStatus", exitStatus)
+                }
             }
         } finally {
             channel.disconnect()
@@ -73,7 +77,7 @@ class DefaultOperations implements Operations {
 
     @Override
     String execute(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing the command ($command) with $settings")
+        log.debug("Executing command on $remote: $command: $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -82,7 +86,7 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        enableLogging(settings.logging, standardOutput, standardError)
+        enableLogging(settings.logging, channel.id, standardOutput, standardError)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -99,15 +103,20 @@ class DefaultOperations implements Operations {
 
         channel.connect()
         try {
-            log.info("Started the command #${channel.id} ($command)")
+            log.info("Started command $remote.name#$channel.id: $command")
             while (!channel.closed) {
                 sleep(100)
             }
 
             int exitStatus = channel.exitStatus
-            log.info("Finished the command #${channel.id} with exit status $exitStatus")
-            if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
+            if (exitStatus == 0) {
+                log.info("Success command $remote.name#$channel.id: $command")
+            } else {
+                log.error("Failed command $remote.name#$channel.id with status $exitStatus: $command")
+                if (!settings.ignoreError) {
+                    throw new BadExitStatusException(
+                            "Command $remote.name#$channel.id returned exit status $exitStatus: $command", exitStatus)
+                }
             }
 
             def result = lines.join(Utilities.eol())
@@ -120,7 +129,7 @@ class DefaultOperations implements Operations {
 
     @Override
     void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing the command ($command) in background with $settings")
+        log.debug("Executing command on $remote: $command: $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
         def standardInput = channel.outputStream
@@ -129,7 +138,7 @@ class DefaultOperations implements Operations {
         channel.outputStream = standardOutput
         channel.errStream = standardError
 
-        enableLogging(settings.logging, standardOutput, standardError)
+        enableLogging(settings.logging, channel.id, standardOutput, standardError)
 
         if (settings.outputStream) {
             standardOutput.pipe(settings.outputStream)
@@ -145,13 +154,18 @@ class DefaultOperations implements Operations {
         standardOutput.listenLine { String line -> lines << line }
 
         channel.connect()
-        log.info("Started the command #${channel.id} in background ($command)")
+        log.info("Started command $remote.name#$channel.id: $command")
 
         connection.whenClosed(channel) {
             int exitStatus = channel.exitStatus
-            log.info("Finished the command #${channel.id} with exit status $exitStatus")
-            if (exitStatus != 0 && !settings.ignoreError) {
-                throw new BadExitStatusException("Command #${channel.id} returned exit status $exitStatus", exitStatus)
+            if (exitStatus == 0) {
+                log.info("Success command $remote.name#$channel.id: $command")
+            } else {
+                log.error("Failed command $remote.name#$channel.id with status $exitStatus: $command")
+                if (!settings.ignoreError) {
+                    throw new BadExitStatusException(
+                            "Command $remote.name#$channel.id returned exit status $exitStatus: $command", exitStatus)
+                }
             }
 
             def result = lines.join(Utilities.eol())
@@ -161,48 +175,53 @@ class DefaultOperations implements Operations {
 
     @Override
     int forwardLocalPort(LocalPortForwardSettings settings) {
-        log.debug("Requesting port forwarding from " +
-                  "local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})")
+        log.debug("Requesting port forwarding " +
+                  "from $settings.bind:$settings.port " +
+                  "to $remote.name [$settings.host:$settings.hostPort]")
         int port = connection.forwardLocalPort(settings)
-        log.info("Enabled port forwarding from " +
-                 "local (${settings.bind}:${port}) to remote (${settings.host}:${settings.hostPort})")
+        log.info("Enabled port forwarding " +
+                 "from $settings.bind:$settings.port " +
+                 "to $remote.name [$settings.host:$settings.hostPort]")
         port
     }
 
     @Override
     void forwardRemotePort(RemotePortForwardSettings settings) {
-        log.debug("Requesting port forwarding from " +
-                  "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+        log.debug("Requesting port forwarding " +
+                  "from $remote.name [$settings.bind:$settings.port] " +
+                  "to $settings.host:$settings.hostPort")
         connection.forwardRemotePort(settings)
         log.info("Enabled port forwarding from " +
-                 "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+                 "from $remote.name [$settings.bind:$settings.port] " +
+                 "to $settings.host:$settings.hostPort")
     }
 
     @Override
     def sftp(Closure closure) {
-        log.debug("Requesting SFTP subsystem")
+        log.debug("Requesting SFTP subsystem on $remote")
         def channel = connection.createSftpChannel()
         channel.connect()
         try {
-            log.debug("Started SFTP #${channel.id}")
+            log.debug("Started SFTP $remote.name#$channel.id")
             callWithDelegate(closure, new SftpOperations(channel))
-            log.debug("Finished SFTP #${channel.id}")
+            log.debug("Finished SFTP $remote.name#$channel.id")
         } finally {
             channel.disconnect()
         }
     }
 
     private void enableLogging(LoggingMethod loggingMethod,
+                               int channelId,
                                LineOutputStream standardOutput,
                                LineOutputStream standardError = null) {
         switch (loggingMethod) {
             case LoggingMethod.slf4j:
-                standardOutput.listenLogging { String m -> log.info("${remote.name}|$m") }
-                standardError?.listenLogging { String m -> log.error("${remote.name}|$m") }
+                standardOutput.listenLogging { String m -> log.info("$remote.name#$channelId|$m") }
+                standardError?.listenLogging { String m -> log.error("$remote.name#$channelId|$m") }
                 break
             case LoggingMethod.stdout:
-                standardOutput.listenLogging { String m -> System.out.println("${remote.name}|$m") }
-                standardError?.listenLogging { String m -> System.err.println("${remote.name}|$m") }
+                standardOutput.listenLogging { String m -> System.out.println("$remote.name#$channelId|$m") }
+                standardError?.listenLogging { String m -> System.err.println("$remote.name#$channelId|$m") }
                 break
         }
     }

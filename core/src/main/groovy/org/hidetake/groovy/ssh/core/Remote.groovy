@@ -62,6 +62,6 @@ class Remote {
     }
 
     String toString() {
-        "Remote $name [$host:$port]"
+        "$name [$host:$port]"
     }
 }
