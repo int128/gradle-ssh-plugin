@@ -60,13 +60,18 @@ class ConnectionManager {
      */
     private Session establishViaGateway(Remote remote) {
         if (remote.gateway) {
-            log.debug("Establishing a connection to $remote via $remote.gateway")
+            log.debug("Connecting to $remote via $remote.gateway")
             def session = establishViaGateway(remote.gateway)
+
+            log.debug("Requesting port forwarding " +
+                      "to $remote.name [$remote.host:$remote.port]")
             def localPort = session.setPortForwardingL(0, remote.host, remote.port)
-            log.info("Enabled local port forwarding from $localPort to ${remote.host}:${remote.port}")
+            log.info("Enabled local port forwarding" +
+                     "from $LOCALHOST:$localPort " +
+                     "to $remote.name [$remote.host:$remote.port]")
             establishSession(remote, LOCALHOST, localPort)
         } else {
-            log.debug("Establishing a connection to $remote")
+            log.debug("Connecting to $remote")
             establishSession(remote, remote.host, remote.port)
         }
     }
@@ -103,25 +108,27 @@ class ConnectionManager {
 
             if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
                 session.setConfig('StrictHostKeyChecking', 'no')
-                log.warn('Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
+                log.warn("Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.")
             } else {
                 jsch.setKnownHosts(settings.knownHosts.path)
 
                 def keyTypes = findKeyTypes(session.hostKeyRepository, host, port).join(',')
                 if (keyTypes) {
                     session.setConfig('server_host_key', keyTypes)
-                    log.debug("Using server host key: $keyTypes")
+                    log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
                 }
 
                 session.setConfig('StrictHostKeyChecking', 'yes')
-                log.debug("Using known-hosts file: ${settings.knownHosts.path}")
+                log.debug("Using known-hosts file for $remote.name: $settings.knownHosts.path")
             }
 
             if (settings.password) {
                 session.password = settings.password
+                log.debug("Using password authentication for $remote.name")
             }
             if (settings.agent) {
                 jsch.identityRepository = remoteIdentityRepository
+                log.debug("Using SSH agent authentication for $remote.name")
             } else {
                 jsch.identityRepository = null    /* null means the default repository */
                 jsch.removeAllIdentity()
@@ -129,19 +136,21 @@ class ConnectionManager {
                     final identity = settings.identity
                     if (identity instanceof File) {
                         jsch.addIdentity(identity.path, settings.passphrase as String)
+                        log.debug("Using public key authentication for $remote.name: $identity.path")
                     } else if (identity instanceof String) {
                         jsch.addIdentity("identity-${identity.hashCode()}", identity.bytes, null, settings.passphrase?.bytes)
+                        log.debug("Using public key authentication for $remote.name")
                     }
                 }
             }
             if (settings.proxy) {
                 validate(settings.proxy)
                 session.setProxy(asJschProxy(settings.proxy))
+                log.debug("Using $settings.proxy.type proxy for $remote.name: $settings.proxy")
             }
 
-            log.debug("Establishing a connection to $remote")
             session.connect()
-            log.info("Established the connection to $remote")
+            log.info("Connected to $remote")
             session
         }
     }
@@ -161,8 +170,6 @@ class ConnectionManager {
     }
 
     private void waitForPending() {
-        log.debug("Waiting for pending operations")
-
         List<Exception> exceptions = []
         while (connections*.anyPending.any()) {
             connections.each { connection ->
@@ -174,6 +181,7 @@ class ConnectionManager {
             }
             sleep(100)
         }
+
         connections.each { connection ->
             try {
                 connection.executeCallbackForClosedChannels()
@@ -181,9 +189,6 @@ class ConnectionManager {
                 exceptions.addAll(e.exceptionsOfBackgroundExecution)
             }
         }
-
-        log.debug('Finished all operations including background commands')
-
         if (!exceptions.empty) {
             throw new BackgroundCommandException(exceptions)
         }

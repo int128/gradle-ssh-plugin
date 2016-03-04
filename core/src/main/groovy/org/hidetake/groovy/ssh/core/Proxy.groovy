@@ -62,6 +62,6 @@ class Proxy {
     String password
 
     String toString() {
-        "Proxy $name [$host:$port]"
+        "$name [$host:$port]"
     }
 }

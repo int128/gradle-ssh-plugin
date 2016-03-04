@@ -1,14 +1,10 @@
 package org.hidetake.groovy.ssh.connection
 
-import com.jcraft.jsch.Channel
-import com.jcraft.jsch.ChannelExec
-import com.jcraft.jsch.ChannelSftp
-import com.jcraft.jsch.ChannelShell
-import com.jcraft.jsch.Session
+import com.jcraft.jsch.*
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.BadExitStatusException
@@ -122,7 +118,7 @@ class Connection {
                 if (e instanceof BadExitStatusException) {
                     log.error("${e.class.name}: ${e.localizedMessage}")
                 } else {
-                    log.error('Error in background command execution', e)
+                    log.error("Error occurred on $remote", e)
                 }
             }
         }
