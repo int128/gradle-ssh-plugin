@@ -753,7 +753,7 @@ class FileTransferSpec extends Specification {
 
         then:
         SftpException e = thrown()
-        e.message.contains('create a directory')
+        e.message.contains('SFTP MKDIR')
     }
 
     def "sftp should fail if sftp subsystem is disabled"() {

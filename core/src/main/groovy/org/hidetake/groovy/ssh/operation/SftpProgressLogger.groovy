@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.SftpProgressMonitor
 import groovy.transform.TupleConstructor
-import groovy.util.logging.Slf4j
 
 import java.text.NumberFormat
 
@@ -11,29 +10,26 @@ import java.text.NumberFormat
  * This class shows following messages:
  * <ul>
  * <li>Start of transferring</li>
- * <li>Transferred bytes in each {@link FileTransferLogger#LOG_INTERVAL_MILLIS}</li>
+ * <li>Transferred bytes in each {@link SftpProgressLogger#LOG_INTERVAL_MILLIS}</li>
  * <li>End of transferring</li>
  *
  * @author Hidetake Iwata
  */
-@Slf4j
-class FileTransferLogger implements SftpProgressMonitor {
-    protected static final LOG_INTERVAL_MILLIS = 3000L
+class SftpProgressLogger implements SftpProgressMonitor {
+    protected static final LOG_INTERVAL_MILLIS = 2000L
 
     protected Status status
 
-    private final bytesFormat = NumberFormat.integerInstance
+    private final Closure notifier
     private final percentFormat = NumberFormat.percentInstance
-    private final timeFormat = NumberFormat.numberInstance
 
-    FileTransferLogger() {
-        timeFormat.maximumFractionDigits = 3
+    SftpProgressLogger(Closure notifier1 = { percent -> }) {
+        notifier = notifier1
     }
 
     @Override
     void init(int op, String src, String dest, long max) {
         status = new Status(max)
-        log.info("Starting transfer ${bytesFormat.format(status.maxSize)} bytes.")
     }
 
     @Override
@@ -41,17 +37,13 @@ class FileTransferLogger implements SftpProgressMonitor {
         status << count
         if (status.elapsedTimeFromCheckPoint > LOG_INTERVAL_MILLIS) {
             status.checkPoint()
-            log.info("Transferred ${percentFormat.format(status.percent)} " +
-                     "in ${timeFormat.format(status.elapsedTime / 1000.0)} secs.")
+            notifier.call(percentFormat.format(status.percent))
         }
         true
     }
 
     @Override
     void end() {
-        log.info("Finished transfer ${bytesFormat.format(status.transferredSize)} bytes " +
-                 "(${bytesFormat.format(status.kiloBytesPerSecond)} kB/s). " +
-                 "Took ${timeFormat.format(status.elapsedTime / 1000.0)} secs.")
     }
 
     /**

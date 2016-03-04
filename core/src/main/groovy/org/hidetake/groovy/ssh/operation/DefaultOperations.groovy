@@ -203,8 +203,8 @@ class DefaultOperations implements Operations {
         channel.connect()
         try {
             log.debug("Started SFTP $remote.name#$channel.id")
-            callWithDelegate(closure, new SftpOperations(channel))
-            log.debug("Finished SFTP $remote.name#$channel.id")
+            callWithDelegate(closure, new SftpOperations(remote, channel))
+            log.debug("Completed SFTP $remote.name#$channel.id")
         } finally {
             channel.disconnect()
         }
