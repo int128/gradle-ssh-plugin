@@ -89,7 +89,6 @@ class LineOutputStream extends OutputStream {
      * so it saves last block and write it in the next chance.
      */
     void flush() {
-        log.debug('Flushing the buffer')
         withTryCatch {
             def receivedBlock = new String(byteBuffer.toByteArray(), charset)
             byteBuffer.reset()
@@ -104,23 +103,17 @@ class LineOutputStream extends OutputStream {
 
                 lineBuffer = lines.last()
                 if (receivedBlock && lineBuffer) {
-                    log.debug("Trying partial match for '$lineBuffer'")
                     def partialHit = partialListeners*.call(lineBuffer)
                     if (partialHit.any()) {
-                        log.debug('Partial match hit. Line buffer cleared.')
                         loggingListeners*.call(lineBuffer)
                         lineBuffer = ''
-                    } else {
-                        log.debug("No partial match hit.")
                     }
                 }
             }
         }
-        log.debug('Flushed the buffer')
     }
 
     void close() {
-        log.debug('Closing the stream')
         withTryCatch {
             def receivedBlock = new String(byteBuffer.toByteArray(), charset)
             byteBuffer.reset()
@@ -141,7 +134,6 @@ class LineOutputStream extends OutputStream {
                 }
             }
         }
-        log.debug('Closed the stream')
     }
 
     private static withTryCatch(Closure closure) {

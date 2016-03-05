@@ -1,9 +1,9 @@
 package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
 /**
@@ -22,37 +22,39 @@ class DryRunOperations implements Operations {
 
     @Override
     void shell(OperationSettings settings) {
-        log.info("[dry-run] Executing a shell")
+        log.info("Executing shell on $remote")
     }
 
     @Override
     String execute(OperationSettings settings, String command, Closure callback) {
-        log.info("[dry-run] Executing the command ($command)")
+        log.info("Executing command on $remote: $command")
         callback?.call('')
         ''
     }
 
     @Override
     void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.info("[dry-run] Executing the command in background ($command)")
+        log.info("Executing command on $remote: $command")
         callback?.call('')
     }
 
     @Override
     int forwardLocalPort(LocalPortForwardSettings settings) {
-        log.info("[dry-run] Requesting port forwarding from " +
-                 "local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})")
+        log.info("Requesting port forwarding from " +
+                 "local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})" +
+                 "on $remote")
         0
     }
 
     @Override
     void forwardRemotePort(RemotePortForwardSettings settings) {
         log.info("Requesting port forwarding from " +
-                 "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})")
+                 "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})" +
+                 "on $remote")
     }
 
     @Override
     def sftp(Closure closure) {
-        log.info("[dry-run] Requesting SFTP subsystem")
+        log.info("Requesting SFTP subsystem on $remote")
     }
 }

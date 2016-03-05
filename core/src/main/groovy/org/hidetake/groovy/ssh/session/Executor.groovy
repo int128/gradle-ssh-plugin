@@ -31,7 +31,7 @@ class Executor {
     }
 
     private <T> List<T> dryRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
-        log.debug("Executing ${plans.size()} session(s) as dry-run")
+        log.debug("Running ${plans.size()} session(s) as dry-run")
         plans.collect { plan ->
             def operations = new DryRunOperations(plan.remote)
             callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
@@ -39,7 +39,7 @@ class Executor {
     }
 
     private <T> List<T> wetRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
-        log.debug("Executing ${plans.size()} session(s)")
+        log.debug("Running ${plans.size()} session(s)")
         def manager = new ConnectionManager(compositeSettings.connectionSettings)
         try {
             plans.collect { plan ->
@@ -48,7 +48,9 @@ class Executor {
                 callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
             }
         } finally {
+            log.debug('Waiting for pending sessions')
             manager.waitAndClose()
+            log.debug('Completed all sessions')
         }
     }
 }

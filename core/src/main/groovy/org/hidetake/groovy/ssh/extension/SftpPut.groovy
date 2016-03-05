@@ -1,9 +1,9 @@
 package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
+import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionExtension
-import org.slf4j.LoggerFactory
 
 import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
@@ -13,9 +13,8 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 trait SftpPut implements SessionExtension {
-    private static final log = LoggerFactory.getLogger(SftpPut)
-
     @ToString
     private static class PutOptions {
         def from
@@ -64,38 +63,39 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      * Put a file to the remote host.
      *
      * @param stream
-     * @param remote
+     * @param remotePath
      */
-    void put(InputStream stream, String remote) {
-        assert remote, 'remote path must be given'
+    void put(InputStream stream, String remotePath) {
+        assert remotePath, 'remote path must be given'
         assert stream, 'input stream must be given'
         sftp {
-            putContent(stream, remote)
+            putContent(stream, remotePath)
         }
+        log.info("Sent content to $remote.name: $remotePath")
     }
 
     /**
      * Put a file or directory to the remote host.
      *
-     * @param local
-     * @param remote
+     * @param localFile
+     * @param remotePath
      */
-    void put(File local, String remote) {
-        assert remote, 'remote path must be given'
-        assert local,  'local file must be given'
-        put([local], remote)
+    void put(File localFile, String remotePath) {
+        assert remotePath, 'remote path must be given'
+        assert localFile,  'local file must be given'
+        put([localFile], remotePath)
     }
 
     /**
      * Put a file or directory to the remote host.
      *
-     * @param local
-     * @param remote
+     * @param localPath
+     * @param remotePath
      */
-    void put(String local, String remote) {
-        assert remote, 'remote path must be given'
-        assert local,  'local path must be given'
-        put(new File(local), remote)
+    void put(String localPath, String remotePath) {
+        assert remotePath, 'remote path must be given'
+        assert localPath,  'local path must be given'
+        put(new File(localPath), remotePath)
     }
 
     /**
@@ -115,22 +115,23 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
             currySelf { Closure self, Iterable<File> localFiles, String remotePath ->
                 localFiles.findAll { !it.directory }.each { localFile ->
                     putFile(localFile.path, remotePath)
+                    log.info("Sent file to $remote.name: $localFile.path -> $remotePath")
                 }
                 localFiles.findAll { it.directory }.each { localDir ->
-                    log.debug("Entering directory $localDir.path")
+                    log.debug("Entering directory on $remote.name: $localDir.path")
                     def remoteDir = "$remotePath/${localDir.name}"
                     try {
                         mkdir(remoteDir)
                     } catch (SftpException e) {
                         if (e.error == SSH_FX_FAILURE) {
-                            log.info("Remote directory already exists: ${e.localizedMessage}")
+                            log.info("Remote directory already exists on $remote.name: $remoteDir")
                         } else {
                             throw new RuntimeException(e)
                         }
                     }
 
                     self.call(self, localDir.listFiles().toList(), remoteDir)
-                    log.debug("Leaving directory $localDir.path")
+                    log.debug("Leaving directory on $remote.name: $localDir.path")
                 }
             }.call(baseLocalFiles, baseRemotePath)
         }

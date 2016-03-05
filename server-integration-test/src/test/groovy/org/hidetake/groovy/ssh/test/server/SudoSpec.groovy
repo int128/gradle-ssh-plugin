@@ -238,8 +238,8 @@ class SudoSpec extends Specification {
         }
 
         then:
-        logMessages.each {
-            1 * logger.info("testServer|$it")
+        logMessages.each { logMessage ->
+            1 * logger.info({ it =~ /testServer#\d+?\|$logMessage/ })
         }
 
         where:

@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh
 
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 
 /**
@@ -9,7 +8,6 @@ import org.hidetake.groovy.ssh.core.Service
  *
  * @author Hidetake Iwata
  */
-@Slf4j
 @CompileStatic
 class Ssh {
     /**

@@ -17,22 +17,24 @@ trait SftpRemove implements SessionExtension {
             paths.each { path ->
                 if (!stat(path).dir) {
                     rm(path)
+                    log.info("Removed file on $remote.name: $path")
                 } else {
                     currySelf { Closure self, String directory ->
-                        log.debug("Entering directory: $directory")
+                        log.debug("Entering directory on $remote.name: $directory")
                         ls(directory).each { child ->
                             def fullPath = "$directory/$child.filename"
                             if (!child.attrs.dir) {
                                 rm(fullPath)
                             } else if (child.filename in ['.', '..']) {
-                                log.debug("Ignored directory entry: ${child.longname}")
+                                // ignore directory entries
                             } else {
                                 self.call(self, fullPath)
                             }
                         }
                         rmdir(directory)
-                        log.debug("Leaving directory: $directory")
+                        log.debug("Leaving directory on $remote.name: $directory")
                     }.call(path)
+                    log.info("Removed directory on $remote.name: $path")
                 }
             }
         }

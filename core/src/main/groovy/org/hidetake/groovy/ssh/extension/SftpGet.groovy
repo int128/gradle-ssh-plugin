@@ -1,11 +1,9 @@
 package org.hidetake.groovy.ssh.extension
 
-import com.jcraft.jsch.ChannelSftp.LsEntry
 import groovy.transform.ToString
+import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionExtension
-import org.hidetake.groovy.ssh.util.Utility
-import org.slf4j.LoggerFactory
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
@@ -14,9 +12,8 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 trait SftpGet implements SessionExtension {
-    private static final log = LoggerFactory.getLogger(SftpGet)
-
     @ToString
     private static class GetOptions {
         def from
@@ -59,46 +56,49 @@ get(from: String)                       // get a file and return the content'''
     /**
      * Get a file from the remote host.
      *
-     * @param remote
+     * @param remotePath
      * @param stream
      */
-    void get(String remote, OutputStream stream) {
-        assert remote, 'remote path must be given'
+    void get(String remotePath, OutputStream stream) {
+        assert remotePath, 'remote path must be given'
         assert stream,  'output stream must be given'
         sftp {
-            getContent(remote, stream)
+            getContent(remotePath, stream)
         }
+        log.info("Received content from $remote.name: $remotePath")
     }
 
     /**
      * Get a file or directory from the remote host.
      *
-     * @param remote
-     * @param local
+     * @param remotePath
+     * @param localPath
      */
-    void get(String remote, String local) {
-        assert remote, 'remote path must be given'
-        assert local,  'local path must be given'
-        get(remote, new File(local))
+    void get(String remotePath, String localPath) {
+        assert remotePath, 'remote path must be given'
+        assert localPath,  'local path must be given'
+        get(remotePath, new File(localPath))
     }
 
     /**
      * Get a file or directory from the remote host.
      *
-     * @param remote
-     * @param local
+     * @param remotePath
+     * @param localFile
      */
-    void get(String remote, File local) {
-        assert remote, 'remote path must be given'
-        assert local,  'local file must be given'
+    void get(String remotePath, File localFile) {
+        assert remotePath, 'remote path must be given'
+        assert localFile,  'local file must be given'
         try {
             sftp {
-                getFile(remote, local.path)
+                getFile(remotePath, localFile.path)
             }
+            log.info("Received file from $remote.name: $remotePath -> $localFile.path")
         } catch (SftpException e) {
             if (e.cause.message.startsWith('not supported to get directory')) {
-                log.debug(e.localizedMessage)
-                getRecursive(remote, local)
+                log.debug("Found directory on $remote.name: $remotePath")
+                getRecursive(remotePath, localFile)
+                log.info("Received directory $remote.name: $remotePath -> $localFile.path")
             } else {
                 throw new RuntimeException(e)
             }
@@ -112,20 +112,20 @@ get(from: String)                       // get a file and return the content'''
                 def localChildDir = new File(localDir, remoteDirName)
                 localChildDir.mkdirs()
 
-                log.debug("Entering directory $remoteDir")
+                log.debug("Entering directory on $remote.name: $remoteDir")
                 cd(remoteDir)
 
                 ls('.').each { child ->
                     if (!child.attrs.dir) {
                         getFile(child.filename, localChildDir.path)
                     } else if (child.filename in ['.', '..']) {
-                        log.debug("Ignored directory entry: ${child.longname}")
+                        // ignore directory entries
                     } else {
                         self.call(self, child.filename, localChildDir)
                     }
                 }
 
-                log.debug("Leaving directory $remoteDir")
+                log.debug("Leaving directory on $remote.name: $remoteDir")
                 cd('..')
             }.call(baseRemoteDir, baseLocalDir)
         }
