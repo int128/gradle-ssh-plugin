@@ -74,15 +74,16 @@ trait Sudo implements SessionExtension {
             final lines = []
             final interationSettings = new OperationSettings(interaction: {
                 when(partial: prompt, from: standardOutput) {
-                    log.info('Providing the password for sudo authentication')
+                    log.info("Providing password for sudo prompt on $operations.remote.name")
                     standardInput << operations.remote.password << '\n'
 
                     when(nextLine: _, from: standardOutput) {
                         when(nextLine: 'Sorry, try again.') {
+                            log.error("Failed sudo authentication on $operations.remote.name")
                             throw new RuntimeException('sudo authentication failed')
                         }
                         when(line: _, from: standardOutput) {
-                            log.info('sudo authentication passed')
+                            log.info("Success sudo authentication on $operations.remote.name")
                             lines << it
                         }
                     }

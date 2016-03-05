@@ -27,16 +27,16 @@ class JSchLogger implements Logger {
     void log(int logLevel, String message) {
         switch (logLevel) {
             case INFO:
-                log.debug("JSch: $message")
+                log.debug("[jsch] $message")
                 break
             case WARN:
-                log.info("JSch: $message")
+                log.info("[jsch] $message")
                 break
             case ERROR:
-                log.warn("JSch: $message")
+                log.warn("[jsch] $message")
                 break
             case FATAL:
-                log.error("JSch: $message")
+                log.error("[jsch] $message")
                 break
         }
     }
