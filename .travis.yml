@@ -76,7 +76,7 @@ after_script:
   && git init
   && git add .
   && git commit -m "Release from $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH"
-  && git remote add origin https://github.com/gradle-ssh-plugin/reports
+  && git remote add origin https://github.com/groovy-ssh/reports
   && git branch -m gh-pages
   && git push -f origin gh-pages
 - popd
