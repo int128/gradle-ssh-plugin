@@ -85,8 +85,7 @@ after_script:
 before_deploy:
 - ./gradlew bintrayUpload
 
-- git clone --depth=1 https://github.com/int128/gradle-ssh-plugin
-  && pushd gradle-ssh-plugin
+- pushd gradle-ssh-plugin
   && git checkout -b "groovy-ssh-$TRAVIS_TAG"
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:$TRAVIS_TAG,g" build.gradle
   && git add .
