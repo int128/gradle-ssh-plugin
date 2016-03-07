@@ -48,6 +48,8 @@ install:
 script:
 - ./gradlew check asciidoctor publishMavenPublicationToMavenLocal shadowJar
 
+- java -jar cli/build/libs/gssh.jar cli/gssh-example.groovy
+
 - git clone --depth 1 https://github.com/int128/gradle-ssh-plugin
   && pushd gradle-ssh-plugin
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
