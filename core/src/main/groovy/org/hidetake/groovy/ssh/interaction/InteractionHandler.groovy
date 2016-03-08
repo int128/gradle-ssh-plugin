@@ -36,6 +36,6 @@ class InteractionHandler {
     void when(Map condition, Closure action) {
         assert condition, 'at least one rule must be given'
         assert action, 'closure must be given'
-        rules << new Rule(condition, Matcher.generate(condition), action)
+        rules.add(new Rule(condition, action))
     }
 }

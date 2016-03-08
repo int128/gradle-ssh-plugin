@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
@@ -27,8 +26,8 @@ trait Sudo implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        def executor = new SudoExecutor(operations, mergedSettings, new SudoCommandSettings())
-        executor.execute(command)
+        def helper = new Helper(operations, mergedSettings, new SudoCommandSettings())
+        helper.execute(command)
     }
 
     /**
@@ -42,8 +41,8 @@ trait Sudo implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        def executor = new SudoExecutor(operations, mergedSettings, new SudoCommandSettings(settings))
-        executor.execute(command)
+        def helper = new Helper(operations, mergedSettings, new SudoCommandSettings(settings))
+        helper.execute(command)
     }
 
     /**
@@ -85,13 +84,12 @@ trait Sudo implements SessionExtension {
     }
 
     @Slf4j
-    @TupleConstructor
-    private static class SudoExecutor {
+    private static class Helper {
         final Operations operations
         final CommandSettings commandSettings
         final SudoSettings sudoSettings
 
-        def SudoExecutor(Operations operations1, CompositeSettings mergedSettings, SudoCommandSettings perMethodSettings) {
+        def Helper(Operations operations1, CompositeSettings mergedSettings, SudoCommandSettings perMethodSettings) {
             operations = operations1
             commandSettings = new CommandSettings.With(mergedSettings, perMethodSettings)
             sudoSettings = new SudoSettings.With(
@@ -104,10 +102,14 @@ trait Sudo implements SessionExtension {
         String execute(String commandLine) {
             final prompt = UUID.randomUUID().toString()
             final lines = []
-            final interactionSettings = new CommandSettings.With(interaction: {
+            final sudoCommandLine = "$sudoSettings.sudoPath -S -p '$prompt' $commandLine"
+
+            final command = operations.command(commandSettings, sudoCommandLine)
+            command.addInteraction {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Providing password for sudo prompt on $operations.remote.name")
                     standardInput << sudoSettings.sudoPassword << '\n'
+                    standardInput.flush()
 
                     when(nextLine: _, from: standardOutput) {
                         when(nextLine: 'Sorry, try again.') {
@@ -123,10 +125,9 @@ trait Sudo implements SessionExtension {
                 when(line: _, from: standardOutput) {
                     lines << it
                 }
-            })
+            }
 
-            final sudoCommandLine = "$sudoSettings.sudoPath -S -p '$prompt' $commandLine"
-            final exitStatus = operations.command(new CommandSettings.With(commandSettings, interactionSettings), sudoCommandLine).startSync()
+            final exitStatus = command.startSync()
             if (exitStatus != 0 && !commandSettings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
             }
