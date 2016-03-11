@@ -23,4 +23,17 @@ class RemoteContainerExtension {
             remotes.findAll { it.roles.contains(role) }
         }.flatten().toSet()
     }
+
+    /**
+     * Find remote hosts associated with all given roles.
+     *
+     * @param remotes mixin object
+     * @param roles one or more roles
+     * @return remote hosts associated with all given roles
+     */
+    static Collection<Remote> allRoles(Collection<Remote> remotes, String... roles) {
+        assert remotes != null
+        assert roles, 'At least one role must be given'
+        remotes.findAll { it.roles.containsAll(roles) }.flatten().toSet()
+    }
 }
