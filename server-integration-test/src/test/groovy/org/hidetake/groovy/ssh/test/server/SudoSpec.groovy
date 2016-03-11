@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
+import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
@@ -14,6 +15,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
+@Slf4j
 class SudoSpec extends Specification {
 
     private static final NL = Utilities.eol()
@@ -58,6 +60,7 @@ class SudoSpec extends Specification {
 
     static commandWithSudoPrompt(String actualCommand,
                                  String expectedCommand,
+                                 String expectedPassword,
                                  int status,
                                  String outputMessage = null,
                                  String errorMessage = null) {
@@ -65,14 +68,22 @@ class SudoSpec extends Specification {
             def parsed = parseSudoCommand(actualCommand)
             assert parsed.command == expectedCommand
 
-            c.outputStream.withWriter('UTF-8') {
-                it << parsed.prompt
-                it.flush()
-                it << '\n'
-                if (outputMessage) { it << outputMessage }
+            log.debug("[sudo] Sending prompt: $parsed.prompt")
+            c.outputStream << parsed.prompt
+            c.outputStream.flush()
+
+            log.debug("[sudo] Waiting for password: $parsed.prompt")
+            def actualPassword = c.inputStream.withReader { it.readLine() }
+            assert actualPassword == expectedPassword
+
+            c.outputStream << '\n'
+            if (outputMessage) {
+                log.debug("[sudo] Sending to standard output: $outputMessage")
+                c.outputStream << outputMessage
             }
             if (errorMessage) {
-                c.errorStream.withWriter('UTF-8') { it << errorMessage }
+                log.debug("[sudo] Sending to standard error: $errorMessage")
+                c.errorStream << errorMessage
             }
             c.exitCallback.onExit(status)
         }
@@ -89,9 +100,9 @@ class SudoSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand1', 0) }
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand2', 0) }
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand3', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand1', 'somepassword', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand2', 'somepassword', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand3', 'somepassword', 0) }
     }
 
     def "it should throw an exception if sudo returns failure"() {
@@ -104,7 +115,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 0, 'Sorry, try again.\n')
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'Sorry, try again.\n')
         }
 
         then:
@@ -122,7 +133,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 1)
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 1)
         }
 
         then:
@@ -140,7 +151,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 1, 'something output')
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 1, 'something output')
         }
 
         then:
@@ -158,7 +169,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 0, outputValue)
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, outputValue)
         }
 
         then:
@@ -188,7 +199,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 0, 'something output')
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'something output')
         }
 
         then:
@@ -210,7 +221,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 0, 'something output')
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'something output')
         }
 
         then:
@@ -234,7 +245,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 0, outputValue)
+            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, outputValue)
         }
 
         then:
