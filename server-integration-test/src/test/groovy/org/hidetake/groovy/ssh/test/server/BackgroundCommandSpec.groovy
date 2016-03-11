@@ -129,10 +129,10 @@ class BackgroundCommandSpec extends Specification {
         BackgroundCommandException e = thrown()
         e.exceptionsOfBackgroundExecution.collect { exceptionOfBackgroundExecution ->
             (exceptionOfBackgroundExecution as BadExitStatusException).exitStatus
-        } == exitStatusList
+        }.toSet() == exitStatuses.toSet()
 
         where:
-        exitA | exitB | exitC || exitStatusList
+        exitA | exitB | exitC || exitStatuses
         1     | 0     | 0     || [1]
         0     | 2     | 0     || [2]
         0     | 0     | 3     || [3]
