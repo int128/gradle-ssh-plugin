@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
+import groovy.util.logging.Slf4j
 import org.apache.sshd.SshServer
 import org.apache.sshd.server.Command
 import org.apache.sshd.server.Environment
@@ -10,6 +11,7 @@ import org.apache.sshd.server.ExitCallback
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class SshServerMock {
 
     static class CommandContext {
@@ -36,7 +38,17 @@ class SshServerMock {
         },
         start: { Environment env ->
             context.environment = env
-            interaction.call(context)
+            Thread.start {
+                def threadName = Thread.currentThread().name
+                log.debug("Started interaction thread $threadName")
+                try {
+                    interaction.call(context)
+                } catch (Throwable t) {
+                    log.error("Error occurred on interaction thread $threadName", t)
+                    context.exitCallback.onExit(-1, t.message)
+                }
+                log.debug("Terminated interaction thread $threadName")
+            }
         },
         destroy: { ->
         }] as Command
