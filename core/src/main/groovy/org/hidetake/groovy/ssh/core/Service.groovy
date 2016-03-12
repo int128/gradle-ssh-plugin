@@ -21,12 +21,12 @@ class Service {
     /**
      * Container of remote hosts.
      */
-    final remotes = [:] as RemoteContainer
+    final remotes = new RemoteContainer()
 
     /**
      * Container of proxy hosts.
      */
-    final proxies = [:] as ProxyContainer
+    final proxies = new ProxyContainer()
 
     /**
      * Global settings.

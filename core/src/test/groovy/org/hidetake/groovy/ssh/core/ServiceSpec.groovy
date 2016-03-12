@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.session.Plan
 import org.hidetake.groovy.ssh.session.Executor
+import org.hidetake.groovy.ssh.session.Plan
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -47,23 +47,15 @@ class ServiceSpec extends Specification {
         ssh.settings.logging == LoggingMethod.stdout
     }
 
-    @Unroll
     def "filter remotes by role: #roles"() {
         given:
         configureFixture()
 
         when:
-        def actualRemoteNames = remoteNameSet(ssh.remotes.role(roles))
+        def actualRemotes = ssh.remotes.role('serversA')
 
         then:
-        actualRemoteNames.toSet() == expectedRemoteNames.toSet()
-
-        where:
-        roles                                | expectedRemoteNames
-        'noSuchRole'                         | []
-        'serversA'                           | ['webServer', 'managementServer']
-        'serversB'                           | ['appServer', 'managementServer']
-        ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
+        actualRemotes*.name.toSet() == ['webServer', 'managementServer'].toSet()
     }
 
     @Unroll
@@ -153,10 +145,6 @@ class ServiceSpec extends Specification {
                 proxy = ssh.proxies.http
             }
         }
-    }
-
-    private static remoteNameSet(Collection<Remote> remotes) {
-        remotes.collect { it.name }.toSet()
     }
 
 }

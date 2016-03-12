@@ -18,4 +18,18 @@ trait Container<T> implements Map<String, T> {
         assert item.name instanceof String
         put(item.name as String, item) ? false : true
     }
+
+    /**
+     * Add items.
+     * Each item must have <code>name</code> property.
+     * If this map already contains an item with same name, it will be overwritten.
+     *
+     * @param items
+     */
+    void addAll(Collection<T> items) {
+        putAll(items.collectEntries { item ->
+            assert item.name instanceof String
+            [(item.name): item]
+        })
+    }
 }

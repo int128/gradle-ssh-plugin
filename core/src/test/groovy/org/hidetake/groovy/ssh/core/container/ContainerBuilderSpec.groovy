@@ -11,7 +11,7 @@ class ContainerBuilderSpec extends Specification {
     ContainerBuilder builder
 
     def setup() {
-        remotes = [:] as RemoteContainer
+        remotes = new RemoteContainer()
         builder = new ContainerBuilder(Remote, remotes)
     }
 
