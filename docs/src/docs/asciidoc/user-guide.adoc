@@ -3,9 +3,6 @@
 == Manage remote hosts
 
 The plugin adds a container of remote hosts to the project.
-The remote hosts container is
-an http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html[NamedDomainObjectContainer]
-and has role support methods extended by the plugin.
 
 
 === Add a remote host
@@ -17,6 +14,32 @@ remotes {
   web01 {
     host = '192.168.1.101'
     user = 'jenkins'
+  }
+}
+```
+
+It can be added dynamically by using `remotes.create(name)`.
+
+```groovy
+task setupRemote << {
+  ssh.run {
+    session(remotes.web01) {
+      def targetHost = execute 'cat settings/hostname'
+      def targetUser = execute 'cat settings/username'
+      // Define a remote host dynamically
+      remotes.create('dynamic1') {
+        host = targetHost
+        user = targetUser
+      }
+    }
+  }
+}
+
+task something(dependsOn: setupRemote) << {
+  ssh.run {
+    session(remotes.dynamic1) {
+      //execute ...
+    }
   }
 }
 ```
@@ -231,34 +254,24 @@ session(remotes.role('webServer', 'appServer')) {
 }
 ```
 
+=== Remote host container
 
-=== Manipulate on execution phase
+Implementation of the remote hosts container is different between Gradle SSH Plugin and Groovy SSH.
 
-A remote host can be defined on execution phase by `remotes.create(name)`.
+Gradle SSH plugin::
+The remote hosts container is a http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html[NamedDomainObjectContainer] provided by Gradle API.
+It also has the role filter method.
 
-```groovy
-task setupRemote << {
-  ssh.run {
-    session(remotes.web01) {
-      def targetHost = execute 'cat settings/hostname'
-      def targetUser = execute 'cat settings/username'
-      // Define a remote host dynamically
-      remotes.create('dynamic1') {
-        host = targetHost
-        user = targetUser
-      }
-    }
-  }
-}
+Groovy SSH::
+The remote hosts container is a `Map<String, Remote>`.
+It also has some of `Collection` methods and the role filter method.
 
-task something(dependsOn: setupRemote) << {
-  ssh.run {
-    session(remotes.dynamic1) {
-      //execute ...
-    }
-  }
-}
-```
+The remote hosts container supports following methods and almost code should work on both Gradle SSH Plugin and Groovy SSH.
+
+* `add(Remote)`
+* `addAll(Collection<Remote>)`
+* `create(String, Closure)`
+* `role(String...)`
 
 
 == Perform operations

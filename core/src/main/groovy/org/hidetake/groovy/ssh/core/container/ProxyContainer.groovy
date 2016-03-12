@@ -10,4 +10,5 @@ import java.util.concurrent.ConcurrentSkipListMap
  * @author Hidetake Iwata
  */
 class ProxyContainer extends ConcurrentSkipListMap<String, Proxy> implements Container<Proxy> {
+    final Class containerElementType = Proxy
 }

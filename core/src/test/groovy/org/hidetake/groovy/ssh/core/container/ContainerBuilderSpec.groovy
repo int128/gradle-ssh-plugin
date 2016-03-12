@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.core.container
 
-import org.hidetake.groovy.ssh.core.Remote
 import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
@@ -12,7 +11,7 @@ class ContainerBuilderSpec extends Specification {
 
     def setup() {
         remotes = new RemoteContainer()
-        builder = new ContainerBuilder(Remote, remotes)
+        builder = new ContainerBuilder(remotes)
     }
 
     def "empty closure should do nothing"() {

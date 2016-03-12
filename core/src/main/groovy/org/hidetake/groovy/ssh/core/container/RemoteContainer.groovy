@@ -10,4 +10,5 @@ import java.util.concurrent.ConcurrentSkipListMap
  * @author Hidetake Iwata
  */
 class RemoteContainer extends ConcurrentSkipListMap<String, Remote> implements Container<Remote>, RoleAccessible {
+    final Class containerElementType = Remote
 }

@@ -33,6 +33,18 @@ class RemoteContainerSpec extends Specification {
         remotes.keySet() == ['remote1', 'remote2'].toSet()
     }
 
+    def "create() should create and add an item"() {
+        when:
+        remotes.create('remote1') {
+            host = 'host1'
+        }
+
+        then:
+        remotes.size() == 1
+        remotes.firstKey() == 'remote1'
+        remotes.firstEntry().value.host == 'host1'
+    }
+
     def "role() should return empty collection if empty one is given"() {
         when:
         def associated = remotes.role('something')
