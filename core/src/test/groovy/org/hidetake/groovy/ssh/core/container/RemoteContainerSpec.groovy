@@ -104,6 +104,55 @@ class RemoteContainerSpec extends Specification {
         e.message.contains('role')
     }
 
+    @Unroll
+    def "allRoles() should filter remotes by #roles"() {
+        given:
+        remotes.add(createRemote('remote1', 'roleA'))
+        remotes.add(createRemote('remote2', 'roleA', 'roleB'))
+        remotes.add(createRemote('remote3', 'roleB'))
+        remotes.add(createRemote('remote4', 'roleC', 'roleD'))
+        remotes.add(createRemote('remote5', 'roleA', 'roleB', 'roleC'))
+        remotes.add(createRemote('remote6'))
+
+        when:
+        def actualRemoteNames = remotes.allRoles(*roles)*.name
+
+        then:
+        actualRemoteNames.toSet() == expectedRemoteNames.toSet()
+
+        where:
+        roles                                | expectedRemoteNames
+        ['roleA']                            | ['remote1', 'remote2', 'remote5']
+        ['roleB']                            | ['remote2', 'remote3', 'remote5']
+        ['roleC']                            | ['remote4', 'remote5']
+        ['roleD']                            | ['remote4']
+        ['roleA', 'roleB']                   | ['remote2', 'remote5']
+        ['roleB', 'roleC']                   | ['remote5']
+        ['roleA', 'roleC']                   | ['remote5']
+        ['roleA', 'roleD']                   | []
+        ['roleA', 'roleB', 'roleC']          | ['remote5']
+        ['roleA', 'roleB', 'roleD']          | []
+        ['roleA', 'roleB', 'roleC', 'roleD'] | []
+    }
+
+    def "allRoles() should throw error if null is given"() {
+        when:
+        remotes.allRoles(null)
+
+        then:
+        AssertionError e = thrown()
+        e.message.contains('role')
+    }
+
+    def "allRoles() should throw error if no argument is given"() {
+        when:
+        remotes.allRoles()
+
+        then:
+        AssertionError e = thrown()
+        e.message.contains('role')
+    }
+
     private static createRemote(String name, String... roles) {
         def remote = new Remote(name)
         remote.roles.addAll(roles)

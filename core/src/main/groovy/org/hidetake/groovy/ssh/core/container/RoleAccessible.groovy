@@ -19,6 +19,17 @@ trait RoleAccessible {
         getAsRemoteCollection().findAll { it.roles.any { it in roles } }
     }
 
+    /**
+     * Find remote hosts associated with all given roles.
+     *
+     * @param roles one or more roles
+     * @return remote hosts associated with all given roles
+     */
+    Collection<Remote> allRoles(String... roles) {
+        assert roles, 'At least one role must be given'
+        getAsRemoteCollection().findAll { it.roles.containsAll(roles) }
+    }
+
     private Collection<Remote> getAsRemoteCollection() {
         if (this instanceof Map<String, Remote>) {
             (this as Map<String, Remote>).values()
