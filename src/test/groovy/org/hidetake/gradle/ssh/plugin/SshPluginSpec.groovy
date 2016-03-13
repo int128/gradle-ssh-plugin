@@ -6,7 +6,6 @@ import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -80,6 +79,25 @@ class SshPluginSpec extends Specification {
         'serversA'                           | ['webServer', 'managementServer']
         'serversB'                           | ['appServer', 'managementServer']
         ['serversA', 'serversB'] as String[] | ['webServer', 'appServer', 'managementServer']
+    }
+
+    @Unroll
+    def "remotes.allRoles() should filter remotes by #roles"() {
+        given:
+        def project = createProject()
+
+        when:
+        def actualRemoteNames = remoteNameSet(project.remotes.allRoles(roles))
+
+        then:
+        actualRemoteNames.toSet() == expectedRemoteNames.toSet()
+
+        where:
+        roles                                | expectedRemoteNames
+        'noSuchRole'                         | []
+        'serversA'                           | ['webServer', 'managementServer']
+        'serversB'                           | ['appServer', 'managementServer']
+        ['serversA', 'serversB'] as String[] | ['managementServer']
     }
 
     @Unroll
