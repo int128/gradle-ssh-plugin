@@ -235,7 +235,7 @@ Call `role` method to associate the host with one or more roles.
 remotes {
   web01 {
     role('webServers')
-    role('all')
+    role('servers')
     host = '192.168.1.101'
     user = 'jenkins'
   }
@@ -245,12 +245,16 @@ remotes {
 We can specify one or mote roles on a session.
 
 ```groovy
-session(remotes.role('all')) {
-  //execute ...
+// remote hosts associated to servers
+session(remotes.role('servers')) {
 }
 
+// remote hosts associated to webServer OR appServer
 session(remotes.role('webServer', 'appServer')) {
-  //execute ...
+}
+
+// remote hosts associated to webServer AND appServer
+session(remotes.allRoles('webServer', 'appServer')) {
 }
 ```
 
@@ -260,11 +264,11 @@ Implementation of the remote hosts container is different between Gradle SSH Plu
 
 Gradle SSH plugin::
 The remote hosts container is a http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html[NamedDomainObjectContainer] provided by Gradle API.
-It also has the role filter method.
+It also has role filter methods.
 
 Groovy SSH::
 The remote hosts container is a `Map<String, Remote>`.
-It also has some of `Collection` methods and the role filter method.
+It also has some of `Collection` methods and role filter methods.
 
 The remote hosts container supports following methods and almost code should work on both Gradle SSH Plugin and Groovy SSH.
 
@@ -272,6 +276,7 @@ The remote hosts container supports following methods and almost code should wor
 * `addAll(Collection<Remote>)`
 * `create(String, Closure)`
 * `role(String...)`
+* `allRoles(String...)`
 
 
 == Perform operations
