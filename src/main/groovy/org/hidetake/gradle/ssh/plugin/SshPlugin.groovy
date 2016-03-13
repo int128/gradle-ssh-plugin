@@ -45,20 +45,4 @@ class SshPlugin implements Plugin<Project> {
 		}
 		proxies
     }
-
-    /**
-     * Alternative entry point for old plugin ID, i.e. 'ssh'.
-     *
-     * @deprecated TODO: remove in future release
-     */
-    @Slf4j
-    @Deprecated
-    static class DeprecatedEntryPoint extends SshPlugin {
-        @Override
-        void apply(Project project) {
-            log.warn "Deprecated: use apply plugin: 'org.hidetake.ssh', instead of 'ssh'"
-            log.warn 'Deprecated: old plugin ID will be removed in future release'
-            super.apply(project)
-        }
-    }
 }
