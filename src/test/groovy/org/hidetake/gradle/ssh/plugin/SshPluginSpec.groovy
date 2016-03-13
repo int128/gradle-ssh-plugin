@@ -23,7 +23,6 @@ class SshPluginSpec extends Specification {
         project.ssh.settings.logging == LoggingMethod.stdout
         project.remotes.size() == 0
         project.proxies.size() == 0
-        project.SshTask == SshTask
     }
 
     def "global settings should overwrite default settings"() {
