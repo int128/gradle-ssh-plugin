@@ -27,23 +27,15 @@ trait RoleAccessible {
         }
     }
 
-    static class Accessor {
-        private final RoleAccessible accessible
-
-        private Accessor(RoleAccessible accessible) {
-            this.accessible = accessible
-        }
-
+    static interface RoleAccessor {
         /**
          * Find remote hosts associated with given role.
          *
          * @param name a role
          * @return remote hosts associated with given roles
          */
-        Collection<Remote> getAt(String name) {
-            accessible.role(name)
-        }
+        Collection<Remote> getAt(String name)
     }
 
-    final Accessor role = new Accessor(this)
+    final RoleAccessor role = [getAt: { String name -> role(name) }] as RoleAccessor
 }
