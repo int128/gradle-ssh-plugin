@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.core.Remote
  *
  * @author Hidetake Iwata
  */
-trait RoleAccessible implements Map<String, Remote> {
+trait RoleAccessible {
     /**
      * Find remote hosts associated with given roles.
      *
@@ -16,29 +16,26 @@ trait RoleAccessible implements Map<String, Remote> {
      */
     Collection<Remote> role(String... roles) {
         assert roles, 'At least one role must be given'
-        def values = values()
-        roles.collect { String role ->
-            values.findAll { it.roles.contains(role) }
-        }.flatten().toSet()
+        getAsRemoteCollection().findAll { it.roles.any { it in roles } }
     }
 
-    static class Accessor {
-        private final RoleAccessible accessible
-
-        private Accessor(RoleAccessible accessible) {
-            this.accessible = accessible
+    private Collection<Remote> getAsRemoteCollection() {
+        if (this instanceof Map<String, Remote>) {
+            (this as Map<String, Remote>).values()
+        } else {
+            (this as Collection<Remote>)
         }
+    }
 
+    static interface RoleAccessor {
         /**
          * Find remote hosts associated with given role.
          *
          * @param name a role
          * @return remote hosts associated with given roles
          */
-        Collection<Remote> getAt(String name) {
-            accessible.role(name)
-        }
+        Collection<Remote> getAt(String name)
     }
 
-    final Accessor role = new Accessor(this)
+    final RoleAccessor role = [getAt: { String name -> role(name) }] as RoleAccessor
 }

@@ -21,12 +21,12 @@ class Service {
     /**
      * Container of remote hosts.
      */
-    final remotes = [:] as RemoteContainer
+    final remotes = new RemoteContainer()
 
     /**
      * Container of proxy hosts.
      */
-    final proxies = [:] as ProxyContainer
+    final proxies = new ProxyContainer()
 
     /**
      * Global settings.
@@ -40,7 +40,7 @@ class Service {
      */
     void remotes(Closure closure) {
         assert closure, 'closure must be given'
-        def builder = new ContainerBuilder(Remote, remotes)
+        def builder = new ContainerBuilder(remotes)
         callWithDelegate(closure, builder)
     }
 
@@ -51,7 +51,7 @@ class Service {
      */
     void proxies(Closure closure) {
         assert closure, 'closure must be given'
-        def builder = new ContainerBuilder(Proxy, proxies)
+        def builder = new ContainerBuilder(proxies)
         callWithDelegate(closure, builder)
     }
 
