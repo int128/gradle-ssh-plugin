@@ -1,24 +1,20 @@
-package org.hidetake.groovy.ssh.core.settings
+package org.hidetake.groovy.ssh.operation
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
+import org.hidetake.groovy.ssh.core.settings.LoggingMethod
+import org.hidetake.groovy.ssh.core.settings.Settings
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
- * Settings for SSH operations.
+ * Settings for {@link Command}.
  *
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
 @ToString
-class OperationSettings implements Settings<OperationSettings> {
-    /**
-     * Dry-run flag.
-     * If <code>true</code>, performs no action.
-     */
-    Boolean dryRun
-
+class CommandSettings implements Settings<CommandSettings> {
     /**
      * Ignores the exit status of the command or shell.
      */
@@ -56,31 +52,22 @@ class OperationSettings implements Settings<OperationSettings> {
      */
     Closure interaction
 
-    /**
-     * Extensions for {@link org.hidetake.groovy.ssh.session.SessionHandler}.
-     */
-    List extensions = []
-
-    static final DEFAULT = new OperationSettings(
-            dryRun: false,
+    static final DEFAULT = new CommandSettings(
             ignoreError: false,
             pty: false,
             logging: LoggingMethod.slf4j,
             encoding: 'UTF-8',
-            extensions: []
     )
 
-    OperationSettings plus(OperationSettings right) {
-        new OperationSettings(
-                dryRun:         findNotNull(right.dryRun, dryRun),
-                ignoreError: findNotNull(right.ignoreError, ignoreError),
+    CommandSettings plus(CommandSettings right) {
+        new CommandSettings(
+                ignoreError:    findNotNull(right.ignoreError, ignoreError),
                 pty:            findNotNull(right.pty, pty),
                 logging:        findNotNull(right.logging, logging),
                 encoding:       findNotNull(right.encoding, encoding),
                 interaction:    findNotNull(right.interaction, interaction),
                 outputStream:   findNotNull(right.outputStream, outputStream),
                 errorStream:    findNotNull(right.errorStream, errorStream),
-                extensions:     extensions + right.extensions
         )
     }
 }

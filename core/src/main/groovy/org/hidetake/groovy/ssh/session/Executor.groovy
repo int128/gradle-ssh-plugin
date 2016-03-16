@@ -15,37 +15,44 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  */
 @Slf4j
 class Executor {
+    final CompositeSettings settings
+
+    def Executor(CompositeSettings settings1) {
+        settings = settings1
+        assert settings
+    }
+
     /**
      * Execute {@link Plan}s.
      *
-     * @param compositeSettings
+     * @param globalSettings
      * @param plans
      * @return results of each plan
      */
-    def <T> List<T> execute(CompositeSettings compositeSettings, List<Plan<T>> plans) {
-        if (compositeSettings.dryRun) {
-            dryRun(compositeSettings, plans)
+    def <T> List<T> execute(List<Plan<T>> plans) {
+        if (settings.dryRun) {
+            dryRun(plans)
         } else {
-            wetRun(compositeSettings, plans)
+            wetRun(plans)
         }
     }
 
-    private <T> List<T> dryRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
+    private <T> List<T> dryRun(List<Plan<T>> plans) {
         log.debug("Running ${plans.size()} session(s) as dry-run")
         plans.collect { plan ->
             def operations = new DryRunOperations(plan.remote)
-            callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
+            callWithDelegate(plan.closure, SessionHandler.create(operations, settings))
         }
     }
 
-    private <T> List<T> wetRun(CompositeSettings compositeSettings, List<Plan<T>> plans) {
+    private <T> List<T> wetRun(List<Plan<T>> plans) {
         log.debug("Running ${plans.size()} session(s)")
-        def manager = new ConnectionManager(compositeSettings.connectionSettings)
+        def manager = new ConnectionManager(settings.connectionSettings)
         try {
             plans.collect { plan ->
                 def connection = manager.connect(plan.remote)
                 def operations = new DefaultOperations(connection)
-                callWithDelegate(plan.closure, SessionHandler.create(operations, compositeSettings.operationSettings))
+                callWithDelegate(plan.closure, SessionHandler.create(operations, settings))
             }
         } finally {
             log.debug('Waiting for pending sessions')

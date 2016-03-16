@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.session.SessionHandler
 import org.hidetake.groovy.ssh.session.Plan
+import org.hidetake.groovy.ssh.session.SessionHandler
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -13,7 +13,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  */
 class RunHandler {
     /**
-     * One time settings.
+     * Per service settings.
      */
     final CompositeSettings settings = new CompositeSettings()
 
@@ -23,7 +23,7 @@ class RunHandler {
     final List<Plan> sessions = []
 
     /**
-     * Configure one time settings.
+     * Configure per service settings.
      *
      * @param closure closure for {@link CompositeSettings}
      */

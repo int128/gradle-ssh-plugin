@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.extension
 
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
@@ -46,7 +46,7 @@ trait BackgroundCommand implements SessionExtension {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
 
-        def settings = operationSettings + new OperationSettings(map)
+        def settings = globalSettings + new CommandSettings(map)
         def command = operations.command(settings, commandLine)
 
         command.startAsync { int exitStatus ->
@@ -69,7 +69,7 @@ trait BackgroundCommand implements SessionExtension {
         assert callback, 'callback must be given'
         assert map != null, 'map must not be null'
 
-        def settings = operationSettings + new OperationSettings(map)
+        def settings = globalSettings + new CommandSettings(map)
         def operation = operations.command(settings, commandLine)
 
         def lines = [] as List<String>

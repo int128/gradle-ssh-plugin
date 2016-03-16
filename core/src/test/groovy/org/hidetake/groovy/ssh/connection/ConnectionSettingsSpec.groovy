@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.core.settings
+package org.hidetake.groovy.ssh.connection
 
 import org.hidetake.groovy.ssh.core.Proxy
 import spock.lang.Shared

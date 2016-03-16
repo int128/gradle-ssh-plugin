@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.extension
 
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
@@ -20,7 +20,7 @@ trait Shell implements SessionExtension {
     void shell(HashMap map) {
         assert map != null, 'map must not be null'
 
-        def settings = operationSettings + new OperationSettings(map)
+        def settings = globalSettings + new CommandSettings(map)
         def operation = operations.shell(settings)
 
         def exitStatus = operation.startSync()

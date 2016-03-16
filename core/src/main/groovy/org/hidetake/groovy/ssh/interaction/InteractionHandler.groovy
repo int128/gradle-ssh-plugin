@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.interaction
 
 /**
- * A handler of the {@link org.hidetake.groovy.ssh.core.settings.OperationSettings#interaction} closure.
+ * A handler of the interaction closure.
  *
  * @author Hidetake Iwata
  */

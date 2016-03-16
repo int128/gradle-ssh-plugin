@@ -1,8 +1,9 @@
-package org.hidetake.groovy.ssh.core.settings
+package org.hidetake.groovy.ssh.connection
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.settings.Settings
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 

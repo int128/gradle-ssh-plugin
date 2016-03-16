@@ -4,7 +4,6 @@ import com.jcraft.jsch.ChannelShell
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.interaction.Interaction
 
 /**
@@ -19,7 +18,7 @@ class Shell implements Operation {
     private final OutputStream standardInput
     private final LineOutputStream standardOutput
 
-    def Shell(Connection connection1, OperationSettings settings) {
+    def Shell(Connection connection1, CommandSettings settings) {
         connection = connection1
         channel = connection.createShellChannel()
         standardInput = channel.outputStream
