@@ -53,7 +53,6 @@ Following settings can be set in a remote closure.
 |`host`    | String, Mandatory | Hostname or IP address.
 |`port`    | Integer           | Port. Defaults to 22.
 |`gateway` | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection. Defaults to null.
-|`proxy`   | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
 |===
 
 
@@ -70,6 +69,7 @@ Also following settings can be set in a remote closure.
 |`password`     | String            | A password for password authentication. Defaults to null (no password authentication).
 |`identity`     | File or String    | A private key for public-key authentication. This can be a key File or key content String. Defaults to null (no public-key authentication).
 |`passphrase`   | String            | A pass-phrase of the private key. Defaults to null (no pass-phrase).
+|`proxy`        | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
 |`agent`        | Boolean           | A flag to use Putty Agent or ssh-agent on authentication. Defaults to false.
 |`knownHosts`   | File              | A known hosts file. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
 |`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
