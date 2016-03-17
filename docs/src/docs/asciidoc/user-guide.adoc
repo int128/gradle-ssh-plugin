@@ -298,7 +298,7 @@ Following methods are available in a session closure.
 
 * `execute` - Execute a command.
 * `executeBackground` - Execute a command in background.
-* `executeSudo` - Execute a command with sudo support.
+* `executeSudo` - Execute a command with sudo prompt support.
 * `shell` - Execute a shell.
 * `put` - Put a file or directory into the remote host.
 * `get` - Get a file or directory from the remote host.
@@ -405,15 +405,15 @@ executeBackground 'exit 1', ignoreError: true
 ```
 
 
-=== Execute a command with the sudo support
+=== Execute a command with the sudo prompt support
 
 Call the `executeSudo` method with a command to execute with the sudo support.
-The method prepends `sudo -S -p` to the command and will provide a password for sudo prompt.
+The method prepends `sudo -S -p` to the command and will provide the password for sudo prompt.
 
 ```groovy
 executeSudo 'service httpd reload'
 
-// also can be called with operation settings
+// also can be called with settings
 executeSudo 'service httpd reload', pty: true
 ```
 
@@ -432,6 +432,15 @@ executeSudo('service httpd status') { result ->
   println result
 }
 ```
+
+The method accepts following settings and settings same as `execute` method.
+
+.Sudo settings
+[options="header,autowidth"]
+|===
+|Key              | Type            | Description
+|`sudoPassword`   | String          | A password provided for the sudo prompt. Defaults to `password` of the remote host.
+|===
 
 The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.
 
@@ -747,6 +756,7 @@ Some settings can be set in global and overridden by each `ssh.run` method, remo
 |Settings               | Global | Each `ssh.run` | Each remote | Each method
 |Connection settings    | x      | x              | x           | -
 |Command settings       | x      | x              | -           | x
+|Sudo settings          | -      | -              | x           | x
 |Remote settings        | -      | -              | x           | -
 |Proxy settings         | -      | -              | x           | -
 |Local port forwarding settings  | -      | -     | -           | x

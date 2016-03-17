@@ -43,6 +43,13 @@ class SudoSpec extends Specification {
                 user = 'someuser'
                 password = 'somepassword'
             }
+            testServerWithSudoPassword {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                sudoPassword = 'passwordForTestServerSudo'
+            }
         }
     }
 
@@ -156,6 +163,32 @@ class SudoSpec extends Specification {
 
         then:
         resultActual == 'something output'
+    }
+
+    def "executeSudo should accept sudo password by method settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand1', sudoPassword: 'anotherpassword'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand1', 'anotherpassword', 0)
+        }
+    }
+
+    def "executeSudo should accept sudo password by remote settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServerWithSudoPassword) {
+                executeSudo 'somecommand1'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'somecommand1', 'passwordForTestServerSudo', 0)
+        }
     }
 
     @Unroll

@@ -2,6 +2,7 @@ package org.hidetake.groovy.ssh.core
 
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
+import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -49,11 +50,13 @@ class Remote {
      */
     final List<String> roles = []
 
-    /**
-     * Delegates connection settings excluding traits to avoid side-effect.
-     */
+    // Excludes traits to avoid side-effect
     @Delegate(interfaces = false)
     ConnectionSettings connectionSettings = new ConnectionSettings()
+
+    // Excludes traits to avoid side-effect
+    @Delegate(interfaces = false)
+    SudoSettings sudoSettings = new SudoSettings()
 
     void role(String role) {
         assert role != null, 'role should be set'
