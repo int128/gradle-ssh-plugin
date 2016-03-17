@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.core
 
+import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
 
 /**
@@ -8,6 +9,7 @@ import org.hidetake.groovy.ssh.connection.ConnectionSettings
  * @author Hidetake Iwata
  *
  */
+@EqualsAndHashCode(includes = 'name')
 class Remote {
     /**
      * Name of this instance.
@@ -35,12 +37,6 @@ class Remote {
      * Remote host.
      */
     String host
-
-    /**
-     * Gateway host.
-     * This may be null.
-     */
-    Remote gateway
 
     /**
      * Roles.

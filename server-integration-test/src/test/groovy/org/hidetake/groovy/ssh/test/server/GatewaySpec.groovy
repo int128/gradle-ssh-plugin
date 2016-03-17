@@ -127,6 +127,43 @@ class GatewaySpec extends Specification {
         1 * targetServer.shellFactory.create() >> commandWithExit(0)
     }
 
+    def "gateway can be set by global settings"() {
+        given:
+        gateway1Server.start()
+        targetServer.start()
+
+        ssh.remotes {
+            gw {
+                host = gateway1Server.host
+                port = gateway1Server.port
+                user = 'gateway1User'
+                password = 'gateway1Password'
+            }
+            target {
+                host = targetServer.host
+                port = targetServer.port
+                user = 'targetUser'
+                password = 'targetPassword'
+            }
+        }
+
+        ssh.settings.gateway = ssh.remotes.gw
+
+        when:
+        ssh.run {
+            session(ssh.remotes.target) {
+                shell(interaction: {})
+            }
+        }
+
+        then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
+        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
+
+        then:
+        1 * targetServer.shellFactory.create() >> commandWithExit(0)
+    }
+
 
     static addressOf(SshServer server) {
         new SshdSocketAddress(server.host, server.port)

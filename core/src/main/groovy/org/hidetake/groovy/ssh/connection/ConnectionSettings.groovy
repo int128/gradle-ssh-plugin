@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.connection
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.hidetake.groovy.ssh.core.Proxy
+import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.Settings
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
@@ -38,6 +39,12 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
      * This may be null.
      */
     String passphrase
+
+    /**
+     * Gateway host.
+     * This may be null.
+     */
+    Remote gateway
 
     /**
      * Proxy configuration for connecting to a host.
@@ -89,6 +96,7 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
             password: null,
             identity: null,
             passphrase: null,
+            gateway: null,
             proxy: null,
             agent: false,
             knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
@@ -103,6 +111,7 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
                 password:     findNotNull(right.password, password),
                 identity:     findNotNull(right.identity, identity),
                 passphrase:   plusOfPassphrase(right),
+                gateway:      findNotNull(right.gateway, gateway),
                 proxy:        findNotNull(right.proxy, proxy),
                 agent:        findNotNull(right.agent, agent),
                 knownHosts:   findNotNull(right.knownHosts, knownHosts),
