@@ -35,15 +35,10 @@ class SftpOperations {
      * @param localPath
      */
     void getFile(String remotePath, String localPath) {
-        log.debug("Requesting SFTP GET: $remote.name:$remotePath -> $localPath")
-        try {
+        tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> $localPath") {
             channel.get(remotePath, localPath, new SftpProgressLogger({ percent ->
                 log.info("Receiving $percent from $remote.name: $remotePath -> $localPath")
             }))
-            log.debug("Success SFTP GET: $remote.name:$remotePath -> $localPath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP GET: $remote.name:$remotePath -> $localPath")
-            throw new SftpException("Failed SFTP GET: $remote.name:$remotePath -> $localPath", e)
         }
     }
 
@@ -54,15 +49,10 @@ class SftpOperations {
      * @param stream
      */
     void getContent(String remotePath, OutputStream stream) {
-        log.debug("Requesting SFTP GET: $remote.name:$remotePath -> stream")
-        try {
+        tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> stream") {
             channel.get(remotePath, stream, new SftpProgressLogger({ percent ->
                 log.info("Receiving $percent from $remote.name: $remotePath")
             }))
-            log.debug("Success SFTP GET: $remote.name:$remotePath -> stream")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP GET: $remote.name:$remotePath -> stream")
-            throw new SftpException("Failed SFTP GET: $remote.name:$remotePath -> stream", e)
         }
     }
 
@@ -73,15 +63,10 @@ class SftpOperations {
      * @param remotePath
      */
     void putFile(String localPath, String remotePath) {
-        log.debug("Requesting SFTP PUT: $localPath -> $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP PUT: $localPath -> $remote.name:$remotePath") {
             channel.put(localPath, remotePath, new SftpProgressLogger({ percent ->
                 log.info("Sending $percent to $remote.name: $remotePath")
             }), ChannelSftp.OVERWRITE)
-            log.debug("Success SFTP PUT: $localPath -> $remote.name:$remotePath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP PUT: $localPath -> $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP PUT: $localPath -> $remote.name:$remotePath", e)
         }
     }
 
@@ -92,15 +77,10 @@ class SftpOperations {
      * @param remotePath path
      */
     void putContent(InputStream stream, String remotePath) {
-        log.debug("Requesting SFTP PUT: stream -> $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP PUT: stream -> $remote.name:$remotePath") {
             channel.put(stream, remotePath, new SftpProgressLogger({ percent ->
                 log.info("Sending $percent to $remote.name: $remotePath")
             }), ChannelSftp.OVERWRITE)
-            log.debug("Success SFTP PUT: stream -> $remote.name:$remotePath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP PUT: stream -> $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP PUT: stream -> $remote.name:$remotePath", e)
         }
     }
 
@@ -110,13 +90,8 @@ class SftpOperations {
      * @param remotePath
      */
     void mkdir(String remotePath) {
-        log.debug("Requesting SFTP MKDIR: $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP MKDIR: $remote.name:$remotePath") {
             channel.mkdir(remotePath)
-            log.debug("Success SFTP MKDIR: $remote.name:$remotePath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP MKDIR: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP MKDIR: $remote.name:$remotePath", e)
         }
     }
 
@@ -126,13 +101,8 @@ class SftpOperations {
      * @param remotePath
      */
     void rm(String remotePath) {
-        log.debug("Requesting SFTP RM: $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP RM: $remote.name:$remotePath") {
             channel.rm(remotePath)
-            log.debug("Success SFTP RM: $remote.name:$remotePath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP RM: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP RM: $remote.name:$remotePath", e)
         }
     }
 
@@ -142,13 +112,8 @@ class SftpOperations {
      * @param remotePath
      */
     void rmdir(String remotePath) {
-        log.debug("Requesting SFTP RMDIR: $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP RMDIR: $remote.name:$remotePath") {
             channel.rmdir(remotePath)
-            log.debug("Success SFTP RMDIR: $remote.name:$remotePath")
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP RMDIR: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP RMDIR: $remote.name:$remotePath", e)
         }
     }
 
@@ -159,14 +124,8 @@ class SftpOperations {
      * @return list of files or directories
      */
     List<ChannelSftp.LsEntry> ls(String remotePath) {
-        log.debug("Requesting SFTP LS: $remote.name:$remotePath")
-        try {
-            def result = channel.ls(remotePath).toList()
-            log.debug("Success SFTP LS: $remote.name:$remotePath")
-            result
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP LS: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP LS: $remote.name:$remotePath", e)
+        tryCatchSftpException("SFTP LS: $remote.name:$remotePath") {
+            channel.ls(remotePath).toList()
         }
     }
 
@@ -177,14 +136,8 @@ class SftpOperations {
      * @return directory entry
      */
     SftpATTRS stat(String remotePath) {
-        log.debug("Requesting SFTP STAT: $remote.name:$remotePath")
-        try {
-            def result = channel.stat(remotePath)
-            log.debug("Success SFTP STAT: $remote.name:$remotePath")
-            result
-        } catch (JschSftpException e) {
-            log.error("Failed SFTP STAT: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP STAT: $remote.name:$remotePath", e)
+        tryCatchSftpException("SFTP STAT: $remote.name:$remotePath") {
+            channel.stat(remotePath)
         }
     }
 
@@ -194,13 +147,20 @@ class SftpOperations {
      * @param remotePath
      */
     void cd(String remotePath) {
-        log.debug("Requesting SFTP CD: $remote.name:$remotePath")
-        try {
+        tryCatchSftpException("SFTP CD: $remote.name:$remotePath") {
             channel.cd(remotePath)
-            log.debug("Success SFTP CD: $remote.name:$remotePath")
+        }
+    }
+
+    private static <T> T tryCatchSftpException(String operationMessage, Closure<T> closure) {
+        log.debug("Requesting $operationMessage")
+        try {
+            def result = closure.call()
+            log.debug("Success $operationMessage")
+            result
         } catch (JschSftpException e) {
-            log.error("Failed SFTP CD: $remote.name:$remotePath")
-            throw new SftpException("Failed SFTP CD: $remote.name:$remotePath", e)
+            log.error("Failed $operationMessage")
+            throw new SftpException("Failed $operationMessage", e)
         }
     }
 }
