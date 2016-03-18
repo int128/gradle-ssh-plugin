@@ -5,8 +5,6 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.hidetake.groovy.ssh.operation.SftpError
-import org.hidetake.groovy.ssh.operation.SftpException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
@@ -58,23 +56,44 @@ class SftpRemoveSpec extends Specification {
     }
 
 
-    def "remove() should delete the file"() {
+    def "remove() should delete a file"() {
         given:
         def file = temporaryFolder.newFile() << 'file'
         assert file.exists()
 
         when:
-        ssh.run {
+        def result = ssh.run {
             session(ssh.remotes.testServer) {
                 remove(toUnixSeparator(file.path))
             }
         }
 
         then:
+        result == true
         !file.exists()
     }
 
-    def "remove() should delete files and directories in the directory"() {
+    def "remove() should delete files"() {
+        given:
+        def file1 = temporaryFolder.newFile() << 'file'
+        def file2 = temporaryFolder.newFile() << 'file'
+        assert file1.exists()
+        assert file2.exists()
+
+        when:
+        def result = ssh.run {
+            session(ssh.remotes.testServer) {
+                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+            }
+        }
+
+        then:
+        result == true
+        !file1.exists()
+        !file2.exists()
+    }
+
+    def "remove() should delete a directory"() {
         given:
         def folder1 = temporaryFolder.newFolder()
         def file1 = folder1 / uuidgen() << 'file1'
@@ -87,20 +106,21 @@ class SftpRemoveSpec extends Specification {
         assert folder1.exists()
 
         when:
-        ssh.run {
+        def result = ssh.run {
             session(ssh.remotes.testServer) {
                 remove(toUnixSeparator(folder1.path))
             }
         }
 
         then:
+        result == true
         !file2.exists()
         !folder2.exists()
         !file1.exists()
         !folder1.exists()
     }
 
-    def "remove() should accept several arguments"() {
+    def "remove() should delete a directory and file"() {
         given:
         def folder1 = temporaryFolder.newFolder()
         def file1 = folder1 / uuidgen() << 'file1'
@@ -113,20 +133,21 @@ class SftpRemoveSpec extends Specification {
         assert folder1.exists()
 
         when:
-        ssh.run {
+        def result = ssh.run {
             session(ssh.remotes.testServer) {
                 remove(toUnixSeparator(folder1.path), toUnixSeparator(file2.path))
             }
         }
 
         then:
+        result == true
         !file2.exists()
         folder2.exists()  // not deleted
         !file1.exists()
         !folder1.exists()
     }
 
-    def "remove() should throw the exception if it does not exist"() {
+    def "remove() should return false if target does not exist"() {
         given:
         def folder1 = temporaryFolder.newFolder()
         def file1 = folder1 / uuidgen() << 'file1'
@@ -137,15 +158,62 @@ class SftpRemoveSpec extends Specification {
         assert folder1.exists()
 
         when:
-        ssh.run {
+        def result = ssh.run {
             session(ssh.remotes.testServer) {
                 remove(toUnixSeparator(file2.path))
             }
         }
 
         then:
-        SftpException e = thrown()
-        e.error == SftpError.SSH_FX_NO_SUCH_FILE
+        result == false
+        file1.exists()
+        !file2.exists()
+    }
+
+    def "remove() should return true if at least one is removed"() {
+        given:
+        def folder1 = temporaryFolder.newFolder()
+        def file1 = folder1 / uuidgen() << 'file1'
+        def file2 = folder1 / uuidgen()
+
+        assert file1.exists()
+        assert !file2.exists()
+        assert folder1.exists()
+
+        when:
+        def result = ssh.run {
+            session(ssh.remotes.testServer) {
+                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+            }
+        }
+
+        then:
+        result == true
+        !file1.exists()
+        !file2.exists()
+    }
+
+    def "remove() should return false if anything is not removed"() {
+        given:
+        def folder1 = temporaryFolder.newFolder()
+        def file1 = folder1 / uuidgen()
+        def file2 = folder1 / uuidgen()
+
+        assert !file1.exists()
+        assert !file2.exists()
+        assert folder1.exists()
+
+        when:
+        def result = ssh.run {
+            session(ssh.remotes.testServer) {
+                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+            }
+        }
+
+        then:
+        result == false
+        !file1.exists()
+        !file2.exists()
     }
 
 }
