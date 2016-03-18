@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.operation
 
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
 /**
@@ -29,5 +29,5 @@ interface Operations {
      * @param closure closure for {@link SftpOperations}
      * @return result of the closure
      */
-    def sftp(@DelegatesTo(SftpOperations) Closure closure)
+    def <T> T sftp(@DelegatesTo(SftpOperations) Closure<T> closure)
 }

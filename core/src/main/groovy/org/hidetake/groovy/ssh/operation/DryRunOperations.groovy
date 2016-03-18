@@ -54,7 +54,8 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    def sftp(Closure closure) {
+    def <T> T sftp(Closure<T> closure) {
         log.info("Requesting SFTP subsystem on $remote")
+        null
     }
 }
