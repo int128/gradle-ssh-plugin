@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.operation.SftpException
+import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
@@ -94,13 +94,13 @@ get(from: String)                       // get a file and return the content'''
                 getFile(remotePath, localFile.path)
             }
             log.info("Received file from $remote.name: $remotePath -> $localFile.path")
-        } catch (SftpException e) {
+        } catch (SftpFailureException e) {
             if (e.cause.message.startsWith('not supported to get directory')) {
                 log.debug("Found directory on $remote.name: $remotePath")
                 getRecursive(remotePath, localFile)
                 log.info("Received directory $remote.name: $remotePath -> $localFile.path")
             } else {
-                throw new RuntimeException(e)
+                throw e
             }
         }
     }

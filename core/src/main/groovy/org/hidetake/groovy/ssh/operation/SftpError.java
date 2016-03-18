@@ -39,7 +39,8 @@ public enum SftpError {
     SSH_FX_FILE_CORRUPT(28, "The file is corrupt"),
     SSH_FX_OWNER_INVALID(29, "The principal specified can not be assigned as an owner of a file"),
     SSH_FX_GROUP_INVALID(30, "The principal specified can not be assigned as the primary group of a file"),
-    SSH_FX_NO_MATCHING_BYTE_RANGE_LOCK(31, "The requested operation could not be completed because the specified byte range lock has not been granted");
+    SSH_FX_NO_MATCHING_BYTE_RANGE_LOCK(31, "The requested operation could not be completed because the specified byte range lock has not been granted"),
+    UNKNOWN(-1, "Unknown error");
 
     private final int code;
     private final String message;
@@ -63,6 +64,6 @@ public enum SftpError {
                 return e;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

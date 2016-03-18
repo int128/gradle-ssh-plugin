@@ -1,23 +1,28 @@
 package org.hidetake.groovy.ssh.operation
 
 import com.jcraft.jsch.SftpException as JschSftpException
-import groovy.transform.CompileStatic
 
 /**
  * Represents SFTP error.
  *
  * @author Hidetake Iwata
  */
-@CompileStatic
 class SftpException extends Exception {
     final SftpError error
 
-    def SftpException(String contextMessage, JschSftpException cause) {
-        this(contextMessage, cause, SftpError.find(cause.id))
+    static SftpException createFrom(JschSftpException cause, String contextMessage) {
+        def sftpError = SftpError.find(cause.id)
+        if (sftpError == SftpError.SSH_FX_NO_SUCH_FILE) {
+            new SftpNoSuchFileException(contextMessage, cause)
+        } else if (sftpError == SftpError.SSH_FX_FAILURE) {
+            new SftpFailureException(contextMessage, cause)
+        } else {
+            new SftpException(contextMessage, cause, sftpError)
+        }
     }
 
-    private def SftpException(String contextMessage, JschSftpException cause, SftpError error) {
-        super("$contextMessage: (${error?.name()}: ${error?.message}): ${cause.message}", cause)
+    protected def SftpException(String contextMessage, JschSftpException cause, SftpError error) {
+        super("$contextMessage: (${error.name()}: ${error.message}): ${cause.message}", cause)
         this.error = error
     }
 }

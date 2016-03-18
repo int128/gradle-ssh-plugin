@@ -160,7 +160,7 @@ class SftpOperations {
             result
         } catch (JschSftpException e) {
             log.error("Failed $operationMessage")
-            throw new SftpException("Failed $operationMessage", e)
+            throw SftpException.createFrom(e, "Failed $operationMessage")
         }
     }
 }
