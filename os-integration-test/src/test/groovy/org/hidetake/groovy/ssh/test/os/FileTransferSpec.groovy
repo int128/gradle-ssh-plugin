@@ -190,6 +190,7 @@ class FileTransferSpec extends Specification {
             session(ssh.remotes.localhost) {
                 execute "dd if=/dev/zero of=$remoteX bs=1024 count=$sizeKB"
                 get from: remoteX, into: localX
+                remove remoteX
             }
         }
 

@@ -2,10 +2,9 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.operation.SftpException
+import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
-import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
@@ -122,12 +121,8 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
                     def remoteDir = "$remotePath/${localDir.name}"
                     try {
                         mkdir(remoteDir)
-                    } catch (SftpException e) {
-                        if (e.error == SSH_FX_FAILURE) {
-                            log.info("Remote directory already exists on $remote.name: $remoteDir")
-                        } else {
-                            throw new RuntimeException(e)
-                        }
+                    } catch (SftpFailureException ignore) {
+                        log.info("Remote directory already exists on $remote.name: $remoteDir")
                     }
 
                     self.call(self, localDir.listFiles().toList(), remoteDir)

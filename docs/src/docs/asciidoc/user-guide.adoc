@@ -497,6 +497,9 @@ remove '/remote/directory'
 remove '/remote/file', '/remote/directory'
 ```
 
+The method returns `true` if anything is removed, `false` if nothing is removed.
+It throws an exception if an error occurred.
+
 
 === Enable the port forwarding
 
