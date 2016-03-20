@@ -440,6 +440,7 @@ The method accepts following settings and settings same as `execute` method.
 |===
 |Key              | Type            | Description
 |`sudoPassword`   | String          | A password provided for the sudo prompt. Defaults to `password` of the remote host.
+|`sudoPath`       | String          | Path to sudo executable. Defaults to `sudo`.
 |===
 
 The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.

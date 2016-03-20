@@ -11,7 +11,13 @@ class SudoSettings implements PlusProperties<SudoSettings>, ToStringProperties {
      */
     String sudoPassword
 
+    /**
+     * Sudo executable path.
+     */
+    String sudoPath
+
     static final DEFAULT = new SudoSettings(
             sudoPassword: null,
+            sudoPath: 'sudo',
     )
 }

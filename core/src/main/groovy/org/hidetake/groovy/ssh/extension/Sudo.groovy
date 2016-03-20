@@ -101,13 +101,16 @@ trait Sudo implements SessionExtension {
     @TupleConstructor
     private static class SudoExecutor {
         final Operations operations
-        final CommandSettings settings
-        final String sudoPassword
+        final CommandSettings commandSettings
+        final SudoSettings sudoSettings
 
         def SudoExecutor(Operations operations1, CompositeSettings globalSettings, SudoCommandSettings methodSettings) {
             operations = operations1
-            settings = globalSettings.commandSettings + methodSettings.commandSettings
-            sudoPassword = methodSettings.sudoPassword ?: operations.remote.sudoPassword ?: operations.remote.password
+            commandSettings = globalSettings.commandSettings + methodSettings.commandSettings
+            sudoSettings = SudoSettings.DEFAULT +
+                    new SudoSettings(sudoPassword: operations.remote.password) +
+                    operations.remote.sudoSettings +
+                    methodSettings.sudoSettings
         }
 
         String execute(String commandLine) {
@@ -116,7 +119,7 @@ trait Sudo implements SessionExtension {
             final interactionSettings = new CommandSettings(interaction: {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Providing password for sudo prompt on $operations.remote.name")
-                    standardInput << sudoPassword << '\n'
+                    standardInput << sudoSettings.sudoPassword << '\n'
 
                     when(nextLine: _, from: standardOutput) {
                         when(nextLine: 'Sorry, try again.') {
@@ -134,9 +137,9 @@ trait Sudo implements SessionExtension {
                 }
             })
 
-            final sudoCommandLine = "sudo -S -p '$prompt' $commandLine"
-            final exitStatus = operations.command(settings + interactionSettings, sudoCommandLine).startSync()
-            if (exitStatus != 0 && !settings.ignoreError) {
+            final sudoCommandLine = "$sudoSettings.sudoPath -S -p '$prompt' $commandLine"
+            final exitStatus = operations.command(commandSettings + interactionSettings, sudoCommandLine).startSync()
+            if (exitStatus != 0 && !commandSettings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
             }
             lines.join(Utilities.eol())
