@@ -30,6 +30,12 @@ class OperationSettings implements Settings<OperationSettings> {
      */
     Boolean pty
 
+	/**
+	 * Use agentForwarding flag.
+	 * If <code>true</code>, agent will be forwarded to remote host.
+	 */
+	Boolean agentForwarding
+	
     /**
      * A logging method of the remote command or shell.
      */
@@ -65,6 +71,7 @@ class OperationSettings implements Settings<OperationSettings> {
             dryRun: false,
             ignoreError: false,
             pty: false,
+            agentForwarding: false,
             logging: LoggingMethod.slf4j,
             encoding: 'UTF-8',
             extensions: []
@@ -75,6 +82,7 @@ class OperationSettings implements Settings<OperationSettings> {
                 dryRun:         findNotNull(right.dryRun, dryRun),
                 ignoreError: findNotNull(right.ignoreError, ignoreError),
                 pty:            findNotNull(right.pty, pty),
+                agentForwarding: findNotNull(right.agentForwarding, agentForwarding),
                 logging:        findNotNull(right.logging, logging),
                 encoding:       findNotNull(right.encoding, encoding),
                 interaction:    findNotNull(right.interaction, interaction),
