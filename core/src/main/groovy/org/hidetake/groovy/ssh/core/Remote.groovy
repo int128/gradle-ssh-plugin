@@ -49,7 +49,10 @@ class Remote {
      */
     final List<String> roles = []
 
-    @Delegate
+    /**
+     * Delegates connection settings excluding traits to avoid side-effect.
+     */
+    @Delegate(interfaces = false)
     ConnectionSettings connectionSettings = new ConnectionSettings()
 
     void role(String role) {

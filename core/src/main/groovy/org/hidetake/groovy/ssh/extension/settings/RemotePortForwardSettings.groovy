@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.extension.settings
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
@@ -12,8 +12,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-@ToString
-class RemotePortForwardSettings implements Settings<RemotePortForwardSettings> {
+class RemotePortForwardSettings implements Settings<RemotePortForwardSettings>, ToStringProperties {
     /**
      * Local port to connect. (Mandatory)
      */

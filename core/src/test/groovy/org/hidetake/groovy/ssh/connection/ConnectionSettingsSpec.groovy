@@ -86,7 +86,7 @@ class ConnectionSettingsSpec extends Specification {
         given:
         def settings = new ConnectionSettings(
                 user: 'theUser', password: 'thePassword',
-                identity: new File('theIdentity'), passphrase: 'thePassphrase'
+                identity: 'theIdentity', passphrase: 'thePassphrase'
         )
 
         when:
@@ -96,6 +96,23 @@ class ConnectionSettingsSpec extends Specification {
         result.contains('theUser')
         !result.contains('thePassword')
         !result.contains('theIdentity')
+        !result.contains('thePassphrase')
+    }
+
+    def "result of ToString() contains identity if it is a File"() {
+        given:
+        def settings = new ConnectionSettings(
+                user: 'theUser', password: 'thePassword',
+                identity: new File('theIdentity'), passphrase: 'thePassphrase'
+        )
+
+        when:
+        def result = settings.toString()
+
+        then:
+        result.contains('theUser')
+        !result.contains('thePassword')
+        result.contains('theIdentity')
         !result.contains('thePassphrase')
     }
 
