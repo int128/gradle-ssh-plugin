@@ -35,6 +35,7 @@ install:
 - ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
 
 - test "$INTEGRATION_TEST_SSH_HOST"
+  || echo 'Skip because the pull request is from a fork'
   && export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
   && echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$INTEGRATION_TEST_SSH_KEY_PATH"
   && echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> "$INTEGRATION_TEST_SSH_KEY_PATH"
