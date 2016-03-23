@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.extension.settings
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.PlusProperties
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
@@ -12,7 +12,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-class LocalPortForwardSettings implements Settings<LocalPortForwardSettings>, ToStringProperties {
+class LocalPortForwardSettings implements PlusProperties<LocalPortForwardSettings>, ToStringProperties {
     /**
      * Local port to bind. Defaults to 0 (allocate free port).
      */

@@ -2,10 +2,8 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.PlusProperties
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-
-import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
  * Settings for {@link Command}.
@@ -13,7 +11,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-class CommandSettings implements Settings<CommandSettings>, ToStringProperties {
+class CommandSettings implements PlusProperties<CommandSettings>, ToStringProperties {
     /**
      * Ignores the exit status of the command or shell.
      */
@@ -57,16 +55,4 @@ class CommandSettings implements Settings<CommandSettings>, ToStringProperties {
             logging: LoggingMethod.slf4j,
             encoding: 'UTF-8',
     )
-
-    CommandSettings plus(CommandSettings right) {
-        new CommandSettings(
-                ignoreError:    findNotNull(right.ignoreError, ignoreError),
-                pty:            findNotNull(right.pty, pty),
-                logging:        findNotNull(right.logging, logging),
-                encoding:       findNotNull(right.encoding, encoding),
-                interaction:    findNotNull(right.interaction, interaction),
-                outputStream:   findNotNull(right.outputStream, outputStream),
-                errorStream:    findNotNull(right.errorStream, errorStream),
-        )
-    }
 }

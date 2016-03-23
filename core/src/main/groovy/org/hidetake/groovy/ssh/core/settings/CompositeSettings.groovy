@@ -13,7 +13,7 @@ import org.hidetake.groovy.ssh.session.SessionSettings
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-class CompositeSettings implements Settings<CompositeSettings>, ToStringProperties {
+class CompositeSettings implements PlusProperties<CompositeSettings>, ToStringProperties {
     @Delegate
     ConnectionSettings connectionSettings = new ConnectionSettings()
 
@@ -28,13 +28,4 @@ class CompositeSettings implements Settings<CompositeSettings>, ToStringProperti
             sessionSettings: SessionSettings.DEFAULT,
             commandSettings: CommandSettings.DEFAULT,
     )
-
-    @Override
-    CompositeSettings plus(CompositeSettings right) {
-        new CompositeSettings(
-                connectionSettings: connectionSettings + right.connectionSettings,
-                sessionSettings: sessionSettings + right.sessionSettings,
-                commandSettings: commandSettings + right.commandSettings,
-        )
-    }
 }

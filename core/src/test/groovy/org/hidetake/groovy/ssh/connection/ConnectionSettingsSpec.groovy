@@ -1,54 +1,9 @@
 package org.hidetake.groovy.ssh.connection
 
-import org.hidetake.groovy.ssh.core.Proxy
-import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class ConnectionSettingsSpec extends Specification {
-
-    @Shared
-    Proxy proxyDefault = new Proxy("proxyDefault")
-    
-    @Shared
-    Proxy proxyOverride =  new Proxy("proxyOverride")
-    
-    def "merge with empty"() {
-        given:
-        def settings = new ConnectionSettings(identity: new File('id_rsa'))
-
-        when:
-        def merged = settings + new ConnectionSettings()
-
-        then:
-        merged == settings
-    }
-
-    def "merge 1 key"() {
-        given:
-        def settings = new ConnectionSettings(identity: new File('id_rsa'))
-
-        when:
-        def merged = settings + new ConnectionSettings(identity: new File('id_dsa'))
-
-        then:
-        merged.identity == new File('id_dsa')
-        merged.password == null
-        merged.knownHosts == null
-    }
-
-    def "merge 2 keys"() {
-        given:
-        def settings = new ConnectionSettings(identity: new File('id_rsa'))
-
-        when:
-        def merged = settings + new ConnectionSettings(identity: new File('id_dsa'), password: 'pw')
-
-        then:
-        merged.identity == new File('id_dsa')
-        merged.password == 'pw'
-        merged.knownHosts == null
-    }
 
     @Unroll
     def "merge identity and passphrase"() {
