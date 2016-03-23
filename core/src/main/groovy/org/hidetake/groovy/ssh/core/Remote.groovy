@@ -3,6 +3,8 @@ package org.hidetake.groovy.ssh.core
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
 
+import java.util.concurrent.atomic.AtomicInteger
+
 /**
  * Represents a remote host.
  *
@@ -21,12 +23,16 @@ class Remote {
         assert name
     }
 
-    def Remote(Map<String, Object> properties) {
-        assert properties
-        assert properties.host
-        name = properties.host
-        properties.each { k, v -> setProperty(k, v) }
+    def Remote(Map<String, Object> settings) {
+        name = settings.name ?: "Remote${sequenceForAutoNaming.incrementAndGet()}"
+        settings.findAll { key, value ->
+            key != 'name'
+        }.each { key, value ->
+            setProperty(key, value)
+        }
     }
+
+    private static final AtomicInteger sequenceForAutoNaming = new AtomicInteger()
 
     /**
      * Port.

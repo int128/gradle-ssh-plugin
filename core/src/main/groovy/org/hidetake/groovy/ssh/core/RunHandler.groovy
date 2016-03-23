@@ -60,12 +60,12 @@ class RunHandler {
      * Add a session.
      * This method creates a {@link Remote} instance and add a session with it.
      *
-     * @param properties properties of a {@link Remote}
+     * @param settings settings of a {@link Remote}
      * @param closure closure for {@link SessionHandler}
      */
-    void session(Map properties, @DelegatesTo(SessionHandler) Closure closure) {
-        assert properties, 'properties of a remote must be given'
-        session(new Remote(properties), closure)
+    void session(Map settings, @DelegatesTo(SessionHandler) Closure closure) {
+        assert settings, 'properties of a remote must be given'
+        session(new Remote(settings), closure)
     }
 
     /**

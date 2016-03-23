@@ -18,7 +18,7 @@ remotes {
 }
 ```
 
-It can be added dynamically by using `remotes.create(name)`.
+A remote host can be added by calling `remotes.create(name)`.
 
 ```groovy
 task setupRemote << {
@@ -26,8 +26,8 @@ task setupRemote << {
     session(remotes.web01) {
       def targetHost = execute 'cat settings/hostname'
       def targetUser = execute 'cat settings/username'
-      // Define a remote host dynamically
-      remotes.create('dynamic1') {
+      // Create and add a remote host
+      remotes.create('db01') {
         host = targetHost
         user = targetUser
       }
@@ -37,7 +37,7 @@ task setupRemote << {
 
 task something(dependsOn: setupRemote) << {
   ssh.run {
-    session(remotes.dynamic1) {
+    session(remotes.db01) {
       //execute ...
     }
   }
