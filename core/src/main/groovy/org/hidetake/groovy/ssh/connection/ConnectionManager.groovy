@@ -86,6 +86,7 @@ class ConnectionManager {
      */
     private Session establishSession(Remote remote, String host, int port) {
         def settings = connectionSettings + remote.connectionSettings
+        log.debug("Connecting to $remote with $settings")
 
         assert settings.user, "user must be given (remote ${remote.name})"
         assert settings.knownHosts   != null, 'knownHosts must not be null'

@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh.core.settings
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.session.SessionSettings
@@ -14,8 +13,7 @@ import org.hidetake.groovy.ssh.session.SessionSettings
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-@ToString
-class CompositeSettings implements Settings<CompositeSettings> {
+class CompositeSettings implements Settings<CompositeSettings>, ToStringProperties {
     @Delegate
     ConnectionSettings connectionSettings = new ConnectionSettings()
 

@@ -38,7 +38,7 @@ class Executor {
     }
 
     private <T> List<T> dryRun(List<Plan<T>> plans) {
-        log.debug("Running ${plans.size()} session(s) as dry-run")
+        log.debug("Running ${plans.size()} session(s) with $settings")
         plans.collect { plan ->
             def operations = new DryRunOperations(plan.remote)
             callWithDelegate(plan.closure, SessionHandler.create(operations, settings))
@@ -46,7 +46,7 @@ class Executor {
     }
 
     private <T> List<T> wetRun(List<Plan<T>> plans) {
-        log.debug("Running ${plans.size()} session(s)")
+        log.debug("Running ${plans.size()} session(s) with $settings")
         def manager = new ConnectionManager(settings.connectionSettings)
         try {
             plans.collect { plan ->

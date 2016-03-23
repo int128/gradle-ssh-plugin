@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.connection
 
 import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
@@ -14,8 +14,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-@ToString(excludes = 'password, identity, passphrase, allowAnyHosts')
-class ConnectionSettings implements Settings<ConnectionSettings> {
+class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProperties {
     /**
      * Remote user.
      */
@@ -28,6 +27,11 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
     String password
 
     /**
+     * {@link #toString()} formatter to hide credential.
+     */
+    final toString__password() { '...' }
+
+    /**
      * Identity key file for public-key authentication.
      * This must be a {@link File}, {@link String} or null.
      * Leave as null if the public key authentication is not needed.
@@ -35,10 +39,20 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
     def identity
 
     /**
+     * {@link #toString()} formatter to hide credential.
+     */
+    final toString__identity() { identity instanceof File ? identity : '...' }
+
+    /**
      * Pass-phrase for the identity key.
      * This may be null.
      */
     String passphrase
+
+    /**
+     * {@link #toString()} formatter to hide credential.
+     */
+    final toString__passphrase() { '...' }
 
     /**
      * Gateway host.
@@ -85,6 +99,11 @@ class ConnectionSettings implements Settings<ConnectionSettings> {
      * @see ConnectionSettings#knownHosts
      */
     final File allowAnyHosts = Constants.allowAnyHosts
+
+    /**
+     * {@link #toString()} formatter to hide the constant.
+     */
+    final toString__allowAnyHosts() {}
 
     static class Constants {
         static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")

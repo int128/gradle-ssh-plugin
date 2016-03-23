@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.core
 
+import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.container.ContainerBuilder
 import org.hidetake.groovy.ssh.core.container.ProxyContainer
 import org.hidetake.groovy.ssh.core.container.RemoteContainer
@@ -13,6 +14,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class Service {
     /**
      * Container of remote hosts.
@@ -72,6 +74,9 @@ class Service {
         def handler = new RunHandler()
         callWithDelegate(closure, handler)
 
+        log.debug("Using default settings: $CompositeSettings.DEFAULT")
+        log.debug("Using global settings: $settings")
+        log.debug("Using per-service settings: $handler.settings")
         def executor = new Executor(CompositeSettings.DEFAULT + settings + handler.settings)
 
         def results = executor.execute(handler.sessions)
