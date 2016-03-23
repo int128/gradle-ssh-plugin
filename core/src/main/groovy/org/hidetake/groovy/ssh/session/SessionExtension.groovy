@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.session
 
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.operation.SftpOperations
 
@@ -34,8 +34,8 @@ trait SessionExtension {
     abstract Operations getOperations()
 
     /**
-     * Return the current {@link OperationSettings}.
+     * Return the current global settings.
      * Only for DSL extensions, do not use from the script.
      */
-    abstract OperationSettings getOperationSettings()
+    abstract CompositeSettings getGlobalSettings()
 }

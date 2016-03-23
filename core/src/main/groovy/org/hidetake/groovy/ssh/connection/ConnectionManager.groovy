@@ -7,7 +7,6 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 
 import javax.crypto.Mac
@@ -59,9 +58,10 @@ class ConnectionManager {
      * @return a JSch session
      */
     private Session establishViaGateway(Remote remote) {
-        if (remote.gateway) {
-            log.debug("Connecting to $remote via $remote.gateway")
-            def session = establishViaGateway(remote.gateway)
+        def settings = connectionSettings + remote.connectionSettings
+        if (settings.gateway && settings.gateway != remote) {
+            log.debug("Connecting to $remote via $settings.gateway")
+            def session = establishViaGateway(settings.gateway)
 
             log.debug("Requesting port forwarding " +
                       "to $remote.name [$remote.host:$remote.port]")

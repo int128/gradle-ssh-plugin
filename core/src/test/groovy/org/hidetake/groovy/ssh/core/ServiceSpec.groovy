@@ -1,19 +1,15 @@
 package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.session.Executor
-import org.hidetake.groovy.ssh.session.Plan
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class ServiceSpec extends Specification {
 
     Service ssh
-    Executor executor
 
     def setup() {
-        executor = Mock(Executor)
-        ssh = new Service(executor)
+        ssh = new Service()
     }
 
     def "global settings can be set"() {
@@ -78,7 +74,7 @@ class ServiceSpec extends Specification {
         'managementServer'  | 'http'
     }
 
-    def "ssh.run() should call executor and return last result"() {
+    def "ssh.run() should return last result of sessions"() {
         given:
         def remote1 = new Remote('myRemote1')
         remote1.user = 'myUser1'
@@ -86,20 +82,19 @@ class ServiceSpec extends Specification {
         def remote2 = new Remote('myRemote2')
         remote2.user = 'myUser2'
         remote2.host = 'myHost2'
-        def closure = {
-            execute 'something'
-        }
 
         when:
         def result = ssh.run {
-            session(remote1, remote2, closure)
+            settings {
+                dryRun = true
+            }
+            session(remote1, remote2) {
+                "result-$remote.name"
+            }
         }
 
         then:
-        1 * executor.execute(_, [new Plan(remote1, closure), new Plan(remote2, closure)]) >> ['result1', 'result2']
-
-        then:
-        result == 'result2'
+        result == 'result-myRemote2'
     }
 
     def "ssh.run(null) causes error"() {

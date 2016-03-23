@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh.operation
 
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
@@ -13,9 +12,9 @@ import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 interface Operations {
     Remote getRemote()
 
-    Operation shell(OperationSettings settings)
+    Operation shell(CommandSettings settings)
 
-    Operation command(OperationSettings settings, String commandLine)
+    Operation command(CommandSettings settings, String commandLine)
 
     int forwardLocalPort(LocalPortForwardSettings settings)
 

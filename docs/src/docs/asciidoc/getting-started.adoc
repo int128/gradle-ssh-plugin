@@ -197,9 +197,14 @@ session(remotes.web02) {
 }
 ```
 
-Also the session method accepts properties of the remote host without having to declare it on the remote container.
+`session` method also accepts a map of settings of the remote host.
 
 ```groovy
+session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
+  //execute ...
+}
+
+// If name is not given, auto-generated name such as Remote1 will be shown in console log
 session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
   //execute ...
 }

@@ -2,9 +2,14 @@ package org.hidetake.groovy.ssh.core.settings
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
+import org.hidetake.groovy.ssh.connection.ConnectionSettings
+import org.hidetake.groovy.ssh.operation.CommandSettings
+import org.hidetake.groovy.ssh.session.SessionSettings
 
 /**
- * Represents overall settings configurable in global or task.
+ * Represents overall settings configurable in
+ * {@link org.hidetake.groovy.ssh.core.Service#settings} and
+ * {@link org.hidetake.groovy.ssh.core.RunHandler#settings}.
  *
  * @author Hidetake Iwata
  */
@@ -15,18 +20,23 @@ class CompositeSettings implements Settings<CompositeSettings> {
     ConnectionSettings connectionSettings = new ConnectionSettings()
 
     @Delegate
-    OperationSettings operationSettings = new OperationSettings()
+    SessionSettings sessionSettings = new SessionSettings()
+
+    @Delegate
+    CommandSettings commandSettings = new CommandSettings()
 
     static final DEFAULT = new CompositeSettings(
             connectionSettings: ConnectionSettings.DEFAULT,
-            operationSettings: OperationSettings.DEFAULT
+            sessionSettings: SessionSettings.DEFAULT,
+            commandSettings: CommandSettings.DEFAULT,
     )
 
     @Override
     CompositeSettings plus(CompositeSettings right) {
         new CompositeSettings(
                 connectionSettings: connectionSettings + right.connectionSettings,
-                operationSettings: operationSettings + right.operationSettings
+                sessionSettings: sessionSettings + right.sessionSettings,
+                commandSettings: commandSettings + right.commandSettings,
         )
     }
 }

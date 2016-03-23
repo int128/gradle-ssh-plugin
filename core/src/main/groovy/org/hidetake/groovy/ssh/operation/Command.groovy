@@ -4,7 +4,6 @@ import com.jcraft.jsch.ChannelExec
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.interaction.Interaction
 
 /**
@@ -21,7 +20,7 @@ class Command implements Operation {
     private final LineOutputStream standardOutput
     private final LineOutputStream standardError
 
-    def Command(Connection connection1, OperationSettings settings, String commandLine1) {
+    def Command(Connection connection1, CommandSettings settings, String commandLine1) {
         connection = connection1
         commandLine = commandLine1
 

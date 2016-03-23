@@ -2,7 +2,6 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
@@ -21,13 +20,13 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    Operation shell(OperationSettings settings) {
+    Operation shell(CommandSettings settings) {
         log.info("Executing shell on $remote")
         new DryRunOperation()
     }
 
     @Override
-    Operation command(OperationSettings settings, String commandLine) {
+    Operation command(CommandSettings settings, String commandLine) {
         log.info("Executing command on $remote: $commandLine")
         new DryRunOperation()
     }

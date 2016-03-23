@@ -3,7 +3,6 @@ package org.hidetake.groovy.ssh.operation
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 
@@ -33,13 +32,13 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    Operation shell(OperationSettings settings) {
+    Operation shell(CommandSettings settings) {
         log.debug("Executing shell on $remote.name: $settings")
         new Shell(connection, settings)
     }
 
     @Override
-    Operation command(OperationSettings settings, String commandLine) {
+    Operation command(CommandSettings settings, String commandLine) {
         log.debug("Executing command on $remote.name: $commandLine: $settings")
         new Command(connection, settings, commandLine)
     }

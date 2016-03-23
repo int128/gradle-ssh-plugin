@@ -1,6 +1,9 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
+import groovy.transform.EqualsAndHashCode
+import org.hidetake.groovy.ssh.connection.ConnectionSettings
+
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Represents a remote host.
@@ -8,6 +11,7 @@ import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
  * @author Hidetake Iwata
  *
  */
+@EqualsAndHashCode(includes = 'name')
 class Remote {
     /**
      * Name of this instance.
@@ -19,12 +23,16 @@ class Remote {
         assert name
     }
 
-    def Remote(Map<String, Object> properties) {
-        assert properties
-        assert properties.host
-        name = properties.host
-        properties.each { k, v -> setProperty(k, v) }
+    def Remote(Map<String, Object> settings) {
+        name = settings.name ?: "Remote${sequenceForAutoNaming.incrementAndGet()}"
+        settings.findAll { key, value ->
+            key != 'name'
+        }.each { key, value ->
+            setProperty(key, value)
+        }
     }
+
+    private static final AtomicInteger sequenceForAutoNaming = new AtomicInteger()
 
     /**
      * Port.
@@ -35,18 +43,6 @@ class Remote {
      * Remote host.
      */
     String host
-
-    /**
-     * Gateway host.
-     * This may be null.
-     */
-    Remote gateway
-
-	/**
-	 * Proxy to use when establishing a connection.
-	 * This may be null.
-	 */
-	Proxy proxy
 
     /**
      * Roles.

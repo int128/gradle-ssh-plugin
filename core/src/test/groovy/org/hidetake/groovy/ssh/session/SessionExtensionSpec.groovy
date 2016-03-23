@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.session
 
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.operation.Operation
 import org.hidetake.groovy.ssh.operation.Operations
 import spock.lang.Specification
@@ -46,15 +46,15 @@ class SessionExtensionSpec extends Specification {
         given:
         def operation = Mock(Operation)
         def operations = Mock(Operations)
-        def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
-        def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
+        def settings = CompositeSettings.DEFAULT + new CompositeSettings(extensions: extensions)
+        def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
         def result = defaultSessionHandler.with {
             performSomething('command')
         }
 
-        then: 1 * operations.command(operationSettings, 'command something') >> operation
+        then: 1 * operations.command(settings.commandSettings, 'command something') >> operation
         then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
         then: 1 * operation.startSync() >> 0
         then: result == 'result'
@@ -71,15 +71,15 @@ class SessionExtensionSpec extends Specification {
         given:
         def operation = Mock(Operation)
         def operations = Mock(Operations)
-        def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
-        def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
+        def settings = CompositeSettings.DEFAULT + new CompositeSettings(extensions: extensions)
+        def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
         def result = defaultSessionHandler.with {
             performAnother('command')
         }
 
-        then: 1 * operations.command(operationSettings, 'command another something') >> operation
+        then: 1 * operations.command(settings.commandSettings, 'command another something') >> operation
         then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
         then: 1 * operation.startSync() >> 0
         then: result == 'result'
@@ -105,8 +105,8 @@ class SessionExtensionSpec extends Specification {
     def "method in #type should be invisible in reverse order"() {
         given:
         def operations = Mock(Operations)
-        def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
-        def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
+        def settings = CompositeSettings.DEFAULT + new CompositeSettings(extensions: extensions)
+        def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
         defaultSessionHandler.with {
@@ -129,8 +129,8 @@ class SessionExtensionSpec extends Specification {
     def "private property in the #type should be invisible in the session"() {
         given:
         def operations = Mock(Operations)
-        def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
-        def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
+        def settings = CompositeSettings.DEFAULT + new CompositeSettings(extensions: extensions)
+        def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
         defaultSessionHandler.with {

@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.extension
 
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
-import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
@@ -22,7 +22,7 @@ trait Sudo implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        Internal.sudo(operations, operationSettings + new OperationSettings(), command)
+        Internal.sudo(operations, globalSettings.commandSettings, command)
     }
 
     /**
@@ -36,7 +36,7 @@ trait Sudo implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        Internal.sudo(operations, operationSettings + new OperationSettings(settings), command)
+        Internal.sudo(operations, globalSettings + new CommandSettings(settings), command)
     }
 
     /**
@@ -49,7 +49,7 @@ trait Sudo implements SessionExtension {
     void executeSudo(String command, Closure callback) {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
-        callback.call(Internal.sudo(operations, operationSettings + new OperationSettings(), command))
+        callback.call(Internal.sudo(operations, globalSettings.commandSettings, command))
     }
 
     /**
@@ -64,16 +64,16 @@ trait Sudo implements SessionExtension {
         assert command, 'command must be given'
         assert callback, 'callback must be given'
         assert settings != null, 'settings must not be null'
-        callback.call(Internal.sudo(operations, operationSettings + new OperationSettings(settings), command))
+        callback.call(Internal.sudo(operations, globalSettings + new CommandSettings(settings), command))
     }
 
 
     @Slf4j
     private static class Internal {
-        static sudo(Operations operations, OperationSettings settings, String commandLine) {
+        static sudo(Operations operations, CommandSettings settings, String commandLine) {
             final prompt = UUID.randomUUID().toString()
             final lines = []
-            final interationSettings = new OperationSettings(interaction: {
+            final interactionSettings = new CommandSettings(interaction: {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Providing password for sudo prompt on $operations.remote.name")
                     standardInput << operations.remote.password << '\n'
@@ -95,7 +95,7 @@ trait Sudo implements SessionExtension {
             })
 
             final sudoCommandLine = "sudo -S -p '$prompt' $commandLine"
-            final exitStatus = operations.command(settings + interationSettings, sudoCommandLine).startSync()
+            final exitStatus = operations.command(settings + interactionSettings, sudoCommandLine).startSync()
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
             }

@@ -5,7 +5,6 @@ import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.operation.Command
-import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.test.server.FilenameUtils
 import org.hidetake.groovy.ssh.test.server.SshServerMock
 import org.junit.Rule
@@ -75,8 +74,8 @@ class MainSpec extends Specification {
         Main.main scriptFile.path
 
         then:
-        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
-        1 * logger.error({ it =~ /localhost#\d+?\|error/})
+        1 * logger.info ({ it =~ /Remote\d+?#\d+?\|some message/ })
+        1 * logger.error({ it =~ /Remote\d+?#\d+?\|error/})
 
         cleanup:
         server.stop()
@@ -97,8 +96,8 @@ class MainSpec extends Specification {
         Main.main '-e', script
 
         then:
-        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
-        1 * logger.error({ it =~ /localhost#\d+?\|error/})
+        1 * logger.info ({ it =~ /Remote\d+?#\d+?\|some message/ })
+        1 * logger.error({ it =~ /Remote\d+?#\d+?\|error/})
 
         cleanup:
         server.stop()
@@ -122,8 +121,8 @@ class MainSpec extends Specification {
         Main.main '--stdin'
 
         then:
-        1 * logger.info ({ it =~ /localhost#\d+?\|some message/ })
-        1 * logger.error({ it =~ /localhost#\d+?\|error/})
+        1 * logger.info ({ it =~ /Remote\d+?#\d+?\|some message/ })
+        1 * logger.error({ it =~ /Remote\d+?#\d+?\|error/})
 
         cleanup:
         System.in = stdin

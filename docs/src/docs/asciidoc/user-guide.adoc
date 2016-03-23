@@ -18,7 +18,7 @@ remotes {
 }
 ```
 
-It can be added dynamically by using `remotes.create(name)`.
+A remote host can be added by calling `remotes.create(name)`.
 
 ```groovy
 task setupRemote << {
@@ -26,8 +26,8 @@ task setupRemote << {
     session(remotes.web01) {
       def targetHost = execute 'cat settings/hostname'
       def targetUser = execute 'cat settings/username'
-      // Define a remote host dynamically
-      remotes.create('dynamic1') {
+      // Create and add a remote host
+      remotes.create('db01') {
         host = targetHost
         user = targetUser
       }
@@ -37,7 +37,7 @@ task setupRemote << {
 
 task something(dependsOn: setupRemote) << {
   ssh.run {
-    session(remotes.dynamic1) {
+    session(remotes.db01) {
       //execute ...
     }
   }
@@ -46,33 +46,45 @@ task something(dependsOn: setupRemote) << {
 
 Following settings can be set in a remote closure.
 
+.Remote settings
 [options="header,autowidth"]
 |===
 |Key       | Type              | Description
 |`host`    | String, Mandatory | Hostname or IP address.
 |`port`    | Integer           | Port. Defaults to 22.
-|`gateway` | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection. Defaults to null.
-|`proxy`   | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
 |===
 
 
 ==== Set connection settings
 
-Also following settings can be set in a remote closure. These can be set globally in the project.
+Also following settings can be set in a remote closure.
 
+.Connection settings
 [options="header,autowidth"]
 |===
 |Key            | Type              | Description
+|`dryRun`       | Boolean           | Dry run flag. If this is true, no actual connection is established. Defaults to false.
 |`user`         | String, Mandatory | User name.
 |`password`     | String            | A password for password authentication. Defaults to null (no password authentication).
 |`identity`     | File or String    | A private key for public-key authentication. This can be a key File or key content String. Defaults to null (no public-key authentication).
 |`passphrase`   | String            | A pass-phrase of the private key. Defaults to null (no pass-phrase).
+|`proxy`        | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
+|`gateway`      | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection. Defaults to null.
 |`agent`        | Boolean           | A flag to use Putty Agent or ssh-agent on authentication. Defaults to false.
 |`knownHosts`   | File              | A known hosts file. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
 |`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
 |`retryWaitSec` | Integer (seconds) | Interval time between each retries. Defaults to 0 (immediately).
 |`keepAliveSec` | Integer (seconds) | Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
 |===
+
+These can be set globally in the project as follows.
+
+```groovy
+ssh.settings {
+  knownHosts = allowAnyHosts
+  dryRun = true
+}
+```
 
 
 ==== Connect through gateway servers
@@ -153,6 +165,7 @@ proxies {
 
 The following settings are used to configure how a proxied connection is established within a proxy closure.
 
+.Proxy settings
 [options="header,autowidth"]
 |===
 |Key            | Type                 | Description
@@ -322,6 +335,21 @@ execute('uname -a') { result ->
 }
 ```
 
+The method accepts following settings:
+
+.Command settings
+[options="header,autowidth"]
+|===
+|Key              | Type            | Description
+|`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
+|`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
+|`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+|`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
+|`errorStream`    | OutputStream    | If given, standard error of the remote command is sent to the stream.
+|`encoding`       | String          | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+|`interaction`    | Closure         | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
+|===
+
 The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
 
 ```groovy
@@ -364,6 +392,8 @@ executeBackground('ping -c 3 server') { result ->
   def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
 }
 ```
+
+The method accepts settings same as `execute` method.
 
 The method throws an exception if an exit status of the command is not zero.
 If a background command returned an error, `ssh.run` method waits for any other commands and throws an exception finally.
@@ -413,7 +443,7 @@ The sudo support is achieved by the stream interaction support. So the method do
 Call the `shell` method to execute a shell.
 The method is useful for a limited environment which supports only a shell such as Cisco IOS.
 
-A stream interaction setting should be given in order to exit the shell.
+An `interaction` setting should be given in order to exit the shell.
 
 ```groovy
 session(remotes.web01) {
@@ -424,6 +454,8 @@ session(remotes.web01) {
   }
 }
 ```
+
+The method accepts settings same as `execute` method excluding `errorStream` because the shell does not support standard error.
 
 The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
 
@@ -521,6 +553,7 @@ forwardLocalPort bind: '0.0.0.0', port: 18080, host: '172.16.1.1', hostPort: 808
 
 The method accepts following settings:
 
+.Local port forwarding settings
 [options="header,autowidth"]
 |===
 |Key              | Type               | Description
@@ -546,6 +579,7 @@ forwardRemotePort bind: '0.0.0.0', port: 30000, host: '192.168.1.5', hostPort: 8
 
 The method accepts following settings:
 
+.Remote port forwarding settings
 [options="header,autowidth"]
 |===
 |Key              | Type               | Description
@@ -572,26 +606,7 @@ ssh.run {
 ```
 
 
-=== Operation settings
-
-Following settings can be given to operation methods.
-
-[options="header,autowidth"]
-|===
-|Key              | Type     | Description
-|`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Defaults to false.
-|`pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Defaults to false.
-|`ignoreError`    | Boolean  | If set to true, an exit status of the command or shell is ignored. Defaults to false.
-|`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
-|`outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.
-|`errorStream`    | OutputStream | If given, standard error of the remote command is sent to the stream.
-|`encoding`       | String   | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
-|`interaction`    | Closure  | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
-|`extensions`     | List     | List of extension trait or map. If a trait is given, it is applied to the session closure. It a map is given, key and value must be a method name and an implementation closure, all keys are added as methods in the session closure. Defaults to an empty.
-|===
-
-
-=== The stream interaction support
+=== Stream interaction support
 
 The execute method can interact with the stream of command executed on the remote host.
 The shell method can do same.
@@ -722,21 +737,23 @@ execute('passwd', pty: true, interaction: {
 ```
 
 
-== Override settings
+== Global settings
 
-Connection settings and operation settings can be set globally
-and overridden by each remote hosts, methods or operation methods.
+Some settings can be set in global and overridden by each `ssh.run` method, remote host or method.
 
-
+.List of settings
 [options="header,autowidth"]
 |===
-|Category            | Global | Per method | Per remote | Per operation
-|Connection settings | x      | x          | x          | -
-|Operation settings  | x      | x          | -          | x
+|Settings               | Global | Each `ssh.run` | Each remote | Each method
+|Connection settings    | x      | x              | x           | -
+|Command settings       | x      | x              | -           | x
+|Remote settings        | -      | -              | x           | -
+|Proxy settings         | -      | -              | x           | -
+|Local port forwarding settings  | -      | -     | -           | x
+|Remote port forwarding settings | -      | -     | -           | x
 |===
 
-
-Connection settings and operation settings can be set globally as follows.
+Some settings can be set in global as follows.
 
 ```groovy
 ssh.settings {
@@ -745,23 +762,21 @@ ssh.settings {
 }
 ```
 
-Connection settings and operation settings can be overridden as follows.
+Some settings can be overridden in a `ssh.run` method as follows.
 
 ```groovy
-task reloadServers << {
-  ssh.run {
-    settings {
-      // overrides global settings
-      pty = true
-    }
-    session(remotes.role('webServers')) {
-      executeBackground('sudo service httpd reload')
-    }
+ssh.run {
+  settings {
+    // overrides global settings
+    pty = true
+  }
+  session(remotes.role('webServers')) {
+    executeBackground('sudo service httpd reload')
   }
 }
 ```
 
-Connection settings can be overridden in a remote host closure.
+Some settings can be overridden in a remote host closure.
 
 ```groovy
 remotes {
@@ -773,7 +788,7 @@ remotes {
 }
 ```
 
-Operation settings can be overridden on an operation method.
+Some settings can be overridden on an operation method.
 
 ```groovy
 execute('sudo service httpd reload', pty: false)
@@ -788,7 +803,7 @@ This feature is still experimental and may be improved in the future.
 
 === Start from a simple extension
 
-Add a map to `extension` of the operation settings.
+Add a map to `extension` of the global settings.
 Following example adds the method `restartAppServer` and it is available in the session closure.
 
 ```groovy

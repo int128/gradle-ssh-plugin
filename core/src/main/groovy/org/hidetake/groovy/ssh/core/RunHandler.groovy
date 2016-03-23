@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.session.SessionHandler
 import org.hidetake.groovy.ssh.session.Plan
+import org.hidetake.groovy.ssh.session.SessionHandler
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -13,7 +13,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  */
 class RunHandler {
     /**
-     * One time settings.
+     * Per service settings.
      */
     final CompositeSettings settings = new CompositeSettings()
 
@@ -23,7 +23,7 @@ class RunHandler {
     final List<Plan> sessions = []
 
     /**
-     * Configure one time settings.
+     * Configure per service settings.
      *
      * @param closure closure for {@link CompositeSettings}
      */
@@ -60,12 +60,12 @@ class RunHandler {
      * Add a session.
      * This method creates a {@link Remote} instance and add a session with it.
      *
-     * @param properties properties of a {@link Remote}
+     * @param settings settings of a {@link Remote}
      * @param closure closure for {@link SessionHandler}
      */
-    void session(Map properties, @DelegatesTo(SessionHandler) Closure closure) {
-        assert properties, 'properties of a remote must be given'
-        session(new Remote(properties), closure)
+    void session(Map settings, @DelegatesTo(SessionHandler) Closure closure) {
+        assert settings, 'properties of a remote must be given'
+        session(new Remote(settings), closure)
     }
 
     /**
