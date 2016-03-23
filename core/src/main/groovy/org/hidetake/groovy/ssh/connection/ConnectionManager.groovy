@@ -58,7 +58,7 @@ class ConnectionManager {
      * @return a JSch session
      */
     private Session establishViaGateway(Remote remote) {
-        def settings = connectionSettings + remote.connectionSettings
+        def settings = new ConnectionSettings.With(connectionSettings, remote)
         if (settings.gateway && settings.gateway != remote) {
             log.debug("Connecting to $remote via $settings.gateway")
             def session = establishViaGateway(settings.gateway)
@@ -85,7 +85,7 @@ class ConnectionManager {
      * @return a JSch session
      */
     private Session establishSession(Remote remote, String host, int port) {
-        def settings = connectionSettings + remote.connectionSettings
+        def settings = new ConnectionSettings.With(connectionSettings, remote)
         log.debug("Connecting to $remote with $settings")
 
         assert settings.user, "user must be given (remote ${remote.name})"

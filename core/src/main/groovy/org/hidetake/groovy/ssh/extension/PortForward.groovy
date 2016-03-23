@@ -19,7 +19,7 @@ trait PortForward implements SessionExtension {
      */
     int forwardLocalPort(HashMap settings) {
         assert settings != null, 'settings must not be null'
-        def merged = LocalPortForwardSettings.DEFAULT + new LocalPortForwardSettings(settings)
+        def merged = new LocalPortForwardSettings.With(LocalPortForwardSettings.With.DEFAULT, new LocalPortForwardSettings.With(settings))
         assert merged.hostPort, 'remote port must be given'
         operations.forwardLocalPort(merged)
     }
@@ -31,7 +31,7 @@ trait PortForward implements SessionExtension {
      */
     void forwardRemotePort(HashMap settings) {
         assert settings != null, 'settings must not be null'
-        def merged = RemotePortForwardSettings.DEFAULT + new RemotePortForwardSettings(settings)
+        def merged = new RemotePortForwardSettings.With(RemotePortForwardSettings.With.DEFAULT, new RemotePortForwardSettings.With(settings))
         assert merged.hostPort, 'local port must be given'
         assert merged.port, 'remote port must be given'
         operations.forwardRemotePort(merged)

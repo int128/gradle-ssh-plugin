@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  */
 @EqualsAndHashCode(includes = 'name')
-class Remote {
+class Remote implements ConnectionSettings, SudoSettings {
     /**
      * Name of this instance.
      */
@@ -49,14 +49,6 @@ class Remote {
      * Roles.
      */
     final List<String> roles = []
-
-    // Excludes traits to avoid side-effect
-    @Delegate(interfaces = false)
-    ConnectionSettings connectionSettings = new ConnectionSettings()
-
-    // Excludes traits to avoid side-effect
-    @Delegate(interfaces = false)
-    SudoSettings sudoSettings = new SudoSettings()
 
     void role(String role) {
         assert role != null, 'role should be set'

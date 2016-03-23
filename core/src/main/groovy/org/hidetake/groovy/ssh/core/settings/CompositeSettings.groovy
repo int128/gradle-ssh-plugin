@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.core.settings
 
-import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
+import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.session.SessionSettings
 
@@ -12,20 +12,26 @@ import org.hidetake.groovy.ssh.session.SessionSettings
  *
  * @author Hidetake Iwata
  */
-@EqualsAndHashCode
-class CompositeSettings implements PlusProperties<CompositeSettings>, ToStringProperties {
-    @Delegate
-    ConnectionSettings connectionSettings = new ConnectionSettings()
+trait CompositeSettings implements
+        ConnectionSettings,
+        SessionSettings,
+        CommandSettings,
+        SudoSettings
+{
+    static class With implements CompositeSettings, ToStringProperties {
+        def With() {}
+        def With(CompositeSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
 
-    @Delegate
-    SessionSettings sessionSettings = new SessionSettings()
-
-    @Delegate
-    CommandSettings commandSettings = new CommandSettings()
-
-    static final DEFAULT = new CompositeSettings(
-            connectionSettings: ConnectionSettings.DEFAULT,
-            sessionSettings: SessionSettings.DEFAULT,
-            commandSettings: CommandSettings.DEFAULT,
-    )
+        static final CompositeSettings DEFAULT = new CompositeSettings.With()
+        static {
+            SettingsHelper.mergeProperties(DEFAULT,
+                    ConnectionSettings.With.DEFAULT,
+                    SessionSettings.With.DEFAULT,
+                    CommandSettings.With.DEFAULT,
+                    SudoSettings.With.DEFAULT,
+            )
+        }
+    }
 }

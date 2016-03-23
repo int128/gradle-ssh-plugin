@@ -20,7 +20,7 @@ trait Shell implements SessionExtension {
     void shell(HashMap map) {
         assert map != null, 'map must not be null'
 
-        def settings = globalSettings + new CommandSettings(map)
+        def settings = new CommandSettings.With(globalSettings, new CommandSettings.With(map))
         def operation = operations.shell(settings)
 
         def exitStatus = operation.startSync()

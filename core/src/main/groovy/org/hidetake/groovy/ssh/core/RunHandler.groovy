@@ -15,7 +15,7 @@ class RunHandler {
     /**
      * Per service settings.
      */
-    final CompositeSettings settings = new CompositeSettings()
+    final CompositeSettings settings = new CompositeSettings.With()
 
     /**
      * Sessions added in the closure of {@link Service#run(groovy.lang.Closure)}.

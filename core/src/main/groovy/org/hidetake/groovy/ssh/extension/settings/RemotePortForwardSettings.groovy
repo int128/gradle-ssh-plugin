@@ -1,18 +1,15 @@
 package org.hidetake.groovy.ssh.extension.settings
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
+import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-
-import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
  * Settings for the remote port forwarding.
  *
  * @author Hidetake Iwata
  */
-@EqualsAndHashCode
-class RemotePortForwardSettings implements PlusProperties<RemotePortForwardSettings>, ToStringProperties {
+trait RemotePortForwardSettings {
     /**
      * Local port to connect. (Mandatory)
      */
@@ -33,18 +30,14 @@ class RemotePortForwardSettings implements PlusProperties<RemotePortForwardSetti
      */
     String bind
 
-    static final DEFAULT = new RemotePortForwardSettings(
-            host: '127.0.0.1',
-            bind: '127.0.0.1',
-    )
 
-    @Override
-    RemotePortForwardSettings plus(RemotePortForwardSettings right) {
-        new RemotePortForwardSettings(
-                hostPort: findNotNull(right.hostPort, hostPort),
-                host: findNotNull(right.host, host),
-                port: findNotNull(right.port, port),
-                bind: findNotNull(right.bind, bind)
-        )
+    @EqualsAndHashCode
+    static class With implements RemotePortForwardSettings, ToStringProperties {
+        def With() {}
+        def With(RemotePortForwardSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
+
+        static final DEFAULT = new With(bind: '127.0.0.1', host: '127.0.0.1')
     }
 }

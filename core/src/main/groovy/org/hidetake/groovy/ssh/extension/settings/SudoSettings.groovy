@@ -1,11 +1,10 @@
 package org.hidetake.groovy.ssh.extension.settings
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
+import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
-@EqualsAndHashCode
-class SudoSettings implements PlusProperties<SudoSettings>, ToStringProperties {
+trait SudoSettings {
     /**
      * Sudo password.
      */
@@ -16,8 +15,17 @@ class SudoSettings implements PlusProperties<SudoSettings>, ToStringProperties {
      */
     String sudoPath
 
-    static final DEFAULT = new SudoSettings(
-            sudoPassword: null,
-            sudoPath: 'sudo',
-    )
+
+    @EqualsAndHashCode
+    static class With implements SudoSettings, ToStringProperties {
+        def With() {}
+        def With(SudoSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
+
+        static final SudoSettings DEFAULT = new SudoSettings.With(
+                sudoPassword: null,
+                sudoPath: 'sudo',
+        )
+    }
 }

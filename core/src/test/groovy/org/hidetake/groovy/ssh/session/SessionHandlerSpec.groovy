@@ -12,7 +12,7 @@ class SessionHandlerSpec extends Specification {
 
     def setup() {
         operations = Mock(Operations)
-        globalSettings = CompositeSettings.DEFAULT + new CompositeSettings(dryRun: true)
+        globalSettings = new CompositeSettings.With(CompositeSettings.With.DEFAULT, new CompositeSettings.With(dryRun: true))
         defaultSessionHandler = SessionHandler.create(operations, globalSettings)
     }
 

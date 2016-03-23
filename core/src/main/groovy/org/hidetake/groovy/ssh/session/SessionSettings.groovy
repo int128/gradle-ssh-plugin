@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.session
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
+import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 /**
@@ -9,8 +9,7 @@ import org.hidetake.groovy.ssh.core.settings.ToStringProperties
  *
  * @author Hidetake Iwata
  */
-@EqualsAndHashCode
-class SessionSettings implements PlusProperties<SessionSettings>, ToStringProperties {
+trait SessionSettings {
     /**
      * Dry-run flag.
      * If <code>true</code>, performs no action.
@@ -25,15 +24,24 @@ class SessionSettings implements PlusProperties<SessionSettings>, ToStringProper
     /**
      * Do not show if it is empty or null.
      */
-    final toString__extensions() { extensions ? extensions : null }
+    def toString__extensions() { extensions ? extensions : null }
 
-    final plus__extensions(right) {
-        assert right.extensions instanceof List
-        extensions + right.extensions
+    def plus__extensions(SessionSettings prior) {
+        assert prior.extensions instanceof List
+        extensions + prior.extensions
     }
 
-    static final DEFAULT = new SessionSettings(
-            dryRun: false,
-            extensions: []
-    )
+
+    @EqualsAndHashCode
+    static class With implements SessionSettings, ToStringProperties {
+        def With() {}
+        def With(SessionSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
+
+        static final SessionSettings DEFAULT = new SessionSettings.With(
+                dryRun: false,
+                extensions: [],
+        )
+    }
 }

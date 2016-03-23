@@ -1,18 +1,15 @@
 package org.hidetake.groovy.ssh.extension.settings
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
+import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-
-import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
  * Settings for the local port forwarding.
  *
  * @author Hidetake Iwata
  */
-@EqualsAndHashCode
-class LocalPortForwardSettings implements PlusProperties<LocalPortForwardSettings>, ToStringProperties {
+trait LocalPortForwardSettings {
     /**
      * Local port to bind. Defaults to 0 (allocate free port).
      */
@@ -33,19 +30,14 @@ class LocalPortForwardSettings implements PlusProperties<LocalPortForwardSetting
      */
     String host
 
-    static final DEFAULT = new LocalPortForwardSettings(
-            port: 0,
-            bind: '127.0.0.1',
-            host: '127.0.0.1',
-    )
 
-    @Override
-    LocalPortForwardSettings plus(LocalPortForwardSettings right) {
-        new LocalPortForwardSettings(
-                port: findNotNull(right.port, port),
-                bind: findNotNull(right.bind, bind),
-                hostPort: findNotNull(right.hostPort, hostPort),
-                host: findNotNull(right.host, host)
-        )
+    @EqualsAndHashCode
+    static class With implements LocalPortForwardSettings, ToStringProperties {
+        def With() {}
+        def With(LocalPortForwardSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
+
+        static final DEFAULT = new With(port: 0, bind: '127.0.0.1', host: '127.0.0.1')
     }
 }

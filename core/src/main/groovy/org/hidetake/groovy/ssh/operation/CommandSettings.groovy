@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
+import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 /**
@@ -10,8 +10,7 @@ import org.hidetake.groovy.ssh.core.settings.ToStringProperties
  *
  * @author Hidetake Iwata
  */
-@EqualsAndHashCode
-class CommandSettings implements PlusProperties<CommandSettings>, ToStringProperties {
+trait CommandSettings {
     /**
      * Ignores the exit status of the command or shell.
      */
@@ -49,10 +48,19 @@ class CommandSettings implements PlusProperties<CommandSettings>, ToStringProper
      */
     Closure interaction
 
-    static final DEFAULT = new CommandSettings(
-            ignoreError: false,
-            pty: false,
-            logging: LoggingMethod.slf4j,
-            encoding: 'UTF-8',
-    )
+
+    @EqualsAndHashCode
+    static class With implements CommandSettings, ToStringProperties {
+        def With() {}
+        def With(CommandSettings... sources) {
+            SettingsHelper.mergeProperties(this, sources)
+        }
+
+        static final CommandSettings DEFAULT = new CommandSettings.With(
+                ignoreError: false,
+                pty: false,
+                logging: LoggingMethod.slf4j,
+                encoding: 'UTF-8',
+        )
+    }
 }

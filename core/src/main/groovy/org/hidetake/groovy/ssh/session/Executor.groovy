@@ -47,7 +47,7 @@ class Executor {
 
     private <T> List<T> wetRun(List<Plan<T>> plans) {
         log.debug("Running ${plans.size()} session(s) with $settings")
-        def manager = new ConnectionManager(settings.connectionSettings)
+        def manager = new ConnectionManager(settings)
         try {
             plans.collect { plan ->
                 def connection = manager.connect(plan.remote)
