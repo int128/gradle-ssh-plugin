@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.session
 
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.operation.Operation
 import org.hidetake.groovy.ssh.operation.Operations
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -43,6 +44,7 @@ class SessionExtensionSpec extends Specification {
     @Unroll
     def "method in the #type should be available in the session"() {
         given:
+        def operation = Mock(Operation)
         def operations = Mock(Operations)
         def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
         def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
@@ -52,7 +54,9 @@ class SessionExtensionSpec extends Specification {
             performSomething('command')
         }
 
-        then: 1 * operations.execute(operationSettings, 'command something', null) >> 'result'
+        then: 1 * operations.command(operationSettings, 'command something') >> operation
+        then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
+        then: 1 * operation.startSync() >> 0
         then: result == 'result'
 
         where:
@@ -65,6 +69,7 @@ class SessionExtensionSpec extends Specification {
     @Unroll
     def "method in #type should be available in the session"() {
         given:
+        def operation = Mock(Operation)
         def operations = Mock(Operations)
         def operationSettings = OperationSettings.DEFAULT + new OperationSettings(extensions: extensions)
         def defaultSessionHandler = SessionHandler.create(operations, operationSettings)
@@ -74,7 +79,9 @@ class SessionExtensionSpec extends Specification {
             performAnother('command')
         }
 
-        then: 1 * operations.execute(operationSettings, 'command another something', null) >> 'result'
+        then: 1 * operations.command(operationSettings, 'command another something') >> operation
+        then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
+        then: 1 * operation.startSync() >> 0
         then: result == 'result'
 
         where:

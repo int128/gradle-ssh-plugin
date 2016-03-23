@@ -1,6 +1,8 @@
 package org.hidetake.groovy.ssh.extension
 
+import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
@@ -11,53 +13,73 @@ import org.hidetake.groovy.ssh.session.SessionExtension
 trait BackgroundCommand implements SessionExtension {
     /**
      * Performs an execution operation.
-     * This method returns immediately and executes the command concurrently.
+     * This method returns immediately and executes the commandLine concurrently.
      *
-     * @param command
+     * @param commandLine
      */
-    void executeBackground(String command) {
-        assert command, 'command must be given'
-        operations.executeBackground(operationSettings, command, null)
+    void executeBackground(String commandLine) {
+        assert commandLine, 'commandLine must be given'
+        executeBackground([:], commandLine)
     }
 
     /**
      * Performs an execution operation.
-     * This method returns immediately and executes the command concurrently.
+     * This method returns immediately and executes the commandLine concurrently.
      *
-     * @param command
-     * @param callback closure called with an output value of the command
+     * @param commandLine
+     * @param callback closure called with an output value of the commandLine
      */
-    void executeBackground(String command, Closure callback) {
-        assert command, 'command must be given'
+    void executeBackground(String commandLine, Closure callback) {
+        assert commandLine, 'commandLine must be given'
         assert callback, 'callback must be given'
-        operations.executeBackground(operationSettings, command, callback)
+        executeBackground([:], commandLine, callback)
     }
 
     /**
      * Performs an execution operation.
-     * This method returns immediately and executes the command concurrently.
+     * This method returns immediately and executes the commandLine concurrently.
      *
-     * @param settings execution settings
-     * @param command
+     * @param map execution settings
+     * @param commandLine
      */
-    void executeBackground(HashMap settings, String command) {
-        assert command, 'command must be given'
-        assert settings != null, 'settings must not be null'
-        operations.executeBackground(operationSettings + new OperationSettings(settings), command, null)
+    void executeBackground(HashMap map, String commandLine) {
+        assert commandLine, 'commandLine must be given'
+        assert map != null, 'map must not be null'
+
+        def settings = operationSettings + new OperationSettings(map)
+        def command = operations.command(settings, commandLine)
+
+        command.startAsync { int exitStatus ->
+            if (exitStatus != 0 && !settings.ignoreError) {
+                throw new BadExitStatusException("Command returned exit status $exitStatus: $commandLine", exitStatus)
+            }
+        }
     }
 
     /**
      * Performs an execution operation.
-     * This method returns immediately and executes the command concurrently.
+     * This method returns immediately and executes the commandLine concurrently.
      *
-     * @param settings execution settings
-     * @param command
-     * @param callback closure called with an output value of the command
+     * @param map execution settings
+     * @param commandLine
+     * @param callback closure called with an output value of the commandLine
      */
-    void executeBackground(HashMap settings, String command, Closure callback) {
-        assert command, 'command must be given'
+    void executeBackground(HashMap map, String commandLine, Closure callback) {
+        assert commandLine, 'commandLine must be given'
         assert callback, 'callback must be given'
-        assert settings != null, 'settings must not be null'
-        operations.executeBackground(operationSettings + new OperationSettings(settings), command, callback)
+        assert map != null, 'map must not be null'
+
+        def settings = operationSettings + new OperationSettings(map)
+        def operation = operations.command(settings, commandLine)
+
+        def lines = [] as List<String>
+        operation.onEachLineOfStandardOutput { String line -> lines << line }
+
+        operation.startAsync { int exitStatus ->
+            if (exitStatus != 0 && !settings.ignoreError) {
+                throw new BadExitStatusException("Command returned exit status $exitStatus: $commandLine", exitStatus)
+            }
+            callback.call(lines.join(Utilities.eol()))
+        }
     }
 }

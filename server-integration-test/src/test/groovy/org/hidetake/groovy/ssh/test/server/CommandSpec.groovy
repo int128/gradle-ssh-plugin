@@ -7,7 +7,7 @@ import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -167,12 +167,12 @@ class CommandSpec extends Specification {
     }
 
     @Unroll
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "execute should write output to logger: #description"() {
         given:
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         when:
         ssh.run {
@@ -198,7 +198,7 @@ class CommandSpec extends Specification {
     }
 
     @Unroll
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Command)
     def "execute should write stdout/stderr to #logging"() {
         given:
         def out = System.out
@@ -208,7 +208,7 @@ class CommandSpec extends Specification {
 
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Command.metaClass.static.getLog = { -> logger }
 
         when:
         ssh.run {

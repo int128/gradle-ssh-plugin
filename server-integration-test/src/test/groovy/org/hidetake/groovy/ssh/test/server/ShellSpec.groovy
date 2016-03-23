@@ -6,7 +6,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
-import org.hidetake.groovy.ssh.operation.DefaultOperations
+import org.hidetake.groovy.ssh.operation.Shell
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -94,12 +94,12 @@ class ShellSpec extends Specification {
     }
 
     @Unroll
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Shell)
     def "shell should write output to logger: #description"() {
         given:
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Shell.metaClass.static.getLog = { -> logger }
 
         when:
         ssh.run {
@@ -125,7 +125,7 @@ class ShellSpec extends Specification {
     }
 
     @Unroll
-    @ConfineMetaClassChanges(DefaultOperations)
+    @ConfineMetaClassChanges(Shell)
     def "shell should write output to #logging"() {
         given:
         def out = System.out
@@ -133,7 +133,7 @@ class ShellSpec extends Specification {
 
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
-        DefaultOperations.metaClass.static.getLog = { -> logger }
+        Shell.metaClass.static.getLog = { -> logger }
 
         when:
         ssh.run {

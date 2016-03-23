@@ -13,11 +13,9 @@ import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 interface Operations {
     Remote getRemote()
 
-    void shell(OperationSettings settings)
+    Operation shell(OperationSettings settings)
 
-    String execute(OperationSettings settings, String command, Closure callback)
-
-    void executeBackground(OperationSettings settings, String command, Closure callback)
+    Operation command(OperationSettings settings, String commandLine)
 
     int forwardLocalPort(LocalPortForwardSettings settings)
 

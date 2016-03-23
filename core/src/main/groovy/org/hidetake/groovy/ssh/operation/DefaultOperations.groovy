@@ -1,15 +1,11 @@
 package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
-import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
 import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
-import org.hidetake.groovy.ssh.interaction.Interaction
-import org.hidetake.groovy.ssh.session.BadExitStatusException
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -37,140 +33,15 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    void shell(OperationSettings settings) {
-        log.debug("Executing shell on $remote: $settings")
-
-        def channel = connection.createShellChannel(settings)
-        def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(settings.encoding)
-        channel.outputStream = standardOutput
-
-        enableLogging(settings.logging, channel.id, standardOutput)
-
-        if (settings.outputStream) {
-            standardOutput.pipe(settings.outputStream)
-        }
-        if (settings.interaction) {
-            Interaction.enable(settings.interaction, standardInput, standardOutput)
-        }
-
-        channel.connect()
-        try {
-            log.info("Started shell $remote.name#$channel.id")
-            while (!channel.closed) {
-                sleep(100)
-            }
-
-            int exitStatus = channel.exitStatus
-            if (exitStatus == 0) {
-                log.info("Success shell $remote.name#$channel.id")
-            } else {
-                log.error("Failed shell $remote.name#$channel.id with status $exitStatus")
-                if (!settings.ignoreError) {
-                    throw new BadExitStatusException("Shell $remote.name#$channel.id returned status $exitStatus", exitStatus)
-                }
-            }
-        } finally {
-            channel.disconnect()
-        }
+    Operation shell(OperationSettings settings) {
+        log.debug("Executing shell on $remote.name: $settings")
+        new Shell(connection, settings)
     }
 
     @Override
-    String execute(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing command on $remote: $command: $settings")
-
-        def channel = connection.createExecutionChannel(command, settings)
-        def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(settings.encoding)
-        def standardError = new LineOutputStream(settings.encoding)
-        channel.outputStream = standardOutput
-        channel.errStream = standardError
-
-        enableLogging(settings.logging, channel.id, standardOutput, standardError)
-
-        if (settings.outputStream) {
-            standardOutput.pipe(settings.outputStream)
-        }
-        if (settings.errorStream) {
-            standardError.pipe(settings.errorStream)
-        }
-        if (settings.interaction) {
-            Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
-        }
-
-        def lines = [] as List<String>
-        standardOutput.listenLine { String line -> lines << line }
-
-        channel.connect()
-        try {
-            log.info("Started command $remote.name#$channel.id: $command")
-            while (!channel.closed) {
-                sleep(100)
-            }
-
-            int exitStatus = channel.exitStatus
-            if (exitStatus == 0) {
-                log.info("Success command $remote.name#$channel.id: $command")
-            } else {
-                log.error("Failed command $remote.name#$channel.id with status $exitStatus: $command")
-                if (!settings.ignoreError) {
-                    throw new BadExitStatusException(
-                            "Command $remote.name#$channel.id returned exit status $exitStatus: $command", exitStatus)
-                }
-            }
-
-            def result = lines.join(Utilities.eol())
-            callback?.call(result)
-            result
-        } finally {
-            channel.disconnect()
-        }
-    }
-
-    @Override
-    void executeBackground(OperationSettings settings, String command, Closure callback) {
-        log.debug("Executing command on $remote: $command: $settings")
-
-        def channel = connection.createExecutionChannel(command, settings)
-        def standardInput = channel.outputStream
-        def standardOutput = new LineOutputStream(settings.encoding)
-        def standardError = new LineOutputStream(settings.encoding)
-        channel.outputStream = standardOutput
-        channel.errStream = standardError
-
-        enableLogging(settings.logging, channel.id, standardOutput, standardError)
-
-        if (settings.outputStream) {
-            standardOutput.pipe(settings.outputStream)
-        }
-        if (settings.errorStream) {
-            standardError.pipe(settings.errorStream)
-        }
-        if (settings.interaction) {
-            Interaction.enable(settings.interaction, standardInput, standardOutput, standardError)
-        }
-
-        def lines = [] as List<String>
-        standardOutput.listenLine { String line -> lines << line }
-
-        channel.connect()
-        log.info("Started command $remote.name#$channel.id: $command")
-
-        connection.whenClosed(channel) {
-            int exitStatus = channel.exitStatus
-            if (exitStatus == 0) {
-                log.info("Success command $remote.name#$channel.id: $command")
-            } else {
-                log.error("Failed command $remote.name#$channel.id with status $exitStatus: $command")
-                if (!settings.ignoreError) {
-                    throw new BadExitStatusException(
-                            "Command $remote.name#$channel.id returned exit status $exitStatus: $command", exitStatus)
-                }
-            }
-
-            def result = lines.join(Utilities.eol())
-            callback?.call(result)
-        }
+    Operation command(OperationSettings settings, String commandLine) {
+        log.debug("Executing command on $remote.name: $commandLine: $settings")
+        new Command(connection, settings, commandLine)
     }
 
     @Override
@@ -208,22 +79,6 @@ class DefaultOperations implements Operations {
             result
         } finally {
             channel.disconnect()
-        }
-    }
-
-    private void enableLogging(LoggingMethod loggingMethod,
-                               int channelId,
-                               LineOutputStream standardOutput,
-                               LineOutputStream standardError = null) {
-        switch (loggingMethod) {
-            case LoggingMethod.slf4j:
-                standardOutput.listenLogging { String m -> log.info("$remote.name#$channelId|$m") }
-                standardError?.listenLogging { String m -> log.error("$remote.name#$channelId|$m") }
-                break
-            case LoggingMethod.stdout:
-                standardOutput.listenLogging { String m -> System.out.println("$remote.name#$channelId|$m") }
-                standardError?.listenLogging { String m -> System.err.println("$remote.name#$channelId|$m") }
-                break
         }
     }
 }

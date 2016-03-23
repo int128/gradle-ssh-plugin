@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.extension
 
 import org.hidetake.groovy.ssh.core.settings.OperationSettings
+import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
@@ -13,11 +14,18 @@ trait Shell implements SessionExtension {
      * Performs a shell operation.
      * This method blocks until channel is closed.
      *
-     * @param settings shell settings
+     * @param map shell settings
      * @return output value of the command
      */
-    void shell(HashMap settings) {
-        assert settings != null, 'settings must not be null'
-        operations.shell(operationSettings + new OperationSettings(settings))
+    void shell(HashMap map) {
+        assert map != null, 'map must not be null'
+
+        def settings = operationSettings + new OperationSettings(map)
+        def operation = operations.shell(settings)
+
+        def exitStatus = operation.startSync()
+        if (exitStatus != 0 && !settings.ignoreError) {
+            throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
+        }
     }
 }
