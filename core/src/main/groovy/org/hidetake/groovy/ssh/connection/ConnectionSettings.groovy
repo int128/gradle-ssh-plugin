@@ -3,10 +3,8 @@ package org.hidetake.groovy.ssh.connection
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.PlusProperties
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-
-import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
  * Settings for establishing the SSH connection.
@@ -14,7 +12,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProperties {
+class ConnectionSettings implements PlusProperties<ConnectionSettings>, ToStringProperties {
     /**
      * Remote user.
      */
@@ -27,7 +25,7 @@ class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProper
     String password
 
     /**
-     * {@link #toString()} formatter to hide credential.
+     * Hides credential from result of {@link #toString()}.
      */
     final toString__password() { '...' }
 
@@ -50,9 +48,21 @@ class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProper
     String passphrase
 
     /**
-     * {@link #toString()} formatter to hide credential.
+     * Hides credential from result of {@link #toString()}.
      */
     final toString__passphrase() { '...' }
+
+    final plus__passphrase(right) {
+        if (right.identity == null) {
+            if (identity == null) {
+                null
+            } else {
+                passphrase
+            }
+        } else {
+            right.passphrase
+        }
+    }
 
     /**
      * Gateway host.
@@ -101,9 +111,14 @@ class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProper
     final File allowAnyHosts = Constants.allowAnyHosts
 
     /**
-     * {@link #toString()} formatter to hide the constant.
+     * Hides constant from result of {@link #toString()}.
      */
     final toString__allowAnyHosts() {}
+
+    /**
+     * Excludes allowAnyHosts from properties to plus.
+     */
+    final plus__allowAnyHosts() {}
 
     static class Constants {
         static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
@@ -123,32 +138,4 @@ class ConnectionSettings implements Settings<ConnectionSettings>, ToStringProper
             retryWaitSec: 0,
             keepAliveSec: 60,
     )
-
-    ConnectionSettings plus(ConnectionSettings right) {
-        new ConnectionSettings(
-                user:         findNotNull(right.user, user),
-                password:     findNotNull(right.password, password),
-                identity:     findNotNull(right.identity, identity),
-                passphrase:   plusOfPassphrase(right),
-                gateway:      findNotNull(right.gateway, gateway),
-                proxy:        findNotNull(right.proxy, proxy),
-                agent:        findNotNull(right.agent, agent),
-                knownHosts:   findNotNull(right.knownHosts, knownHosts),
-                retryCount:   findNotNull(right.retryCount, retryCount),
-                retryWaitSec: findNotNull(right.retryWaitSec, retryWaitSec),
-                keepAliveSec: findNotNull(right.keepAliveSec, keepAliveSec),
-        )
-    }
-
-    private plusOfPassphrase(ConnectionSettings right) {
-        if (right.identity == null) {
-            if (identity == null) {
-                null
-            } else {
-                passphrase
-            }
-        } else {
-            right.passphrase
-        }
-    }
 }

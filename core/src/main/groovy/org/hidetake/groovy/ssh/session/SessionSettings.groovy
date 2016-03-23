@@ -1,10 +1,8 @@
 package org.hidetake.groovy.ssh.session
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.settings.Settings
+import org.hidetake.groovy.ssh.core.settings.PlusProperties
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-
-import static org.hidetake.groovy.ssh.util.Utility.findNotNull
 
 /**
  * Settings for {@link org.hidetake.groovy.ssh.session.SessionHandler}s.
@@ -12,7 +10,7 @@ import static org.hidetake.groovy.ssh.util.Utility.findNotNull
  * @author Hidetake Iwata
  */
 @EqualsAndHashCode
-class SessionSettings implements Settings<SessionSettings>, ToStringProperties {
+class SessionSettings implements PlusProperties<SessionSettings>, ToStringProperties {
     /**
      * Dry-run flag.
      * If <code>true</code>, performs no action.
@@ -29,15 +27,13 @@ class SessionSettings implements Settings<SessionSettings>, ToStringProperties {
      */
     final toString__extensions() { extensions ? extensions : null }
 
+    final plus__extensions(right) {
+        assert right.extensions instanceof List
+        extensions + right.extensions
+    }
+
     static final DEFAULT = new SessionSettings(
             dryRun: false,
             extensions: []
     )
-
-    SessionSettings plus(SessionSettings right) {
-        new SessionSettings(
-                dryRun:         findNotNull(right.dryRun, dryRun),
-                extensions:     extensions + right.extensions,
-        )
-    }
 }
