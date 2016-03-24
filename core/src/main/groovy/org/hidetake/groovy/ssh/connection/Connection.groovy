@@ -40,7 +40,6 @@ class Connection {
         def channel = session.openChannel('exec') as ChannelExec
         channel.command = command
         channel.pty = operationSettings.pty
-		channel.agent_forwarding = operationSettings.agentForwarding
         channels.add(channel)
         channel
     }

@@ -48,7 +48,6 @@ class CommandSpec extends Specification {
                 user = 'someuser'
                 password = 'somepassword'
             }
-			
         }
     }
 
@@ -154,7 +153,7 @@ class CommandSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                execute('somecommand', pty: true, agentForwarding: true) { result ->
+                execute('somecommand', pty: true) { result ->
                     resultActual = result
                 }
             }

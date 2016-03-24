@@ -581,6 +581,7 @@ Following settings can be given to operation methods.
 |Key              | Type     | Description
 |`dryRun`         | Boolean  | Dry run flag. If this is true, no action is performed. Defaults to false.
 |`pty`            | Boolean  | If this is true, the PTY allocation is requested on the command execution. Defaults to false.
+|`agentForwarding` | Boolean | If this is true, the agent forwarding is requested on the command execution. Defaults to false.
 |`ignoreError`    | Boolean  | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 |`logging`        | String   | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 |`outputStream`   | OutputStream | If given, standard output of the remote command is sent to the stream.

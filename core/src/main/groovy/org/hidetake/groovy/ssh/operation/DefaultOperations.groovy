@@ -80,6 +80,8 @@ class DefaultOperations implements Operations {
         log.debug("Executing command on $remote: $command: $settings")
 
         def channel = connection.createExecutionChannel(command, settings)
+        channel.agentForwarding = settings.agentForwarding
+
         def standardInput = channel.outputStream
         def standardOutput = new LineOutputStream(settings.encoding)
         def standardError = new LineOutputStream(settings.encoding)
