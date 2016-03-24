@@ -43,6 +43,20 @@ class SudoSpec extends Specification {
                 user = 'someuser'
                 password = 'somepassword'
             }
+            testServerWithSudoPassword {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                sudoPassword = 'passwordForTestServerSudo'
+            }
+            testServerWithSudoPath {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                sudoPath = '/usr/local/bin/sudo'
+            }
         }
     }
 
@@ -52,13 +66,14 @@ class SudoSpec extends Specification {
 
 
     static parseSudoCommand(String command) {
-        def matcher = command =~ /^sudo -S -p '(.+?)' (.+)$/
+        def matcher = command =~ /^(.+?) -S -p '(.+?)' (.+)$/
         assert matcher.matches()
         def groups = matcher[0] as List
-        [prompt: groups[1], command: groups[2]]
+        [sudo: groups[1], prompt: groups[2], command: groups[3]]
     }
 
     static commandWithSudoPrompt(String actualCommand,
+                                 String expectedSudo,
                                  String expectedCommand,
                                  String expectedPassword,
                                  int status,
@@ -66,6 +81,7 @@ class SudoSpec extends Specification {
                                  String errorMessage = null) {
         SshServerMock.command { CommandContext c ->
             def parsed = parseSudoCommand(actualCommand)
+            assert parsed.sudo == expectedSudo
             assert parsed.command == expectedCommand
 
             log.debug("[sudo] Sending prompt: $parsed.prompt")
@@ -100,9 +116,9 @@ class SudoSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand1', 'somepassword', 0) }
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand2', 'somepassword', 0) }
-        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'somecommand3', 'somepassword', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'sudo', 'somecommand1', 'somepassword', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'sudo', 'somecommand2', 'somepassword', 0) }
+        then: 1 * server.commandFactory.createCommand(_) >> { String command -> commandWithSudoPrompt(command, 'sudo', 'somecommand3', 'somepassword', 0) }
     }
 
     def "it should throw an exception if sudo returns failure"() {
@@ -115,7 +131,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'Sorry, try again.\n')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'Sorry, try again.\n')
         }
 
         then:
@@ -133,7 +149,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 1)
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 1)
         }
 
         then:
@@ -151,11 +167,63 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 1, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 1, 'something output')
         }
 
         then:
         resultActual == 'something output'
+    }
+
+    def "executeSudo should accept sudo password by method settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand1', sudoPassword: 'anotherpassword'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', 'somecommand1', 'anotherpassword', 0)
+        }
+    }
+
+    def "executeSudo should accept sudo password by remote settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServerWithSudoPassword) {
+                executeSudo 'somecommand1'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', 'somecommand1', 'passwordForTestServerSudo', 0)
+        }
+    }
+
+    def "executeSudo should accept sudo path by method settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand1', sudoPath: '/usr/local/bin/sudo'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, '/usr/local/bin/sudo', 'somecommand1', 'somepassword', 0)
+        }
+    }
+
+    def "executeSudo should accept sudo path by remote settings"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServerWithSudoPath) {
+                executeSudo 'somecommand1'
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, '/usr/local/bin/sudo', 'somecommand1', 'somepassword', 0)
+        }
     }
 
     @Unroll
@@ -169,7 +237,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, outputValue)
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, outputValue)
         }
 
         then:
@@ -199,7 +267,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'something output')
         }
 
         then:
@@ -221,7 +289,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'something output')
         }
 
         then:
@@ -245,7 +313,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'somecommand', 'somepassword', 0, outputValue)
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, outputValue)
         }
 
         then:
