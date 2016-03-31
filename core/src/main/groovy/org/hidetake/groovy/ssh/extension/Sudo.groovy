@@ -5,7 +5,6 @@ import groovy.transform.TupleConstructor
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.core.settings.PlusProperties
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
@@ -82,19 +81,7 @@ trait Sudo implements SessionExtension {
      * {@link Sudo#executeSudo(java.util.HashMap, java.lang.String, groovy.lang.Closure)}.
      */
     @EqualsAndHashCode
-    private static class SudoCommandSettings implements PlusProperties<SudoCommandSettings>, ToStringProperties {
-        // Excludes traits to avoid side-effect
-        @Delegate(interfaces = false)
-        CommandSettings commandSettings = new CommandSettings()
-
-        // Excludes traits to avoid side-effect
-        @Delegate(interfaces = false)
-        SudoSettings sudoSettings = new SudoSettings()
-
-        static final DEFAULT = new SudoCommandSettings(
-                commandSettings: CommandSettings.DEFAULT,
-                sudoSettings: SudoSettings.DEFAULT,
-        )
+    private static class SudoCommandSettings implements CommandSettings, SudoSettings, ToStringProperties {
     }
 
     @Slf4j
@@ -104,19 +91,21 @@ trait Sudo implements SessionExtension {
         final CommandSettings commandSettings
         final SudoSettings sudoSettings
 
-        def SudoExecutor(Operations operations1, CompositeSettings globalSettings, SudoCommandSettings methodSettings) {
+        def SudoExecutor(Operations operations1, CompositeSettings globalSettings, SudoCommandSettings perMethodSettings) {
             operations = operations1
-            commandSettings = globalSettings.commandSettings + methodSettings.commandSettings
-            sudoSettings = SudoSettings.DEFAULT +
-                    new SudoSettings(sudoPassword: operations.remote.password) +
-                    operations.remote.sudoSettings +
-                    methodSettings.sudoSettings
+            commandSettings = new CommandSettings.With(globalSettings, perMethodSettings)
+            sudoSettings = new SudoSettings.With(
+                    CompositeSettings.With.DEFAULT,
+                    new SudoSettings.With(sudoPassword: operations.remote.password),
+                    operations.remote,
+                    perMethodSettings
+            )
         }
 
         String execute(String commandLine) {
             final prompt = UUID.randomUUID().toString()
             final lines = []
-            final interactionSettings = new CommandSettings(interaction: {
+            final interactionSettings = new CommandSettings.With(interaction: {
                 when(partial: prompt, from: standardOutput) {
                     log.info("Providing password for sudo prompt on $operations.remote.name")
                     standardInput << sudoSettings.sudoPassword << '\n'
@@ -138,7 +127,7 @@ trait Sudo implements SessionExtension {
             })
 
             final sudoCommandLine = "$sudoSettings.sudoPath -S -p '$prompt' $commandLine"
-            final exitStatus = operations.command(commandSettings + interactionSettings, sudoCommandLine).startSync()
+            final exitStatus = operations.command(new CommandSettings.With(commandSettings, interactionSettings), sudoCommandLine).startSync()
             if (exitStatus != 0 && !commandSettings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
             }

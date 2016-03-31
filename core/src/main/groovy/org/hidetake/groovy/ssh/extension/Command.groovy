@@ -65,7 +65,7 @@ trait Command implements SessionExtension {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
 
-        def settings = globalSettings + new CommandSettings(map)
+        def settings = new CommandSettings.With(globalSettings, new CommandSettings.With(map))
         def operation = operations.command(settings, commandLine)
 
         def lines = [] as List<String>

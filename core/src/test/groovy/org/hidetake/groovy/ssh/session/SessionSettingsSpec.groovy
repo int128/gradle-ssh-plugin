@@ -8,11 +8,11 @@ class SessionSettingsSpec extends Specification {
     @Unroll
     def "plus should be merge extensions as list"() {
         given:
-        def settings1 = new SessionSettings(extensions: extensions1)
-        def settings2 = new SessionSettings(extensions: extensions2)
+        def settings1 = new SessionSettings.With(extensions: extensions1)
+        def settings2 = new SessionSettings.With(extensions: extensions2)
 
         when:
-        def settings = settings1 + settings2
+        def settings = new SessionSettings.With(settings1, settings2)
 
         then:
         settings.extensions == expected

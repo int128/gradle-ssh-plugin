@@ -5,37 +5,35 @@ import spock.lang.Unroll
 
 class ToStringPropertiesSpec extends Specification {
 
-    static class ExampleSettings implements ToStringProperties {
+    static trait ExampleSettings {
         String name
         Integer count
+
+        static class Empty implements ExampleSettings, ToStringProperties {}
     }
 
-    static class SecretSettings implements ToStringProperties {
+    static trait SecretSettings {
         String user
         String password
-        final toString__password() { '...' }
+        def toString__password() { '...' }
+
+        static class Empty implements SecretSettings, ToStringProperties {}
     }
 
-    static class ConstantSettings implements ToStringProperties {
+    static trait ConstantSettings {
         String description
         final constValue = 'constant'
-        final toString__constValue() {}
+        def toString__constValue() {}
+
+        static class Empty implements ConstantSettings, ToStringProperties {}
     }
 
-    static class CompositeSettings implements ToStringProperties {
-        @Delegate
-        ExampleSettings exampleSettings = new ExampleSettings()
-
-        @Delegate
-        SecretSettings secretSettings = new SecretSettings()
-
-        @Delegate
-        ConstantSettings constantSettings = new ConstantSettings()
+    static class CompositeSettings implements ExampleSettings, SecretSettings, ConstantSettings, ToStringProperties {
     }
 
     def "toString should contains each key and value of properties"() {
         given:
-        def settings = new ExampleSettings(name: 'foo', count: 1000)
+        def settings = new ExampleSettings.Empty(name: 'foo', count: 1000)
 
         when:
         def string = settings.toString()
@@ -46,7 +44,7 @@ class ToStringPropertiesSpec extends Specification {
 
     def "toString should exclude keys if each value is null"() {
         given:
-        def settings = new ExampleSettings(name: 'foo')
+        def settings = new ExampleSettings.Empty(name: 'foo')
 
         when:
         def string = settings.toString()
@@ -58,7 +56,7 @@ class ToStringPropertiesSpec extends Specification {
     @Unroll
     def "toString should use formatter if defined"() {
         given:
-        def settings = new SecretSettings(user: 'foo', password: password)
+        def settings = new SecretSettings.Empty(user: 'foo', password: password)
 
         when:
         def string = settings.toString()
@@ -75,7 +73,7 @@ class ToStringPropertiesSpec extends Specification {
 
     def "toString should exclude key if formatter returns null"() {
         given:
-        def settings = new ConstantSettings(description: 'foo')
+        def settings = new ConstantSettings.Empty(description: 'foo')
 
         when:
         def string = settings.toString()
@@ -90,7 +88,6 @@ class ToStringPropertiesSpec extends Specification {
 
         expect:
         settings.toString() in ['{count=1000, name=foo}', '{name=foo, count=1000}']
-        settings.exampleSettings.toString() in ['{count=1000, name=foo}', '{name=foo, count=1000}']
     }
 
     def "toString should exclude keys if each value is null on delegated class"() {
@@ -111,7 +108,6 @@ class ToStringPropertiesSpec extends Specification {
 
         expect:
         settings.toString() == mapString
-        settings.secretSettings.toString() == mapString
 
         where:
         password | mapString
@@ -126,7 +122,6 @@ class ToStringPropertiesSpec extends Specification {
 
         expect:
         settings.toString() == '{name=foo}'
-        settings.exampleSettings.toString() == '{name=foo}'
     }
 
 }

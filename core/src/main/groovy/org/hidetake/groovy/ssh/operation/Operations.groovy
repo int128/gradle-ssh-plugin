@@ -12,7 +12,7 @@ import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 interface Operations {
     Remote getRemote()
 
-    Operation shell(CommandSettings settings)
+    Operation shell(ShellSettings settings)
 
     Operation command(CommandSettings settings, String commandLine)
 

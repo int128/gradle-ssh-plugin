@@ -6,11 +6,11 @@ import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 
 /**
- * Settings for {@link Command}.
+ * Settings for {@link Shell}.
  *
  * @author Hidetake Iwata
  */
-trait CommandSettings {
+trait ShellSettings {
     /**
      * Ignores the exit status of the command or shell.
      */
@@ -33,11 +33,6 @@ trait CommandSettings {
     OutputStream outputStream
 
     /**
-     * An output stream to forward the standard error.
-     */
-    OutputStream errorStream
-
-    /**
      * Encoding of input and output stream.
      */
     String encoding
@@ -50,13 +45,13 @@ trait CommandSettings {
 
 
     @EqualsAndHashCode
-    static class With implements CommandSettings, ToStringProperties {
+    static class With implements ShellSettings, ToStringProperties {
         def With() {}
-        def With(CommandSettings... sources) {
+        def With(ShellSettings... sources) {
             SettingsHelper.mergeProperties(this, sources)
         }
 
-        static final CommandSettings DEFAULT = new CommandSettings.With(
+        static final ShellSettings DEFAULT = new ShellSettings.With(
                 ignoreError: false,
                 pty: false,
                 logging: LoggingMethod.slf4j,

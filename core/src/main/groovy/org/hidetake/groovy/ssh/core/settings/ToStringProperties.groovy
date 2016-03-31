@@ -17,23 +17,7 @@ trait ToStringProperties {
      */
     @Override
     String toString() {
-        '{' + properties.findAll { key, value ->
-            // prevents recursion
-            !(value instanceof ToStringProperties) &&
-            // excludes class
-            key != 'class' &&
-            // excludes if value is null
-            value != null
-        }.collectEntries { key, value ->
-            try {
-                [(key): "toString__$key"()]
-            } catch (MissingMethodException ignore) {
-                [(key): value]
-            }
-        }.findAll { key, value ->
-            // excludes if the formatter returns null
-            value != null
-        }.collect { key, value ->
+        '{' + SettingsHelper.computePropertiesToString(this).collect { key, value ->
             "$key=${value.toString()}"
         }.join(', ') + '}'
     }

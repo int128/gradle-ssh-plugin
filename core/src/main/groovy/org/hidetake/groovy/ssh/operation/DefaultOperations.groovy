@@ -32,7 +32,7 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    Operation shell(CommandSettings settings) {
+    Operation shell(ShellSettings settings) {
         log.debug("Executing shell on $remote.name: $settings")
         new Shell(connection, settings)
     }
