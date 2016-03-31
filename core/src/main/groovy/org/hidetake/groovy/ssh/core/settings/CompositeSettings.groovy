@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.core.settings
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
 import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
+import org.hidetake.groovy.ssh.operation.ShellSettings
 import org.hidetake.groovy.ssh.session.SessionSettings
 
 /**
@@ -16,6 +17,7 @@ trait CompositeSettings implements
         ConnectionSettings,
         SessionSettings,
         CommandSettings,
+        ShellSettings,
         SudoSettings
 {
     static class With implements CompositeSettings, ToStringProperties {
@@ -30,6 +32,7 @@ trait CompositeSettings implements
                     ConnectionSettings.With.DEFAULT,
                     SessionSettings.With.DEFAULT,
                     CommandSettings.With.DEFAULT,
+                    ShellSettings.With.DEFAULT,
                     SudoSettings.With.DEFAULT,
             )
         }

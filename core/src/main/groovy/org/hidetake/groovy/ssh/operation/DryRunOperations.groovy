@@ -20,7 +20,7 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    Operation shell(CommandSettings settings) {
+    Operation shell(ShellSettings settings) {
         log.info("Executing shell on $remote")
         new DryRunOperation()
     }

@@ -465,7 +465,19 @@ session(remotes.web01) {
 }
 ```
 
-The method accepts settings same as `execute` method excluding `errorStream` because the shell does not support standard error.
+The method accepts following settings:
+
+.Shell settings
+[options="header,autowidth"]
+|===
+|Key              | Type            | Description
+|`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
+|`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
+|`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
+|`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
+|`encoding`       | String          | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+|`interaction`    | Closure         | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
+|===
 
 The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
 
@@ -757,6 +769,7 @@ Some settings can be set in global and overridden by each `ssh.run` method, remo
 |Settings               | Global | Each `ssh.run` | Each remote | Each method
 |Connection settings    | x      | x              | x           | -
 |Command settings       | x      | x              | -           | x
+|Shell settings         | x      | x              | -           | x
 |Sudo settings          | -      | -              | x           | x
 |Remote settings        | -      | -              | x           | -
 |Proxy settings         | -      | -              | x           | -

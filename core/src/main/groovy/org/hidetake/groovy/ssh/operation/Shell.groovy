@@ -18,7 +18,7 @@ class Shell implements Operation {
     private final OutputStream standardInput
     private final LineOutputStream standardOutput
 
-    def Shell(Connection connection1, CommandSettings settings) {
+    def Shell(Connection connection1, ShellSettings settings) {
         connection = connection1
         channel = connection.createShellChannel()
         standardInput = channel.outputStream
