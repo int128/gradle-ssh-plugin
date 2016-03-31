@@ -21,6 +21,8 @@ class Shell implements Operation {
     def Shell(Connection connection1, ShellSettings settings) {
         connection = connection1
         channel = connection.createShellChannel()
+        channel.agentForwarding = settings.agentForwarding
+
         standardInput = channel.outputStream
         standardOutput = new LineOutputStream(settings.encoding)
         channel.outputStream = standardOutput

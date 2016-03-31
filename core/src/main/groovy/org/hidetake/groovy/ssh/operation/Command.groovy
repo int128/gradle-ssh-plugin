@@ -27,6 +27,7 @@ class Command implements Operation {
         channel = connection.createExecutionChannel()
         channel.command = commandLine
         channel.pty = settings.pty
+        channel.agentForwarding = settings.agentForwarding
 
         standardInput = channel.outputStream
         standardOutput = new LineOutputStream(settings.encoding)

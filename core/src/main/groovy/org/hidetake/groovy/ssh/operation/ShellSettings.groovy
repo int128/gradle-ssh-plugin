@@ -23,6 +23,12 @@ trait ShellSettings {
     Boolean pty
 
     /**
+     * Use agentForwarding flag.
+     * If <code>true</code>, agent will be forwarded to remote host.
+     */
+    Boolean agentForwarding
+
+    /**
      * A logging method of the remote command or shell.
      */
     LoggingMethod logging
@@ -54,6 +60,7 @@ trait ShellSettings {
         static final ShellSettings DEFAULT = new ShellSettings.With(
                 ignoreError: false,
                 pty: false,
+                agentForwarding: false,
                 logging: LoggingMethod.slf4j,
                 encoding: 'UTF-8',
         )
