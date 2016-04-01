@@ -1,8 +1,7 @@
 package org.hidetake.groovy.ssh.core
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.connection.ConnectionSettings
-import org.hidetake.groovy.ssh.extension.settings.SudoSettings
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -10,10 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger
  * Represents a remote host.
  *
  * @author Hidetake Iwata
- *
  */
 @EqualsAndHashCode(includes = 'name')
-class Remote implements ConnectionSettings, SudoSettings {
+class Remote implements CompositeSettings {
     /**
      * Name of this instance.
      */
@@ -24,21 +22,16 @@ class Remote implements ConnectionSettings, SudoSettings {
         assert name
     }
 
-    def Remote(Map<String, Object> settings) {
-        name = settings.name ?: "Remote${sequenceForAutoNaming.incrementAndGet()}"
-        settings.findAll { key, value ->
+    def Remote(Map<String, Object> settingsMap) {
+        name = settingsMap.name ?: "Remote${sequenceForAutoNaming.incrementAndGet()}"
+        settingsMap.findAll { key, value ->
             key != 'name'
         }.each { key, value ->
             setProperty(key, value)
         }
     }
 
-    private static final AtomicInteger sequenceForAutoNaming = new AtomicInteger()
-
-    /**
-     * Port.
-     */
-    int port = 22
+    private static final sequenceForAutoNaming = new AtomicInteger()
 
     /**
      * Remote host.
@@ -46,10 +39,19 @@ class Remote implements ConnectionSettings, SudoSettings {
     String host
 
     /**
+     * Port.
+     */
+    int port = 22
+
+    /**
      * Roles.
      */
-    final List<String> roles = []
+    final Set<String> roles = []
 
+    /**
+     * Add the role.
+     * @param role
+     */
     void role(String role) {
         assert role != null, 'role should be set'
         roles.add(role)

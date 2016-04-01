@@ -24,7 +24,11 @@ import static org.hidetake.groovy.ssh.util.Utility.retry
 class ConnectionManager {
     protected static final LOCALHOST = '127.0.0.1'
 
+    /**
+     * Settings with default, global and per-service.
+     */
     private final ConnectionSettings connectionSettings
+
     private final List<Connection> connections = []
 
     @Lazy
