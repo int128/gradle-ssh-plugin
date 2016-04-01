@@ -1,10 +1,10 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
+import org.hidetake.groovy.ssh.connection.ConnectionSettings
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.core.settings.ConnectionSettings
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import spock.lang.Specification
 import spock.lang.Unroll
