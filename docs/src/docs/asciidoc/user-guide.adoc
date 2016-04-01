@@ -768,11 +768,11 @@ Some settings can be set in global and overridden by each `ssh.run` method, remo
 .List of settings
 [options="header,autowidth"]
 |===
-|Settings               | Global | Each `ssh.run` | Each remote | Each method
+|Settings               | Global | Per `ssh.run`  | Per remote  | Per method
 |Connection settings    | x      | x              | x           | -
-|Command settings       | x      | x              | -           | x
-|Shell settings         | x      | x              | -           | x
-|Sudo settings          | -      | -              | x           | x
+|Command settings       | x      | x              | x           | x
+|Shell settings         | x      | x              | x           | x
+|Sudo settings          | x      | x              | x           | x
 |Remote settings        | -      | -              | x           | -
 |Proxy settings         | -      | -              | x           | -
 |Local port forwarding settings  | -      | -     | -           | x
@@ -810,6 +810,8 @@ remotes {
     host = '192.168.1.101'
     user = 'jenkins'
     identity = file('id_rsa_jenkins')
+    // overrides global settings
+    agentForwarding = true
   }
 }
 ```

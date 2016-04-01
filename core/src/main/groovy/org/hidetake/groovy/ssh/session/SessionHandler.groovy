@@ -14,13 +14,16 @@ import org.hidetake.groovy.ssh.operation.SftpOperations
  */
 @Slf4j
 class SessionHandler implements CoreExtensions {
-    private final Operations operations
+    final Operations operations
 
-    private final CompositeSettings globalSettings
+    /**
+     * Settings with default, global, per-service and per-remote.
+     */
+    final CompositeSettings mergedSettings
 
-    static def create(Operations operations, CompositeSettings globalSettings) {
-        def handler = new SessionHandler(operations, globalSettings)
-        globalSettings.extensions.inject(handler) { applied, extension ->
+    static def create(Operations operations, CompositeSettings mergedSettings) {
+        def handler = new SessionHandler(operations, mergedSettings)
+        mergedSettings.extensions.inject(handler) { applied, extension ->
             if (extension instanceof Class) {
                 log.debug("Applying extension: $extension")
                 applied.withTraits(extension)
@@ -37,19 +40,9 @@ class SessionHandler implements CoreExtensions {
         }
     }
 
-    private def SessionHandler(Operations operations1, CompositeSettings globalSettings1) {
+    private def SessionHandler(Operations operations1, CompositeSettings mergedSettings1) {
         operations = operations1
-        globalSettings = globalSettings1
-    }
-
-    @Override
-    Operations getOperations() {
-        operations
-    }
-
-    @Override
-    CompositeSettings getGlobalSettings() {
-        globalSettings
+        mergedSettings = mergedSettings1
     }
 
     @Override

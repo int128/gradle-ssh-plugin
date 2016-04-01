@@ -27,7 +27,7 @@ trait Sudo implements SessionExtension {
      */
     String executeSudo(String command) {
         assert command, 'command must be given'
-        def executor = new SudoExecutor(operations, globalSettings, new SudoCommandSettings())
+        def executor = new SudoExecutor(operations, mergedSettings, new SudoCommandSettings())
         executor.execute(command)
     }
 
@@ -42,7 +42,7 @@ trait Sudo implements SessionExtension {
     String executeSudo(HashMap settings, String command) {
         assert command, 'command must be given'
         assert settings != null, 'settings must not be null'
-        def executor = new SudoExecutor(operations, globalSettings, new SudoCommandSettings(settings))
+        def executor = new SudoExecutor(operations, mergedSettings, new SudoCommandSettings(settings))
         executor.execute(command)
     }
 
@@ -91,13 +91,12 @@ trait Sudo implements SessionExtension {
         final CommandSettings commandSettings
         final SudoSettings sudoSettings
 
-        def SudoExecutor(Operations operations1, CompositeSettings globalSettings, SudoCommandSettings perMethodSettings) {
+        def SudoExecutor(Operations operations1, CompositeSettings mergedSettings, SudoCommandSettings perMethodSettings) {
             operations = operations1
-            commandSettings = new CommandSettings.With(globalSettings, perMethodSettings)
+            commandSettings = new CommandSettings.With(mergedSettings, perMethodSettings)
             sudoSettings = new SudoSettings.With(
-                    CompositeSettings.With.DEFAULT,
                     new SudoSettings.With(sudoPassword: operations.remote.password),
-                    operations.remote,
+                    mergedSettings,
                     perMethodSettings
             )
         }

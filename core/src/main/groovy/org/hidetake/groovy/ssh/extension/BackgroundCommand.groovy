@@ -46,7 +46,7 @@ trait BackgroundCommand implements SessionExtension {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
 
-        def settings = new CommandSettings.With(globalSettings, new CommandSettings.With(map))
+        def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         def command = operations.command(settings, commandLine)
 
         command.startAsync { int exitStatus ->
@@ -69,7 +69,7 @@ trait BackgroundCommand implements SessionExtension {
         assert callback, 'callback must be given'
         assert map != null, 'map must not be null'
 
-        def settings = new CommandSettings.With(globalSettings, new CommandSettings.With(map))
+        def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         def operation = operations.command(settings, commandLine)
 
         def lines = [] as List<String>

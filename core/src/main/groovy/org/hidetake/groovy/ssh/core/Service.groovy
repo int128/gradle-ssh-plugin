@@ -4,7 +4,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.container.ContainerBuilder
 import org.hidetake.groovy.ssh.core.container.ProxyContainer
 import org.hidetake.groovy.ssh.core.container.RemoteContainer
-import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
 import org.hidetake.groovy.ssh.session.Executor
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
@@ -29,7 +29,7 @@ class Service {
     /**
      * Global settings.
      */
-    final CompositeSettings settings = new CompositeSettings.With()
+    final settings = new GlobalSettings()
 
     /**
      * Configure the container of remote hosts.
@@ -58,7 +58,7 @@ class Service {
      *
      * @param closure
      */
-    void settings(@DelegatesTo(CompositeSettings) Closure closure) {
+    void settings(@DelegatesTo(GlobalSettings) Closure closure) {
         assert closure, 'closure must be given'
         callWithDelegate(closure, settings)
     }
@@ -74,11 +74,7 @@ class Service {
         def handler = new RunHandler()
         callWithDelegate(closure, handler)
 
-        log.debug("Using default settings: $CompositeSettings.With.DEFAULT")
-        log.debug("Using global settings: $settings")
-        log.debug("Using per-service settings: $handler.settings")
-        def executor = new Executor(new CompositeSettings.With(CompositeSettings.With.DEFAULT, settings, handler.settings))
-
+        def executor = new Executor(settings, handler.settings)
         def results = executor.execute(handler.sessions)
         results.empty ? null : results.last()
     }

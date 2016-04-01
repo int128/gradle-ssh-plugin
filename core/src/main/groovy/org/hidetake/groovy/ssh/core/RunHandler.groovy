@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
 import org.hidetake.groovy.ssh.session.Plan
 import org.hidetake.groovy.ssh.session.SessionHandler
 
@@ -15,7 +15,7 @@ class RunHandler {
     /**
      * Per service settings.
      */
-    final CompositeSettings settings = new CompositeSettings.With()
+    final settings = new PerServiceSettings()
 
     /**
      * Sessions added in the closure of {@link Service#run(groovy.lang.Closure)}.
@@ -25,9 +25,9 @@ class RunHandler {
     /**
      * Configure per service settings.
      *
-     * @param closure closure for {@link CompositeSettings}
+     * @param closure closure for {@link PerServiceSettings}
      */
-    void settings(@DelegatesTo(CompositeSettings) Closure closure) {
+    void settings(@DelegatesTo(PerServiceSettings) Closure closure) {
         assert closure, 'closure must be given'
         callWithDelegate(closure, settings)
     }

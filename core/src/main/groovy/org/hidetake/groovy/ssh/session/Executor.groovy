@@ -3,6 +3,8 @@ package org.hidetake.groovy.ssh.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.ConnectionManager
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
+import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
 import org.hidetake.groovy.ssh.operation.DefaultOperations
 import org.hidetake.groovy.ssh.operation.DryRunOperations
 
@@ -15,44 +17,53 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  */
 @Slf4j
 class Executor {
-    final CompositeSettings settings
+    private final GlobalSettings globalSettings
+    private final PerServiceSettings perServiceSettings
 
-    def Executor(CompositeSettings settings1) {
-        settings = settings1
-        assert settings
+    def Executor(GlobalSettings globalSettings1, PerServiceSettings perServiceSettings1) {
+        globalSettings = globalSettings1
+        perServiceSettings = perServiceSettings1
+        assert globalSettings
+        assert perServiceSettings
     }
 
     /**
      * Execute {@link Plan}s.
      *
-     * @param globalSettings
      * @param plans
      * @return results of each plan
      */
     def <T> List<T> execute(List<Plan<T>> plans) {
-        if (settings.dryRun) {
-            dryRun(plans)
+        log.debug("Using default settings: $CompositeSettings.With.DEFAULT")
+        log.debug("Using global settings: $globalSettings")
+        log.debug("Using per-service settings: $perServiceSettings")
+        def mergedSettings = new CompositeSettings.With(CompositeSettings.With.DEFAULT, globalSettings, perServiceSettings)
+
+        if (mergedSettings.dryRun) {
+            dryRun(plans, mergedSettings)
         } else {
-            wetRun(plans)
+            wetRun(plans, mergedSettings)
         }
     }
 
-    private <T> List<T> dryRun(List<Plan<T>> plans) {
-        log.debug("Running ${plans.size()} session(s) with $settings")
+    private static <T> List<T> dryRun(List<Plan<T>> plans, CompositeSettings mergedSettings) {
         plans.collect { plan ->
+            log.debug("Using per-remote settings: ${new CompositeSettings.With(plan.remote)}")
             def operations = new DryRunOperations(plan.remote)
-            callWithDelegate(plan.closure, SessionHandler.create(operations, settings))
+            def sessionHandler = SessionHandler.create(operations, new CompositeSettings.With(mergedSettings, plan.remote))
+            callWithDelegate(plan.closure, sessionHandler)
         }
     }
 
-    private <T> List<T> wetRun(List<Plan<T>> plans) {
-        log.debug("Running ${plans.size()} session(s) with $settings")
-        def manager = new ConnectionManager(settings)
+    private static <T> List<T> wetRun(List<Plan<T>> plans, CompositeSettings mergedSettings) {
+        def manager = new ConnectionManager(mergedSettings)
         try {
             plans.collect { plan ->
+                log.debug("Using per-remote settings: ${new CompositeSettings.With(plan.remote)}")
                 def connection = manager.connect(plan.remote)
                 def operations = new DefaultOperations(connection)
-                callWithDelegate(plan.closure, SessionHandler.create(operations, settings))
+                def sessionHandler = SessionHandler.create(operations, new CompositeSettings.With(mergedSettings, plan.remote))
+                callWithDelegate(plan.closure, sessionHandler)
             }
         } finally {
             log.debug('Waiting for pending sessions')

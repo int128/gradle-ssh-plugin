@@ -34,8 +34,8 @@ trait SessionExtension {
     abstract Operations getOperations()
 
     /**
-     * Return the current global settings.
+     * Return the settings with default, global, per-service and per-remote.
      * Only for DSL extensions, do not use from the script.
      */
-    abstract CompositeSettings getGlobalSettings()
+    abstract CompositeSettings getMergedSettings()
 }
