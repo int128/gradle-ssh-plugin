@@ -39,7 +39,7 @@ task startSshAgent(type: Exec) {
 
 task addKeyToSshAgent(type: Exec) {
     dependsOn startSshAgent
-    commandLine 'ssh-add', "${System.getProperty('user.home')}/.ssh/id_rsa"
+    commandLine 'ssh-add', System.getenv('INTEGRATION_TEST_SSH_KEY_PATH')
 }
 
 task stopSshAgent(type: Exec) {
@@ -51,6 +51,9 @@ task testWithAgent(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
     }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
     dependsOn addKeyToSshAgent
     finalizedBy stopSshAgent
 }

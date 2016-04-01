@@ -343,6 +343,7 @@ The method accepts following settings:
 |Key              | Type            | Description
 |`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 |`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
+|`agentForwarding`| Boolean         | If this is true, the agent forwarding is requested on the command execution. Defaults to false.
 |`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 |`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
 |`errorStream`    | OutputStream    | If given, standard error of the remote command is sent to the stream.
@@ -473,6 +474,7 @@ The method accepts following settings:
 |Key              | Type            | Description
 |`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
 |`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
+|`agentForwarding`| Boolean         | If this is true, the agent forwarding is requested on the command execution. Defaults to false.
 |`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
 |`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
 |`encoding`       | String          | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
