@@ -7,10 +7,7 @@
 Gradle SSH Plugin requires following:
 
 * Java 6 or later
-* Gradle 2.0 or later
-
-Gradle 1.x is still supported with the backports library.
-See later section for details.
+* Gradle 2.0 or later (Gradle 1.x is also supported with the backport library)
 
 
 === Create a project
@@ -68,9 +65,9 @@ apply plugin: 'org.hidetake.ssh'
 ----
 
 
-==== Gradle 1.x support
+==== Use on Gradle 1.x
 
-The plugin also works on Gradle 1.x with the backports library:
+The plugin also supports Gradle 1.x with the backport library:
 
 [source,groovy,subs="+attributes"]
 ----
@@ -80,15 +77,12 @@ buildscript {
   }
   dependencies {
     classpath 'org.hidetake:gradle-ssh-plugin:{gradle-ssh-version}'
-    classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
+    classpath 'org.codehaus.groovy:groovy-backports-compat23:2.4.6'
   }
 }
 
 apply plugin: 'org.hidetake.ssh'
 ----
-
-Gradle 1.x support is since https://github.com/int128/gradle-ssh-plugin/releases/tag/v1.0.5[version 1.0.5]
-and still experimental.
 
 
 === Add a remote host
