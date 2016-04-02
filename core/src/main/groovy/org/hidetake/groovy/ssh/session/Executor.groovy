@@ -1,7 +1,9 @@
 package org.hidetake.groovy.ssh.session
 
+import com.jcraft.jsch.JSch
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.ConnectionManager
+import org.hidetake.groovy.ssh.connection.JSchLogger
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.GlobalSettings
 import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
@@ -38,6 +40,9 @@ class Executor {
         log.debug("Using global settings: $globalSettings")
         log.debug("Using per-service settings: $perServiceSettings")
         def mergedSettings = new CompositeSettings.With(CompositeSettings.With.DEFAULT, globalSettings, perServiceSettings)
+
+        // not thread safe
+        JSch.logger = mergedSettings.jschLog ? JSchLogger.instance : null
 
         if (mergedSettings.dryRun) {
             dryRun(plans, mergedSettings)

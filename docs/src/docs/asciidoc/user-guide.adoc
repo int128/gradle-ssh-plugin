@@ -434,6 +434,7 @@ Following settings can be set in global:
 |===
 |Key            | Type                  | Description
 |`dryRun`       | Boolean               | Dry run flag. If this is true, no actual connection or operation is performed. Defaults to false.
+|`jschLog`      | Boolean               | JSch logging flag. If this is true, verbose log of JSch is shown. Defaults to false.
 |`extensions`   | List of Trait or Map  | DSL extensions. Defaults to an empty list.
 |===
 
