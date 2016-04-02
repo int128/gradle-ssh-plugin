@@ -114,137 +114,36 @@ Also we can specify the remote host _web01_ by a role such as `remotes.role('mas
 All settings of a remote host are available on link:user-guide.html#add-a-remote-host[the user guide].
 
 
-=== Run a SSH session in the task
+=== Describe SSH sessions
 
-Call `ssh.run` method to run one or more SSH sessions as follows.
+Call `ssh.run` method with one or more sessions as follows.
 
 [source,groovy]
 ----
-task checkWebServer << {
+task checkWebServers << {
   ssh.run {
     session(remotes.web01) {
-      //execute ...
+      // Execute a command
+      def result = execute 'sudo service httpd status'
+
+      // Any Gradle methods or properties are available in a session closure
+      copy {
+        from "src/main/resources/example"
+        into "$buildDir/tmp"
+      }
+
+      // Also Groovy methods or properties are available in a session closure
+      println result
     }
     session(remotes.web02) {
-      //execute ...
+      def result = execute 'sudo service httpd status'
+
+      // Also Groovy style assertion is available in a session closure
+      assert result.contains('running')
     }
   }
 }
 ----
-
-`ssh.run` method will connect to all remote hosts, e.g. _web01_ and _web02_ in the above code,
-and evaluate each closure of sessions in order.
-
-
-==== Obtain a result of command
-
-`ssh.run` method will return the result of last declared session.
-So we can use the method to retrieve a result of remote command as like:
-
-[source,groovy]
-----
-task syncKernelParam << {
-  def paramKey = 'net.core.wmem_max'
-  def paramValue = ssh.run {
-    session(remotes.web01) {
-      execute("sysctl '$paramKey' | sed -e 's/ //g'")
-    }
-  }
-  assert paramValue.contains(paramKey)
-  ssh.run {
-    session(remotes.web02) {
-      execute("sysctl -w '$paramValue'")
-    }
-  }
-}
-----
-
-
-==== More about sessions
-
-A session consists of a remote host to connect and a closure.
-Following code declares a session which connects to _web01_ and executes a command.
-
-[source,groovy]
-----
-session(remotes.web01) {
-  //execute ...
-}
-----
-
-If more than one remote hosts are given, the plugin will connect to all remote hosts at once and execute closures in order.
-For instance, followings are all equivalent.
-
-[source,groovy]
-----
-session([remotes.web01, remotes.web02]) {
-  //execute ...
-}
-----
-
-[source,groovy]
-----
-session(remotes.web01, remotes.web02) {
-  //execute ...
-}
-----
-
-[source,groovy]
-----
-session(remotes.web01) {
-  //execute ...
-}
-session(remotes.web02) {
-  //execute ...
-}
-----
-
-`session` method also accepts a map of settings of the remote host.
-
-[source,groovy]
-----
-session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
-  //execute ...
-}
-
-// If name is not given, auto-generated name such as Remote1 will be shown in console log
-session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
-  //execute ...
-}
-----
-
-
-=== Describe SSH operations
-
-We can describe SSH operations in the session closure.
-
-[source,groovy]
-----
-session(remotes.web01) {
-  // Execute a command
-  def result = execute 'uptime'
-
-  // Any Gradle methods or properties are available in a session closure
-  copy {
-    from "src/main/resources/example"
-    into "$buildDir/tmp"
-  }
-
-  // Also Groovy methods or properties are available in a session closure
-  println result
-}
-----
-
-Following methods are available in a session closure.
-
-* `execute` - Execute a command.
-* `executeBackground` - Execute a command in background.
-* `executeSudo` - Execute a command with sudo support.
-* `shell` - Execute a shell.
-* `put` - Put a file or directory into the remote host.
-* `get` - Get a file or directory from the remote host.
-
-See link:user-guide.html#perform-operations[the user guide] for details.
 
 
 === Run the script

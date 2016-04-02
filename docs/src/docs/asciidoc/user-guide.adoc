@@ -1,5 +1,111 @@
 = User Guide
 
+== Overview
+
+Let's take a look overview of DSL.
+
+[source,groovy,subs="+attributes"]
+----
+ssh.settings {  //<1>
+  dryRun = project.hasProperty('dryRun')
+}
+
+remotes {
+  web01 {  //<2>
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+}
+
+task reload << {
+  ssh.run {  //<3>
+    settings {  //<4>
+      pty = true
+    }
+    session(remotes.web01) {  //<5>
+      execute 'sudo service tomcat restart'  //<6>
+    }
+  }
+}
+----
+
+<1> Configure global settings.
+<2> Add a remote host with per-remote settings.
+<3> Run sessions.
+<4> Configure per-`ssh.run` settings.
+<5> Add a session to the remote host.
+<6> Perform operations with per-method settings.
+
+
+=== Settings inheritance
+
+Settings can be set in global and overridden by each `ssh.run` method, remote host or method.
+
+.List of settings
+[options="header,autowidth"]
+|===
+|Settings               | Global | Per `ssh.run`  | Per remote  | Per method
+|Session settings       | x      | x              | -           | -
+|Connection settings    | x      | x              | x           | -
+|Command settings       | x      | x              | x           | x
+|Shell settings         | x      | x              | x           | x
+|Sudo settings          | x      | x              | x           | x
+|Remote settings        | -      | -              | x           | -
+|Proxy settings         | -      | -              | x           | -
+|Local port forwarding settings  | -      | -     | -           | x
+|Remote port forwarding settings | -      | -     | -           | x
+|===
+
+Some settings can be set in global as follows.
+
+[source,groovy]
+----
+ssh.settings {
+  knownHosts = allowAnyHosts
+  dryRun = true
+}
+----
+
+Some settings can be overridden in a `ssh.run` method as follows.
+
+[source,groovy]
+----
+ssh.run {
+  settings {
+    // overrides global settings
+    pty = true
+  }
+  session(remotes.role('webServers')) {
+    executeBackground('sudo service httpd reload')
+  }
+}
+----
+
+Some settings can be overridden in a remote host closure.
+
+[source,groovy]
+----
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa_jenkins')
+    // overrides global settings
+    agentForwarding = true
+  }
+}
+----
+
+Some settings can be overridden on an operation method.
+
+[source,groovy]
+----
+execute('sudo service httpd reload', pty: false)
+execute('sudo service httpd reload', logging: false)
+----
+
+
 == Manage remote hosts
 
 The plugin adds a container of remote hosts to the project.
@@ -65,7 +171,6 @@ Also following settings can be set in a remote closure.
 [options="header,autowidth"]
 |===
 |Key            | Type              | Description
-|`dryRun`       | Boolean           | Dry run flag. If this is true, no actual connection is established. Defaults to false.
 |`user`         | String, Mandatory | User name.
 |`password`     | String            | A password for password authentication. Defaults to null (no password authentication).
 |`identity`     | File or String    | A private key for public-key authentication. This can be a key File or key content String. Defaults to null (no public-key authentication).
@@ -85,7 +190,6 @@ These can be set globally in the project as follows.
 ----
 ssh.settings {
   knownHosts = allowAnyHosts
-  dryRun = true
 }
 ----
 
@@ -301,6 +405,115 @@ The remote hosts container supports following methods and almost code should wor
 * `create(String, Closure)`
 * `role(String...)`
 * `allRoles(String...)`
+
+
+== Add sessions
+
+`ssh.run` method connects to all remote hosts and evaluates each closure of sessions in order.
+For example of following, the method connects to `web01` and `web02`, and executes `command1` and `command2`.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'command1'
+  }
+  session(remotes.web02) {
+    execute 'command2'
+  }
+}
+----
+
+
+=== Session settings
+
+Following settings can be set in global:
+
+.Session settings
+[options="header,autowidth"]
+|===
+|Key            | Type                  | Description
+|`dryRun`       | Boolean               | Dry run flag. If this is true, no actual connection or operation is performed. Defaults to false.
+|`extensions`   | List of Trait or Map  | DSL extensions. Defaults to an empty list.
+|===
+
+
+=== Obtain the result of session
+
+`ssh.run` method will return the result of last declared session.
+So we can use the method to retrieve a result of remote command as like:
+
+[source,groovy]
+----
+task syncKernelParam << {
+  def paramKey = 'net.core.wmem_max'
+  def paramValue = ssh.run {
+    session(remotes.web01) {
+      execute("sysctl '$paramKey' | sed -e 's/ //g'")
+    }
+  }
+  assert paramValue.contains(paramKey)
+  ssh.run {
+    session(remotes.web02) {
+      execute("sysctl -w '$paramValue'")
+    }
+  }
+}
+----
+
+
+=== More about sessions
+
+A session consists of a remote host to connect and a closure.
+Following code declares a session which connects to _web01_ and executes a command.
+
+[source,groovy]
+----
+session(remotes.web01) {
+  //execute ...
+}
+----
+
+If more than one remote hosts are given, the plugin will connect to all remote hosts at once and execute closures in order.
+For instance, followings are all equivalent.
+
+[source,groovy]
+----
+session([remotes.web01, remotes.web02]) {
+  //execute ...
+}
+----
+
+[source,groovy]
+----
+session(remotes.web01, remotes.web02) {
+  //execute ...
+}
+----
+
+[source,groovy]
+----
+session(remotes.web01) {
+  //execute ...
+}
+session(remotes.web02) {
+  //execute ...
+}
+----
+
+`session` method also accepts a map of settings of the remote host.
+
+[source,groovy]
+----
+session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
+  //execute ...
+}
+
+// If name is not given, auto-generated name such as Remote1 will be shown in console log
+session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
+  //execute ...
+}
+----
 
 
 == Perform operations
@@ -794,73 +1007,6 @@ execute('passwd', pty: true, interaction: {
     }
   }
 })
-----
-
-
-== Global settings
-
-Some settings can be set in global and overridden by each `ssh.run` method, remote host or method.
-
-.List of settings
-[options="header,autowidth"]
-|===
-|Settings               | Global | Per `ssh.run`  | Per remote  | Per method
-|Connection settings    | x      | x              | x           | -
-|Command settings       | x      | x              | x           | x
-|Shell settings         | x      | x              | x           | x
-|Sudo settings          | x      | x              | x           | x
-|Remote settings        | -      | -              | x           | -
-|Proxy settings         | -      | -              | x           | -
-|Local port forwarding settings  | -      | -     | -           | x
-|Remote port forwarding settings | -      | -     | -           | x
-|===
-
-Some settings can be set in global as follows.
-
-[source,groovy]
-----
-ssh.settings {
-  knownHosts = allowAnyHosts
-  dryRun = true
-}
-----
-
-Some settings can be overridden in a `ssh.run` method as follows.
-
-[source,groovy]
-----
-ssh.run {
-  settings {
-    // overrides global settings
-    pty = true
-  }
-  session(remotes.role('webServers')) {
-    executeBackground('sudo service httpd reload')
-  }
-}
-----
-
-Some settings can be overridden in a remote host closure.
-
-[source,groovy]
-----
-remotes {
-  web01 {
-    host = '192.168.1.101'
-    user = 'jenkins'
-    identity = file('id_rsa_jenkins')
-    // overrides global settings
-    agentForwarding = true
-  }
-}
-----
-
-Some settings can be overridden on an operation method.
-
-[source,groovy]
-----
-execute('sudo service httpd reload', pty: false)
-execute('sudo service httpd reload', logging: false)
 ----
 
 
