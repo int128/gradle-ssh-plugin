@@ -103,8 +103,6 @@ class ConnectionManager {
         assert settings.identity instanceof File || settings.identity instanceof String || settings.identity == null,
                 'identity must be a File, String or null'
 
-        JSch.logger = JSchLogger.instance
-
         retry(settings.retryCount, settings.retryWaitSec) {
             def jsch = new JSch()
             def session = jsch.getSession(settings.user, host, port)

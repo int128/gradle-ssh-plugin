@@ -17,6 +17,11 @@ trait SessionSettings {
     Boolean dryRun
 
     /**
+     * JSch logging flag.
+     */
+    Boolean jschLog
+
+    /**
      * Extensions for {@link org.hidetake.groovy.ssh.session.SessionHandler}.
      */
     List extensions = []
@@ -41,6 +46,7 @@ trait SessionSettings {
 
         static final SessionSettings DEFAULT = new SessionSettings.With(
                 dryRun: false,
+                jschLog: false,
                 extensions: [],
         )
     }
