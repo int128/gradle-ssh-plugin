@@ -9,18 +9,20 @@ The plugin adds a container of remote hosts to the project.
 
 Following code adds a remote host to the remote hosts container:
 
-```groovy
+[source,groovy]
+----
 remotes {
   web01 {
     host = '192.168.1.101'
     user = 'jenkins'
   }
 }
-```
+----
 
 A remote host can be added by calling `remotes.create(name)`.
 
-```groovy
+[source,groovy]
+----
 task setupRemote << {
   ssh.run {
     session(remotes.web01) {
@@ -42,7 +44,7 @@ task something(dependsOn: setupRemote) << {
     }
   }
 }
-```
+----
 
 Following settings can be set in a remote closure.
 
@@ -79,12 +81,13 @@ Also following settings can be set in a remote closure.
 
 These can be set globally in the project as follows.
 
-```groovy
+[source,groovy]
+----
 ssh.settings {
   knownHosts = allowAnyHosts
   dryRun = true
 }
-```
+----
 
 
 ==== Connect through gateway servers
@@ -93,7 +96,8 @@ A remote host can be connected through one or more gateway servers.
 
 ===== Through one gateway
 
-```groovy
+[source,groovy]
+----
 remotes {
   gw01 {
     host = '10.2.3.4'
@@ -106,7 +110,7 @@ remotes {
     knownHosts = allowAnyHosts
   }
 }
-```
+----
 
 It will:
 
@@ -115,7 +119,8 @@ It will:
 
 ===== Through two-hop gateways
 
-```groovy
+[source,groovy]
+----
 remotes {
   frontgw01 {
     host = '10.2.3.4'
@@ -132,7 +137,7 @@ remotes {
     gateway = remotes.gw01
   }
 }
-```
+----
 
 It will:
 
@@ -153,7 +158,8 @@ Individual proxy server connections are configured in the `proxies` container pr
 
 The following code adds a proxy server to the `proxies` container:
 
-```groovy
+[source,groovy]
+----
 proxies {
   socks01 {
     host = '192.168.1.112'
@@ -161,7 +167,7 @@ proxies {
     type = SOCKS
   }
 }
-```
+----
 
 The following settings are used to configure how a proxied connection is established within a proxy closure.
 
@@ -183,7 +189,8 @@ Unless the remote's proxy property is set in a higher scope, connections made to
 
 The following code shows how remote hosts can use different proxy servers.
 
-```groovy
+[source,groovy]
+----
 proxies {
   socks {
     host = '192.168.1.112'
@@ -214,21 +221,23 @@ remotes {
     proxy = proxies.socks
   }
 }
-```
+----
 
 The following shows how to set a global proxy server.
 
-```groovy
+[source,groovy]
+----
 ssh.settings {
   // All remotes will use this proxy by default.
   // Each remote can override this configuration.
   proxy = proxies.socks01
 }
-```
+----
 
 The following shows how to set a proxy server on a particular method.
 
-```groovy
+[source,groovy]
+----
 task jarSearch << {
   ssh.run {
     settings {
@@ -237,14 +246,15 @@ task jarSearch << {
     session(remotes.role('mavenRepo')) { ... }
   }
 }
-```
+----
 
 
 === Associate with roles
 
 Call `role` method to associate the host with one or more roles.
 
-```groovy
+[source,groovy]
+----
 remotes {
   web01 {
     role('webServers')
@@ -253,11 +263,12 @@ remotes {
     user = 'jenkins'
   }
 }
-```
+----
 
 We can specify one or mote roles on a session.
 
-```groovy
+[source,groovy]
+----
 // remote hosts associated to servers
 session(remotes.role('servers')) {
 }
@@ -269,7 +280,7 @@ session(remotes.role('webServer', 'appServer')) {
 // remote hosts associated to webServer AND appServer
 session(remotes.allRoles('webServer', 'appServer')) {
 }
-```
+----
 
 === Remote host container
 
@@ -309,31 +320,35 @@ Following methods are available in a session closure.
 
 Call the `execute` method with a command to execute.
 
-```groovy
+[source,groovy]
+----
 execute 'sudo service httpd reload'
-```
+----
 
 The method can be called with operation settings.
 
-```groovy
+[source,groovy]
+----
 execute 'sudo service httpd reload', pty: true
-```
+----
 
 The method waits until the command is completed and returns a result from standard output of the command.
 Line separators are converted to the platform native.
 
-```groovy
+[source,groovy]
+----
 def result = execute 'uname -a'
 println result
-```
+----
 
 A result can be retrieved as an argument if a closure is given.
 
-```groovy
+[source,groovy]
+----
 execute('uname -a') { result ->
   println result
 }
-```
+----
 
 The method accepts following settings:
 
@@ -353,26 +368,29 @@ The method accepts following settings:
 
 The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
 
-```groovy
+[source,groovy]
+----
 execute 'exit 1', ignoreError: true
-```
+----
 
 
 === Execute a command in background
 
 Call the `executeBackground` method with a command to execute in background.
 
-```groovy
+[source,groovy]
+----
 executeBackground 'sudo service httpd reload'
 
 // also can be called with operation settings
 executeBackground 'sudo service httpd reload', pty: true
-```
+----
 
 The method does not wait for the command.
 Other commands are executed concurrently.
 
-```groovy
+[source,groovy]
+----
 // httpd processes on all web servers will be reloaded concurrently
 session(remotes.role('webServers')) {
   executeBackground 'sudo service httpd reload'
@@ -384,15 +402,16 @@ session(remotes.web01) {
     executeBackground "ping -c 1 -w 1 192.168.1.$lastOctet"
   }
 }
-```
+----
 
 A result can be retrieved as an argument if a closure is given.
 
-```groovy
+[source,groovy]
+----
 executeBackground('ping -c 3 server') { result ->
   def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
 }
-```
+----
 
 The method accepts settings same as `execute` method.
 
@@ -401,9 +420,10 @@ If a background command returned an error, `ssh.run` method waits for any other 
 
 It ignores the exit status if the `ignoreError` setting is given as follow:
 
-```groovy
+[source,groovy]
+----
 executeBackground 'exit 1', ignoreError: true
-```
+----
 
 
 === Execute a command with the sudo prompt support
@@ -411,28 +431,31 @@ executeBackground 'exit 1', ignoreError: true
 Call the `executeSudo` method with a command to execute with the sudo support.
 The method prepends `sudo -S -p` to the command and will provide the password for sudo prompt.
 
-```groovy
+[source,groovy]
+----
 executeSudo 'service httpd reload'
 
 // also can be called with settings
 executeSudo 'service httpd reload', pty: true
-```
+----
 
 The method waits until the command is completed and returns a result from standard output of the command, excluding sudo interactions.
 Line separators are converted to the platform native.
 
-```groovy
+[source,groovy]
+----
 def result = executeSudo 'service httpd status'
 println result
-```
+----
 
 A result can be retrieved as an argument if a closure is given.
 
-```groovy
+[source,groovy]
+----
 executeSudo('service httpd status') { result ->
   println result
 }
-```
+----
 
 The method accepts following settings and settings same as `execute` method.
 
@@ -456,7 +479,8 @@ The method is useful for a limited environment which supports only a shell such 
 
 An `interaction` setting should be given in order to exit the shell.
 
-```groovy
+[source,groovy]
+----
 session(remotes.web01) {
   shell interaction: {
     when(partial: ~/.*$/) {
@@ -464,7 +488,7 @@ session(remotes.web01) {
     }
   }
 }
-```
+----
 
 The method accepts following settings:
 
@@ -483,16 +507,18 @@ The method accepts following settings:
 
 The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
 
-```groovy
+[source,groovy]
+----
 shell ignoreError: true, interaction: {...}
-```
+----
 
 
 === Transfer a file or directory
 
 Call the `get` method to get a file or directory from the remote host.
 
-```groovy
+[source,groovy]
+----
 // specify the file path
 get from: '/remote/file', into: 'local_file'
 
@@ -506,11 +532,12 @@ file.withOutputStream { stream ->
 
 // get content as a string
 def text = get from: '/remote/file'
-```
+----
 
 Call the `put` method to put a file or directory into the remote host. It also accepts content such as a string or byte array.
 
-```groovy
+[source,groovy]
+----
 // specify the file path
 put from: 'local_file', into: '/remote/file'
 
@@ -532,7 +559,7 @@ echo 'hello world'
 
 // specify a byte array
 put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
-```
+----
 
 The method throws an exception if an error occurred while the file transfer.
 
@@ -542,7 +569,8 @@ The method throws an exception if an error occurred while the file transfer.
 Call the `remove` method to remove a file or directory on the remote host.
 It accepts 2 or more paths.
 
-```groovy
+[source,groovy]
+----
 // specify a file
 remove '/remote/file'
 
@@ -551,7 +579,7 @@ remove '/remote/directory'
 
 // specify more paths
 remove '/remote/file', '/remote/directory'
-```
+----
 
 The method returns `true` if anything is removed, `false` if nothing is removed.
 It throws an exception if an error occurred.
@@ -561,7 +589,8 @@ It throws an exception if an error occurred.
 
 Call the `forwardLocalPort` method to forward a local port to a remote port.
 
-```groovy
+[source,groovy]
+----
 // Forward localhost:18080 to remote:8080
 forwardLocalPort port: 18080, hostPort: 8080
 
@@ -573,7 +602,7 @@ forwardLocalPort port: 18080, host: '172.16.1.1', hostPort: 8080
 
 // Forward *:18080 (listen to all) to 172.16.1.1:8080
 forwardLocalPort bind: '0.0.0.0', port: 18080, host: '172.16.1.1', hostPort: 8080
-```
+----
 
 The method accepts following settings:
 
@@ -590,7 +619,8 @@ The method accepts following settings:
 
 Call the `forwardRemotePort` method to forward a local port to a remote port.
 
-```groovy
+[source,groovy]
+----
 // Forward remote:30000 to localhost:8080
 forwardRemotePort port: 30000, hostPort: 8080
 
@@ -599,7 +629,7 @@ forwardRemotePort port: 30000, host: '192.168.1.5', hostPort: 8080
 
 // Forward remote:30000 (listen to all) to 192.168.1.5:8080
 forwardRemotePort bind: '0.0.0.0', port: 30000, host: '192.168.1.5', hostPort: 8080
-```
+----
 
 The method accepts following settings:
 
@@ -616,7 +646,8 @@ The method accepts following settings:
 The port forwarding is valid until all sessions are finished.
 So we can connect to a server via a tunnel in the `ssh.run` method.
 
-```groovy
+[source,groovy]
+----
 import groovyx.net.http.RESTClient
 
 ssh.run {
@@ -627,7 +658,7 @@ ssh.run {
     new RESTClient('http://localhost:8080').get(path: '/')
   }
 }
-```
+----
 
 
 === Stream interaction support
@@ -645,7 +676,8 @@ If any rule has been matched, others are not evaluated more.
 
 The following example declares 2 rules.
 
-```groovy
+[source,groovy]
+----
 interaction: {
   // Declare a rule
   when(/* a pattern match */) {
@@ -657,7 +689,7 @@ interaction: {
     /* an action closure */
   }
 }
-```
+----
 
 
 ==== An interaction rule is
@@ -694,19 +726,21 @@ Now explaining another one of an interaction rule, an action closure.
 An action closure is a generic Groovy closure executed if the pattern match is satisfied.
 It can write a string to the `standardInput`.
 
-```groovy
+[source,groovy]
+----
 interaction: {
   when(partial: ~/.*#/) {
     standardInput << 'exit' << '\n'
   }
 }
-```
+----
 
 If an action closure contains one or more interaction rules, surrounding rules are discarded and inner rules are activated.
 In the following case, at first, A and B are evaluated for an each line or partial string,
 but C is evaluated after A has been matched.
 
-```groovy
+[source,groovy]
+----
 interaction: {
   when(/* rule A */) {
     when(/* rule C */) {
@@ -715,14 +749,15 @@ interaction: {
   when(/* rule B */) {
   }
 }
-```
+----
 
 
 ==== Example: handle the prompt
 
 Let's take a look at the following example.
 
-```groovy
+[source,groovy]
+----
 // Execute a shell with the interaction support
 shell interaction: {
   // Declare a rule if the stream gives a string terminated with $
@@ -731,7 +766,7 @@ shell interaction: {
     standardInput << 'exit 0' << '\n'
   }
 }
-```
+----
 
 The example will execute a shell and provide the exit if the prompt appears.
 
@@ -749,7 +784,8 @@ If the shell prompt is `sh$`, pattern matching will work as follows.
 
 TODO
 
-```groovy
+[source,groovy]
+----
 execute('passwd', pty: true, interaction: {
   when(partial: ~/.+[Pp]assowrd: */) {
     standardInput << oldPassword << '\n'
@@ -758,7 +794,7 @@ execute('passwd', pty: true, interaction: {
     }
   }
 })
-```
+----
 
 
 == Global settings
@@ -781,16 +817,18 @@ Some settings can be set in global and overridden by each `ssh.run` method, remo
 
 Some settings can be set in global as follows.
 
-```groovy
+[source,groovy]
+----
 ssh.settings {
   knownHosts = allowAnyHosts
   dryRun = true
 }
-```
+----
 
 Some settings can be overridden in a `ssh.run` method as follows.
 
-```groovy
+[source,groovy]
+----
 ssh.run {
   settings {
     // overrides global settings
@@ -800,11 +838,12 @@ ssh.run {
     executeBackground('sudo service httpd reload')
   }
 }
-```
+----
 
 Some settings can be overridden in a remote host closure.
 
-```groovy
+[source,groovy]
+----
 remotes {
   web01 {
     host = '192.168.1.101'
@@ -814,14 +853,15 @@ remotes {
     agentForwarding = true
   }
 }
-```
+----
 
 Some settings can be overridden on an operation method.
 
-```groovy
+[source,groovy]
+----
 execute('sudo service httpd reload', pty: false)
 execute('sudo service httpd reload', logging: false)
-```
+----
 
 
 == DSL extension system
@@ -834,7 +874,8 @@ This feature is still experimental and may be improved in the future.
 Add a map to `extension` of the global settings.
 Following example adds the method `restartAppServer` and it is available in the session closure.
 
-```groovy
+[source,groovy]
+----
 ssh.settings {
   extensions.add restartAppServer: {
     execute 'sudo service tomcat restart'
@@ -846,14 +887,15 @@ ssh.run {
     restartAppServer()
   }
 }
-```
+----
 
 === Use Gradle feature in an extension
 
 We can use project properties such as configurations and dependencies from the extension.
 Following example transfers the `groovy-all` jar and execute a script on the remote host.
 
-```groovy
+[source,groovy]
+----
 repositories {
   jcenter()
 }
@@ -892,13 +934,14 @@ task example << {
     }
   }
 }
-```
+----
 
 === Alternative: Trait based extension
 
 Create an extension trait in the `buildSrc/src/main/groovy` directory.
 
-```groovy
+[source,groovy]
+----
 // buildSrc/src/main/groovy/extensions.groovy
 trait RemoteFileExtension {
   void eachFile(String directory, Closure closure) {
@@ -907,11 +950,12 @@ trait RemoteFileExtension {
     }
   }
 }
-```
+----
 
 Properties and methods in the trait are available in the session closure.
 
-```groovy
+[source,groovy]
+----
 // build.gradle
 ssh.run {
   settings {
@@ -923,6 +967,6 @@ ssh.run {
     }
   }
 }
-```
+----
 
 An extension trait must be placed in the `buildSrc/src/main/groovy` directory.

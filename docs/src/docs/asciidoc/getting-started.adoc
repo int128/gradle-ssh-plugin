@@ -22,11 +22,12 @@ The project contains Gradle wrapper, so Gradle installation is not needed.
 
 We can clone the template project as follows:
 
-```sh
+[source,sh]
+----
 git clone https://github.com/gradle-ssh-plugin/template.git awesome-ssh
 cd awesome-ssh
 ./gradlew tasks --all
-```
+----
 
 We can open the project with an IDE such as IntelliJ IDEA.
 
@@ -98,7 +99,8 @@ A remote host can be associated with one or more roles.
 
 Following code adds remote hosts to the remote hosts container:
 
-```groovy
+[source,groovy]
+----
 remotes {
   web01 {
     role 'masterNode'
@@ -110,7 +112,7 @@ remotes {
     user = 'jenkins'
   }
 }
-```
+----
 
 We can specify each remote host by `remotes.web01` or `remotes.web02`.
 Also we can specify the remote host _web01_ by a role such as `remotes.role('masterNode')`.
@@ -122,7 +124,8 @@ All settings of a remote host are available on link:user-guide.html#add-a-remote
 
 Call `ssh.run` method to run one or more SSH sessions as follows.
 
-```groovy
+[source,groovy]
+----
 task checkWebServer << {
   ssh.run {
     session(remotes.web01) {
@@ -133,7 +136,7 @@ task checkWebServer << {
     }
   }
 }
-```
+----
 
 `ssh.run` method will connect to all remote hosts, e.g. _web01_ and _web02_ in the above code,
 and evaluate each closure of sessions in order.
@@ -144,7 +147,8 @@ and evaluate each closure of sessions in order.
 `ssh.run` method will return the result of last declared session.
 So we can use the method to retrieve a result of remote command as like:
 
-```groovy
+[source,groovy]
+----
 task syncKernelParam << {
   def paramKey = 'net.core.wmem_max'
   def paramValue = ssh.run {
@@ -159,7 +163,7 @@ task syncKernelParam << {
     }
   }
 }
-```
+----
 
 
 ==== More about sessions
@@ -167,39 +171,44 @@ task syncKernelParam << {
 A session consists of a remote host to connect and a closure.
 Following code declares a session which connects to _web01_ and executes a command.
 
-```groovy
+[source,groovy]
+----
 session(remotes.web01) {
   //execute ...
 }
-```
+----
 
 If more than one remote hosts are given, the plugin will connect to all remote hosts at once and execute closures in order.
 For instance, followings are all equivalent.
 
-```groovy
+[source,groovy]
+----
 session([remotes.web01, remotes.web02]) {
   //execute ...
 }
-```
+----
 
-```groovy
+[source,groovy]
+----
 session(remotes.web01, remotes.web02) {
   //execute ...
 }
-```
+----
 
-```groovy
+[source,groovy]
+----
 session(remotes.web01) {
   //execute ...
 }
 session(remotes.web02) {
   //execute ...
 }
-```
+----
 
 `session` method also accepts a map of settings of the remote host.
 
-```groovy
+[source,groovy]
+----
 session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
   //execute ...
 }
@@ -208,14 +217,15 @@ session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('i
 session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
   //execute ...
 }
-```
+----
 
 
 === Describe SSH operations
 
 We can describe SSH operations in the session closure.
 
-```groovy
+[source,groovy]
+----
 session(remotes.web01) {
   // Execute a command
   def result = execute 'uptime'
@@ -229,7 +239,7 @@ session(remotes.web01) {
   // Also Groovy methods or properties are available in a session closure
   println result
 }
-```
+----
 
 Following methods are available in a session closure.
 
@@ -283,9 +293,10 @@ task reload << {
 
 Invoke the task to run.
 
-```sh
+[source,sh]
+----
 ./gradlew reload
-```
+----
 
 
 ==== Dry run the script
@@ -295,9 +306,10 @@ We can run the script without any actual connections.
 Above script has already dry-run switch,
 so invoke the task with `dryRun` property to perform dry-run.
 
-```sh
+[source,sh]
+----
 ./gradlew -PdryRun -i reload
-```
+----
 
 
 == Use Groovy SSH
