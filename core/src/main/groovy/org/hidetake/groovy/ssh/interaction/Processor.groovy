@@ -32,12 +32,11 @@ class Processor {
 
     void processLine(Stream stream, String line) {
         def context = contextStack.first
-        def rule = context.findRuleForLine(stream, line)
-        if (rule) {
-            log.trace("Rule matched: from: $stream, line: $line -> $rule")
-            def evaluatedRules = evaluateInteractionClosure(rule.action.curry(line))
-            if (!evaluatedRules.empty) {
-                def innerContext = new Context(evaluatedRules)
+        def innerClosure = context.findRuleForLine(stream, line)
+        if (innerClosure) {
+            def rules = evaluateInteractionClosure(innerClosure)
+            if (!rules.empty) {
+                def innerContext = new Context(rules)
                 contextStack.push(innerContext)
                 log.trace("Entering context#${contextStack.size()}: $innerContext")
             }
@@ -48,12 +47,11 @@ class Processor {
 
     void processPartial(Stream stream, String partial) {
         def context = contextStack.first
-        def rule = context.findRuleForPartial(stream, partial)
-        if (rule) {
-            log.trace("Rule matched: from: $stream, partial: $partial -> $rule")
-            def evaluatedRules = evaluateInteractionClosure(rule.action.curry(partial))
-            if (!evaluatedRules.empty) {
-                def innerContext = new Context(evaluatedRules)
+        def innerClosure = context.findRuleForPartial(stream, partial)
+        if (innerClosure) {
+            def rules = evaluateInteractionClosure(innerClosure)
+            if (!rules.empty) {
+                def innerContext = new Context(rules)
                 contextStack.push(innerContext)
                 log.trace("Entering context#${contextStack.size()}: $innerContext")
             }

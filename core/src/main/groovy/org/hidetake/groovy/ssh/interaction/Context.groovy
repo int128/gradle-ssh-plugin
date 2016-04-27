@@ -1,13 +1,17 @@
 package org.hidetake.groovy.ssh.interaction
 
+import groovy.util.logging.Slf4j
+
 /**
  * A context class of stream interaction.
  * This should be pushed into the stack and replaced on rule matched.
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class Context {
-    final List<Rule> rules
+
+    private final List<Rule> rules
 
     private long lineNumber = 0
 
@@ -16,30 +20,45 @@ class Context {
     }
 
     /**
-     * Find a rule for line match.
+     * Find a matched rule for the line.
      *
      * @param stream
      * @param line
-     * @return a rule if it is found, null otherwise
+     * @return a closure curried with String or {@link java.util.regex.Pattern} if matched, or null otherwise
      */
-    Rule findRuleForLine(Stream stream, String line) {
+    Closure findRuleForLine(Stream stream, String line) {
         lineNumber++
-        rules.find { it.matcher(stream, Event.Line, lineNumber, line) }
+        for (Rule rule : rules) {
+            def matcher = rule.matcher(stream, Event.Line, lineNumber, line)
+            if (matcher != null) {
+                log.trace("Rule matched: from: $stream, line: $line -> $rule")
+                return rule.action.curry(matcher)
+            }
+        }
+        return null
     }
 
     /**
-     * Find a rule for partial match.
+     * Find a matched rule for the partial string.
      *
      * @param stream
      * @param partial
-     * @return a rule if it is found, null otherwise
+     * @return a closure curried with String or {@link java.util.regex.Pattern} if matched, or null otherwise
      */
-    Rule findRuleForPartial(Stream stream, String partial) {
-        rules.find { it.matcher(stream, Event.Partial, lineNumber, partial) }
+    Closure findRuleForPartial(Stream stream, String partial) {
+        for (Rule rule : rules) {
+            def matcher = rule.matcher(stream, Event.Partial, lineNumber, partial)
+            if (matcher != null) {
+                log.trace("Rule matched: from: $stream, partial: $partial -> $rule")
+                return rule.action.curry(matcher)
+            }
+        }
+        return null
     }
 
     @Override
     String toString() {
         "${Context.simpleName}$rules"
     }
+
 }
