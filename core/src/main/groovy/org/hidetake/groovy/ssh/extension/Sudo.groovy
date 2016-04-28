@@ -111,14 +111,18 @@ trait Sudo implements SessionExtension {
                     standardInput << sudoSettings.sudoPassword << '\n'
                     standardInput.flush()
 
-                    when(nextLine: _, from: standardOutput) {
-                        when(nextLine: 'Sorry, try again.') {
+                    when(line: _, from: standardOutput) {
+                        when(line: 'Sorry, try again.') {
                             log.error("Failed sudo authentication on $operations.remote.name")
                             throw new RuntimeException('sudo authentication failed')
                         }
                         when(line: _, from: standardOutput) {
                             log.info("Success sudo authentication on $operations.remote.name")
                             lines << it
+
+                            when(line: _, from: standardOutput) {
+                                lines << it
+                            }
                         }
                     }
                 }

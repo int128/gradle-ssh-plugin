@@ -20,7 +20,7 @@ class InteractionHandler {
      */
     final OutputStream standardInput
 
-    final List<Rule> rules = []
+    final List<Rule> when = []
 
     def InteractionHandler(OutputStream standardInput1) {
         standardInput = standardInput1
@@ -30,12 +30,12 @@ class InteractionHandler {
     /**
      * Declare an interaction rule.
      *
-     * @param condition map of condition
-     * @param action the action performed if condition satisfied
+     * @param condition see {@link StreamRule} and {@link BufferRule} for details
+     * @param action closure called with result ({@link String}, {@link java.util.regex.Matcher} or {@code byte[]}) when condition is satisfied
      */
     void when(Map condition, Closure action) {
         assert condition, 'at least one rule must be given'
         assert action, 'closure must be given'
-        rules.add(new Rule(condition, action))
+        when.add(new Rule(condition, action))
     }
 }

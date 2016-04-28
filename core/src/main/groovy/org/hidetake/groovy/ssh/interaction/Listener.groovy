@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 
 /**
  * A listener of lines and partial strings from streams.
+ * It notifies events to {@link Processor}s on start, received bytes and end of stream.
  *
  * @author Hidetake Iwata
  */
@@ -15,17 +16,15 @@ class Listener {
         processors.add(processor)
     }
 
-    void start() {
-        processors*.start()
+    void start(Stream stream) {
+        processors*.start(stream)
     }
 
-    void processLine(Stream stream, String line) {
-        log.trace("Finding match: from: $stream, line: $line")
-        processors*.processLine(stream, line)
+    void receive(Stream stream, byte[] bytes, int length) {
+        processors*.receive(stream, bytes, length)
     }
 
-    void processPartial(Stream stream, String partial) {
-        log.trace("Finding match: from: $stream, partial: $partial")
-        processors*.processPartial(stream, partial)
+    void end(Stream stream) {
+        processors*.end(stream)
     }
 }

@@ -33,7 +33,7 @@ class InteractionHandlerSpec extends Specification {
         def interactionHandler = new InteractionHandler(Mock(OutputStream))
 
         expect:
-        interactionHandler.rules == []
+        interactionHandler.when == []
     }
 
     def 'when() should add an interaction rule'() {
@@ -44,8 +44,8 @@ class InteractionHandlerSpec extends Specification {
         interactionHandler.when(line: 'value') {}
 
         then:
-        interactionHandler.rules.size() == 1
-        interactionHandler.rules[0].condition == [line: 'value']
+        interactionHandler.when.size() == 1
+        interactionHandler.when[0].condition == [line: 'value']
     }
 
     def 'when() should add interaction rules'() {
@@ -54,14 +54,12 @@ class InteractionHandlerSpec extends Specification {
 
         when:
         interactionHandler.when(line: 'value1') {}
-        interactionHandler.when(nextLine: 'value2') {}
         interactionHandler.when(partial: 'value3') {}
 
         then:
-        interactionHandler.rules.size() == 3
-        interactionHandler.rules[0].condition == [line: 'value1']
-        interactionHandler.rules[1].condition == [nextLine: 'value2']
-        interactionHandler.rules[2].condition == [partial: 'value3']
+        interactionHandler.when.size() == 2
+        interactionHandler.when[0].condition == [line: 'value1']
+        interactionHandler.when[1].condition == [partial: 'value3']
     }
 
 }

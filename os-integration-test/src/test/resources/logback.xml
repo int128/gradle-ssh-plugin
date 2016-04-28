@@ -1,0 +1,19 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+<!-- Uncomment below for inspection of stream interaction -->
+<!--
+    <logger name="org.hidetake.groovy.ssh" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+-->
+
+</configuration>

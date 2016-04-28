@@ -25,9 +25,15 @@ class ShellSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 shell(interaction: {
-                    when(partial: ~/.*[$%#] */) {
-                        standardInput << 'exit 0' << '\n'
+                    when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                        standardInput << 'uname -a' << '\n'
+
+                        when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                            standardInput << 'exit 0' << '\n'
+                        }
+                        when(line: _, from: standardOutput) {}
                     }
+                    when(line: _, from: standardOutput) {}
                 })
             }
         }

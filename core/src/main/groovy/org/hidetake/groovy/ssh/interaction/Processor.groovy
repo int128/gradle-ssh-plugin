@@ -5,64 +5,80 @@ import groovy.util.logging.Slf4j
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
 /**
- * A class to process lines or partial strings by predefined rules.
+ * A class to process received bytes by predefined rules.
  *
  * @author Hidetake Iwata
  */
 @Slf4j
 class Processor {
-    private final Closure interactionClosure
-
+    private final Closure initialInteractionClosure
     private final OutputStream standardInput
+    private final String encoding
 
-    private final Deque<Context> contextStack = new ArrayDeque<>()
+    private final buffers = new EnumMap<Stream, Buffer>(Stream)
+    private final contextStack = new ArrayDeque<Context>()
 
-    def Processor(Closure interactionClosure1, OutputStream standardInput1) {
-        interactionClosure = interactionClosure1
+    def Processor(Closure interactionClosure1, OutputStream standardInput1, String encoding1) {
+        initialInteractionClosure = interactionClosure1
         standardInput = standardInput1
-        assert interactionClosure
-        assert standardInput
+        encoding = encoding1
     }
 
-    void start() {
-        contextStack.clear()
-        contextStack.push(new Context(evaluateInteractionClosure(interactionClosure)))
-        log.trace("Initialized context#${contextStack.size()}: ${contextStack.first}")
+    synchronized void start(Stream stream) {
+        if (contextStack.empty) {
+            contextStack.push(new Context(evaluateInteractionClosure(initialInteractionClosure)))
+            log.trace("Initialized context#$currentContextDepth: $currentContext")
+        }
+        buffers.put(stream, new Buffer(encoding))
     }
 
-    void processLine(Stream stream, String line) {
-        def context = contextStack.first
-        def innerClosure = context.findRuleForLine(stream, line)
-        if (innerClosure) {
-            def rules = evaluateInteractionClosure(innerClosure)
-            if (!rules.empty) {
-                def innerContext = new Context(rules)
-                contextStack.push(innerContext)
-                log.trace("Entering context#${contextStack.size()}: $innerContext")
-            }
-        } else {
-            log.trace("No rule matched: from: $stream, line: $line")
+    void receive(Stream stream, byte[] receivedBytes, int length) {
+        buffers.get(stream).append(receivedBytes, length)
+        repeatMatch(stream)
+    }
+
+    void end(Stream stream) {
+        repeatMatch(stream)
+        def buffer = buffers.get(stream)
+        if (buffer.size() > 0) {
+            log.trace("Matching ${buffer.size()} bytes left in buffer of $stream by adding new-line")
+            buffer.append('\n')
+            repeatMatch(stream)
+
+            log.trace("${buffer.size()} bytes left in buffer of $stream at last")
         }
     }
 
-    void processPartial(Stream stream, String partial) {
-        def context = contextStack.first
-        def innerClosure = context.findRuleForPartial(stream, partial)
-        if (innerClosure) {
-            def rules = evaluateInteractionClosure(innerClosure)
-            if (!rules.empty) {
-                def innerContext = new Context(rules)
-                contextStack.push(innerContext)
-                log.trace("Entering context#${contextStack.size()}: $innerContext")
+    private void repeatMatch(Stream stream) {
+        while (true) {
+            def matchResult = currentContext.match(stream, buffers.get(stream))
+            if (matchResult) {
+                log.trace("Rule matched for $stream on context#$currentContextDepth: $matchResult")
+                def rules = evaluateInteractionClosure(matchResult.actionWithResult)
+                if (!rules.empty) {
+                    def innerContext = new Context(rules)
+                    contextStack.push(innerContext)
+                    log.trace("Entering context#$currentContextDepth: $innerContext")
+                }
+            } else {
+                log.trace("No more rule matched for $stream on context#$currentContextDepth")
+                break
             }
-        } else {
-            log.trace("No rule matched: from: $stream, partial: $partial")
         }
+    }
+
+    private getCurrentContext() {
+        assert !contextStack.empty, 'start() must be called at first'
+        contextStack.first
+    }
+
+    private getCurrentContextDepth() {
+        contextStack.size()
     }
 
     private evaluateInteractionClosure(Closure interactionClosure) {
         def handler = new InteractionHandler(standardInput)
         callWithDelegate(interactionClosure, handler)
-        handler.rules
+        handler.when
     }
 }
