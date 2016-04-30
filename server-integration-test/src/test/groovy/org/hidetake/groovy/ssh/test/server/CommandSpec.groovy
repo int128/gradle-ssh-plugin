@@ -259,14 +259,14 @@ class CommandSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
 
         then:
-        logFile.text == expectedLog
+        logFile.text in expectedLog
 
         where:
         stdout | stderr | expectedLog
-        false  | false  | ''
-        true   | false  | 'some message'
-        false  | true   | 'error'
-        true   | true   | 'some messageerror'
+        false  | false  | ['']
+        true   | false  | ['some message']
+        false  | true   | ['error']
+        true   | true   | ['some messageerror', 'errorsome message']
     }
 
     def "execute can write stdout/stderr to system.out"() {
