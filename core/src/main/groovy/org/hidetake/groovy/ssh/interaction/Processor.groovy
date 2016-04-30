@@ -79,6 +79,18 @@ class Processor {
     private evaluateInteractionClosure(Closure interactionClosure) {
         def handler = new InteractionHandler(standardInput)
         callWithDelegate(interactionClosure, handler)
+
+        if (handler.popContext) {
+            if (!handler.when.empty) {
+                throw new IllegalStateException("popContext() should not be called with when(): $handler.when")
+            }
+            if (currentContextDepth < 2) {
+                throw new IllegalStateException("popContext() should not be called on top context: currentContextDepth=$currentContextDepth")
+            }
+            log.trace("Leaving context#$currentContextDepth")
+            contextStack.pop()
+        }
+
         handler.when
     }
 }

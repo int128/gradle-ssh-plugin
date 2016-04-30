@@ -21,6 +21,7 @@ class InteractionHandler {
     final OutputStream standardInput
 
     final List<Rule> when = []
+    boolean popContext = false
 
     def InteractionHandler(OutputStream standardInput1) {
         standardInput = standardInput1
@@ -37,5 +38,13 @@ class InteractionHandler {
         assert condition, 'at least one rule must be given'
         assert action, 'closure must be given'
         when.add(new Rule(condition, action))
+    }
+
+    /**
+     * Pop context stack of {@link Processor}.
+     * This should not be used with {@link #when(java.util.Map, groovy.lang.Closure)}.
+     */
+    void popContext() {
+        popContext = true
     }
 }

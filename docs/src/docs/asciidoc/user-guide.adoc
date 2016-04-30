@@ -987,6 +987,64 @@ In the above example, at first, rule A and B are active.
 If rule A has been matched, rule A and B are discarded and rule C is active now.
 
 
+==== Context stack
+
+Interaction rules are stored into the context stack for nesting.
+
+If an action closure contains no `when()`, the stack is kept as-is.
+If an action closure contains one or more `when()`s, the stack is pushed and inner rules are active.
+If an action closure contains `popContext()`, the stack is popped and outer rules are active.
+
+Let's see the example.
+
+[source,groovy]
+----
+interaction: {
+  when(/* rule A */) {
+    when(/* rule C */) {
+      when(/* rule E */) {
+        popContext()
+      }
+      when(/* rule F */) {
+      }
+    }
+    when(/* rule D */) {
+    }
+  }
+  when(/* rule B */) {
+  }
+}
+----
+
+At first, the stack is following.
+
+----
+[ruleA, ruleB]      <- stack top
+----
+
+If rule A is matched, rule C and D are pushed into the stack.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
+If rule C is matched, rule E and F are pushed into the stack.
+
+----
+[ruleE, ruleF]      <- stack top
+[ruleC, ruleD]
+[ruleA, ruleB]
+----
+
+If rule E is matched, the stack is popped and rule C and D are active.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
+
 ==== Example: handle the prompt
 
 Let's take a look at the following example.
