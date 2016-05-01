@@ -2,9 +2,11 @@ package org.hidetake.groovy.ssh.test.os
 
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
+import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
  * Check if host authentication works with real OS environment.
@@ -17,16 +19,10 @@ class HostAuthenticationSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        ssh.remotes {
-            localhostECDSA {
-                host = hostName()
-                user = userName()
-                identity = privateKeyRSA()
-                knownHosts = knownHostsECDSA()
-            }
-        }
+        createRemote(ssh, 'testServer')
     }
 
+    @Category(RequireEcdsaHostKey)
     def 'should check known_hosts that contains ECDSA host key'() {
         given:
         def x = randomInt()
@@ -34,7 +30,7 @@ class HostAuthenticationSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.localhostECDSA) {
+            session(ssh.remotes.testServer) {
                 execute "expr $x + $y"
             }
         } as int

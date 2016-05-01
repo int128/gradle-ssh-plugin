@@ -10,29 +10,125 @@ dependencies {
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
+final userName = System.getProperty('user.name')
+final userHome = System.getProperty('user.home')
+final userRsaKey = "$userHome/.ssh/id_rsa"
+final userRsaPassphraseKey = "$userHome/.ssh/id_rsa_passphrase"
+final userRsaPassphraseKeyPassphrase = 'pass1234'
+final userEcdsaKey = "$userHome/.ssh/id_ecdsa"
+final userEcdsaKnownHosts = "$userHome/.ssh/known_hosts_ecdsa"
+
+if (System.getenv('TRAVIS')) {
+    assert file(userRsaKey).exists()
+    assert file(userRsaPassphraseKey).exists()
+    assert file(userEcdsaKey).exists()
+    assert file(userEcdsaKnownHosts).exists()
+}
+
 test {
     useJUnit {
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequirePrivilege'
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
+        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
+    }
+    if (System.getenv('TRAVIS')) {
+        systemProperties(
+                'ssh.host': 'localhost',
+                'ssh.user': userName,
+                'ssh.key.path': userRsaKey,
+        )
+    } else {
+        systemProperties(
+                'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
+                'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
+                'ssh.key.path': System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'),
+        )
+        onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
+        onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+        onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
     }
 }
 
-task testWithSudo(type: Test) {
+task testRequireAgent(type: Test) {
+    dependsOn 'addKeyToSshAgent'
+    finalizedBy 'stopSshAgent'
     useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequirePrivilege'
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
     }
+    systemProperties(
+            'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
+            'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
+            'ssh.agent': true,
+    )
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+}
+
+task testRequireSudo(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
+    }
+    systemProperties(
+            'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
+            'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
+            'ssh.key.path': System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'),
+    )
     onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
     onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
     onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
 }
 
+task testRequireEcdsaUserKey(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
+    }
+    systemProperties(
+            'ssh.host': 'localhost',
+            'ssh.user': userName,
+            'ssh.key.path': userEcdsaKey,
+    )
+    onlyIf { file(userEcdsaKey).exists() }
+}
+
+task testRequireEcdsaHostKey(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
+    }
+    systemProperties(
+            'ssh.host': 'localhost',
+            'ssh.user': userName,
+            'ssh.key.path': userRsaKey,
+            'ssh.knownHosts': userEcdsaKnownHosts,
+    )
+    onlyIf { file(userRsaKey).exists() }
+    onlyIf { file(userEcdsaKnownHosts).exists() }
+}
+
+task testRequireKeyWithPassphrase(type: Test) {
+    useJUnit {
+        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
+    }
+    systemProperties(
+            'ssh.host': 'localhost',
+            'ssh.user': userName,
+            'ssh.key.path': userRsaPassphraseKey,
+            'ssh.key.passphrase': userRsaPassphraseKeyPassphrase,
+    )
+    onlyIf { file(userRsaPassphraseKey).exists() }
+}
+
+
+
 task startSshAgent(type: Exec) {
+    finalizedBy 'stopSshAgent'
     commandLine 'ssh-agent'
     standardOutput = new ByteArrayOutputStream()
     doLast {
         standardOutput.toString().eachMatch(~/(.+?)=(.+?);/) { all, k, v ->
             assert k in ['SSH_AGENT_PID', 'SSH_AUTH_SOCK']
-            [addKeyToSshAgent, testWithAgent, stopSshAgent]*.environment(k, v)
+            [addKeyToSshAgent, testRequireAgent, stopSshAgent]*.environment(k, v)
         }
     }
 }
@@ -40,6 +136,7 @@ task startSshAgent(type: Exec) {
 task addKeyToSshAgent(type: Exec) {
     dependsOn startSshAgent
     commandLine 'ssh-add', System.getenv('INTEGRATION_TEST_SSH_KEY_PATH')
+    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
 }
 
 task stopSshAgent(type: Exec) {
@@ -47,16 +144,7 @@ task stopSshAgent(type: Exec) {
     commandLine 'ssh-agent', '-k'
 }
 
-task testWithAgent(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-    }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
-    dependsOn addKeyToSshAgent
-    finalizedBy stopSshAgent
-}
+
 
 task testReport(type: TestReport) {
     destinationDir = testReportDir
