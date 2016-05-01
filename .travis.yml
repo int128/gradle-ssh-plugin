@@ -23,6 +23,20 @@ install:
 - unset GH_TOKEN
 
 - mkdir -m 700 -p -v $HOME/.ssh
+
+- export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
+- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+- echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+- echo '-----END RSA PRIVATE KEY-----'          >> "$INTEGRATION_TEST_SSH_KEY_PATH"
+- chmod -v 600 "$INTEGRATION_TEST_SSH_KEY_PATH"
+- test "$INTEGRATION_TEST_SSH_KEY"
+  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$INTEGRATION_TEST_SSH_KEY_PATH" "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
+  || true
+- test "$INTEGRATION_TEST_SSH_KEY"
+  && ssh-keygen -H -F "$INTEGRATION_TEST_SSH_HOST"
+  || true
+- unset INTEGRATION_TEST_SSH_KEY
+
 - ssh-keygen -t rsa   -N '' -f $HOME/.ssh/id_rsa
 - ssh-keygen -t ecdsa -N '' -f $HOME/.ssh/id_ecdsa
 - cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
@@ -33,17 +47,6 @@ install:
 
 - cp -av $HOME/.ssh/id_rsa{,_passphrase}
 - ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
-
-- test "$INTEGRATION_TEST_SSH_HOST"
-  || echo 'Skip because the pull request is from a fork'
-  && export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
-  && echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-  && echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-  && echo '-----END RSA PRIVATE KEY-----'          >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-  && chmod -v 600 "$INTEGRATION_TEST_SSH_KEY_PATH"
-  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$INTEGRATION_TEST_SSH_KEY_PATH" "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
-  && ssh-keygen -H -F "$INTEGRATION_TEST_SSH_HOST"
-  && unset INTEGRATION_TEST_SSH_KEY
 
 
 script:

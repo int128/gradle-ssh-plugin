@@ -6,7 +6,8 @@ import org.junit.experimental.categories.Category
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.*
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
+import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
  * Check if {@link org.hidetake.groovy.ssh.extension.Sudo} works with Linux system.
@@ -14,20 +15,14 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.*
  *
  * @author Hidetake Iwata
  */
-@Category(RequirePrivilege)
+@Category(RequireSudo)
 class SudoSpec extends Specification {
 
     Service ssh
 
     def setup() {
         ssh = Ssh.newService()
-        ssh.remotes {
-            localhost {
-                host = hostNameForPrivilegeAccess()
-                user = userNameForPrivilegeAccess()
-                identity = privateKeyForPrivilegeAccess()
-            }
-        }
+        createRemote(ssh, 'testServer')
     }
 
     @Unroll
@@ -38,7 +33,7 @@ class SudoSpec extends Specification {
         createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
         ssh.remotes {
             sudoHost {
-                host = hostNameForPrivilegeAccess()
+                host = ssh.remotes.testServer.host
                 user = sudoUser
                 password = sudoPassword
             }
@@ -69,7 +64,7 @@ class SudoSpec extends Specification {
         createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
         ssh.remotes {
             sudoHost {
-                host = hostNameForPrivilegeAccess()
+                host = ssh.remotes.testServer.host
                 user = sudoUser
                 password = sudoPassword
             }
@@ -78,7 +73,7 @@ class SudoSpec extends Specification {
         and:
         def anotherUser = "another${randomInt()}"
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute("sudo useradd -m $anotherUser", pty: true)
             }
         }
@@ -96,7 +91,7 @@ class SudoSpec extends Specification {
         cleanup:
         deletePrivilegedUser(sudoUser)
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute("sudo userdel -r $anotherUser", pty: true)
             }
         }
@@ -107,7 +102,7 @@ class SudoSpec extends Specification {
 
     private createPrivilegedUser(String sudoUser, String sudoPassword, String sudoSpec) {
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute 'sudo test -d /etc/sudoers.d', pty: true
                 execute "sudo useradd -m $sudoUser", pty: true
                 execute "sudo passwd $sudoUser", pty: true, interaction: {
@@ -125,7 +120,7 @@ class SudoSpec extends Specification {
 
     private deletePrivilegedUser(String sudoUser) {
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "sudo rm -v /etc/sudoers.d/$sudoUser", pty: true
                 execute "sudo userdel -r $sudoUser", pty: true
             }

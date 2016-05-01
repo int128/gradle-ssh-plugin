@@ -5,5 +5,5 @@ package org.hidetake.groovy.ssh.test.os
  *
  * @author Hidetake Iwata
  */
-interface RequirePrivilege {
+interface RequireSudo {
 }

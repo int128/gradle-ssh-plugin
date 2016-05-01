@@ -108,6 +108,77 @@ ssh.run {
 ```
 
 
+How to Test
+-----------
+
+### Unit test
+
+Unit test can be run on IntelliJ or Gradle on any platform.
+
+```sh
+./gradlew :core:check
+```
+
+
+### Server integration test
+
+Server integration test can be run on IntelliJ or Gradle on any platform but some specs may fail on Windows.
+It uses Apache MINA SSHD server as a test double.
+
+```sh
+./gradlew :server-integration-test:check
+```
+
+
+### CLI test
+
+Server integration test can be run on IntelliJ or Gradle on any platform.
+It uses Apache MINA SSHD server as a test double.
+
+```sh
+./gradlew :cli:check
+```
+
+
+### OS integration test
+
+OS integration test can be run on Gradle on Linux platform.
+It requires a disposable server such as an EC2 instance.
+
+```sh
+./gradlew :os-integration-test:check
+```
+
+It can be run on development environment such as OSX
+but some specs depending on ECDSA user key, ECDSA known hosts and passphrase key are skipped.
+
+```sh
+INTEGRATION_TEST_SSH_HOST=... INTEGRATION_TEST_SSH_USER=... INTEGRATION_TEST_SSH_KEY_PATH=... ./gradlew :os-integration-test:check
+```
+
+If it runs on Travis CI,
+some specs are run on localhost to reduce time of network latency.
+
+If it runs on Travis CI triggered by a pull request,
+some specs are skipped because credential is not provided.
+
+
+Category                    | Travis CI | Travis CI (pull request)  | Develop
+----------------------------|-----------|---------------------------|--------
+RequireAgent                | ec2       | -                         | ec2
+RequireSudo                 | ec2       | -                         | ec2
+RequireEcdsaHostKey         | local     | local                     | -
+RequireEcdsaUserKey         | local     | local                     | -
+RequireKeyWithPassphrase    | local     | local                     | -
+Others                      | local     | local                     | ec2
+
+
+### Gradle 1.x integration test
+
+Gradle 1.x integration test will be run on Travis CI for inspection of backward compatibility.
+See `travis.yml` for details.
+
+
 Contributions
 -------------
 

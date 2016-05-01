@@ -23,13 +23,7 @@ class FileTransferSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        ssh.remotes {
-            localhost {
-                host = hostName()
-                user = userName()
-                identity = privateKeyRSA()
-            }
-        }
+        createRemote(ssh, 'testServer')
     }
 
     def 'should put, compute and get files'() {
@@ -48,7 +42,7 @@ class FileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 put from: localX, into: remoteX
                 put from: localY, into: remoteY
                 execute "expr `cat $remoteX` + `cat $remoteY` > $remoteA"
@@ -73,7 +67,7 @@ class FileTransferSpec extends Specification {
 
         when:
         def result = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 put text: x, into: remoteX
                 put bytes: y.toString().bytes, into: remoteY
                 [a: execute("expr `cat $remoteX` + `cat $remoteY`"),
@@ -102,7 +96,7 @@ class FileTransferSpec extends Specification {
         and: 'prepare the remote folder'
         def remoteFolder = remoteTmpPath()
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "mkdir -vp        $remoteFolder/${localFolder.name}/Y"
                 execute "echo -n dummy1 > $remoteFolder/${localFolder.name}/Y/yfile"
                 execute "echo -n dummy2 > $remoteFolder/${localFolder.name}/Y/yfile2"
@@ -111,14 +105,14 @@ class FileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 put from: localFolder, into: remoteFolder
             }
         }
 
         and:
         def result = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 [x:  get(from: "$remoteFolder/${localFolder.name}/xfile"),
                  y:  get(from: "$remoteFolder/${localFolder.name}/Y/yfile"),
                  y2: get(from: "$remoteFolder/${localFolder.name}/Y/yfile2"),
@@ -148,7 +142,7 @@ class FileTransferSpec extends Specification {
         and: 'prepare the remote folder'
         def remoteFolder = remoteTmpPath()
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "mkdir -vp $remoteFolder/X/Y/Z"
                 execute "echo $x > $remoteFolder/X/xfile"
                 execute "echo $y > $remoteFolder/X/Y/yfile"
@@ -158,7 +152,7 @@ class FileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 get from: "$remoteFolder/X", into: localFolder
             }
         }
@@ -187,7 +181,7 @@ class FileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "dd if=/dev/zero of=$remoteX bs=1024 count=$sizeKB"
                 get from: remoteX, into: localX
                 remove remoteX
@@ -199,7 +193,7 @@ class FileTransferSpec extends Specification {
 
         when:
         def actualSize = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 put from: localX, into: remoteY
                 execute("wc -c < $remoteY") as int
             }

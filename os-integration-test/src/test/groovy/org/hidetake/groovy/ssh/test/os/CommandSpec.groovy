@@ -22,13 +22,7 @@ class CommandSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        ssh.remotes {
-            localhost {
-                host = hostName()
-                user = userName()
-                identity = privateKeyRSA()
-            }
-        }
+        createRemote(ssh, 'testServer')
     }
 
     def 'should execute the command'() {
@@ -38,7 +32,7 @@ class CommandSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "expr $x + $y"
             }
         } as int
@@ -58,7 +52,7 @@ class CommandSpec extends Specification {
         def a
         def b
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute """
 expr $x + $y > $remoteA
 expr $x + `cat $remoteA` > $remoteB
@@ -76,7 +70,7 @@ expr $x + `cat $remoteA` > $remoteB
     def 'should execute commands in each dedicated environment'() {
         when:
         def r = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute "export testdata=dummy"
                 execute 'echo "testdata is $testdata"'
             }
@@ -89,7 +83,7 @@ expr $x + `cat $remoteA` > $remoteB
     def 'should execute the command with the PTY allocation in foreground'() {
         when:
         def envWithPty = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute 'env', pty: true
             }
         }
@@ -101,7 +95,7 @@ expr $x + `cat $remoteA` > $remoteB
     def 'should execute the command without the PTY allocation in foreground'() {
         when:
         def envWithoutPty = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute 'env'
             }
         }
@@ -116,7 +110,7 @@ expr $x + `cat $remoteA` > $remoteB
         def envWithPty
 
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 executeBackground('env') { result ->
                     envWithoutPty = result
                 }
@@ -138,10 +132,10 @@ expr $x + `cat $remoteA` > $remoteB
         when:
         ssh.run {
             // task should start sessions concurrently
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 executeBackground "sleep 3 && echo C >> $remoteX"
             }
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 executeBackground "sleep 5 && echo D >> $remoteX"
                 executeBackground "sleep 1 && echo B >> $remoteX"
                 executeBackground "sleep 0 && echo A >> $remoteX"
@@ -150,7 +144,7 @@ expr $x + `cat $remoteA` > $remoteB
 
         // all commands should be completed at this point
         def result = ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 get from: remoteX
             }
         }
@@ -162,7 +156,7 @@ expr $x + `cat $remoteA` > $remoteB
     def 'should throw an exception due to the error exit status'() {
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 execute 'exit 1'
             }
         }
@@ -175,7 +169,7 @@ expr $x + `cat $remoteA` > $remoteB
     def 'should throw an exception due to the error exit status on background'() {
         when:
         ssh.run {
-            session(ssh.remotes.localhost) {
+            session(ssh.remotes.testServer) {
                 executeBackground 'exit 1'
             }
         }
@@ -194,7 +188,7 @@ expr $x + `cat $remoteA` > $remoteB
         when:
         resultFile.withOutputStream { stream ->
             ssh.run {
-                session(ssh.remotes.localhost) {
+                session(ssh.remotes.testServer) {
                     execute "expr $x + $y", outputStream: stream
                 }
             }
@@ -211,7 +205,7 @@ expr $x + `cat $remoteA` > $remoteB
         when:
         resultFile.withOutputStream { stream ->
             ssh.run {
-                session(ssh.remotes.localhost) {
+                session(ssh.remotes.testServer) {
                     execute "cat hoge", ignoreError: true, errorStream: stream
                 }
             }
