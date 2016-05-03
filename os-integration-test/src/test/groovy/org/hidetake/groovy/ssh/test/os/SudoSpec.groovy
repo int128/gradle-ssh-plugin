@@ -109,6 +109,7 @@ class SudoSpec extends Specification {
                     when(partial: ~/.+[Pp]assword: */) {
                         standardInput << sudoPassword << '\n'
                     }
+                    when(line: _) {}
                 }
                 put text: "$sudoUser $sudoSpec", into: "/tmp/$sudoUser"
                 execute "sudo chmod 440 /tmp/$sudoUser", pty: true

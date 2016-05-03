@@ -1,39 +1,44 @@
 package org.hidetake.groovy.ssh.interaction
 
-import groovy.transform.Immutable
+import groovy.transform.EqualsAndHashCode
 
 /**
  * A rule of interaction with the stream.
  *
  * @author Hidetake Iwata
  */
-@Immutable
+@EqualsAndHashCode
 class Rule {
-    /**
-     * A map of condition.
-     */
+
     final Map<String, Object> condition
 
-    /**
-     * A closure of matcher.
-     * This closure will be called with arguments:
-     * <ul>
-     *   <li>Stream stream
-     *   <li>Event event
-     *   <li>long lineNumber
-     *   <li>String text
-     * </ul>
-     * and should return boolean whether condition is satisfied.
-     */
-    final Closure<Boolean> matcher
+    final StreamRule streamRule
+    final BufferRule bufferRule
 
-    /**
-     * An action closure.
-     * This closure will be called with a matched string when condition is satisfied.
-     */
     final Closure action
 
+    def Rule(Map<String, Object> condition1, Closure action1) {
+        condition = condition1
+        action = action1
+
+        streamRule = StreamRule.Factory.create(condition.from)
+        bufferRule = BufferRule.Factory.create(condition)
+    }
+
+    MatchResult match(Stream stream, Buffer buffer) {
+        if (streamRule.matches(stream)) {
+            def matchResult = bufferRule.match(buffer)
+            if (matchResult != null) {
+                new MatchResult(this, matchResult)
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+
     String toString() {
-        "${Rule.getSimpleName()}${condition}"
+        "${Rule.simpleName}${condition}"
     }
 }

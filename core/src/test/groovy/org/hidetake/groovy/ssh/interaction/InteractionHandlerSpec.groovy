@@ -28,4 +28,38 @@ class InteractionHandlerSpec extends Specification {
         interactionHandler.standardInput == standardInputMock
     }
 
+    def 'rules should be empty at first'() {
+        given:
+        def interactionHandler = new InteractionHandler(Mock(OutputStream))
+
+        expect:
+        interactionHandler.when == []
+    }
+
+    def 'when() should add an interaction rule'() {
+        given:
+        def interactionHandler = new InteractionHandler(Mock(OutputStream))
+
+        when:
+        interactionHandler.when(line: 'value') {}
+
+        then:
+        interactionHandler.when.size() == 1
+        interactionHandler.when[0].condition == [line: 'value']
+    }
+
+    def 'when() should add interaction rules'() {
+        given:
+        def interactionHandler = new InteractionHandler(Mock(OutputStream))
+
+        when:
+        interactionHandler.when(line: 'value1') {}
+        interactionHandler.when(partial: 'value3') {}
+
+        then:
+        interactionHandler.when.size() == 2
+        interactionHandler.when[0].condition == [line: 'value1']
+        interactionHandler.when[1].condition == [partial: 'value3']
+    }
+
 }

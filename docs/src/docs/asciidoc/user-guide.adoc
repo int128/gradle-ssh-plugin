@@ -893,17 +893,19 @@ The following example declares 2 rules.
 [source,groovy]
 ----
 interaction: {
-  // Declare a rule
-  when(/* a pattern match */) {
-    /* an action closure */
+  when(/* pattern match A */) {
+    /* action closure A */
   }
 
-  // Below rule will be evaluated only if above is not matched
-  when(/* a pattern match */) {
-    /* an action closure */
+  when(/* pattern match B */) {
+    /* action closure B */
   }
 }
 ----
+
+If the pattern A is matched, the closure A is executed.
+If the pattern A is not matched and the pattern B is matched, the closure B is executed.
+If neither the pattern A nor B are matched, nothing is done.
 
 
 ==== An interaction rule is
@@ -911,17 +913,15 @@ interaction: {
 An interaction rule consists of a pattern match and an action closure.
 The action closure will be executed if the pattern match is satisfied.
 
+
+===== Pattern match
+
 A pattern match is one of the following.
 
 * `when(partial: pattern, from: stream)`
-  Declares if a partial string from the stream is matched to the pattern.
+  Declares if a string received from the stream is matched to the pattern.
 * `when(line: pattern, from: stream)`
-  Declares if a line from the stream is matched to the pattern.
-* `when(nextLine: pattern, from: stream)`
-  Declares if an next line from the stream is matched to the pattern.
-
-`partial` is evaluated when the stream is flushed.
-But `line` and `nextLine` is evaluated when the stream gives a line separator.
+  Declares if a line received from the stream is matched to the pattern.
 
 The pattern is one of the following.
 
@@ -933,9 +933,11 @@ The stream is one of the following.
 
 * `standardOutput` - Standard output of the command.
 * `standardError` - Standard error of the command.
+* `_` - Any.
 * If the stream is omitted, it means any.
 
-Now explaining another one of an interaction rule, an action closure.
+
+===== Action closure
 
 An action closure is a generic Groovy closure executed if the pattern match is satisfied.
 It can write a string to the `standardInput`.
@@ -949,9 +951,25 @@ interaction: {
 }
 ----
 
-If an action closure contains one or more interaction rules, surrounding rules are discarded and inner rules are activated.
-In the following case, at first, A and B are evaluated for an each line or partial string,
-but C is evaluated after A has been matched.
+An action closure can get the match result by the first argument.
+
+* If the pattern is a string, a string is passed.
+* If the pattern is a regular expression, a `java.util.regex.Matcher` is passed.
+* If the pattern is `_`, a string is passed.
+
+Following example shows all lines of the standard error.
+
+[source,groovy]
+----
+interaction: {
+  when(line: _, from: standardError) { line ->
+    println line
+  }
+}
+----
+
+An action closure can contain one or more interaction rules.
+If so, surrounding rules are discarded and inner rules are activated.
 
 [source,groovy]
 ----
@@ -965,6 +983,67 @@ interaction: {
 }
 ----
 
+In the above example, at first, rule A and B are active.
+If rule A has been matched, rule A and B are discarded and rule C is active now.
+
+
+==== Context stack
+
+Interaction rules are stored into the context stack for nesting.
+
+If an action closure contains no `when()`, the stack is kept as-is.
+If an action closure contains one or more `when()`s, the stack is pushed and inner rules are active.
+If an action closure contains `popContext()`, the stack is popped and outer rules are active.
+
+Let's see the example.
+
+[source,groovy]
+----
+interaction: {
+  when(/* rule A */) {
+    when(/* rule C */) {
+      when(/* rule E */) {
+        popContext()
+      }
+      when(/* rule F */) {
+      }
+    }
+    when(/* rule D */) {
+    }
+  }
+  when(/* rule B */) {
+  }
+}
+----
+
+At first, the stack is following.
+
+----
+[ruleA, ruleB]      <- stack top
+----
+
+If rule A is matched, rule C and D are pushed into the stack.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
+If rule C is matched, rule E and F are pushed into the stack.
+
+----
+[ruleE, ruleF]      <- stack top
+[ruleC, ruleD]
+[ruleA, ruleB]
+----
+
+If rule E is matched, the stack is popped and rule C and D are active.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
 
 ==== Example: handle the prompt
 
@@ -972,43 +1051,45 @@ Let's take a look at the following example.
 
 [source,groovy]
 ----
-// Execute a shell with the interaction support
-shell interaction: {
-  // Declare a rule if the stream gives a string terminated with $
-  when(partial: ~/.*$/) {
-    // If the rule is matched, provides the exit to the shell
-    standardInput << 'exit 0' << '\n'
+shell interaction: {  //<1>
+  when(partial: ~/.*$/) {  //<2>
+    standardInput << 'exit 0' << '\n'  //<3>
   }
 }
 ----
 
-The example will execute a shell and provide the exit if the prompt appears.
+<1> Execute a shell with the interaction support
+<2> Declare a rule if the stream gives a string terminated with `$`
+<3> If the rule is matched, provides the exit to the shell
 
-If the shell prompt is `sh$`, pattern matching will work as follows.
-
-. The stream gives `s` and the line buffer becomes `s`.
-. The pattern match is evaluated but not matched.
-. The stream gives `h` and the line buffer becomes `sh`.
-. The pattern match is evaluated but not matched.
-. The stream gives `$` and the line buffer becomes `sh$`..
-. The pattern match is evaluated and matched. The closure is executed.
+It executes a shell and provides `exit 0` if the prompt appears.
 
 
 ==== Example: handle more prompts
 
-TODO
+This example executes `passwd` command to change the password of login user.
 
 [source,groovy]
 ----
-execute('passwd', pty: true, interaction: {
-  when(partial: ~/.+[Pp]assowrd: */) {
-    standardInput << oldPassword << '\n'
-    when(partial: ~/.+[Pp]assowrd: */) {
-      standardInput << newPassword << '\n'
+execute('passwd', pty: true, interaction: {  //<1>
+  when(partial: ~/.+[Pp]assowrd: */) {  //<2>
+    standardInput << oldPassword << '\n'  //<3>
+    when(partial: ~/.+[Pp]assowrd: */) {  //<4>
+      standardInput << newPassword << '\n'  //<5>
     }
+  }
+  when(line: _) { line ->  //<6>
+    throw new IllegalStateException("passwd command returned error: $line")
   }
 })
 ----
+
+<1> Execute `passwd` command with the stream interaction.
+<2> If the first password prompt is received,
+<3> Provide the old password.
+<4> If the second or more password prompt is received,
+<5> Provide the new password.
+<6> If the command did not return the password prompt, throw an exception.
 
 
 == DSL extension system

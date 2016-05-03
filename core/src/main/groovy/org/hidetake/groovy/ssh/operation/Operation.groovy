@@ -1,5 +1,7 @@
 package org.hidetake.groovy.ssh.operation
 
+import org.hidetake.groovy.ssh.interaction.InteractionHandler
+
 /**
  * An operation such as a command or shell execution.
  *
@@ -19,8 +21,9 @@ interface Operation {
     void startAsync(Closure closure)
 
     /**
-     * Register a callback on each line of the standard output.
-     * @param closure a callback
+     * Adds an interaction.
+     *
+     * @param closure definition of interaction
      */
-    void onEachLineOfStandardOutput(Closure closure)
+    void addInteraction(@DelegatesTo(InteractionHandler) Closure closure)
 }

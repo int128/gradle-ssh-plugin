@@ -1,5 +1,7 @@
 package org.hidetake.groovy.ssh.operation
 
+import org.hidetake.groovy.ssh.interaction.InteractionHandler
+
 class DryRunOperation implements Operation {
     @Override
     int startSync() {
@@ -12,6 +14,6 @@ class DryRunOperation implements Operation {
     }
 
     @Override
-    void onEachLineOfStandardOutput(Closure closure) {
+    void addInteraction(@DelegatesTo(InteractionHandler) Closure closure) {
     }
 }

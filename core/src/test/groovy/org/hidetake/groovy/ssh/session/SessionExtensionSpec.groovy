@@ -51,14 +51,12 @@ class SessionExtensionSpec extends Specification {
         def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
-        def result = defaultSessionHandler.with {
+        defaultSessionHandler.with {
             performSomething('command')
         }
 
         then: 1 * operations.command(new CommandSettings.With(settings), 'command something') >> operation
-        then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
         then: 1 * operation.startSync() >> 0
-        then: result == 'result'
 
         where:
         type    | extensions
@@ -76,14 +74,12 @@ class SessionExtensionSpec extends Specification {
         def defaultSessionHandler = SessionHandler.create(operations, settings)
 
         when:
-        def result = defaultSessionHandler.with {
+        defaultSessionHandler.with {
             performAnother('command')
         }
 
         then: 1 * operations.command(new CommandSettings.With(settings), 'command another something') >> operation
-        then: 1 * operation.onEachLineOfStandardOutput(_) >> { Closure c -> c.call('result') }
         then: 1 * operation.startSync() >> 0
-        then: result == 'result'
 
         where:
         type              | extensions

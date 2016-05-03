@@ -7,6 +7,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import org.hidetake.groovy.ssh.interaction.InteractionException
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.test.server.SshServerMock.CommandContext
@@ -135,8 +136,8 @@ class SudoSpec extends Specification {
         }
 
         then:
-        BadExitStatusException e = thrown()
-        e.message.contains('exit status -1')
+        InteractionException e = thrown()
+        e.message.contains('sudo authentication failed')
     }
 
     def "it should throw an exception if the command exits with non zero status"() {
