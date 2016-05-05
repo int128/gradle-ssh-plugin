@@ -10,11 +10,11 @@ import spock.lang.Specification
 import static org.hidetake.groovy.ssh.test.os.Fixture.*
 
 /**
- * Check if file transfer works with SFTP subsystem of OpenSSH.
+ * Check if file transfer works with OpenSSH.
  *
  * @author Hidetake Iwata
  */
-class FileTransferSpec extends Specification {
+abstract class AbstractFileTransferSpec extends Specification {
 
     Service ssh
 

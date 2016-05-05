@@ -10,8 +10,8 @@ trait CoreExtensions implements
         BackgroundCommand,
         Shell,
         Sudo,
-        SftpGet,
-        SftpPut,
+        FileGet,
+        FilePut,
         SftpRemove,
         PortForward {
 }
