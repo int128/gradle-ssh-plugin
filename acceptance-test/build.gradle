@@ -27,12 +27,25 @@ remotes {
     }
 }
 
+allprojects {
+    task test {
+        description = "Test all specs in $project"
+    }
 
-// add utility methods for specs
-ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
+    afterEvaluate {
+        test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
+            spec.dependsOn setupLocalWorkDir
+            spec.dependsOn setupRemoteWorkDir
+            spec.finalizedBy cleanupLocalWorkDir
+            spec.finalizedBy cleanupRemoteWorkDir
+            spec.ext.localWorkDir = file("${project.buildDir}/${spec.hashCode()}")
+            spec.ext.remoteWorkDir = "${rootProject.remoteWorkDirBase}/${spec.hashCode()}"
+        }
+    }
 
-// setup and cleanup a working directory on each spec
-ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
+    // add utility methods for specs
+    ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
+}
 
 task setupLocalWorkDir << {
     delete buildDir
@@ -42,6 +55,9 @@ task setupLocalWorkDir << {
 task cleanupLocalWorkDir << {
     delete buildDir
 }
+
+// setup and cleanup a working directory on each spec
+ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
 
 task setupRemoteWorkDir << {
     ssh.run {
@@ -58,27 +74,3 @@ task cleanupRemoteWorkDir << {
         }
     }
 }
-
-task test {
-    description = 'Test all specs'
-}
-
-afterEvaluate {
-    test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
-        spec.dependsOn tasks.setupLocalWorkDir
-        spec.dependsOn tasks.setupRemoteWorkDir
-        spec.finalizedBy tasks.cleanupLocalWorkDir
-        spec.finalizedBy tasks.cleanupRemoteWorkDir
-        spec.ext.localWorkDir  = file("$buildDir/${spec.hashCode()}")
-        spec.ext.remoteWorkDir = "$remoteWorkDirBase/${spec.hashCode()}"
-    }
-}
-
-// apply specs in this directory
-fileTree(projectDir) {
-    include '*.gradle'
-    exclude 'build.gradle'
-}.each {
-    apply from: it
-}
-

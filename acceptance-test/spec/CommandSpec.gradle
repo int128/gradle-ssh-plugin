@@ -81,7 +81,7 @@ task('should throw an exception due to the error exit status on background') << 
 task('should write output of the command to the file') << {
     def x = randomInt()
     def y = randomInt()
-    localWorkDir.mkdir()
+    localWorkDir.mkdirs()
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {
@@ -104,7 +104,7 @@ task('should write output of the command to the standard output') << {
 }
 
 task('should write error of the command to the file') << {
-    localWorkDir.mkdir()
+    localWorkDir.mkdirs()
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {

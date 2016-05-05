@@ -1,0 +1,8 @@
+apply plugin: 'org.hidetake.ssh'
+
+fileTree(projectDir) {
+    include '*.gradle'
+    exclude 'build.gradle'
+}.each {
+    apply from: it
+}
