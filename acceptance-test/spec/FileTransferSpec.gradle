@@ -3,7 +3,7 @@ task('should put, compute and get files') << {
     def x = randomInt()
     def y = randomInt()
 
-    localWorkDir.mkdir()
+    localWorkDir.mkdirs()
     file("$localWorkDir/LX") << x
     file("$localWorkDir/LY") << y
 
@@ -26,7 +26,7 @@ task('should put, compute and get files') << {
 
 task('should get the large file and put it back') << {
     def fileSize = 1024 * 256
-    localWorkDir.mkdir()
+    localWorkDir.mkdirs()
 
     ssh.run {
         session(remotes.localhost) {

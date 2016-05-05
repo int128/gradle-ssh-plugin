@@ -20,7 +20,7 @@ task('should execute the shell') << {
 task('should write output of the shell to the file') << {
     def x = randomInt()
     def y = randomInt()
-    localWorkDir.mkdir()
+    localWorkDir.mkdirs()
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {
