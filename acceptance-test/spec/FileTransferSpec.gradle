@@ -1,46 +1,56 @@
+['sftp', 'scp'].each { method ->
+    task("should put, compute and get files via $method") << {
+        def x = randomInt()
+        def y = randomInt()
 
-task('should put, compute and get files') << {
-    def x = randomInt()
-    def y = randomInt()
+        localWorkDir.mkdirs()
+        file("$localWorkDir/LX") << x
+        file("$localWorkDir/LY") << y
 
-    localWorkDir.mkdirs()
-    file("$localWorkDir/LX") << x
-    file("$localWorkDir/LY") << y
-
-    // should put and get files exactly
-    ssh.run {
-        session(remotes.localhost) {
-            execute "mkdir -vp $remoteWorkDir"
-            put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
-            put from: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
-            execute "expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA"
-            execute "expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB"
-            get from: "$remoteWorkDir/RA", into: "$localWorkDir/LA"
-            get from: "$remoteWorkDir/RB", into: "$localWorkDir/LB"
+        // should put and get files exactly
+        ssh.run {
+            settings {
+                fileTransfer = method
+            }
+            session(remotes.localhost) {
+                execute "mkdir -vp $remoteWorkDir"
+                put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
+                put from: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
+                execute "expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA"
+                execute "expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB"
+                get from: "$remoteWorkDir/RA", into: "$localWorkDir/LA"
+                get from: "$remoteWorkDir/RB", into: "$localWorkDir/LB"
+            }
         }
+
+        assert file("$localWorkDir/LA").text as int == (x + y)
+        assert file("$localWorkDir/LB").text as int == (x - y)
     }
 
-    assert file("$localWorkDir/LA").text as int == (x + y)
-    assert file("$localWorkDir/LB").text as int == (x - y)
-}
+    task("should get the large file and put it back via $method") << {
+        def fileSize = 1024 * 256
+        localWorkDir.mkdirs()
 
-task('should get the large file and put it back') << {
-    def fileSize = 1024 * 256
-    localWorkDir.mkdirs()
-
-    ssh.run {
-        session(remotes.localhost) {
-            execute "mkdir -vp $remoteWorkDir"
-            execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
-            get from: "$remoteWorkDir/result", into: localWorkDir
+        ssh.run {
+            settings {
+                fileTransfer = method
+            }
+            session(remotes.localhost) {
+                execute "mkdir -vp $remoteWorkDir"
+                execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
+                get from: "$remoteWorkDir/result", into: localWorkDir
+            }
         }
-    }
-    assert file("$localWorkDir/result").size() == 1024 * fileSize
+        assert file("$localWorkDir/result").size() == 1024 * fileSize
 
-    ssh.run {
-        session(remotes.localhost) {
-            put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
-            assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+        ssh.run {
+            settings {
+                fileTransfer = method
+            }
+            session(remotes.localhost) {
+                put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
+                assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+            }
         }
     }
 }
