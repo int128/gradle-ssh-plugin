@@ -12,7 +12,7 @@
             settings {
                 fileTransfer = method
             }
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute "mkdir -vp $remoteWorkDir"
                 put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
                 put from: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
@@ -35,7 +35,7 @@
             settings {
                 fileTransfer = method
             }
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute "mkdir -vp $remoteWorkDir"
                 execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
                 get from: "$remoteWorkDir/result", into: localWorkDir
@@ -47,7 +47,7 @@
             settings {
                 fileTransfer = method
             }
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
                 assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
             }

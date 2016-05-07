@@ -1,7 +1,7 @@
 
 task('should execute the shell') << {
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             shell(interaction: {
                 when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
                     standardInput << 'uname -a' << '\n'
@@ -24,7 +24,7 @@ task('should write output of the shell to the file') << {
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute "expr $x + $y", outputStream: stream
             }
         }
@@ -34,7 +34,7 @@ task('should write output of the shell to the file') << {
 
 task('should write output of the shell to the standard output') << {
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             shell outputStream: System.out, interaction: {
                 when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
                     standardInput << 'uname -a' << '\n'

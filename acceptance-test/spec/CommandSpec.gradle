@@ -3,7 +3,7 @@ task('should execute the command') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "expr $x + $y"
         }
     } as int == (x + y)
@@ -13,7 +13,7 @@ task('should execute the command with console logging with slf4j') << {
     def x = randomInt()
     def y = randomInt()
     assert ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "expr $x + $y", logging: 'slf4j'
         }
     } as int == (x + y)
@@ -25,7 +25,7 @@ task('should execute commands by multi-line string') << {
     def a
     def b
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute """
 mkdir -vp $remoteWorkDir
 expr $x + $y > $remoteWorkDir/A
@@ -41,11 +41,11 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
 
 task('should execute the command with the PTY allocation') << {
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             executeBackground "env | grep -v SSH_TTY"
             executeBackground "env | grep SSH_TTY", pty: true
         }
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "env | grep -v SSH_TTY"
             execute "env | grep SSH_TTY", pty: true
         }
@@ -55,7 +55,7 @@ task('should execute the command with the PTY allocation') << {
 task('should throw an exception due to the error exit status') << {
     try {
         ssh.run {
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute 'exit 1'
             }
         }
@@ -68,7 +68,7 @@ task('should throw an exception due to the error exit status') << {
 task('should throw an exception due to the error exit status on background') << {
     try {
         ssh.run {
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 executeBackground 'exit 1'
             }
         }
@@ -85,7 +85,7 @@ task('should write output of the command to the file') << {
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute "expr $x + $y", outputStream: stream
             }
         }
@@ -97,7 +97,7 @@ task('should write output of the command to the standard output') << {
     def x = randomInt()
     def y = randomInt()
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "expr $x + $y", outputStream: System.out
         }
     }
@@ -108,7 +108,7 @@ task('should write error of the command to the file') << {
     def resultFile = file("$localWorkDir/result")
     resultFile.withOutputStream { stream ->
         ssh.run {
-            session(remotes.localhost) {
+            session(remotes.testServer) {
                 execute "cat hoge", ignoreError: true, errorStream: stream
             }
         }

@@ -8,7 +8,7 @@ task('should apply the remote file extension') << {
                 }
             }
         }
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "mkdir -vp $remoteWorkDir"
             put text: 1, into: "$remoteWorkDir/a"
             put text: 2, into: "$remoteWorkDir/b"
@@ -47,7 +47,7 @@ task('should apply the extension which accesses to the project') << {
                 }
             }]
         }
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             executeGroovyScript 'println GroovySystem.version'
         }
     } == '2.3.9'

@@ -19,7 +19,7 @@ buildscript {
 apply plugin: 'org.hidetake.ssh'
 
 remotes {
-    localhost {
+    testServer {
         role 'testServers'
         host = 'localhost'
         user = System.getProperty('user.name')
@@ -61,7 +61,7 @@ ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
 
 task setupRemoteWorkDir << {
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "mkdir -v $remoteWorkDirBase"
         }
     }
@@ -69,7 +69,7 @@ task setupRemoteWorkDir << {
 
 task cleanupRemoteWorkDir << {
     ssh.run {
-        session(remotes.localhost) {
+        session(remotes.testServer) {
             execute "rm -vfr $remoteWorkDirBase"
         }
     }
