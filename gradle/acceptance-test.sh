@@ -6,6 +6,6 @@ if [ "$GRADLE_VERSION" ]; then
 fi
 
 ./gradlew --version
-./gradlew -p acceptance-test -s test
+./gradlew -p acceptance-test -s --continue test
 
 git reset --hard

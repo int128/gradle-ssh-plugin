@@ -2,6 +2,9 @@ sudo: false
 language: java
 jdk: oraclejdk7
 
+env:
+- JAVA_OPTS="-Xmx1024m -Xms1024m"
+
 install:
 - mkdir -m 700 -p -v $HOME/.ssh
 - ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa

@@ -70,7 +70,7 @@ task setupRemoteWorkDir << {
 task cleanupRemoteWorkDir << {
     ssh.run {
         session(remotes.testServer) {
-            execute "rm -vfr $remoteWorkDirBase"
+            execute "rm -fr $remoteWorkDirBase"
         }
     }
 }
