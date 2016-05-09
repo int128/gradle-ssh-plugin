@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @Slf4j
 class Receiver implements Runnable {
+    static final READ_BUFFER_SIZE = 1024 * 1024
+
     private static final sequenceForNaming = new AtomicInteger()
 
     final Stream stream
@@ -47,7 +49,7 @@ class Receiver implements Runnable {
     private void readStream() {
         listener.start(stream)
 
-        def readBuffer = new byte[1024]
+        def readBuffer = new byte[READ_BUFFER_SIZE]
         while (true) {
             log.trace("Waiting for $stream")
             def readLength = inputStream.read(readBuffer)

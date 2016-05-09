@@ -12,7 +12,7 @@ class Buffer {
 
     private final String encoding
 
-    private final buffer = new ByteArrayOutputStream()
+    private final buffer = new ByteArrayOutputStream(Receiver.READ_BUFFER_SIZE)
 
     def Buffer(String encoding1) {
         encoding = encoding1
