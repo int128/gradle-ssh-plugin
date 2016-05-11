@@ -35,15 +35,6 @@ Run the DSL script
 
 We have following methods to run the script.
 
-### Homebrew
-
-Install `gssh` from Homebrew and run the script.
-
-```sh
-brew install gssh
-gssh deploy.groovy
-```
-
 ### Download the release
 
 Download the latest `gssh.jar` from [releases](https://github.com/int128/groovy-ssh/releases) and run the script.
