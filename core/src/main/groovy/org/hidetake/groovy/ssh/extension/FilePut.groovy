@@ -74,15 +74,12 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
                 putContent(stream, remotePath)
             }
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            def m = (~'(.*/)(.+?)').matcher(remotePath)
+            def m = remotePath =~ '(.*/)(.+?)'
             if (m.matches()) {
-                def bytes = stream.bytes
-                def dirname = m.group(1)
-                def filename = m.group(2)
-                new ByteArrayInputStream(bytes).withStream { byteStream ->
-                    def helper = new ScpPutHelper(operations, mergedSettings)
-                    helper.createFile(dirname, filename, byteStream, bytes.length)
-                }
+                def remoteBase = m.group(1)
+                def remoteFilename = m.group(2)
+                def helper = new ScpPutHelper(operations, mergedSettings, remoteBase)
+                helper.executeSingle(remoteFilename, stream.bytes)
             } else {
                 throw new IllegalArgumentException("Remote path must be an absolute path: $remotePath")
             }
@@ -158,7 +155,8 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
     }
 
     private void scpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
-        def helper = new ScpPutHelper(operations, mergedSettings)
-        helper.put(baseLocalFiles, baseRemotePath)
+        def helper = new ScpPutHelper(operations, mergedSettings, baseRemotePath)
+        helper.add(baseLocalFiles)
+        helper.execute()
     }
 }
