@@ -783,8 +783,8 @@ Following settings can be set in global, per-method or per-remote.
 .File transfer settings
 [options="header,autowidth"]
 |===
-|Key                  | Type   | Description
-|`fileTransferMethod` | String | File transfer method, `sftp` or `scp`. Defaults to `sftp`.
+|Key                    | Type   | Description
+|`fileTransfer`         | String | File transfer method, `sftp` or `scp`. Defaults to `sftp`.
 |===
 
 
