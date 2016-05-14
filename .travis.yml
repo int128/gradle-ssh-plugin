@@ -7,6 +7,9 @@ cache:
   - $HOME/.gradle/wrapper
   - $HOME/.gradle/caches/modules-2
 
+env:
+- JAVA_OPTS="-Xmx1024m -Xms1024m"
+
 install:
 - mkdir -p "$HOME/.config"
 - echo "https://${GH_TOKEN}:@github.com" > "$HOME/.config/git-credential"
