@@ -1,74 +1,62 @@
-package org.hidetake.groovy.ssh.operation
+package org.hidetake.groovy.ssh.util
 
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-import static SftpProgressLogger.LOG_INTERVAL_MILLIS
+import static org.hidetake.groovy.ssh.util.FileTransferProgress.LOG_INTERVAL_MILLIS
 
-class SftpProgressLoggerSpec extends Specification {
+class FileTransferProgressSpec extends Specification {
 
-    def "status should be set when init() is called"() {
+    def "status should be set when reset() is called"() {
         given:
-        def logger = new SftpProgressLogger()
+        def logger = new FileTransferProgress()
 
         when: null
         then: logger.status == null
 
-        when: logger.init(0, 'source', 'destination', 1000)
+        when: logger.reset(1000)
         then: logger.status
         and:  logger.status.maxSize == 1000
     }
 
-    def "status should be updated when count() is called"() {
+    def "status should be updated when report() is called"() {
         given:
-        def logger = new SftpProgressLogger()
-        logger.init(0, 'source', 'destination', 1000)
+        def logger = new FileTransferProgress()
+        logger.reset(1000)
 
-        when: logger.count(300)
+        when: logger.report(300)
         then: logger.status.transferredSize == 300
 
-        when: logger.count(500)
+        when: logger.report(500)
         then: logger.status.transferredSize == 800
     }
 
     def "status.checkpoint() should be called when elapsed time exceeds interval"() {
         given:
-        def logger = new SftpProgressLogger()
-        logger.status = Mock(SftpProgressLogger.Status)
+        def logger = new FileTransferProgress()
+        logger.status = Mock(FileTransferProgress.Status)
 
-        when: logger.count(300)
+        when: logger.report(300)
         then: 1 * logger.status.leftShift(300)
         then: 1 * logger.status.elapsedTimeFromCheckPoint >> (LOG_INTERVAL_MILLIS - 1)
         then: 0 * logger.status.checkPoint()
 
-        when: logger.count(400)
+        when: logger.report(400)
         then: 1 * logger.status.leftShift(400)
         then: 1 * logger.status.elapsedTimeFromCheckPoint >> LOG_INTERVAL_MILLIS
         then: 0 * logger.status.checkPoint()
 
-        when: logger.count(500)
+        when: logger.report(500)
         then: 1 * logger.status.leftShift(500)
         then: 1 * logger.status.elapsedTimeFromCheckPoint >> (LOG_INTERVAL_MILLIS + 1)
         then: 1 * logger.status.checkPoint()
-    }
-
-    def "nothing happens when end() is called"() {
-        given:
-        def logger = new SftpProgressLogger()
-        logger.init(0, 'source', 'destination', 1000)
-
-        when:
-        logger.end()
-
-        then:
-        noExceptionThrown()
     }
 
 
 
     def "properties should be set when constructor is called"() {
         given:
-        def status = new SftpProgressLogger.Status(2000)
+        def status = new FileTransferProgress.Status(2000)
 
         when:
         null
@@ -81,7 +69,7 @@ class SftpProgressLoggerSpec extends Specification {
 
     def "properties should be updated when progress is reported"() {
         given:
-        def status = new SftpProgressLogger.Status(5000)
+        def status = new FileTransferProgress.Status(5000)
 
         when: 'reports the progress that 2,000 bytes was transferred'
         status << 2000
@@ -110,7 +98,7 @@ class SftpProgressLoggerSpec extends Specification {
 
     def "percent should be zero if estimated size is zero"() {
         given:
-        def status = new SftpProgressLogger.Status(0)
+        def status = new FileTransferProgress.Status(0)
 
         when: 'reports the progress that 2,000 bytes was transferred'
         status << 2000
@@ -121,67 +109,67 @@ class SftpProgressLoggerSpec extends Specification {
         status.percent == 0
     }
 
-    @ConfineMetaClassChanges(SftpProgressLogger.Status)
+    @ConfineMetaClassChanges(FileTransferProgress.Status)
     def "elapsedTime should be relative time"() {
         given:
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 100 }
-        def status = new SftpProgressLogger.Status(1000)
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 100 }
+        def status = new FileTransferProgress.Status(1000)
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 300 }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 300 }
         then: status.elapsedTime == 200
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 600 }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 600 }
         then: status.elapsedTime == 500
     }
 
-    @ConfineMetaClassChanges(SftpProgressLogger.Status)
+    @ConfineMetaClassChanges(FileTransferProgress.Status)
     def "elapsedTime should be time from the last checkpoint"() {
         given:
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 100 }
-        def status = new SftpProgressLogger.Status(1000)
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 100 }
+        def status = new FileTransferProgress.Status(1000)
 
         when: 'commit the checkpoint on time 300'
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 300 }
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 300 }
         status.checkPoint()
 
         then: status.elapsedTimeFromCheckPoint == 0
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 600 }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 600 }
         then: status.elapsedTimeFromCheckPoint == 300
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 800 }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 800 }
         then: status.elapsedTimeFromCheckPoint == 500
 
         when: 'commit the checkpoint on time 900'
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 900 }
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 900 }
         status.checkPoint()
 
         then: status.elapsedTimeFromCheckPoint == 0
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 1000 }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 1000 }
         then: status.elapsedTimeFromCheckPoint == 100
     }
 
-    @ConfineMetaClassChanges(SftpProgressLogger.Status)
+    @ConfineMetaClassChanges(FileTransferProgress.Status)
     def "kiloBytesPerSecond should be transfer rate"() {
         given:
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 1000 }
-        def status = new SftpProgressLogger.Status(10000)
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 1000 }
+        def status = new FileTransferProgress.Status(10000)
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 3000 /* milli-sec */ }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 3000 /* milli-sec */ }
         and:  status << 5000 /* bytes */
         then: status.kiloBytesPerSecond == (5.0 /* kB */ / 2 /* sec */)
 
-        when: SftpProgressLogger.Status.metaClass.static.currentTime = { -> 6000 /* milli-sec */ }
+        when: FileTransferProgress.Status.metaClass.static.currentTime = { -> 6000 /* milli-sec */ }
         and:  status << 4000 /* bytes */
         then: status.kiloBytesPerSecond == (9.0 /* kB */ / 5 /* sec */)
     }
 
-    @ConfineMetaClassChanges(SftpProgressLogger.Status)
+    @ConfineMetaClassChanges(FileTransferProgress.Status)
     def "kiloBytesPerSecond should be zero if no time is elapsed"() {
         given:
-        SftpProgressLogger.Status.metaClass.static.currentTime = { -> 1000 }
-        def status = new SftpProgressLogger.Status(10000)
+        FileTransferProgress.Status.metaClass.static.currentTime = { -> 1000 }
+        def status = new FileTransferProgress.Status(10000)
 
         when: null
         then: status.kiloBytesPerSecond == 0

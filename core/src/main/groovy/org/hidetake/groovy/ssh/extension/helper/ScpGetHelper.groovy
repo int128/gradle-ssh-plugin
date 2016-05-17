@@ -6,6 +6,7 @@ import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
+import org.hidetake.groovy.ssh.util.FileTransferProgress
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Matcher
@@ -106,11 +107,16 @@ class ScpGetHelper {
                 standardInput.write(0)
                 standardInput.flush()
 
+                final progress = new FileTransferProgress(size, { percent ->
+                    log.info("Receiving $percent from $operations.remote.name: $path")
+                })
                 final remaining = new AtomicLong(size)
+
                 when(bytes: remaining, from: standardOutput) { byte[] b ->
                     log.trace("Received $b.length bytes from $operations.remote.name: $path")
                     callback.receivedFileContent(b, localFile)
                     remaining.addAndGet(-b.length)
+                    progress.report(b.length)
                     log.trace("Remaining $remaining bytes to transfer: $path")
                 }
 

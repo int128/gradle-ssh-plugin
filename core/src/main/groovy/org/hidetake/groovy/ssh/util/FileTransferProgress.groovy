@@ -1,6 +1,5 @@
-package org.hidetake.groovy.ssh.operation
+package org.hidetake.groovy.ssh.util
 
-import com.jcraft.jsch.SftpProgressMonitor
 import groovy.transform.TupleConstructor
 
 import java.text.NumberFormat
@@ -10,12 +9,12 @@ import java.text.NumberFormat
  * This class shows following messages:
  * <ul>
  * <li>Start of transferring</li>
- * <li>Transferred bytes in each {@link SftpProgressLogger#LOG_INTERVAL_MILLIS}</li>
+ * <li>Transferred bytes in each {@link FileTransferProgress#LOG_INTERVAL_MILLIS}</li>
  * <li>End of transferring</li>
  *
  * @author Hidetake Iwata
  */
-class SftpProgressLogger implements SftpProgressMonitor {
+class FileTransferProgress {
     protected static final LOG_INTERVAL_MILLIS = 2000L
 
     protected Status status
@@ -23,27 +22,25 @@ class SftpProgressLogger implements SftpProgressMonitor {
     private final Closure notifier
     private final percentFormat = NumberFormat.percentInstance
 
-    SftpProgressLogger(Closure notifier1 = { percent -> }) {
+    FileTransferProgress(Closure notifier1 = { percent -> }) {
         notifier = notifier1
     }
 
-    @Override
-    void init(int op, String src, String dest, long max) {
-        status = new Status(max)
+    FileTransferProgress(long size, Closure notifier1 = { percent -> }) {
+        notifier = notifier1
+        reset(size)
     }
 
-    @Override
-    boolean count(long count) {
-        status << count
+    void reset(long size) {
+        status = new Status(size)
+    }
+
+    void report(long size) {
+        status << size
         if (status.elapsedTimeFromCheckPoint > LOG_INTERVAL_MILLIS) {
             status.checkPoint()
             notifier.call(percentFormat.format(status.percent))
         }
-        true
-    }
-
-    @Override
-    void end() {
     }
 
     /**
