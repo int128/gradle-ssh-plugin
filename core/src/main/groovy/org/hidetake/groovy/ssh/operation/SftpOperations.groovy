@@ -36,7 +36,7 @@ class SftpOperations {
      */
     void getFile(String remotePath, String localPath) {
         tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> $localPath") {
-            channel.get(remotePath, localPath, new SftpProgressLogger({ percent ->
+            channel.get(remotePath, localPath, new SftpProgress({ percent ->
                 log.info("Receiving $percent from $remote.name: $remotePath -> $localPath")
             }))
         }
@@ -50,7 +50,7 @@ class SftpOperations {
      */
     void getContent(String remotePath, OutputStream stream) {
         tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> stream") {
-            channel.get(remotePath, stream, new SftpProgressLogger({ percent ->
+            channel.get(remotePath, stream, new SftpProgress({ percent ->
                 log.info("Receiving $percent from $remote.name: $remotePath")
             }))
         }
@@ -64,7 +64,7 @@ class SftpOperations {
      */
     void putFile(String localPath, String remotePath) {
         tryCatchSftpException("SFTP PUT: $localPath -> $remote.name:$remotePath") {
-            channel.put(localPath, remotePath, new SftpProgressLogger({ percent ->
+            channel.put(localPath, remotePath, new SftpProgress({ percent ->
                 log.info("Sending $percent to $remote.name: $remotePath")
             }), ChannelSftp.OVERWRITE)
         }
@@ -78,7 +78,7 @@ class SftpOperations {
      */
     void putContent(InputStream stream, String remotePath) {
         tryCatchSftpException("SFTP PUT: stream -> $remote.name:$remotePath") {
-            channel.put(stream, remotePath, new SftpProgressLogger({ percent ->
+            channel.put(stream, remotePath, new SftpProgress({ percent ->
                 log.info("Sending $percent to $remote.name: $remotePath")
             }), ChannelSftp.OVERWRITE)
         }

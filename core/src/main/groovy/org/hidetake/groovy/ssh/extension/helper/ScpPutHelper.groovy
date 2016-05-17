@@ -7,6 +7,7 @@ import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
+import org.hidetake.groovy.ssh.util.FileTransferProgress
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -173,7 +174,19 @@ class ScpPutHelper {
             log.trace("Got NULL from $operations.remote.name in createFile#1")
             log.debug("Sending $size bytes to $operations.remote.name: $file.name")
             file.withInputStream { stream ->
-                standardInput << stream
+                def progress = new FileTransferProgress(size, { percent ->
+                    log.info("Sending $percent to $operations.remote.name: $file.name")
+                })
+                def readBuffer = new byte[1024 * 1024]
+                while (true) {
+                    def readLength = stream.read(readBuffer)
+                    if (readLength < 0) {
+                        break
+                    }
+                    standardInput.write(readBuffer, 0, readLength)
+                    progress.report(readLength)
+                }
+
                 standardInput.write(0)
                 standardInput.flush()
             }
