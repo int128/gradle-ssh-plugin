@@ -21,7 +21,7 @@ import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
 
 @Slf4j
-class HostKeyCheckingSpec extends Specification {
+class HostAuthenticationSpec extends Specification {
 
     SshServer server
 

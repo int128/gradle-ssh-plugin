@@ -16,7 +16,7 @@ import static SshServerMock.commandWithExit
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.KeyType
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.privateKey
 
-class AuthenticationSpec extends Specification {
+class UserAuthenticationSpec extends Specification {
 
     SshServer server
 
