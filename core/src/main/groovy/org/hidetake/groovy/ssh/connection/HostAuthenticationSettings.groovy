@@ -4,15 +4,15 @@ trait HostAuthenticationSettings {
 
     /**
      * Known hosts file.
-     * If {@link #allowAnyHosts} is set, strict host key checking is turned off.
+     * This can be a {@link File}, {@link List<File>} or {@link #allowAnyHosts}.
      */
-    File knownHosts
+    def knownHosts
 
     /**
      * Represents that strict host key checking is turned off and any host is allowed.
      * @see #knownHosts
      */
-    final File allowAnyHosts = ConnectionSettings.Constants.allowAnyHosts
+    final allowAnyHosts = AllowAnyHosts.instance
 
     /**
      * Hides constant from result of {@link #toString()}.

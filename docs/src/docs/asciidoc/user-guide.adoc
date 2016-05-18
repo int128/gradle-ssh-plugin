@@ -180,7 +180,7 @@ Also following settings can be set in a remote closure.
 |`proxy`        | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
 |`gateway`      | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection. Defaults to null.
 |`agent`        | Boolean           | A flag to use Putty Agent or ssh-agent on authentication. Defaults to false.
-|`knownHosts`   | File              | A known hosts file. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+|`knownHosts`   | File or List of File | One or more known hosts files. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
 |`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
 |`retryWaitSec` | Integer (seconds) | Interval time between each retries. Defaults to 0 (immediately).
 |`keepAliveSec` | Integer (seconds) | Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
