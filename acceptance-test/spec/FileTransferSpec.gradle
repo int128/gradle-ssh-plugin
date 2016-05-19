@@ -8,10 +8,10 @@
         file("$localWorkDir/LY") << y
 
         // should put and get files exactly
+        ssh.settings {
+            fileTransfer = method
+        }
         ssh.run {
-            settings {
-                fileTransfer = method
-            }
             session(remotes.testServer) {
                 execute "mkdir -vp $remoteWorkDir"
                 put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
@@ -21,6 +21,9 @@
                 get from: "$remoteWorkDir/RA", into: "$localWorkDir/LA"
                 get from: "$remoteWorkDir/RB", into: "$localWorkDir/LB"
             }
+        }
+        ssh.settings {
+            fileTransfer = null
         }
 
         assert file("$localWorkDir/LA").text as int == (x + y)
