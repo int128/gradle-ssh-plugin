@@ -49,7 +49,7 @@ class MainSpec extends Specification {
         Main.main '--version'
 
         then:
-        stdoutBuffer.toString('UTF-8').trim() == "${Ssh.product.name}-${Ssh.product.version}"
+        stdoutBuffer.toString('UTF-8').trim() == Ssh.release.toString()
 
         cleanup:
         System.out = stdout

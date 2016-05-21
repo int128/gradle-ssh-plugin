@@ -32,7 +32,7 @@ class Main {
         if (!options || options.h) {
             cli.usage()
         } else if (options.version) {
-            println "${Ssh.product.name}-${Ssh.product.version}"
+            println Ssh.release
         } else {
             configureLogback(level: logLevel(options) as String,
                     pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')

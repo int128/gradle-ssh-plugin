@@ -26,12 +26,10 @@ class Ssh {
         new GroovyShell(binding)
     }
 
+    /**
+     * Return the release metadata.
+     */
     @Lazy
-    static ProductMetadata product = { new ProductMetadata() }()
+    static Release release = { new Release() }()
 
-    static class ProductMetadata {
-        private final ResourceBundle bundle = ResourceBundle.getBundle(Ssh.class.name)
-        final String name = bundle.getString('product.name')
-        final String version = bundle.getString('product.version')
-    }
 }
