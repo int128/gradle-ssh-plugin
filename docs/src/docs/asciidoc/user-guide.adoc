@@ -173,6 +173,7 @@ Also following settings can be set in a remote closure.
 |===
 |Key            | Type              | Description
 |`user`         | String, Mandatory | User name.
+|`authentications` | List of String | Authentication methods in order. Defaults to `publickey`, `keyboard-interactive` and `password`.
 |`password`     | String            | A password for password authentication. Defaults to null (no password authentication).
 |`identity`     | File or String    | A private key for public-key authentication. This can be a key File or key content String. Defaults to null (no public-key authentication).
 |`passphrase`   | String            | A pass-phrase of the private key. Defaults to null (no pass-phrase).

@@ -240,6 +240,100 @@ class UserAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
     }
 
+    @Unroll
+    def "authentication methods can be set as #userAuthenticationMethods"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
+        server.start()
+
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                identity = privateKey()
+                authentications = userAuthenticationMethods
+            }
+        }
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'ls'
+            }
+        }
+
+        then:
+        pk * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        pw * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+
+        then:
+        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+
+        where:
+        userAuthenticationMethods   | pw    | pk
+        ['publickey']               | 0     | 2
+        ['password']                | 1     | 0
+        ['publickey', 'password']   | 0     | 2
+        ['password', 'publickey']   | 1     | 0
+    }
+
+    def "JSchException should be thrown if no authentication method is given"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
+        server.start()
+
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                identity = privateKey()
+                authentications = []
+            }
+        }
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'ls'
+            }
+        }
+
+        then:
+        thrown(JSchException)
+    }
+
+    def "JSchException should be thrown if an invalid authentication method is given"() {
+        given:
+        server.publickeyAuthenticator = Mock(PublickeyAuthenticator)
+        server.start()
+
+        ssh.remotes {
+            testServer {
+                host = server.host
+                port = server.port
+                user = 'someuser'
+                password = 'somepassword'
+                identity = privateKey()
+                authentications = ['invalid']
+            }
+        }
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'ls'
+            }
+        }
+
+        then:
+        thrown(JSchException)
+    }
+
     def "identity and passphrase can be set by global settings"() {
         given:
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)

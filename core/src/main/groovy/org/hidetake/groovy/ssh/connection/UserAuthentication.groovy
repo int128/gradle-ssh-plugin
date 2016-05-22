@@ -7,6 +7,11 @@ trait UserAuthentication {
     String user
 
     /**
+     * Authentication methods.
+     */
+    List<String> authentications
+
+    /**
      * Password.
      * Leave as null if the password authentication is not needed.
      */

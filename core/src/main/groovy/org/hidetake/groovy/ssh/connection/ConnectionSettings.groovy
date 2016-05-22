@@ -71,6 +71,7 @@ trait ConnectionSettings implements UserAuthentication {
 
         static final ConnectionSettings DEFAULT = new ConnectionSettings.With(
                 user: null,
+                authentications: ['publickey', 'keyboard-interactive', 'password'],
                 password: null,
                 identity: null,
                 passphrase: null,
