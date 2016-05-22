@@ -106,7 +106,7 @@ class ConnectionManager {
         retry(settings.retryCount, settings.retryWaitSec) {
             def jsch = new JSch()
             def session = jsch.getSession(settings.user, host, port)
-            session.setConfig('PreferredAuthentications', 'publickey,keyboard-interactive,password')
+            session.setConfig('PreferredAuthentications', settings.authentications.join(','))
             session.setServerAliveInterval(settings.keepAliveSec * 1000)
 
             if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
