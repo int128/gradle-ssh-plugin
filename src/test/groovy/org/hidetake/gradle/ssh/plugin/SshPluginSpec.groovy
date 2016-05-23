@@ -11,6 +11,17 @@ import spock.lang.Unroll
 
 class SshPluginSpec extends Specification {
 
+    def "ssh.version should return release version"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+
+        when:
+        project.apply plugin: 'org.hidetake.ssh'
+
+        then:
+        project.ssh.version instanceof String
+    }
+
     def "default settings should be set"() {
         given:
         def project = ProjectBuilder.builder().build()
