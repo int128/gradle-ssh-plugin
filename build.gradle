@@ -34,6 +34,10 @@ dependencies {
     testCompile 'cglib:cglib-nodep:3.1'
 }
 
+processResources {
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
+}
+
 task javadocJar(type: Jar, dependsOn: groovydoc) {
     from "${buildDir}/docs/groovydoc"
     classifier = 'javadoc'

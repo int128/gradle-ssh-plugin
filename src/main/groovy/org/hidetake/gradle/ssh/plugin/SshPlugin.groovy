@@ -22,6 +22,8 @@ class SshPlugin implements Plugin<Project> {
         project.extensions.proxies = createProxyContainer(project)
 
         project.ssh.settings.logging = 'stdout'
+
+        project.ssh.metaClass.mixin(VersionExtension)
     }
 
     private static createRemoteContainer(Project project) {

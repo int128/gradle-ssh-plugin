@@ -1,0 +1,4 @@
+task('should show version of the plugin') << {
+    println ssh.version
+    assert ssh.version instanceof String
+}
