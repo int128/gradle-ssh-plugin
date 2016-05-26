@@ -10,10 +10,6 @@ group = 'org.hidetake'
 // Set product version if tag is given on Travis CI
 version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
 
-ext.license = 'Apache-2.0'
-ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-ext.vcsUrl = 'https://github.com/int128/gradle-ssh-plugin.git'
-
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
 
@@ -38,49 +34,12 @@ processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
 }
 
-task javadocJar(type: Jar, dependsOn: groovydoc) {
-    from "${buildDir}/docs/groovydoc"
-    classifier = 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
             groupId rootProject.group
             artifactId rootProject.name
-            pom.withXml {
-                asNode().children().last() + {
-                    resolveStrategy = DELEGATE_FIRST
-                    name rootProject.name
-                    description rootProject.description
-                    url rootProject.vcsUrl
-                    scm {
-                        url rootProject.vcsUrl
-                        connection "scm:git:$rootProject.vcsUrl"
-                    }
-                    licenses {
-                        license {
-                            name rootProject.license
-                            url rootProject.licenseUrl
-                            distribution 'repo'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id rootProject.group
-                            name rootProject.group
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -92,8 +51,6 @@ bintray {
     pkg {
         repo = 'maven'
         name = rootProject.name
-        licenses = [rootProject.license]
-        vcsUrl = rootProject.vcsUrl
         version {
             attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
             name = rootProject.version
