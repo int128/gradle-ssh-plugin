@@ -1,7 +1,6 @@
 package org.hidetake.groovy.ssh.connection
 
 import groovy.transform.EqualsAndHashCode
-import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.SettingsHelper
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
@@ -11,24 +10,12 @@ import org.hidetake.groovy.ssh.core.settings.ToStringProperties
  *
  * @author Hidetake Iwata
  */
-trait ConnectionSettings implements UserAuthentication {
+trait ConnectionSettings implements UserAuthenticationSettings, HostAuthenticationSettings, ProxyConnectionSettings {
     /**
      * Gateway host.
      * This may be null.
      */
     Remote gateway
-
-    /**
-     * Proxy configuration for connecting to a host.
-     * This may be null.
-     */
-    Proxy proxy
-
-    /**
-     * Known hosts file.
-     * If {@link #allowAnyHosts} is set, strict host key checking is turned off.
-     */
-    File knownHosts
 
     /**
      * Retry count for connecting to a host.
@@ -45,17 +32,6 @@ trait ConnectionSettings implements UserAuthentication {
      */
     Integer keepAliveSec
 
-
-    /**
-     * Represents that strict host key checking is turned off and any host is allowed.
-     * @see ConnectionSettings#knownHosts
-     */
-    final File allowAnyHosts = Constants.allowAnyHosts
-
-    /**
-     * Hides constant from result of {@link #toString()}.
-     */
-    def toString__allowAnyHosts() {}
 
     static class Constants {
         static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
