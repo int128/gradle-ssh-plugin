@@ -33,11 +33,6 @@ trait ConnectionSettings implements UserAuthenticationSettings, HostAuthenticati
     Integer keepAliveSec
 
 
-    static class Constants {
-        static final allowAnyHosts = new File("${ConnectionSettings.class.name}#allowAnyHosts")
-    }
-
-
     @EqualsAndHashCode
     static class With implements ConnectionSettings, ToStringProperties {
         def With() {}

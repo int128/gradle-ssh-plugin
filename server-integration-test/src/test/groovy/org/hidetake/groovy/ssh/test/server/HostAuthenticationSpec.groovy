@@ -115,21 +115,18 @@ class HostAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        serverKeyType         | knownHostsType
-        [SSH_DSS]             | [SSH_DSS]
-        [SSH_RSA]             | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
-
+        serverKeyType                  | knownHostsType
+        [SSH_DSS]                      | [SSH_DSS]
+        [SSH_RSA]                      | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
         [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
-
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
@@ -157,23 +154,58 @@ class HostAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
 
         where:
-        serverKeyType         | knownHostsType
-        [SSH_DSS]             | [SSH_DSS]
-        [SSH_RSA]             | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
-
+        serverKeyType                  | knownHostsType
+        [SSH_DSS]                      | [SSH_DSS]
+        [SSH_RSA]                      | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
         [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
-
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
-
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
+    }
+
+    @Unroll
+    def "knownHosts can be a list of files where known-hosts #knownHostsType and server-key #serverKeyType"() {
+        given:
+        server.keyPairProvider = keyPairProvider(serverKeyType)
+
+        def knownHostsFiles = publicKeys(knownHostsType).collect { publicKey ->
+            temporaryFolder.newFile() << "[$server.host]:$server.port ${publicKey}"
+        }
+        ssh.settings {
+            knownHosts = knownHostsFiles
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+
+        where:
+        serverKeyType                  | knownHostsType
+        [SSH_DSS]                      | [SSH_DSS]
+        [SSH_RSA]                      | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
+        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
+        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
+        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }

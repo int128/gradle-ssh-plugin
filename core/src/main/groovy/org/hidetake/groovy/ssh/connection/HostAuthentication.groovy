@@ -10,23 +10,47 @@ trait HostAuthentication {
 
     void validateHostAuthentication(HostAuthenticationSettings settings, Remote remote) {
         assert settings.knownHosts != null, "knownHosts must not be null (remote ${remote.name})"
+        assert settings.knownHosts instanceof AllowAnyHosts || settings.knownHosts instanceof File || settings.knownHosts instanceof Collection
     }
 
     void configureHostAuthentication(JSch jsch, Session session, Remote remote, HostAuthenticationSettings settings) {
-        if (settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts) {
-            session.setConfig('StrictHostKeyChecking', 'no')
-            log.warn("Strict host key checking is off. It may be vulnerable to man-in-the-middle attacks.")
-        } else {
-            session.setConfig('StrictHostKeyChecking', 'yes')
-            log.debug("Using known-hosts file for $remote.name: $settings.knownHosts.path")
+        switch (settings.knownHosts) {
+            case AllowAnyHosts:
+                session.setConfig('StrictHostKeyChecking', 'no')
+                log.warn('Host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
+                break
 
-            jsch.setKnownHosts(settings.knownHosts.path)
-            def hostKeys = new HostKeys(session.hostKeyRepository.hostKey.toList())
-            def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
-            if (keyTypes) {
-                session.setConfig('server_host_key', keyTypes)
-                log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
-            }
+            case File:
+                def file = settings.knownHosts as File
+                session.setConfig('StrictHostKeyChecking', 'yes')
+                log.debug("Using known-hosts file for $remote.name: $file")
+
+                jsch.setKnownHosts(file.path)
+                def hostKeys = new HostKeys(jsch.hostKeyRepository.hostKey.toList())
+                def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
+                if (keyTypes) {
+                    session.setConfig('server_host_key', keyTypes)
+                    log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
+                }
+                break
+
+            case Collection:
+                def files = settings.knownHosts as Collection<File>
+                session.setConfig('StrictHostKeyChecking', 'yes')
+                log.debug("Using known-hosts files for $remote.name: $files")
+
+                def hostKeys = HostKeys.fromKnownHosts(files)
+                hostKeys.addTo(session.hostKeyRepository)
+
+                def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
+                if (keyTypes) {
+                    session.setConfig('server_host_key', keyTypes)
+                    log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
+                }
+                break
+
+            default:
+                throw new IllegalArgumentException("knownHosts must be AllowAnyHosts, File or List")
         }
     }
 
