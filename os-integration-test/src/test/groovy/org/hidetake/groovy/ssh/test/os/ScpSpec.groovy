@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.test.os
 
-import org.hidetake.groovy.ssh.extension.settings.FileTransferMethod
+import org.hidetake.groovy.ssh.session.transfer.FileTransferMethod
 
 /**
  * Check if file transfer works with SCP command of OpenSSH.

@@ -1,9 +1,7 @@
-package org.hidetake.groovy.ssh.extension
+package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.extension.helper.ScpGetHelper
-import org.hidetake.groovy.ssh.extension.settings.FileTransferMethod
 import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
 

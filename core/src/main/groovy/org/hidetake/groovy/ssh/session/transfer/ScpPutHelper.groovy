@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension.helper
+package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings

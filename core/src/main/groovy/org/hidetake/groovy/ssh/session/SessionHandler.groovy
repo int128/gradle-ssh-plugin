@@ -3,7 +3,6 @@ package org.hidetake.groovy.ssh.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
-import org.hidetake.groovy.ssh.extension.CoreExtensions
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.operation.SftpOperations
 
@@ -13,7 +12,7 @@ import org.hidetake.groovy.ssh.operation.SftpOperations
  * @author Hidetake Iwata
  */
 @Slf4j
-class SessionHandler implements CoreExtensions {
+class SessionHandler implements SessionExtensions {
     final Operations operations
 
     /**

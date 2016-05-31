@@ -1,11 +1,10 @@
-package org.hidetake.groovy.ssh.extension
+package org.hidetake.groovy.ssh.session.execution
 
 import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
-import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException

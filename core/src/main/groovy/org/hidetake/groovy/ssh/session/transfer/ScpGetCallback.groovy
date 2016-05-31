@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension.helper
+package org.hidetake.groovy.ssh.session.transfer
 
 /**
  * A callback interface to receive files or directories via SCP.
