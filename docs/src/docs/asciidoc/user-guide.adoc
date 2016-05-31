@@ -45,17 +45,17 @@ Settings can be set in global and overridden by each `ssh.run` method, remote ho
 .List of settings
 [options="header,autowidth"]
 |===
-|Settings               | Global | Per `ssh.run`  | Per remote  | Per method
-|Session settings       | x      | x              | -           | -
-|Connection settings    | x      | x              | x           | -
-|Command settings       | x      | x              | x           | x
-|Shell settings         | x      | x              | x           | x
-|Sudo settings          | x      | x              | x           | x
-|File transfer settings | x      | x              | x           | -
-|Remote settings        | -      | -              | x           | -
-|Proxy settings         | -      | -              | x           | -
-|Local port forwarding settings  | -      | -     | -           | x
-|Remote port forwarding settings | -      | -     | -           | x
+|Settings                           | Global | Per `ssh.run`  | Per remote  | Per method
+|Session settings                   | x      | x              | -           | -
+|Connection settings                | x      | x              | x           | -
+|Command settings                   | x      | x              | x           | x
+|Shell settings                     | x      | x              | x           | x
+|Sudo settings                      | x      | x              | x           | x
+|File transfer settings             | x      | x              | x           | -
+|Remote settings                    | -      | -              | x           | -
+|Proxy settings                     | -      | -              | x           | -
+|Local port forwarding settings     | -      | -              | -           | x
+|Remote port forwarding settings    | -      | -              | -           | x
 |===
 
 Some settings can be set in global as follows.
@@ -158,9 +158,15 @@ Following settings can be set in a remote closure.
 .Remote settings
 [options="header,autowidth"]
 |===
-|Key       | Type              | Description
-|`host`    | String, Mandatory | Hostname or IP address.
-|`port`    | Integer           | Port. Defaults to 22.
+|Key |Type |Description
+
+|`host`
+|`String`, Mandatory
+|Hostname or IP address of the remote host.
+
+|`port`
+|`int`
+|Port. Defaults to port 22.
 |===
 
 
@@ -171,19 +177,56 @@ Also following settings can be set in a remote closure.
 .Connection settings
 [options="header,autowidth"]
 |===
-|Key            | Type              | Description
-|`user`         | String, Mandatory | User name.
-|`authentications` | List of String | Authentication methods in order. Defaults to `publickey`, `keyboard-interactive` and `password`.
-|`password`     | String            | A password for password authentication. Defaults to null (no password authentication).
-|`identity`     | File or String    | A private key for public-key authentication. This can be a key File or key content String. Defaults to null (no public-key authentication).
-|`passphrase`   | String            | A pass-phrase of the private key. Defaults to null (no pass-phrase).
-|`proxy`        | Proxy             | Proxy server. If this is set, the connection will use the proxy server to reach the remote host. Defaults to null.
-|`gateway`      | Remote            | Gateway remote host. If this is set, port-forwarding tunnel will be used on connection. Defaults to null.
-|`agent`        | Boolean           | A flag to use Putty Agent or ssh-agent on authentication. Defaults to false.
-|`knownHosts`   | File or List of File | One or more known hosts files. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
-|`retryCount`   | Integer           | Retry count to establish connection. Defaults to 0 (no retry).
-|`retryWaitSec` | Integer (seconds) | Interval time between each retries. Defaults to 0 (immediately).
-|`keepAliveSec` | Integer (seconds) | Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
+|Key |Type |Description
+
+|`user`
+|`String`, Mandatory
+|User name.
+
+|`password`
+|`String`
+|Password for password authentication. Defaults to no password authentication.
+
+|`identity`
+|`File` or `String`
+|Private key for public-key authentication, that is a `File` of the key file or `String` of the key content.
+ Defaults to no public-key authentication.
+
+|`passphrase`
+|`String`
+|Pass-phrase of the private key. Defaults to no pass-phrase.
+
+|`authentications`
+|`List<String>`
+|Authentication methods in order. Defaults to `publickey`, `keyboard-interactive` and `password`.
+
+|`proxy`
+|`Proxy`
+|Proxy server. If this is set, the proxy server is used to reach the remote host. Defaults to no proxy.
+
+|`gateway`
+|`Remote`
+|Gateway remote host. If this is set, the port-forwarding tunnel is used to reach the remote host. Defaults to no gateway.
+
+|`agent`
+|`boolean`
+|If this is `true`, Putty Agent or ssh-agent is used on authentication. Defaults to `false`.
+
+|`knownHosts`
+|`File` or `List<File>`
+|One or more known hosts files. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+
+|`retryCount`
+|`int`
+|Retry count to establish connection. Defaults to 0 (no retry).
+
+|`retryWaitSec`
+|`int` (seconds)
+|Interval time between each retries. Defaults to 0 (immediately).
+
+|`keepAliveSec`
+|`int` (seconds)
+|Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
 |===
 
 These can be set globally in the project as follows.
@@ -280,13 +323,31 @@ The following settings are used to configure how a proxied connection is establi
 .Proxy settings
 [options="header,autowidth"]
 |===
-|Key            | Type                 | Description
-|`host`         | String, Mandatory    | Hostname or IP address.
-|`port`         | Integer, Mandatory   | Port.
-|`type`         | ProxyType, Mandatory | Type of proxy server: `SOCKS`or `HTTP`.
-|`user`         | String               | Proxy server user name.
-|`password`     | String               | Proxy server password.
-|`socksVersion` | Integer              | Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
+|Key |Type |Description
+
+|`host`
+|`String`, Mandatory
+|Hostname or IP address of the proxy server.
+
+|`port`
+|`int`, Mandatory
+|Port of the proxy server.
+
+|`type`
+|`String` or `ProxyType`, Mandatory
+|Type of the proxy server: `SOCKS` or `HTTP`.
+
+|`user`
+|`String`
+|User name of the proxy server.
+
+|`password`
+|`String`
+|Password of the proxy server.
+
+|`socksVersion`
+|`int`
+|Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
 |===
 
 Once a proxy server is defined in the `proxies` container,
@@ -434,10 +495,19 @@ Following settings can be set in global:
 .Session settings
 [options="header,autowidth"]
 |===
-|Key            | Type                  | Description
-|`dryRun`       | Boolean               | Dry run flag. If this is true, no actual connection or operation is performed. Defaults to false.
-|`jschLog`      | Boolean               | JSch logging flag. If this is true, verbose log of JSch is shown. Defaults to false.
-|`extensions`   | List of Trait or Map  | DSL extensions. Defaults to an empty list.
+|Key |Type |Description
+
+|`dryRun`
+|`boolean`
+|If this is `true`, no actual connection or operation will be performed. Defaults to `false`.
+
+|`jschLog`
+|`boolean`
+|If this is `true`, JSch verbose log is shown. Defaults to `false`.
+
+|`extensions`
+|`List` of `Trait` or `Map`
+|DSL extensions. Defaults to an empty list.
 |===
 
 
@@ -571,15 +641,42 @@ The method accepts following settings:
 .Command settings
 [options="header,autowidth"]
 |===
-|Key              | Type            | Description
-|`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
-|`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
-|`agentForwarding`| Boolean         | If this is true, the agent forwarding is requested on the command execution. Defaults to false.
-|`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
-|`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
-|`errorStream`    | OutputStream    | If given, standard error of the remote command is sent to the stream.
-|`encoding`       | String          | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
-|`interaction`    | Closure         | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
+|Key |Type |Description
+
+|`ignoreError`
+|`boolean`
+|If this is `true`, an exit status of the command or shell is ignored. Defaults to `false`.
+
+|`pty`
+|`boolean`
+|If this is `true`, a PTY (pseudo-terminal) is allocated on the command execution. Defaults to `false`.
+
+|`agentForwarding`
+|`boolean`
+|If this is `true`, the agent forwarding is requested on the command execution. Defaults to `false`.
+
+|`logging`
+|`String` or `LoggingMethod`
+|If this is `slf4j`, console log of the remote command is sent to Gradle logger.
+ If this is `stdout`, it is sent to standard output and error.
+ If this is `none`, console logging is turned off.
+ Defaults to `slf4j`.
+
+|`outputStream`
+|`OutputStream`
+|If this is set, standard output of the remote command is sent to the stream. Defaults to null.
+
+|`errorStream`
+|`OutputStream`
+|If this is set, standard error of the remote command is sent to the stream. Defaults to null.
+
+|`encoding`
+|`String`
+|Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+
+|`interaction`
+|`Closure`
+|Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
 |===
 
 The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
@@ -678,9 +775,15 @@ The method accepts following settings and settings same as `execute` method.
 .Sudo settings
 [options="header,autowidth"]
 |===
-|Key              | Type            | Description
-|`sudoPassword`   | String          | A password provided for the sudo prompt. Defaults to `password` of the remote host.
-|`sudoPath`       | String          | Path to sudo executable. Defaults to `sudo`.
+|Key |Type |Description
+
+|`sudoPassword`
+|String
+|Password provided for the sudo prompt. Defaults to `password` of the remote host.
+
+|`sudoPath`
+|String
+|Path to sudo executable. Defaults to `sudo`.
 |===
 
 The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.
@@ -711,14 +814,38 @@ The method accepts following settings:
 .Shell settings
 [options="header,autowidth"]
 |===
-|Key              | Type            | Description
-|`ignoreError`    | Boolean         | If set to true, an exit status of the command or shell is ignored. Defaults to false.
-|`pty`            | Boolean         | If this is true, PTY is allocated on the command execution. Defaults to false.
-|`agentForwarding`| Boolean         | If this is true, the agent forwarding is requested on the command execution. Defaults to false.
-|`logging`        | String          | If this is `slf4j`, console log of the remote command is sent to Gradle logger. If this is `stdout`, it is sent to standard output/error. If this is `none`, console logging is turned off. Defaults to `slf4j`.
-|`outputStream`   | OutputStream    | If given, standard output of the remote command is sent to the stream.
-|`encoding`       | String          | Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
-|`interaction`    | Closure         | Specifies an interaction with the stream on the command or shell execution. Defaults to no interaction.
+|Key |Type |Description
+
+|`ignoreError`
+|`boolean`
+|If this is `true`, an exit status of the command or shell is ignored. Defaults to `false`.
+
+|`pty`
+|`boolean`
+|If this is `true`, a PTY (pseudo-terminal) is allocated on the command execution. Defaults to `false`.
+
+|`agentForwarding`
+|`boolean`
+|If this is `true`, the agent forwarding is requested on the command execution. Defaults to `false`.
+
+|`logging`
+|`String` or `LoggingMethod`
+|If this is `slf4j`, console log of the remote command is sent to Gradle logger.
+ If this is `stdout`, it is sent to standard output and error.
+ If this is `none`, console logging is turned off.
+ Defaults to `slf4j`.
+
+|`outputStream`
+|`OutputStream`
+|If this is set, standard output of the remote command is sent to the stream. Defaults to null.
+
+|`encoding`
+|`String`
+|Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+
+|`interaction`
+|`Closure`
+|Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
 |===
 
 The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
@@ -784,8 +911,11 @@ Following settings can be set in global, per-method or per-remote.
 .File transfer settings
 [options="header,autowidth"]
 |===
-|Key                    | Type   | Description
-|`fileTransfer`         | String | File transfer method, `sftp` or `scp`. Defaults to `sftp`.
+|Key |Type |Description
+
+|`fileTransfer`
+|`String` or `FileTransferMethod`
+|File transfer method, that is `sftp` or `scp`. Defaults to `sftp`.
 |===
 
 
@@ -834,11 +964,23 @@ The method accepts following settings:
 .Local port forwarding settings
 [options="header,autowidth"]
 |===
-|Key              | Type               | Description
-|port             | Integer            | Local port to bind. Defaults to 0, automatically allocated a free port.
-|bind             | String             | Local address to bind. Defaults to `localhost`.
-|hostPort         | Integer, Mandatory | Remote port to connect.
-|host             | String             | Remote address to connect. Default to `localhost` of the remote host.
+|Key |Type |Description
+
+|`port`
+|`int`
+|Local port to bind. Defaults to 0 (automatically allocated a free port).
+
+|`bind`
+|`String`
+|Local address to bind. Defaults to `localhost`.
+
+|`hostPort`
+|`int`, Mandatory
+|Remote port to connect.
+
+|`host`
+|`String`
+|Remote address to connect. Default to `localhost` of the remote host.
 |===
 
 
@@ -861,11 +1003,23 @@ The method accepts following settings:
 .Remote port forwarding settings
 [options="header,autowidth"]
 |===
-|Key              | Type               | Description
-|port             | Integer, Mandatory | Remote port to bind.
-|bind             | String             | Remote address to bind. Defaults to `localhost` of the remote host.
-|hostPort         | Integer, Mandatory | Local port to connect.
-|host             | String             | Local address to connect. Default to `localhost`.
+|Key |Type |Description
+
+|`port`
+|`int`, Mandatory
+|Remote port to bind.
+
+|`bind`
+|`String`
+|Remote address to bind. Defaults to `localhost` of the remote host.
+
+|`hostPort`
+|`int`, Mandatory
+|Local port to connect.
+
+|`host`
+|`String`
+|Local address to connect. Default to `localhost`.
 |===
 
 The port forwarding is valid until all sessions are finished.
