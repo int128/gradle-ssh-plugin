@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.session.transfer
 
-import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
@@ -14,50 +13,6 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  */
 @Slf4j
 trait FilePut extends SessionExtension {
-    @ToString
-    private static class PutOptions {
-        def from
-        def text
-        def bytes
-        def into
-
-        static usage = '''put() accepts following signatures:
-put(from: String or File, into: String)  // put a file or directory
-put(from: Iterable<File>, into: String) // put files or directories
-put(from: InputStream, into: String)     // put a stream into the remote file
-put(text: String, into: String)          // put a string into the remote file
-put(bytes: byte[], into: String)         // put a byte array into the remote file'''
-
-        static create(HashMap map) {
-            try {
-                assert map.into, 'into must be given'
-                new PutOptions(map)
-            } catch (MissingPropertyException e) {
-                throw new IllegalArgumentException(usage, e)
-            } catch (AssertionError e) {
-                throw new IllegalArgumentException(usage, e)
-            }
-        }
-    }
-
-    /**
-     * Put file(s) or content to the remote host.
-     */
-    void put(HashMap map) {
-        def options = PutOptions.create(map)
-        if (options.from) {
-            put(options.from, options.into)
-        } else if (options.text) {
-            def stream = new ByteArrayInputStream(options.text.toString().bytes)
-            put(stream, options.into)
-        } else if (options.bytes) {
-            def stream = new ByteArrayInputStream(options.bytes as byte[])
-            put(stream, options.into)
-        } else {
-            throw new IllegalArgumentException(PutOptions.usage)
-        }
-    }
-
     /**
      * Put a file to the remote host.
      *
@@ -128,6 +83,36 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
     }
+
+    /**
+     * Put file(s) or content to the remote host.
+     */
+    void put(HashMap map) {
+        final usage = """Got $map but not following signatures:
+put(from: String or File, into: String)  // put a file or directory
+put(from: Iterable<File>, into: String)  // put files or directories
+put(from: InputStream, into: String)     // put a stream into the remote file
+put(text: String, into: String)          // put a string into the remote file
+put(bytes: byte[], into: String)         // put a byte array into the remote file"""
+
+        if (map.containsKey('from') && map.containsKey('into')) {
+            try {
+                //noinspection GroovyAssignabilityCheck
+                put(map.from, map.into as String)
+            } catch (MissingMethodException e) {
+                throw new IllegalArgumentException(usage, e)
+            }
+        } else if (map.containsKey('text') && map.containsKey('into')) {
+            def stream = new ByteArrayInputStream((map.text as String).bytes)
+            put(stream, map.into as String)
+        } else if (map.containsKey('bytes') && map.containsKey('into')) {
+            def stream = new ByteArrayInputStream(map.bytes as byte[])
+            put(stream, map.into as String)
+        } else {
+            throw new IllegalArgumentException(usage)
+        }
+    }
+
 
     private void sftpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
         sftp {

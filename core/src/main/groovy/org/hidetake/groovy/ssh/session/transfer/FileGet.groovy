@@ -1,6 +1,5 @@
 package org.hidetake.groovy.ssh.session.transfer
 
-import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
@@ -14,45 +13,6 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  */
 @Slf4j
 trait FileGet implements SessionExtension {
-    @ToString
-    private static class GetOptions {
-        def from
-        def into
-
-        static usage = '''get() accepts following signatures:
-get(from: String, into: String or File) // get a file or directory recursively
-get(from: String, into: OutputStream)   // get a file into the stream
-get(from: String)                       // get a file and return the content'''
-
-        static create(HashMap map) {
-            try {
-                assert map.from, 'from must be given'
-                new GetOptions(map)
-            } catch (MissingPropertyException e) {
-                throw new IllegalArgumentException(usage, e)
-            } catch (AssertionError e) {
-                throw new IllegalArgumentException(usage, e)
-            }
-        }
-    }
-
-    /**
-     * Get file(s) or content from the remote host.
-     *
-     * @param map {@link GetOptions}
-     * @returns content as a string if <code>into</into> is not given
-     */
-    String get(HashMap map) {
-        def options = GetOptions.create(map)
-        if (options.into) {
-            get(options.from, options.into)
-        } else {
-            def stream = new ByteArrayOutputStream()
-            get(options.from, stream)
-            new String(stream.toByteArray())
-        }
-    }
-
     /**
      * Get a file or directory from the remote host.
      *
@@ -102,6 +62,36 @@ get(from: String)                       // get a file and return the content'''
             scpGet(remotePath, localFile)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
+        }
+    }
+
+    /**
+     * Get file(s) or content from the remote host.
+     *
+     * @param map <code>from</code> and <code>into</code>
+     * @returns content as a string if <code>into</into> is not given
+     */
+    def get(HashMap map) {
+        final usage = """Got $map but not following signatures:
+get(from: String, into: String or File)  // get a file or directory recursively
+get(from: String, into: OutputStream)    // get a file into the stream
+get(from: String)                        // get a file and return the content"""
+
+        if (map.containsKey('from')) {
+            if (map.containsKey('into')) {
+                try {
+                    //noinspection GroovyAssignabilityCheck
+                    get(map.from as String, map.into)
+                } catch (MissingMethodException e) {
+                    throw new IllegalArgumentException(usage, e)
+                }
+            } else {
+                def stream = new ByteArrayOutputStream()
+                get(map.from as String, stream)
+                new String(stream.toByteArray())
+            }
+        } else {
+            throw new IllegalArgumentException(usage)
         }
     }
 
