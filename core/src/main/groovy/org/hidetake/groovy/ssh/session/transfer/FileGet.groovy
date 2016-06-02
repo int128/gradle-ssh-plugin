@@ -1,10 +1,7 @@
 package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
-
-import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
  * An extension class to get a file or directory.
@@ -12,7 +9,8 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  * @author Hidetake Iwata
  */
 @Slf4j
-trait FileGet implements SessionExtension {
+trait FileGet implements SessionExtension, SftpGet, ScpGet {
+
     /**
      * Get a file or directory from the remote host.
      *
@@ -21,14 +19,11 @@ trait FileGet implements SessionExtension {
      */
     void get(String remotePath, OutputStream stream) {
         assert remotePath, 'remote path must be given'
-        assert stream,  'output stream must be given'
+        assert stream, 'output stream must be given'
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftp {
-                getContent(remotePath, stream)
-            }
+            sftpGet(remotePath, stream)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            def helper = new ScpGetHelper(operations, mergedSettings)
-            helper.getFileContent(remotePath, stream)
+            scpGet(remotePath, stream)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
@@ -95,64 +90,4 @@ get(from: String)                        // get a file and return the content"""
         }
     }
 
-
-    private void sftpGet(String remotePath, File localFile) {
-        assert remotePath, 'remote path must be given'
-        assert localFile, 'local file must be given'
-        try {
-            sftp {
-                getFile(remotePath, localFile.path)
-            }
-            log.info("Received file from $remote.name: $remotePath -> $localFile.path")
-        } catch (SftpFailureException e) {
-            if (e.cause.message.startsWith('not supported to get directory')) {
-                log.debug("Found directory on $remote.name: $remotePath")
-                sftpGetRecursive(remotePath, localFile)
-                log.info("Received directory $remote.name: $remotePath -> $localFile.path")
-            } else {
-                throw e
-            }
-        }
-    }
-
-    private void sftpGetRecursive(String baseRemoteDir, File baseLocalDir) {
-        sftp {
-            currySelf { Closure self, String remoteDir, File localDir ->
-                def remoteDirName = remoteDir.find(~'[^/]+/?$')
-                def localChildDir = new File(localDir, remoteDirName)
-                localChildDir.mkdirs()
-
-                log.debug("Entering directory on $remote.name: $remoteDir")
-                cd(remoteDir)
-
-                ls('.').each { child ->
-                    if (!child.attrs.dir) {
-                        getFile(child.filename, localChildDir.path)
-                    } else if (child.filename in ['.', '..']) {
-                        // ignore directory entries
-                    } else {
-                        self.call(self, child.filename, localChildDir)
-                    }
-                }
-
-                log.debug("Leaving directory on $remote.name: $remoteDir")
-                cd('..')
-            }.call(baseRemoteDir, baseLocalDir)
-        }
-    }
-
-    private void scpGet(String remotePath, File localPath) {
-        def helper = new ScpGetHelper(operations, mergedSettings)
-        if (localPath.directory) {
-            log.debug("Receiving file recursively from $remote.name: $remotePath -> $localPath")
-            helper.get(remotePath, localPath)
-            log.info("Received file recursively from $remote.name: $remotePath -> $localPath")
-        } else {
-            log.debug("Receiving file from $remote.name: $remotePath -> $localPath")
-            localPath.withOutputStream { stream ->
-                helper.getFileContent(remotePath, stream)
-            }
-            log.info("Received file from $remote.name: $remotePath -> $localPath")
-        }
-    }
 }

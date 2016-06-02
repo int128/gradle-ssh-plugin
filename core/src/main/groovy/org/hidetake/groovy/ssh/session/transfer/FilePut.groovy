@@ -1,10 +1,7 @@
 package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.operation.SftpFailureException
 import org.hidetake.groovy.ssh.session.SessionExtension
-
-import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
 /**
  * An extension class to put a file or directory.
@@ -12,7 +9,8 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  * @author Hidetake Iwata
  */
 @Slf4j
-trait FilePut extends SessionExtension {
+trait FilePut implements SessionExtension, SftpPut, ScpPut {
+
     /**
      * Put a file to the remote host.
      *
@@ -23,19 +21,9 @@ trait FilePut extends SessionExtension {
         assert stream, 'input stream must be given'
         assert remotePath, 'remote path must be given'
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftp {
-                putContent(stream, remotePath)
-            }
+            sftpPut(stream, remotePath)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            def m = remotePath =~ '(.*/)(.+?)'
-            if (m.matches()) {
-                def remoteBase = m.group(1)
-                def remoteFilename = m.group(2)
-                def helper = new ScpPutHelper(operations, mergedSettings, remoteBase)
-                helper.executeSingle(remoteFilename, stream.bytes)
-            } else {
-                throw new IllegalArgumentException("Remote path must be an absolute path: $remotePath")
-            }
+            scpPut(stream, remotePath)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
@@ -76,9 +64,9 @@ trait FilePut extends SessionExtension {
         assert remotePath, 'remote path must be given'
         assert localFiles, 'local files must be given'
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftpPutRecursive(localFiles, remotePath)
+            sftpPut(localFiles, remotePath)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            scpPutRecursive(localFiles, remotePath)
+            scpPut(localFiles, remotePath)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
@@ -113,33 +101,4 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
         }
     }
 
-
-    private void sftpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
-        sftp {
-            currySelf { Closure self, Iterable<File> localFiles, String remotePath ->
-                localFiles.findAll { !it.directory }.each { localFile ->
-                    putFile(localFile.path, remotePath)
-                    log.info("Sent file to $remote.name: $localFile.path -> $remotePath")
-                }
-                localFiles.findAll { it.directory }.each { localDir ->
-                    log.debug("Entering directory on $remote.name: $localDir.path")
-                    def remoteDir = "$remotePath/${localDir.name}"
-                    try {
-                        mkdir(remoteDir)
-                    } catch (SftpFailureException ignore) {
-                        log.info("Remote directory already exists on $remote.name: $remoteDir")
-                    }
-
-                    self.call(self, localDir.listFiles().toList(), remoteDir)
-                    log.debug("Leaving directory on $remote.name: $localDir.path")
-                }
-            }.call(baseLocalFiles, baseRemotePath)
-        }
-    }
-
-    private void scpPutRecursive(Iterable<File> baseLocalFiles, String baseRemotePath) {
-        def helper = new ScpPutHelper(operations, mergedSettings, baseRemotePath)
-        helper.add(baseLocalFiles)
-        helper.execute()
-    }
 }
