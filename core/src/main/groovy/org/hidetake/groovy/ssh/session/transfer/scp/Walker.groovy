@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.session.transfer
+package org.hidetake.groovy.ssh.session.transfer.scp
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
@@ -19,76 +19,21 @@ import java.util.regex.Matcher
  * @author Hidetake Iwata
  */
 @Slf4j
-class ScpGetHelper {
+class Walker {
+
     final Operations operations
     final CompositeSettings mergedSettings
 
-    def ScpGetHelper(Operations operations1, CompositeSettings mergedSettings1) {
+    def Walker(Operations operations1, CompositeSettings mergedSettings1) {
         operations = operations1
         mergedSettings = mergedSettings1
     }
 
-    /**
-     * Get remote files into local directory recursively.
-     *
-     * @param remotePath
-     * @param localDir
-     */
-    void get(String remotePath, File localDir) {
-        listDirectoryEntries(remotePath, true, new ScpGetCallback<File>() {
-            final localDirStack = new ArrayDeque<File>([localDir])
-
-            def getCurrentLocalDir() {
-                localDirStack.peek()
-            }
-
-            @Override
-            File foundFile(String name, long size, int mode) {
-                def localFile = new File(currentLocalDir, name)
-                localFile.delete()
-                localFile
-            }
-
-            @Override
-            void receivedFileContent(byte[] bytes, File context) {
-                context.append(bytes)
-                log.trace("Wrote $bytes.length bytes into $context.path")
-            }
-
-            @Override
-            void enterDirectory(String name, int mode) {
-                localDirStack.push(new File(currentLocalDir, name))
-                currentLocalDir.mkdir()
-                log.trace("Created local directory: $currentLocalDir.path")
-            }
-
-            @Override
-            void leaveDirectory() {
-                localDirStack.pop()
-            }
-        })
-    }
-
-    /**
-     * Get content of remote file.
-     *
-     * @param remotePath
-     * @param stream
-     */
-    void getFileContent(String remotePath, OutputStream stream) {
-        listDirectoryEntries(remotePath, false, new ScpGetCallback() {
-            @Override
-            void receivedFileContent(byte[] bytes, def context) {
-                stream.write(bytes)
-            }
-        })
-    }
-
-    void listDirectoryEntries(String remotePath, boolean recursive, ScpGetCallback callback) {
+    void walk(String remotePath, Receiver receiver) {
         log.debug("Requesting SCP GET: $operations.remote.name:$remotePath")
 
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(logging: LoggingMethod.none))
-        def flag = recursive ? '-fr' : '-f'
+        def flag = receiver.recursive ? '-fr' : '-f'
         def command = operations.command(settings, "scp $flag $remotePath")
         command.addInteraction {
             log.trace("Sending NULL to $operations.remote.name")
@@ -101,7 +46,7 @@ class ScpGetHelper {
                 def path = m.group(3)
 
                 log.debug("Found file with $size bytes on $operations.remote.name: $path")
-                def localFile = callback.foundFile(path, size, mode)
+                def localFile = receiver.foundFile(path, size, mode)
 
                 log.trace("Sending NULL to $operations.remote.name")
                 standardInput.write(0)
@@ -114,7 +59,7 @@ class ScpGetHelper {
 
                 when(bytes: remaining, from: standardOutput) { byte[] b ->
                     log.trace("Received $b.length bytes from $operations.remote.name: $path")
-                    callback.receivedFileContent(b, localFile)
+                    receiver.receiveContent(b, localFile)
                     remaining.addAndGet(-b.length)
                     progress.report(b.length)
                     log.trace("Remaining $remaining bytes to transfer: $path")
@@ -136,7 +81,7 @@ class ScpGetHelper {
                 def path = m.group(2)
 
                 log.debug("Entering directory on $operations.remote.name: $path")
-                callback.enterDirectory(path, mode)
+                receiver.enterDirectory(path, mode)
 
                 log.trace("Sending NULL to $operations.remote.name")
                 standardInput.write(0)
@@ -145,7 +90,7 @@ class ScpGetHelper {
 
             when(line: 'E', from: standardOutput) {
                 log.debug("Leaving directory on $operations.remote.name")
-                callback.leaveDirectory()
+                receiver.leaveDirectory()
 
                 log.trace("Sending NULL to $operations.remote.name")
                 standardInput.write(0)
@@ -166,4 +111,5 @@ class ScpGetHelper {
             throw new BadExitStatusException("SCP command returned exit status $exitStatus", exitStatus)
         }
     }
+
 }
