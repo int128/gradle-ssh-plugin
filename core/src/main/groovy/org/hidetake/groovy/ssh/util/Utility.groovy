@@ -10,11 +10,11 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class Utility {
-    static <T> T callWithDelegate(Closure<T> closure, Object delegate) {
+    static <T> T callWithDelegate(Closure<T> closure, delegate, ... arguments) {
         def cloned = closure.clone() as Closure<T>
         cloned.resolveStrategy = Closure.DELEGATE_FIRST
         cloned.delegate = delegate
-        cloned.call()
+        cloned.call(*arguments)
     }
 
     static <T> Closure<T> currySelf(Closure<T> closure) {

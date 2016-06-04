@@ -1,11 +1,16 @@
-package org.hidetake.groovy.ssh.extension.helper
+package org.hidetake.groovy.ssh.session.transfer.scp
 
 /**
  * A callback interface to receive files or directories via SCP.
  *
  * @author Hidetake Iwata
  */
-abstract class ScpGetCallback<T> {
+interface Receiver<T> {
+
+    /**
+     * @return true if recursive walker
+     */
+    boolean isRecursive()
 
     /**
      * Called when the remote file is found.
@@ -15,9 +20,7 @@ abstract class ScpGetCallback<T> {
      * @param mode
      * @return any object or null
      */
-    T foundFile(String name, long size, int mode) {
-        null
-    }
+    T foundFile(String name, long size, int mode)
 
     /**
      * Called when content is received.
@@ -25,8 +28,7 @@ abstract class ScpGetCallback<T> {
      * @param bytes
      * @param context returned by {@link #foundFile(java.lang.String, long, int)}
      */
-    void receivedFileContent(byte[] bytes, T context) {
-    }
+    void receiveContent(byte[] bytes, T context)
 
     /**
      * Called when it entered into the remote directory.
@@ -34,12 +36,11 @@ abstract class ScpGetCallback<T> {
      * @param name
      * @param mode
      */
-    void enterDirectory(String name, int mode) {
-    }
+    void enterDirectory(String name, int mode)
 
     /**
      * Called when it left from the remote directory.
      */
-    void leaveDirectory() {
-    }
+    void leaveDirectory()
+
 }

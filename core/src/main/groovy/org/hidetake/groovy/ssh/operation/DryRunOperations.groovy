@@ -2,8 +2,8 @@ package org.hidetake.groovy.ssh.operation
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
+import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
+import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
 
 /**
  * Dry-run implementation of {@link Operations}.

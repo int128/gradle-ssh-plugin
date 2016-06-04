@@ -1,11 +1,11 @@
 package org.hidetake.groovy.ssh.core.settings
 
 import org.hidetake.groovy.ssh.connection.ConnectionSettings
-import org.hidetake.groovy.ssh.extension.settings.FileTransferSettings
-import org.hidetake.groovy.ssh.extension.settings.SudoSettings
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.ShellSettings
 import org.hidetake.groovy.ssh.session.SessionSettings
+import org.hidetake.groovy.ssh.session.execution.SudoSettings
+import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
 
 /**
  * Represents overall settings configurable in

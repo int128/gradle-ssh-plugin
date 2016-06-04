@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension.settings
+package org.hidetake.groovy.ssh.session.forwarding
 
 import groovy.transform.EqualsAndHashCode
 import org.hidetake.groovy.ssh.core.settings.SettingsHelper

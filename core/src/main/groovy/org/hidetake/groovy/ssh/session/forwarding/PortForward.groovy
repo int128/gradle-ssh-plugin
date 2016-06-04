@@ -1,7 +1,5 @@
-package org.hidetake.groovy.ssh.extension
+package org.hidetake.groovy.ssh.session.forwarding
 
-import org.hidetake.groovy.ssh.extension.settings.LocalPortForwardSettings
-import org.hidetake.groovy.ssh.extension.settings.RemotePortForwardSettings
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**

@@ -10,7 +10,7 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
 import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
- * Check if {@link org.hidetake.groovy.ssh.extension.Sudo} works with Linux system.
+ * Check if {@link org.hidetake.groovy.ssh.session.execution.Sudo} works with Linux system.
  * Password authentication must be enabled on sshd_config to run tests.
  *
  * @author Hidetake Iwata

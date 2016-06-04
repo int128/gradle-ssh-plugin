@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension
+package org.hidetake.groovy.ssh.session.execution
 
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.operation.CommandSettings

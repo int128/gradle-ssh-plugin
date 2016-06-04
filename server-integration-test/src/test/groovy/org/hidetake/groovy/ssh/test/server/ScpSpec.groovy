@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.test.server
 
 import org.apache.sshd.server.command.ScpCommandFactory
-import org.hidetake.groovy.ssh.extension.settings.FileTransferMethod
+import org.hidetake.groovy.ssh.session.transfer.FileTransferMethod
 
 class ScpSpec extends AbstractFileTransferSpecification {
 

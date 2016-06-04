@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension.settings;
+package org.hidetake.groovy.ssh.session.transfer;
 
 /**
  * File transfer method type.

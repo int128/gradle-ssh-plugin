@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.extension
+package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.SftpNoSuchFileException
