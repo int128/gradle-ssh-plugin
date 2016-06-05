@@ -8,65 +8,48 @@ import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
  * Provides the blocking command execution.
+ * Each method blocks until channel is closed.
  *
  * @author Hidetake Iwata
  */
 trait Command implements SessionExtension {
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
-     * @param commandLine
-     * @return output value of the commandLine
-     */
     String execute(String commandLine) {
-        assert commandLine, 'commandLine must be given'
         execute([:], commandLine)
     }
 
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
-     * @param commandLine
-     * @param callback closure called with an output value of the commandLine
-     * @return output value of the commandLine
-     */
+    String execute(List<String> commandLineArgs) {
+        execute([:], commandLineArgs)
+    }
+
     void execute(String commandLine, Closure callback) {
-        assert commandLine, 'commandLine must be given'
-        assert callback, 'callback must be given'
         execute([:], commandLine, callback)
     }
 
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
-     * @param map execution settings
-     * @param commandLine
-     * @param callback closure called with an output value of the commandLine
-     * @return output value of the commandLine
-     */
+    void execute(List<String> commandLineArgs, Closure callback) {
+        execute([:], commandLineArgs, callback)
+    }
+
     void execute(HashMap map, String commandLine, Closure callback) {
-        assert commandLine, 'commandLine must be given'
         assert callback, 'callback must be given'
-        assert map != null, 'settings must not be null'
         callback.call(execute(map, commandLine))
     }
 
-    /**
-     * Performs an execution operation.
-     * This method blocks until channel is closed.
-     *
-     * @param map execution settings
-     * @param commandLine
-     * @return output value of the commandLine
-     */
+    void execute(HashMap map, List<String> commandLineArgs, Closure callback) {
+        assert callback, 'callback must be given'
+        callback.call(execute(map, commandLineArgs))
+    }
+
     String execute(HashMap map, String commandLine) {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         Helper.execute(operations, settings, commandLine)
+    }
+
+    String execute(HashMap map, List<String> commandLineArgs) {
+        assert commandLineArgs, 'commandLineArgs must be given'
+        assert map != null, 'map must not be null'
+        execute(map, Escape.escape(commandLineArgs))
     }
 
     private static class Helper {

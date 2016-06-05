@@ -17,7 +17,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.commandWithExit
 
 class BackgroundCommandSpec extends Specification {
 
@@ -110,6 +110,17 @@ class BackgroundCommandSpec extends Specification {
         resultActual == 'something output'
     }
 
+    def "execute should escape arguments if string list is given"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeBackground([/this 'should' be escaped/])
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(/'this '\''should'\'' be escaped'/) >> commandWithExit(0)
+    }
+
     @Unroll
     def "all commands should be executed even if error, A=#exitA B=#exitB C=#exitC"() {
         when:
@@ -189,6 +200,44 @@ class BackgroundCommandSpec extends Specification {
         'a line with line sep' | 'some result\n'              | 'some result'
         'lines'                | 'some result\nsecond line'   | "some result${NL}second line"
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
+    }
+
+    def "executeBackground should escape arguments if string list is given and return value via callback closure"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeBackground(["echo", /this 'should' be escaped/]) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
+
+        then:
+        resultActual == 'something output'
+    }
+
+    def "executeBackground should escape arguments if string list is given and return value via callback closure with settings"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeBackground(['echo', /this 'should' be escaped/], pty: true) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
+
+        then:
+        resultActual == 'something output'
     }
 
     @Unroll

@@ -8,48 +8,32 @@ import org.hidetake.groovy.ssh.session.SessionExtension
 
 /**
  * Provides the non-blocking command execution.
+ * Each method returns immediately and executes the commandLine concurrently.
  *
  * @author Hidetake Iwata
  */
 trait BackgroundCommand implements SessionExtension {
-    /**
-     * Performs an execution operation.
-     * This method returns immediately and executes the commandLine concurrently.
-     *
-     * @param commandLine
-     */
     void executeBackground(String commandLine) {
-        assert commandLine, 'commandLine must be given'
         executeBackground([:], commandLine)
     }
 
-    /**
-     * Performs an execution operation.
-     * This method returns immediately and executes the commandLine concurrently.
-     *
-     * @param commandLine
-     * @param callback closure called with an output value of the commandLine
-     */
+    void executeBackground(List<String> commandLineArgs) {
+        executeBackground([:], commandLineArgs)
+    }
+
     void executeBackground(String commandLine, Closure callback) {
-        assert commandLine, 'commandLine must be given'
-        assert callback, 'callback must be given'
         executeBackground([:], commandLine, callback)
     }
 
-    /**
-     * Performs an execution operation.
-     * This method returns immediately and executes the commandLine concurrently.
-     *
-     * @param map execution settings
-     * @param commandLine
-     */
+    void executeBackground(List<String> commandLineArgs, Closure callback) {
+        executeBackground([:], commandLineArgs, callback)
+    }
+
     void executeBackground(HashMap map, String commandLine) {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
-
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         def command = operations.command(settings, commandLine)
-
         command.startAsync { int exitStatus ->
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $commandLine", exitStatus)
@@ -57,20 +41,20 @@ trait BackgroundCommand implements SessionExtension {
         }
     }
 
-    /**
-     * Performs an execution operation.
-     * This method returns immediately and executes the commandLine concurrently.
-     *
-     * @param map execution settings
-     * @param commandLine
-     * @param callback closure called with an output value of the commandLine
-     */
+    void executeBackground(HashMap map, List<String> commandLineArgs) {
+        executeBackground(map, Escape.escape(commandLineArgs))
+    }
+
     void executeBackground(HashMap map, String commandLine, Closure callback) {
         assert commandLine, 'commandLine must be given'
         assert callback, 'callback must be given'
         assert map != null, 'map must not be null'
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         Helper.execute(operations, settings, commandLine, callback)
+    }
+
+    void executeBackground(HashMap map, List<String> commandLineArgs, Closure callback) {
+        executeBackground(map, Escape.escape(commandLineArgs), callback)
     }
 
     private static class Helper {

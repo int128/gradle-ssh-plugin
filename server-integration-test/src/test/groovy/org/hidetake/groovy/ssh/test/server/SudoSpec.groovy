@@ -175,6 +175,23 @@ class SudoSpec extends Specification {
         resultActual == 'something output'
     }
 
+    def "executeSudo should escape arguments if string list is given"() {
+        when:
+        def resultActual = ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo([/this 'should' be escaped/])
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', /'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
+        }
+
+        then:
+        resultActual == 'something output'
+    }
+
     def "executeSudo should accept sudo password by method settings"() {
         when:
         ssh.run {
@@ -275,6 +292,28 @@ class SudoSpec extends Specification {
         resultActual == 'something output'
     }
 
+    def "executeSudo should escape arguments if string list is given and return value via callback closure"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo(["echo", /this 'should' be escaped/]) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
+        }
+
+        then:
+        resultActual == 'something output'
+    }
+
     def "executeSudo can return value via callback setting"() {
         given:
         def resultActual
@@ -291,6 +330,28 @@ class SudoSpec extends Specification {
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
             commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'something output')
+        }
+
+        then:
+        resultActual == 'something output'
+    }
+
+    def "executeSudo should escape arguments if string list is given and return value via callback closure with settings"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo(['echo', /this 'should' be escaped/], pty: true) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
         }
 
         then:

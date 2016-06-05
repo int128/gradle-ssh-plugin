@@ -609,13 +609,16 @@ Call the `execute` method with a command to execute.
 [source,groovy]
 ----
 execute 'sudo service httpd reload'
+
+// with settings
+execute 'sudo service httpd reload', pty: true
 ----
 
-The method can be called with operation settings.
+The method escapes command arguments if a list of strings is given.
 
 [source,groovy]
 ----
-execute 'sudo service httpd reload', pty: true
+execute(['perl', '-e', /print 'current: ', time, "\n"/])
 ----
 
 The method waits until the command is completed and returns a result from standard output of the command.
@@ -695,7 +698,7 @@ Call the `executeBackground` method with a command to execute in background.
 ----
 executeBackground 'sudo service httpd reload'
 
-// also can be called with operation settings
+// with settings
 executeBackground 'sudo service httpd reload', pty: true
 ----
 
@@ -715,6 +718,13 @@ session(remotes.web01) {
     executeBackground "ping -c 1 -w 1 192.168.1.$lastOctet"
   }
 }
+----
+
+The method escapes command arguments if a list of strings is given.
+
+[source,groovy]
+----
+executeBackground(['perl', '-e', /print 'current: ', time, "\n"/])
 ----
 
 A result can be retrieved as an argument if a closure is given.
@@ -759,6 +769,13 @@ Line separators are converted to the platform native.
 ----
 def result = executeSudo 'service httpd status'
 println result
+----
+
+The method escapes command arguments if a list of strings is given.
+
+[source,groovy]
+----
+executeSudo(['perl', '-e', /print 'current: ', time, "\n"/])
 ----
 
 A result can be retrieved as an argument if a closure is given.

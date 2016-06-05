@@ -102,6 +102,17 @@ class CommandSpec extends Specification {
         resultActual == 'something output'
     }
 
+    def "execute should escape arguments if string list is given"() {
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute([/this 'should' be escaped/])
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(/'this '\''should'\'' be escaped'/) >> commandWithExit(0)
+    }
+
     @Unroll
     def "execute should return output of the command: #description"() {
         when:
@@ -126,7 +137,7 @@ class CommandSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
     }
 
-    def "execute can return value via callback closure"() {
+    def "execute should return value via callback closure"() {
         given:
         def resultActual
 
@@ -146,7 +157,26 @@ class CommandSpec extends Specification {
         resultActual == 'something output'
     }
 
-    def "execute can return value via callback with setting"() {
+    def "execute should escape arguments if string list is given and return value via callback closure"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute(["echo", /this 'should' be escaped/]) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
+
+        then:
+        resultActual == 'something output'
+    }
+
+    def "execute should return value via callback with setting"() {
         given:
         def resultActual
 
@@ -161,6 +191,26 @@ class CommandSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'something output')
+
+        then:
+        resultActual == 'something output'
+    }
+
+    def "execute should escape arguments if string list is given return value via callback with setting"() {
+        given:
+        def resultActual
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute(['echo', /this 'should' be escaped/], pty: true) { result ->
+                    resultActual = result
+                }
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
 
         then:
         resultActual == 'something output'

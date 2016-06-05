@@ -33,12 +33,24 @@ class CommandSpec extends Specification {
         when:
         def r = ssh.run {
             session(ssh.remotes.testServer) {
-                execute "expr $x + $y"
+                execute(['expr', x, '+', y]*.toString())
             }
         } as int
 
         then:
         r == (x + y)
+    }
+
+    def 'should escape command line arguments'() {
+        when:
+        def r = ssh.run {
+            session(ssh.remotes.testServer) {
+                execute(['perl', '-e', /print 'current: ', time, "\n"/])
+            }
+        }
+
+        then:
+        r =~ /current: \d+/
     }
 
     def 'should execute commands by multi-line string'() {
