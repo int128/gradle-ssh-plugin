@@ -1,7 +1,7 @@
 package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testfixtures.ProjectBuilder
-import org.hidetake.groovy.ssh.connection.ConnectionSettings
+import org.hidetake.groovy.ssh.connection.AllowAnyHosts
 import org.hidetake.groovy.ssh.core.Proxy
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
@@ -67,7 +67,7 @@ class SshPluginSpec extends Specification {
         def project = createProject()
 
         then:
-        project.ssh.settings.knownHosts == ConnectionSettings.Constants.allowAnyHosts
+        project.ssh.settings.knownHosts == AllowAnyHosts.instance
         project.remotes.size() == 4
         project.proxies.size() == 2
     }
