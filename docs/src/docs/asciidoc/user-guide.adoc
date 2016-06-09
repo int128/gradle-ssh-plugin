@@ -906,6 +906,7 @@ put from: buildDir, into: '/remote/folder'
 
 // specify an Iterable<File>
 put from: files('local_file1', 'local_file2'), into: '/remote/folder'
+put from: fileTree(dir: 'local_dir', include: '**/*.txt'), into: '/remote/folder'
 
 // specify an input stream
 file.withInputStream { stream ->
