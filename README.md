@@ -144,7 +144,7 @@ It can be run on development environment such as OSX
 but some specs depending on ECDSA user key, ECDSA known hosts and passphrase key are skipped.
 
 ```sh
-INTEGRATION_TEST_SSH_HOST=... INTEGRATION_TEST_SSH_USER=... INTEGRATION_TEST_SSH_KEY_PATH=... ./gradlew :os-integration-test:check
+EXT_SSH_HOST=... EXT_SSH_USER=... EXT_SSH_KEY_PATH=... ./gradlew :os-integration-test:check
 ```
 
 If it runs on Travis CI,
@@ -156,12 +156,12 @@ some specs are skipped because credential is not provided.
 
 Category                    | Travis CI | Travis CI (pull request)  | Develop
 ----------------------------|-----------|---------------------------|--------
-RequireAgent                | ec2       | -                         | ec2
-RequireSudo                 | ec2       | -                         | ec2
+RequireAgent                | external  | -                         | external
+RequireSudo                 | external  | -                         | external
 RequireEcdsaHostKey         | local     | local                     | -
 RequireEcdsaUserKey         | local     | local                     | -
 RequireKeyWithPassphrase    | local     | local                     | -
-Others                      | local     | local                     | ec2
+Others                      | local     | local                     | external
 
 
 ### Gradle 1.x integration test

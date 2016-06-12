@@ -41,13 +41,13 @@ test {
         )
     } else {
         systemProperties(
-                'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
-                'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
-                'ssh.key.path': System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'),
+                'ssh.host': System.getenv('EXT_SSH_HOST'),
+                'ssh.user': System.getenv('EXT_SSH_USER'),
+                'ssh.key.path': System.getenv('EXT_SSH_KEY_PATH'),
         )
-        onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
-        onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
-        onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
+        onlyIf { System.getenv('EXT_SSH_HOST') }
+        onlyIf { System.getenv('EXT_SSH_USER') }
+        onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
     }
 }
 
@@ -58,12 +58,12 @@ task testRequireAgent(type: Test) {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
     }
     systemProperties(
-            'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
-            'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
+            'ssh.host': System.getenv('EXT_SSH_HOST'),
+            'ssh.user': System.getenv('EXT_SSH_USER'),
             'ssh.agent': true,
     )
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
+    onlyIf { System.getenv('EXT_SSH_HOST') }
+    onlyIf { System.getenv('EXT_SSH_USER') }
 }
 
 task testRequireSudo(type: Test) {
@@ -71,13 +71,13 @@ task testRequireSudo(type: Test) {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
     }
     systemProperties(
-            'ssh.host': System.getenv('INTEGRATION_TEST_SSH_HOST'),
-            'ssh.user': System.getenv('INTEGRATION_TEST_SSH_USER'),
-            'ssh.key.path': System.getenv('INTEGRATION_TEST_SSH_KEY_PATH'),
+            'ssh.host': System.getenv('EXT_SSH_HOST'),
+            'ssh.user': System.getenv('EXT_SSH_USER'),
+            'ssh.key.path': System.getenv('EXT_SSH_KEY_PATH'),
     )
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_HOST') }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_USER') }
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
+    onlyIf { System.getenv('EXT_SSH_HOST') }
+    onlyIf { System.getenv('EXT_SSH_USER') }
+    onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
 }
 
 task testRequireEcdsaUserKey(type: Test) {
@@ -135,8 +135,8 @@ task startSshAgent(type: Exec) {
 
 task addKeyToSshAgent(type: Exec) {
     dependsOn startSshAgent
-    commandLine 'ssh-add', System.getenv('INTEGRATION_TEST_SSH_KEY_PATH')
-    onlyIf { System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') }
+    commandLine 'ssh-add', System.getenv('EXT_SSH_KEY_PATH')
+    onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
 }
 
 task stopSshAgent(type: Exec) {

@@ -1,8 +1,8 @@
 ssh.remotes {
     tester {
-        host = System.getenv('INTEGRATION_TEST_SSH_HOST') ?: 'localhost'
-        user = System.getenv('INTEGRATION_TEST_SSH_USER') ?: System.getProperty('user.name')
-        identity = new File(System.getenv('INTEGRATION_TEST_SSH_KEY_PATH') ?: "${System.getProperty('user.home')}/.ssh/id_rsa")
+        host = System.getenv('EXT_SSH_HOST') ?: 'localhost'
+        user = System.getenv('EXT_SSH_USER') ?: System.getProperty('user.name')
+        identity = new File(System.getenv('EXT_SSH_KEY_PATH') ?: "${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
 

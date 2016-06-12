@@ -27,18 +27,18 @@ install:
 
 - mkdir -m 700 -p -v $HOME/.ssh
 
-- export INTEGRATION_TEST_SSH_KEY_PATH=$HOME/.ssh/id_ec2
-- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-- echo "$INTEGRATION_TEST_SSH_KEY" | fold -w 76 >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-- echo '-----END RSA PRIVATE KEY-----'          >> "$INTEGRATION_TEST_SSH_KEY_PATH"
-- chmod -v 600 "$INTEGRATION_TEST_SSH_KEY_PATH"
-- test "$INTEGRATION_TEST_SSH_KEY"
-  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$INTEGRATION_TEST_SSH_KEY_PATH" "${INTEGRATION_TEST_SSH_USER}@${INTEGRATION_TEST_SSH_HOST}" id
+- export EXT_SSH_KEY_PATH=$HOME/.ssh/id_ec2
+- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$EXT_SSH_KEY_PATH"
+- echo "$EXT_SSH_KEY" | fold -w 76 >> "$EXT_SSH_KEY_PATH"
+- echo '-----END RSA PRIVATE KEY-----'          >> "$EXT_SSH_KEY_PATH"
+- chmod -v 600 "$EXT_SSH_KEY_PATH"
+- test "$EXT_SSH_KEY"
+  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$EXT_SSH_KEY_PATH" "${EXT_SSH_USER}@${EXT_SSH_HOST}" id
   || true
-- test "$INTEGRATION_TEST_SSH_KEY"
-  && ssh-keygen -H -F "$INTEGRATION_TEST_SSH_HOST"
+- test "$EXT_SSH_KEY"
+  && ssh-keygen -H -F "$EXT_SSH_HOST"
   || true
-- unset INTEGRATION_TEST_SSH_KEY
+- unset EXT_SSH_KEY
 
 - ssh-keygen -t rsa   -N '' -f $HOME/.ssh/id_rsa
 - ssh-keygen -t ecdsa -N '' -f $HOME/.ssh/id_ecdsa
