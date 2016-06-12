@@ -34,6 +34,7 @@ class SudoSpec extends Specification {
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.RequireSudo.host
+                knownHosts = ssh.remotes.RequireSudo.knownHosts
                 user = sudoUser
                 password = sudoPassword
             }
@@ -65,6 +66,7 @@ class SudoSpec extends Specification {
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.RequireSudo.host
+                knownHosts = ssh.remotes.RequireSudo.knownHosts
                 user = sudoUser
                 password = sudoPassword
             }

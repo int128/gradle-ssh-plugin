@@ -23,18 +23,21 @@ class Fixture {
                 } else {
                     host = System.getenv('EXT_SSH_HOST')
                     user = System.getenv('EXT_SSH_USER')
-                    identity = new File(System.getenv('EXT_SSH_KEY_PATH'))
+                    identity = new File("$home/.ssh/id_ext")
+                    knownHosts = new File("$home/.ssh/known_hosts_ext")
                 }
             }
             RequireAgent {
                 host = System.getenv('EXT_SSH_HOST')
                 user = System.getenv('EXT_SSH_USER')
+                knownHosts = new File("$home/.ssh/known_hosts_ext")
                 agent = true
             }
             RequireSudo {
                 host = System.getenv('EXT_SSH_HOST')
                 user = System.getenv('EXT_SSH_USER')
-                identity = new File(System.getenv('EXT_SSH_KEY_PATH'))
+                identity = new File("$home/.ssh/id_ext")
+                knownHosts = new File("$home/.ssh/known_hosts_ext")
             }
             RequireEcdsaUserKey {
                 host = 'localhost'

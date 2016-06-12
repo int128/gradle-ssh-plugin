@@ -68,8 +68,7 @@ task startSshAgent(type: Exec) {
 
 task addKeyToSshAgent(type: Exec) {
     dependsOn startSshAgent
-    commandLine 'ssh-add', System.getenv('EXT_SSH_KEY_PATH')
-    onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
+    commandLine 'ssh-add', "${System.getProperty('user.home')}/.ssh/id_ext"
 }
 
 task stopSshAgent(type: Exec) {

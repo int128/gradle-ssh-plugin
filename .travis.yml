@@ -26,30 +26,14 @@ install:
 - unset GH_TOKEN
 
 - mkdir -m 700 -p -v $HOME/.ssh
-
-- export EXT_SSH_KEY_PATH=$HOME/.ssh/id_ec2
-- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$EXT_SSH_KEY_PATH"
-- echo "$EXT_SSH_KEY" | fold -w 76 >> "$EXT_SSH_KEY_PATH"
-- echo '-----END RSA PRIVATE KEY-----'          >> "$EXT_SSH_KEY_PATH"
-- chmod -v 600 "$EXT_SSH_KEY_PATH"
-- test "$EXT_SSH_KEY"
-  && ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i "$EXT_SSH_KEY_PATH" "${EXT_SSH_USER}@${EXT_SSH_HOST}" id
-  || true
-- test "$EXT_SSH_KEY"
-  && ssh-keygen -H -F "$EXT_SSH_HOST"
-  || true
+- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$HOME/.ssh/id_ext"
+- echo "$EXT_SSH_KEY" | fold -w 76              >> "$HOME/.ssh/id_ext"
+- echo '-----END RSA PRIVATE KEY-----'          >> "$HOME/.ssh/id_ext"
+- chmod -v 600 "$HOME/.ssh/id_ext"
 - unset EXT_SSH_KEY
 
-- ssh-keygen -t rsa   -N '' -f $HOME/.ssh/id_rsa
-- ssh-keygen -t ecdsa -N '' -f $HOME/.ssh/id_ecdsa
-- cat $HOME/.ssh/id_*.pub >> $HOME/.ssh/authorized_keys
-- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa localhost id
-- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
-- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts_ecdsa -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ecdsa-sha2-nistp256 localhost id
-- ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts_ecdsa -i $HOME/.ssh/id_rsa localhost id
-
-- cp -av $HOME/.ssh/id_rsa{,_passphrase}
-- ssh-keygen -p -N pass1234 -f $HOME/.ssh/id_rsa_passphrase
+- ./os-integration-test/setup-local-ssh.sh
+- ./os-integration-test/setup-external-ssh.sh
 
 
 script:
