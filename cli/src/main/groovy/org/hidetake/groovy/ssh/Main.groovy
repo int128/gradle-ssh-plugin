@@ -4,8 +4,6 @@ import ch.qos.logback.classic.Level
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 
-import static org.hidetake.groovy.ssh.LogbackConfig.configureLogback
-
 /**
  * CLI main class.
  *
@@ -34,7 +32,7 @@ class Main {
         } else if (options.version) {
             println Ssh.release
         } else {
-            configureLogback(level: logLevel(options))
+            Runtime.instance.logback(level: logLevel(options))
 
             if (!options.s) {
                 Thread.currentThread().uncaughtExceptionHandler = { Thread t, Throwable e ->
@@ -62,13 +60,13 @@ class Main {
 
     private static newShellWith(options) {
         def shell = Ssh.newShell()
+        def service = shell.getVariable('ssh') as Service
+        service.metaClass.runtime = Runtime.instance
         if (options.n) {
-            def service = shell.getVariable('ssh') as Service
             service.settings {
                 dryRun = true
             }
         }
-        shell.setVariable('logback', new LogbackConfig())
         shell
     }
 }

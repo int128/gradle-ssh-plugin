@@ -8,7 +8,7 @@ ssh.remotes {
 
 ssh.run {
     session(ssh.remotes.tester) {
-        put from: 'build/libs/gssh.jar', into: '.'
+        put from: ssh.runtime.jar, into: '.'
         execute 'java -jar gssh.jar --version'
         execute 'java -jar gssh.jar --help'
         execute 'sudo yum update -y', pty: true

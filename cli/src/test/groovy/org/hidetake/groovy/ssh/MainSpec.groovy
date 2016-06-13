@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh
 
+import ch.qos.logback.classic.Level
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 import org.apache.sshd.server.CommandFactory
@@ -162,6 +163,20 @@ class MainSpec extends Specification {
         ['-d']              | 'DEBUG'
         ['-i', '-d']        | 'DEBUG'
         ['-q', '-d', '-i']  | 'DEBUG'
+    }
+
+    def "log level can be set by logback method in the script"() {
+        given:
+        def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        assert root instanceof ch.qos.logback.classic.Logger
+
+        when:
+        Main.main '-e', '''
+            ssh.runtime.logback level: 'ERROR'
+        '''
+
+        then:
+        root.level == Level.ERROR
     }
 
 

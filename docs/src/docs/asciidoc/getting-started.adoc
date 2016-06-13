@@ -222,10 +222,23 @@ ssh.remotes {...}
 ssh.run {...}
 ----
 
+We provides easy way to get path to self by `ssh.runtime.jar`.
+
+[source,groovy]
+----
+ssh.run {
+  session(ssh.remotes.tester) {
+    // Put and execute gssh.jar on the remote server
+    put from: ssh.runtime.jar, into: '.'
+    execute 'java -jar gssh.jar'
+  }
+}
+----
+
 
 === Use the library in a script
 
-We can embed the Groovy SSH library in a Groovy script using [Grape](http://groovy.codehaus.org/Grape).
+We can embed the Groovy SSH library in a Groovy script using [Grape](http://groovy.codehaus.org/Grape),
 
 [source,groovy,subs="+attributes"]
 ----
@@ -236,11 +249,18 @@ ssh.remotes {...}
 ssh.run {...}
 ----
 
-Run the script.
+and run the script.
 
 [source,sh]
 ----
 groovy deploy.groovy
+----
+
+We provides easy way to configure logback as follows:
+
+[source,groovy]
+----
+ssh.runtime.logback level: 'DEBUG'
 ----
 
 

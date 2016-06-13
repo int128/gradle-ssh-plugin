@@ -1,36 +1,28 @@
 package org.hidetake.groovy.ssh
 
 import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
-import org.slf4j.Logger as Slf4jLogger
-import org.slf4j.LoggerFactory as Slf4jLoggerFactory
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
- * Logback configurator.
+ * Runtime info.
  *
  * @author Hidetake Iwata
  */
-class LogbackConfig {
-    /**
-     * Configure Logback.
-     *
-     * @param map level: log level (string), pattern: format (string)
-     */
-    void call(Map map) {
-        configureLogback(map)
-    }
+@Singleton
+class Runtime {
 
     /**
-     * Configure Logback.
-     * See also ch.qos.logback.classic.BasicConfigurator
-     *
-     * @param map level: log level (string), pattern: format (string)
+     * Configure logback.
+     * @param settings
+     *      level: log level ({@link String} or {@link Level}),
+     *      pattern: format ({@link String})
      */
-    static void configureLogback(Map settings) {
-        def root = Slf4jLoggerFactory.getLogger(Slf4jLogger.ROOT_LOGGER_NAME)
-        assert root instanceof Logger
+    void logback(Map settings) {
+        def root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        assert root instanceof ch.qos.logback.classic.Logger
         def originalLevel = root.level
 
         def encoder = new PatternLayoutEncoder()
@@ -59,4 +51,25 @@ class LogbackConfig {
                 break
         }
     }
+
+    /**
+     * Path to self Groovy SSH JAR, or null if it is unknown
+     */
+    @Lazy
+    File jar = {
+        def url = Runtime.getResource("/${Runtime.name.replace('.', '/')}.class")
+        if (url.protocol == 'jar') {
+            def m = url.file =~ /^file:(.+?)!/
+            if (m) {
+                def jarFile = new File(m.group(1))
+                assert jarFile.exists()
+                jarFile
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }()
+
 }
