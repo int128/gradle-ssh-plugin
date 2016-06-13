@@ -1,6 +1,6 @@
 = Getting Started
 
-== Use Gradle SSH Plugin
+== Gradle SSH Plugin
 
 === Requirement
 
@@ -63,9 +63,6 @@ buildscript {
 
 apply plugin: 'org.hidetake.ssh'
 ----
-
-
-==== Use on Gradle 1.x
 
 The plugin also supports Gradle 1.x with the backport library:
 
@@ -205,6 +202,74 @@ so invoke the task with `dryRun` property to perform dry-run.
 ----
 
 
-== Use Groovy SSH
+== Groovy SSH
 
-NOTE: work in progress
+=== Run on command line
+
+Download the latest `gssh.jar` from [GitHub Releases](https://github.com/int128/groovy-ssh/releases) and run it.
+
+[source,sh]
+----
+java -jar gssh.jar deploy.groovy
+----
+
+`ssh` is implicitly available in a script as follows.
+
+[source,groovy,subs="+attributes"]
+----
+// deploy.groovy
+ssh.remotes {...}
+ssh.run {...}
+----
+
+
+=== Use the library in a script
+
+We can embed the Groovy SSH library in a Groovy script using [Grape](http://groovy.codehaus.org/Grape).
+
+[source,groovy,subs="+attributes"]
+----
+@Grab('org.hidetake:groovy-ssh:{groovy-ssh-version}')
+@Grab('ch.qos.logback:logback-classic:1.1.2')
+def ssh = org.hidetake.groovy.ssh.Ssh.newService()
+ssh.remotes {...}
+ssh.run {...}
+----
+
+Run the script.
+
+[source,sh]
+----
+groovy deploy.groovy
+----
+
+
+=== Embed the library in an application
+
+We can embed the Groovy SSH library in a Groovy application.
+
+The library is available
+on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22)
+and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
+
+[source,groovy,subs="+attributes"]
+----
+// build.gradle
+compile 'org.hidetake:groovy-ssh:{groovy-ssh-version}'
+----
+
+Instantiate a Service by `Ssh#newService()` as follows.
+
+[source,groovy]
+----
+// App.groovy
+import org.hidetake.groovy.ssh.Ssh
+
+class App {
+  static void main(String[] args) {
+    def ssh = Ssh.newService()
+    ssh.remotes {...}
+    ssh.run {...}
+  }
+}
+----
