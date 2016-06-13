@@ -1,10 +1,13 @@
 plugins {
     id 'groovy'
+    id 'application'
     id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
+
+mainClassName = 'org.hidetake.groovy.ssh.Main'
 
 dependencies {
     compile project(':core')
@@ -22,9 +25,6 @@ dependencies {
 }
 
 shadowJar {
-    manifest {
-        attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'
-    }
     baseName = 'gssh'
     classifier = ''
     version = ''
@@ -34,4 +34,9 @@ if (System.getProperty('os.name') == 'Linux') {
     tasks.withType(JavaForkOptions) {
         systemProperty 'java.security.egd', 'file:/dev/./urandom'
     }
+}
+
+check.dependsOn runShadow
+runShadow {
+    args 'gssh-example.groovy'
 }
