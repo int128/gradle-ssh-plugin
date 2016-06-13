@@ -35,7 +35,7 @@ class LogbackConfig {
 
         def encoder = new PatternLayoutEncoder()
         encoder.context = root.loggerContext
-        encoder.pattern = settings.pattern
+        encoder.pattern = settings.pattern ?: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n'
         encoder.start()
 
         def appender = new ConsoleAppender()
@@ -47,10 +47,16 @@ class LogbackConfig {
         root.loggerContext.reset()
         root.addAppender(appender)
 
-        if (settings.level) {
-            root.level = Level.toLevel(settings.level as String)
-        } else {
-            root.level = originalLevel
+        switch (settings.level) {
+            case String:
+                root.level = Level.toLevel(settings.level as String)
+                break
+            case Level:
+                root.level = settings.level
+                break
+            default:
+                root.level = originalLevel
+                break
         }
     }
 }

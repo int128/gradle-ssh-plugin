@@ -34,8 +34,7 @@ class Main {
         } else if (options.version) {
             println Ssh.release
         } else {
-            configureLogback(level: logLevel(options) as String,
-                    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n')
+            configureLogback(level: logLevel(options))
 
             if (!options.s) {
                 Thread.currentThread().uncaughtExceptionHandler = { Thread t, Throwable e ->
