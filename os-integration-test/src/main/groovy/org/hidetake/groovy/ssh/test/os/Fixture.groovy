@@ -12,32 +12,48 @@ class Fixture {
         "/tmp/groovy-ssh.os-integration-test.${UUID.randomUUID()}"
     }
 
-    static createRemote(Service service, String name) {
-        service.remotes.create(name) {
-            host        = requireProperty('ssh.host')
-            user        = requireProperty('ssh.user')
-            identity    = file optionalProperty('ssh.key.path')
-            passphrase  = optionalProperty('ssh.key.passphrase')
-            knownHosts  = file optionalProperty('ssh.knownHosts')
-            agent       = flag optionalProperty('ssh.agent')
+    static createRemotes(Service service) {
+        final home = System.getProperty('user.home')
+        service.remotes {
+            Default {
+                if (System.getenv('CI')) {
+                    host = 'localhost'
+                    user = System.getProperty('user.name')
+                    identity = new File("$home/.ssh/id_rsa")
+                } else {
+                    host = System.getenv('EXT_SSH_HOST')
+                    user = System.getenv('EXT_SSH_USER')
+                    identity = new File(System.getenv('EXT_SSH_KEY_PATH'))
+                }
+            }
+            RequireAgent {
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                agent = true
+            }
+            RequireSudo {
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                identity = new File(System.getenv('EXT_SSH_KEY_PATH'))
+            }
+            RequireEcdsaUserKey {
+                host = 'localhost'
+                user = System.getProperty('user.name')
+                identity = new File("$home/.ssh/id_ecdsa")
+            }
+            RequireEcdsaHostKey {
+                host = 'localhost'
+                user = System.getProperty('user.name')
+                identity = new File("$home/.ssh/id_rsa")
+                knownHosts = new File("$home/.ssh/known_hosts_ecdsa")
+            }
+            RequireKeyWithPassphrase {
+                host = 'localhost'
+                user = System.getProperty('user.name')
+                identity = new File("$home/.ssh/id_rsa_passphrase")
+                passphrase = 'pass1234'
+            }
         }
-    }
-
-    private static String requireProperty(String key) {
-        assert System.getProperty(key)
-        System.getProperty(key)
-    }
-
-    private static String optionalProperty(String key) {
-        System.getProperty(key)
-    }
-
-    private static File file(String path) {
-        path ? new File(path) : null
-    }
-
-    private static Boolean flag(String value) {
-        value ? true : null
     }
 
 }

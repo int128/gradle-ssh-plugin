@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
 import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
@@ -21,7 +21,7 @@ class UserAuthenticationSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        createRemote(ssh, 'testServer')
+        createRemotes(ssh)
     }
 
     @Category(RequireEcdsaUserKey)
@@ -32,7 +32,7 @@ class UserAuthenticationSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireEcdsaUserKey) {
                 execute "expr $x + $y"
             }
         } as int
@@ -49,7 +49,7 @@ class UserAuthenticationSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireKeyWithPassphrase) {
                 execute "expr $x + $y"
             }
         } as int
@@ -60,11 +60,11 @@ class UserAuthenticationSpec extends Specification {
 
     def 'should fail if agent is not available'() {
         given:
-        ssh.remotes.testServer.agent = true
+        ssh.remotes.Default.agent = true
 
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 execute "id"
             }
         }
@@ -81,7 +81,7 @@ class UserAuthenticationSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireAgent) {
                 execute "expr $x + $y"
             }
         } as int
@@ -94,7 +94,7 @@ class UserAuthenticationSpec extends Specification {
     def 'login to localhost should fail if agent forwarding is disabled'() {
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireAgent) {
                 execute "ssh localhost id"
             }
         }
@@ -107,13 +107,13 @@ class UserAuthenticationSpec extends Specification {
     def 'login to localhost should succeed if agent forwarding is enabled'() {
         when:
         def id = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireAgent) {
                 execute "ssh localhost id", agentForwarding: true
             }
         }
 
         then:
-        id.contains(ssh.remotes.testServer.user)
+        id.contains(ssh.remotes.RequireAgent.user)
     }
 
 }

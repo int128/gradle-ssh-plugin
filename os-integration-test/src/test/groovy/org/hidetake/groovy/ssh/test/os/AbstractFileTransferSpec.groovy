@@ -23,7 +23,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        createRemote(ssh, 'testServer')
+        createRemotes(ssh)
     }
 
     def 'should put, compute and get files'() {
@@ -42,7 +42,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 put from: localX, into: remoteX
                 put from: localY, into: remoteY
                 execute "expr `cat $remoteX` + `cat $remoteY` > $remoteA"
@@ -67,7 +67,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         def result = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 put text: x, into: remoteX
                 put bytes: y.toString().bytes, into: remoteY
                 [a: execute("expr `cat $remoteX` + `cat $remoteY`"),
@@ -96,7 +96,7 @@ abstract class AbstractFileTransferSpec extends Specification {
         and: 'prepare the remote folder'
         def remoteFolder = remoteTmpPath()
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 execute "mkdir -vp        $remoteFolder/${localFolder.name}/Y"
                 execute "echo -n dummy1 > $remoteFolder/${localFolder.name}/Y/yfile"
                 execute "echo -n dummy2 > $remoteFolder/${localFolder.name}/Y/yfile2"
@@ -105,14 +105,14 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 put from: localFolder, into: remoteFolder
             }
         }
 
         and:
         def result = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 [x:  get(from: "$remoteFolder/${localFolder.name}/xfile"),
                  y:  get(from: "$remoteFolder/${localFolder.name}/Y/yfile"),
                  y2: get(from: "$remoteFolder/${localFolder.name}/Y/yfile2"),
@@ -142,7 +142,7 @@ abstract class AbstractFileTransferSpec extends Specification {
         and: 'prepare the remote folder'
         def remoteFolder = remoteTmpPath()
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 execute "mkdir -vp $remoteFolder/X/Y/Z"
                 execute "echo $x > $remoteFolder/X/xfile"
                 execute "echo $y > $remoteFolder/X/Y/yfile"
@@ -152,7 +152,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 get from: "$remoteFolder/X", into: localFolder
             }
         }
@@ -181,7 +181,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 execute "dd if=/dev/zero of=$remoteX bs=1024 count=$sizeKB"
                 get from: remoteX, into: localX
                 remove remoteX
@@ -193,7 +193,7 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         when:
         def actualSize = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 put from: localX, into: remoteY
                 execute("wc -c < $remoteY") as int
             }

@@ -5,7 +5,7 @@ import org.hidetake.groovy.ssh.core.Service
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
 import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
@@ -19,7 +19,7 @@ class HostAuthenticationSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        createRemote(ssh, 'testServer')
+        createRemotes(ssh)
     }
 
     @Category(RequireEcdsaHostKey)
@@ -30,7 +30,7 @@ class HostAuthenticationSpec extends Specification {
 
         when:
         def r = ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.RequireEcdsaHostKey) {
                 execute "expr $x + $y"
             }
         } as int

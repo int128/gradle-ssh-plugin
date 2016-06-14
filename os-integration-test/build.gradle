@@ -10,21 +10,6 @@ dependencies {
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
-final userName = System.getProperty('user.name')
-final userHome = System.getProperty('user.home')
-final userRsaKey = "$userHome/.ssh/id_rsa"
-final userRsaPassphraseKey = "$userHome/.ssh/id_rsa_passphrase"
-final userRsaPassphraseKeyPassphrase = 'pass1234'
-final userEcdsaKey = "$userHome/.ssh/id_ecdsa"
-final userEcdsaKnownHosts = "$userHome/.ssh/known_hosts_ecdsa"
-
-if (System.getenv('TRAVIS')) {
-    assert file(userRsaKey).exists()
-    assert file(userRsaPassphraseKey).exists()
-    assert file(userEcdsaKey).exists()
-    assert file(userEcdsaKnownHosts).exists()
-}
-
 test {
     useJUnit {
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
@@ -32,22 +17,6 @@ test {
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
-    }
-    if (System.getenv('TRAVIS')) {
-        systemProperties(
-                'ssh.host': 'localhost',
-                'ssh.user': userName,
-                'ssh.key.path': userRsaKey,
-        )
-    } else {
-        systemProperties(
-                'ssh.host': System.getenv('EXT_SSH_HOST'),
-                'ssh.user': System.getenv('EXT_SSH_USER'),
-                'ssh.key.path': System.getenv('EXT_SSH_KEY_PATH'),
-        )
-        onlyIf { System.getenv('EXT_SSH_HOST') }
-        onlyIf { System.getenv('EXT_SSH_USER') }
-        onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
     }
 }
 
@@ -57,66 +26,30 @@ task testRequireAgent(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
     }
-    systemProperties(
-            'ssh.host': System.getenv('EXT_SSH_HOST'),
-            'ssh.user': System.getenv('EXT_SSH_USER'),
-            'ssh.agent': true,
-    )
-    onlyIf { System.getenv('EXT_SSH_HOST') }
-    onlyIf { System.getenv('EXT_SSH_USER') }
 }
 
 task testRequireSudo(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
     }
-    systemProperties(
-            'ssh.host': System.getenv('EXT_SSH_HOST'),
-            'ssh.user': System.getenv('EXT_SSH_USER'),
-            'ssh.key.path': System.getenv('EXT_SSH_KEY_PATH'),
-    )
-    onlyIf { System.getenv('EXT_SSH_HOST') }
-    onlyIf { System.getenv('EXT_SSH_USER') }
-    onlyIf { System.getenv('EXT_SSH_KEY_PATH') }
 }
 
 task testRequireEcdsaUserKey(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
     }
-    systemProperties(
-            'ssh.host': 'localhost',
-            'ssh.user': userName,
-            'ssh.key.path': userEcdsaKey,
-    )
-    onlyIf { file(userEcdsaKey).exists() }
 }
 
 task testRequireEcdsaHostKey(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
     }
-    systemProperties(
-            'ssh.host': 'localhost',
-            'ssh.user': userName,
-            'ssh.key.path': userRsaKey,
-            'ssh.knownHosts': userEcdsaKnownHosts,
-    )
-    onlyIf { file(userRsaKey).exists() }
-    onlyIf { file(userEcdsaKnownHosts).exists() }
 }
 
 task testRequireKeyWithPassphrase(type: Test) {
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
     }
-    systemProperties(
-            'ssh.host': 'localhost',
-            'ssh.user': userName,
-            'ssh.key.path': userRsaPassphraseKey,
-            'ssh.key.passphrase': userRsaPassphraseKeyPassphrase,
-    )
-    onlyIf { file(userRsaPassphraseKey).exists() }
 }
 
 

@@ -6,7 +6,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.createRemote
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
 
 class ShellSpec extends Specification {
 
@@ -17,13 +17,13 @@ class ShellSpec extends Specification {
 
     def setup() {
         ssh = Ssh.newService()
-        createRemote(ssh, 'testServer')
+        createRemotes(ssh)
     }
 
     def 'should execute the shell'() {
         when:
         ssh.run {
-            session(ssh.remotes.testServer) {
+            session(ssh.remotes.Default) {
                 shell(interaction: {
                     when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
                         standardInput << 'uname -a' << '\n'
