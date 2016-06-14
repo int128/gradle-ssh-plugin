@@ -41,6 +41,7 @@ Gradle will fetch the plugin from Internet.
 
 Add the plugin to your script as follows:
 
+.build.gradle
 [source,groovy,subs="+attributes"]
 ----
 plugins {
@@ -50,6 +51,7 @@ plugins {
 
 Gradle 2.0 style:
 
+.build.gradle
 [source,groovy,subs="+attributes"]
 ----
 buildscript {
@@ -66,6 +68,7 @@ apply plugin: 'org.hidetake.ssh'
 
 The plugin also supports Gradle 1.x with the backport library:
 
+.build.gradle
 [source,groovy,subs="+attributes"]
 ----
 buildscript {
@@ -90,6 +93,7 @@ A remote host can be associated with one or more roles.
 
 Following code adds remote hosts to the remote hosts container:
 
+.build.gradle
 [source,groovy]
 ----
 remotes {
@@ -108,13 +112,14 @@ remotes {
 We can specify each remote host by `remotes.web01` or `remotes.web02`.
 Also we can specify the remote host _web01_ by a role such as `remotes.role('masterNode')`.
 
-All settings of a remote host are available on link:user-guide.html#add-a-remote-host[the user guide].
+All settings of a remote host are available on link:#add-a-remote-host[the user guide].
 
 
 === Describe SSH sessions
 
 Call `ssh.run` method with one or more sessions as follows.
 
+.build.gradle
 [source,groovy]
 ----
 task checkWebServers << {
@@ -147,6 +152,7 @@ task checkWebServers << {
 
 Now the script is ready.
 
+.build.gradle
 [source,groovy,subs="+attributes"]
 ----
 plugins {
@@ -204,9 +210,17 @@ so invoke the task with `dryRun` property to perform dry-run.
 
 == Groovy SSH
 
+Groovy SSH is provided as the executable JAR and the library.
+There are following ways to use.
+
+1. Run the executable JAR on command line
+2. Use the library in a script
+3. Use the library in an application
+
+
 === Run on command line
 
-Download the latest `gssh.jar` from [GitHub Releases](https://github.com/int128/groovy-ssh/releases) and run it.
+Download the latest `gssh.jar` from https://github.com/int128/groovy-ssh/releases[GitHub Releases] and run it.
 
 [source,sh]
 ----
@@ -215,15 +229,16 @@ java -jar gssh.jar deploy.groovy
 
 `ssh` is implicitly available in a script as follows.
 
+.deploy.gradle
 [source,groovy,subs="+attributes"]
 ----
-// deploy.groovy
 ssh.remotes {...}
 ssh.run {...}
 ----
 
 We provides easy way to get path to self by `ssh.runtime.jar`.
 
+.deploy.gradle
 [source,groovy]
 ----
 ssh.run {
@@ -238,8 +253,9 @@ ssh.run {
 
 === Use the library in a script
 
-We can embed the Groovy SSH library in a Groovy script using [Grape](http://groovy.codehaus.org/Grape),
+We can embed the Groovy SSH library in a Groovy script using http://groovy.codehaus.org/Grape[Grape],
 
+.deploy.gradle
 [source,groovy,subs="+attributes"]
 ----
 @Grab('org.hidetake:groovy-ssh:{groovy-ssh-version}')
@@ -258,31 +274,32 @@ groovy deploy.groovy
 
 We provides easy way to configure logback as follows:
 
+.deploy.gradle
 [source,groovy]
 ----
 ssh.runtime.logback level: 'DEBUG'
 ----
 
 
-=== Embed the library in an application
+=== Use the library in an application
 
-We can embed the Groovy SSH library in a Groovy application.
+We can use the Groovy SSH library in a Groovy application.
 
 The library is available
-on [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22)
-and [Bintray](https://bintray.com/int128/maven/groovy-ssh).
+on http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22[Maven Central]
+and https://bintray.com/int128/maven/groovy-ssh[Bintray].
 
+.build.gradle
 [source,groovy,subs="+attributes"]
 ----
-// build.gradle
 compile 'org.hidetake:groovy-ssh:{groovy-ssh-version}'
 ----
 
 Instantiate a Service by `Ssh#newService()` as follows.
 
+.App.groovy
 [source,groovy]
 ----
-// App.groovy
 import org.hidetake.groovy.ssh.Ssh
 
 class App {
