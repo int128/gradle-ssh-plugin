@@ -14,9 +14,7 @@ install:
 
 
 script:
-- ./gradlew check publishMavenPublicationToMavenLocal
-- ./gradle/acceptance-test.sh
-- ./gradle/acceptance-test.sh 1.12
+- ./gradlew check
 
 
 after_success:

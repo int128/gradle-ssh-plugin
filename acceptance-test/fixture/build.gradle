@@ -1,0 +1,72 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+
+    dependencies {
+        if (gradle.gradleVersion.startsWith('1.')) {
+            classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
+        }
+        classpath "org.hidetake:gradle-ssh-plugin:${System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'}"
+    }
+}
+
+apply plugin: 'org.hidetake.ssh'
+
+remotes {
+    testServer {
+        role 'testServers'
+        host = 'localhost'
+        user = System.getProperty('user.name')
+        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+    }
+}
+
+allprojects {
+    task test {
+        description = "Test all specs in $project"
+    }
+
+    afterEvaluate {
+        test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
+            spec.dependsOn setupLocalWorkDir
+            spec.dependsOn setupRemoteWorkDir
+            spec.finalizedBy cleanupLocalWorkDir
+            spec.finalizedBy cleanupRemoteWorkDir
+            spec.ext.localWorkDir = file("${project.buildDir}/${spec.hashCode()}")
+            spec.ext.remoteWorkDir = "${rootProject.remoteWorkDirBase}/${spec.hashCode()}"
+        }
+    }
+
+    // add utility methods for specs
+    ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
+}
+
+task setupLocalWorkDir << {
+    delete buildDir
+    buildDir.mkdirs()
+}
+
+task cleanupLocalWorkDir << {
+    delete buildDir
+}
+
+// setup and cleanup a working directory on each spec
+ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
+
+task setupRemoteWorkDir << {
+    ssh.run {
+        session(remotes.testServer) {
+            execute "mkdir -v $remoteWorkDirBase"
+        }
+    }
+}
+
+task cleanupRemoteWorkDir << {
+    ssh.run {
+        session(remotes.testServer) {
+            execute "rm -fr $remoteWorkDirBase"
+        }
+    }
+}
