@@ -1,76 +1,16 @@
-buildscript {
-    // Set product version if tag is given on Travis CI
-    version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
+plugins {
+    id 'groovy'
+    id 'java-gradle-plugin'
+}
 
-    repositories {
-        mavenLocal()
-        jcenter()
-    }
-    dependencies {
-        classpath "org.hidetake:gradle-ssh-plugin:$version"
+repositories {
+    jcenter()
+}
 
-        // apply backports on Gradle 1.x
-        if (gradle.gradleVersion.startsWith('1.')) {
-            classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
-        }
+dependencies {
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
     }
 }
 
-apply plugin: 'org.hidetake.ssh'
-
-remotes {
-    testServer {
-        role 'testServers'
-        host = 'localhost'
-        user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
-    }
-}
-
-allprojects {
-    task test {
-        description = "Test all specs in $project"
-    }
-
-    afterEvaluate {
-        test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
-            spec.dependsOn setupLocalWorkDir
-            spec.dependsOn setupRemoteWorkDir
-            spec.finalizedBy cleanupLocalWorkDir
-            spec.finalizedBy cleanupRemoteWorkDir
-            spec.ext.localWorkDir = file("${project.buildDir}/${spec.hashCode()}")
-            spec.ext.remoteWorkDir = "${rootProject.remoteWorkDirBase}/${spec.hashCode()}"
-        }
-    }
-
-    // add utility methods for specs
-    ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }
-}
-
-task setupLocalWorkDir << {
-    delete buildDir
-    buildDir.mkdirs()
-}
-
-task cleanupLocalWorkDir << {
-    delete buildDir
-}
-
-// setup and cleanup a working directory on each spec
-ext.remoteWorkDirBase = "/tmp/${project.name}.${UUID.randomUUID()}"
-
-task setupRemoteWorkDir << {
-    ssh.run {
-        session(remotes.testServer) {
-            execute "mkdir -v $remoteWorkDirBase"
-        }
-    }
-}
-
-task cleanupRemoteWorkDir << {
-    ssh.run {
-        session(remotes.testServer) {
-            execute "rm -fr $remoteWorkDirBase"
-        }
-    }
-}
+test.dependsOn ':publishToMavenLocal'
