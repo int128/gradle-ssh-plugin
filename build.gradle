@@ -45,8 +45,8 @@ publishing {
 }
 
 bintray {
-    user = System.getenv('BINTRAY_USER') ?: getProjectProperty('bintrayUser')
-    key  = System.getenv('BINTRAY_KEY')  ?: getProjectProperty('bintrayKey')
+    user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
+    key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
     publications = ['maven']
     publish = true
     pkg {
@@ -57,8 +57,4 @@ bintray {
             name = rootProject.version
         }
     }
-}
-
-def getProjectProperty(String key, String defaultValue = null) {
-    project.hasProperty(key) ? project.property(key) : defaultValue
 }
