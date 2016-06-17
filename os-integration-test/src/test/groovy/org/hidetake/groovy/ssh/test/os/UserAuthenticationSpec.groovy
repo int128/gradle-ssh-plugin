@@ -95,7 +95,7 @@ class UserAuthenticationSpec extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.RequireAgent) {
-                execute "ssh localhost id"
+                execute "ssh -o StrictHostKeyChecking=no localhost id"
             }
         }
 
@@ -108,7 +108,7 @@ class UserAuthenticationSpec extends Specification {
         when:
         def id = ssh.run {
             session(ssh.remotes.RequireAgent) {
-                execute "ssh localhost id", agentForwarding: true
+                execute "ssh -o StrictHostKeyChecking=no localhost id", agentForwarding: true
             }
         }
 
