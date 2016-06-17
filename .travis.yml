@@ -37,14 +37,13 @@ install:
 
 
 script:
-- ./gradlew check asciidoctor publishMavenPublicationToMavenLocal
+- ./gradlew check asciidoctor publishToMavenLocal
 
 - git clone --depth 1 https://github.com/int128/gradle-ssh-plugin
   && pushd gradle-ssh-plugin
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
   && git diff
-  && ./gradlew publishMavenPublicationToMavenLocal
-  && ./gradle/acceptance-test.sh 1.12
+  && ./gradlew check
 - popd
 
 
