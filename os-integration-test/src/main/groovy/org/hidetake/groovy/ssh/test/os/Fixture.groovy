@@ -39,6 +39,12 @@ class Fixture {
                 identity = new File("$home/.ssh/id_ext")
                 knownHosts = new File("$home/.ssh/known_hosts_ext")
             }
+            RequireGateway {
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                identity = new File("$home/.ssh/id_ext")
+                knownHosts = new File("$home/.ssh/known_hosts_ext")
+            }
             RequireEcdsaUserKey {
                 host = 'localhost'
                 user = System.getProperty('user.name')
