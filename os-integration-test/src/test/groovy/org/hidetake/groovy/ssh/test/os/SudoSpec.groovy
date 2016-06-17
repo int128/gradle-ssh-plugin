@@ -7,16 +7,17 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
-import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
  * Check if {@link org.hidetake.groovy.ssh.session.execution.Sudo} works with Linux system.
- * Password authentication must be enabled on sshd_config to run tests.
  *
  * @author Hidetake Iwata
  */
 @Category(RequireSudo)
 class SudoSpec extends Specification {
+
+    private static final privilegeUser = 'groovyssh'
+    private static final anotherUser = 'groovyssh2'
 
     Service ssh
 
@@ -28,30 +29,30 @@ class SudoSpec extends Specification {
     @Unroll
     def 'should execute a privileged command on #sudoSpec'() {
         given:
-        def sudoUser = "user${randomInt()}"
-        def sudoPassword = UUID.randomUUID().toString()
-        createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
+        recreateUser(privilegeUser)
+        configurePassword(privilegeUser, 'passForPrivilegeUser')
+        configureAuthorizedKeys(privilegeUser)
+        configureSudo(privilegeUser, sudoSpec)
+
+        and:
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.RequireSudo.host
+                identity = ssh.remotes.RequireSudo.identity
                 knownHosts = ssh.remotes.RequireSudo.knownHosts
-                user = sudoUser
-                password = sudoPassword
+                user = privilegeUser
             }
         }
 
         when:
         def whoami = ssh.run {
             session(ssh.remotes.PrivilegedUser) {
-                executeSudo('whoami', pty: true)
+                executeSudo 'whoami', pty: true, sudoPassword: 'passForPrivilegeUser'
             }
         }
 
         then:
         whoami == 'root'
-
-        cleanup:
-        deletePrivilegedUser(sudoUser)
 
         where:
         sudoSpec << ['ALL=(ALL) ALL', 'ALL=(ALL) NOPASSWD: ALL']
@@ -60,72 +61,86 @@ class SudoSpec extends Specification {
     @Unroll
     def 'should execute a command as another user on #sudoSpec'() {
         given:
-        def sudoUser = "user${randomInt()}"
-        def sudoPassword = UUID.randomUUID().toString()
-        createPrivilegedUser(sudoUser, sudoPassword, sudoSpec)
+        recreateUser(privilegeUser)
+        configurePassword(privilegeUser, 'passForPrivilegeUser')
+        configureAuthorizedKeys(privilegeUser)
+
+        recreateUser(anotherUser)
+        configureAuthorizedKeys(anotherUser)
+
+        and:
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.RequireSudo.host
+                identity = ssh.remotes.RequireSudo.identity
                 knownHosts = ssh.remotes.RequireSudo.knownHosts
-                user = sudoUser
-                password = sudoPassword
-            }
-        }
-
-        and:
-        def anotherUser = "another${randomInt()}"
-        ssh.run {
-            session(ssh.remotes.RequireSudo) {
-                execute("sudo useradd -m $anotherUser", pty: true)
+                user = privilegeUser
             }
         }
 
         when:
         def whoami = ssh.run {
             session(ssh.remotes.PrivilegedUser) {
-                executeSudo("-u $anotherUser whoami", pty: true)
+                executeSudo "-u $anotherUser whoami", pty: true, sudoPassword: 'passForPrivilegeUser'
             }
         }
 
         then:
         whoami == anotherUser
 
-        cleanup:
-        deletePrivilegedUser(sudoUser)
-        ssh.run {
-            session(ssh.remotes.RequireSudo) {
-                execute("sudo userdel -r $anotherUser", pty: true)
-            }
-        }
-
         where:
         sudoSpec << ['ALL=(ALL) ALL', 'ALL=(ALL) NOPASSWD: ALL']
     }
 
-    private createPrivilegedUser(String sudoUser, String sudoPassword, String sudoSpec) {
+    private recreateUser(String user) {
         ssh.run {
             session(ssh.remotes.RequireSudo) {
-                execute 'sudo test -d /etc/sudoers.d', pty: true
-                execute "sudo useradd -m $sudoUser", pty: true
-                execute "sudo passwd $sudoUser", pty: true, interaction: {
-                    when(partial: ~/.+[Pp]assword: */) {
-                        standardInput << sudoPassword << '\n'
-                    }
-                    when(line: _) {}
-                }
-                put text: "$sudoUser $sudoSpec", into: "/tmp/$sudoUser"
-                execute "sudo chmod 440 /tmp/$sudoUser", pty: true
-                execute "sudo chown 0.0 /tmp/$sudoUser", pty: true
-                execute "sudo mv /tmp/$sudoUser /etc/sudoers.d/$sudoUser", pty: true
+                execute """
+                    if id "$user"; then
+                        sudo userdel -r $user
+                    fi
+                    sudo useradd -m $user
+                """, pty: true
             }
         }
     }
 
-    private deletePrivilegedUser(String sudoUser) {
+    private configurePassword(String user, String password) {
         ssh.run {
             session(ssh.remotes.RequireSudo) {
-                execute "sudo rm -v /etc/sudoers.d/$sudoUser", pty: true
-                execute "sudo userdel -r $sudoUser", pty: true
+                execute "sudo passwd $user", pty: true, interaction: {
+                    when(partial: ~/.+[Pp]assword: */) {
+                        standardInput << password << '\n'
+                    }
+                    when(line: _) {}
+                }
+            }
+        }
+    }
+
+    private configureAuthorizedKeys(String user) {
+        ssh.run {
+            session(ssh.remotes.RequireSudo) {
+                execute """
+                    sudo -i -u $user mkdir -m 700 .ssh
+                    sudo -i -u $user touch .ssh/authorized_keys
+                    sudo -i -u $user chmod 600 .ssh/authorized_keys
+                    sudo -i -u $user tee .ssh/authorized_keys < ~/.ssh/authorized_keys > /dev/null
+                """, pty: true
+            }
+        }
+    }
+
+    private configureSudo(String user, String spec) {
+        ssh.run {
+            session(ssh.remotes.RequireSudo) {
+                put text: "$user $spec", into: "/tmp/$user"
+                execute """
+                    sudo chmod 440 /tmp/$user
+                    sudo chown 0.0 /tmp/$user
+                    sudo mkdir -p -m 700 /etc/sudoers.d
+                    sudo mv /tmp/$user /etc/sudoers.d/$user
+                """, pty: true
             }
         }
     }
