@@ -3,7 +3,6 @@ package org.hidetake.groovy.ssh.connection
 import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.HostKeyRepository
 import com.jcraft.jsch.JSch
-import com.jcraft.jsch.UserInfo
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -36,7 +35,7 @@ class HostKeys {
 
     void addTo(HostKeyRepository repository) {
         items.each { item ->
-            repository.add(item, NullUserInfo.instance)
+            repository.add(item, null)
         }
     }
 
@@ -65,38 +64,6 @@ class HostKeys {
         def mac = Mac.getInstance(key.algorithm)
         mac.init(key)
         mac.doFinal(data)
-    }
-
-    @Singleton
-    private static class NullUserInfo implements UserInfo {
-        @Override
-        String getPassphrase() {
-            null
-        }
-
-        @Override
-        String getPassword() {
-            null
-        }
-
-        @Override
-        boolean promptPassword(String message) {
-            true
-        }
-
-        @Override
-        boolean promptPassphrase(String message) {
-            true
-        }
-
-        @Override
-        boolean promptYesNo(String message) {
-            true
-        }
-
-        @Override
-        void showMessage(String message) {
-        }
     }
 
 }
