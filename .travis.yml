@@ -7,10 +7,13 @@ env:
 
 install:
 - mkdir -m 700 -p -v $HOME/.ssh
-- ssh-keygen -t rsa -N '' -f $HOME/.ssh/id_rsa
-- cat $HOME/.ssh/id_rsa.pub > $HOME/.ssh/authorized_keys
-- ssh -o StrictHostKeyChecking=no -o HostKeyAlgorithms=ssh-rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa localhost id
-- ssh-keygen -H -F localhost
+- echo '-----BEGIN RSA PRIVATE KEY-----'        >> "$HOME/.ssh/id_ext"
+- echo "$EXT_SSH_KEY" | fold -w 76              >> "$HOME/.ssh/id_ext"
+- echo '-----END RSA PRIVATE KEY-----'          >> "$HOME/.ssh/id_ext"
+- chmod -v 600 "$HOME/.ssh/id_ext"
+- unset EXT_SSH_KEY
+
+- ./acceptance-test/setup-external-ssh.sh
 
 
 script:
