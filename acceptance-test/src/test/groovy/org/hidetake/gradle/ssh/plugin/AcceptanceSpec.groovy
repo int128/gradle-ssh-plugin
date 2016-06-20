@@ -13,7 +13,6 @@ class AcceptanceSpec extends Specification {
                 .withProjectDir(new File('fixture'))
                 .withArguments('test')
                 .withGradleVersion(version)
-                .forwardOutput()
                 .build()
 
         then:

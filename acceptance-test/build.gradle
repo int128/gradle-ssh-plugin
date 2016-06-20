@@ -13,4 +13,9 @@ dependencies {
     }
 }
 
-test.dependsOn ':publishToMavenLocal'
+test {
+    dependsOn ':publishToMavenLocal'
+    testLogging {
+        showStandardStreams = true
+    }
+}
