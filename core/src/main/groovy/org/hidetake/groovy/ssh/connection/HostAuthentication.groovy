@@ -22,35 +22,35 @@ trait HostAuthentication {
 
             case File:
                 def file = settings.knownHosts as File
-                session.setConfig('StrictHostKeyChecking', 'yes')
                 log.debug("Using known-hosts file for $remote.name: $file")
-
-                jsch.setKnownHosts(file.path)
-                def hostKeys = new HostKeys(jsch.hostKeyRepository.hostKey.toList())
-                def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
-                if (keyTypes) {
-                    session.setConfig('server_host_key', keyTypes)
-                    log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
-                }
+                Helper.enableHostAuthentication(session, remote, [file])
                 break
 
             case Collection:
                 def files = settings.knownHosts as Collection<File>
-                session.setConfig('StrictHostKeyChecking', 'yes')
                 log.debug("Using known-hosts files for $remote.name: $files")
-
-                def hostKeys = HostKeys.fromKnownHosts(files)
-                hostKeys.addTo(session.hostKeyRepository)
-
-                def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
-                if (keyTypes) {
-                    session.setConfig('server_host_key', keyTypes)
-                    log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
-                }
+                Helper.enableHostAuthentication(session, remote, files)
                 break
 
             default:
                 throw new IllegalArgumentException("knownHosts must be AllowAnyHosts, File or List")
+        }
+    }
+
+    @Slf4j
+    private static class Helper {
+        static void enableHostAuthentication(Session session, Remote remote, Collection<File> files) {
+            session.setConfig('StrictHostKeyChecking', 'yes')
+
+            def hostKeys = HostKeys.fromKnownHosts(files)
+            hostKeys.duplicateForGateway(remote.host, remote.port, session.host, session.port)
+            hostKeys.addTo(session.hostKeyRepository)
+
+            def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
+            if (keyTypes) {
+                session.setConfig('server_host_key', keyTypes)
+                log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
+            }
         }
     }
 

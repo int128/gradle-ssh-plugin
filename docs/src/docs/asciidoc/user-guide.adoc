@@ -248,56 +248,62 @@ A remote host can be connected through one or more gateway servers.
 [source,groovy]
 ----
 remotes {
-  gw01 {
+  Gateway {
     host = '10.2.3.4'
     user = 'gwuser'
   }
-  web01 {
+  Target {
     host = '192.168.1.101'
     user = 'jenkins'
-    gateway = remotes.gw01
-    knownHosts = allowAnyHosts
+    gateway = remotes.Gateway
   }
 }
 ----
 
 It will:
 
-. establish a connection to `10.2.3.4` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `192.168.1.101:22`.
-. establish a connection to `127.0.0.1:X` (web01) and perform operations such as command execution or file transfer.
+. connect to Gateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to Target (`192.168.1.101`).
+. connect to the tunnelled port (`127.0.0.1:X`) and perform operations.
+
+If strict host key checking is turned on,
+
+. `known_hosts` of Gateway should contain `10.2.3.4` with the host key of Gateway.
+. `known_hosts` of Target should contain `192.168.1.101` with the host key of Target.
+
 
 ===== Through two-hop gateways
 
 [source,groovy]
 ----
 remotes {
-  frontgw01 {
+  FrontGateway {
     host = '10.2.3.4'
     user = 'frontgwuser'
   }
-  gw01 {
+  MidGateway {
     host = '172.16.1.2'
     user = 'gwuser'
-    gateway = remotes.frontgw01
+    gateway = remotes.FrontGateway
   }
-  web01 {
+  Target {
     host = '192.168.1.101'
     user = 'jenkins'
-    gateway = remotes.gw01
+    gateway = remotes.MidGateway
   }
 }
 ----
 
 It will:
 
-. establish a connection to `10.2.3.4` (frontgw01) and request a port-fowarding tunnel from local port (automatically allocated; as X) to `172.16.1.2:22`.
-. establish a connection to `127.0.0.1:X` (gw01) and request a port-fowarding tunnel from local port (automatically allocated; as Y) to `192.168.1.101:22`.
-. establish a connection to `127.0.0.1:Y` (web01) and perform operations such as command execution or file transfer.
+. connect to FrontGateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to MidGateway (`172.16.1.2`).
+. connect to the tunnelled port (`127.0.0.1:X`) and tunnel from an auto-allocated port (`127.0.0.1:Y`) to Target (`192.168.1.101`).
+. connect to the tunnelled port (`127.0.0.1:Y`) and perform operations.
 
-===== Limitation
+If strict host key checking is turned on,
 
-Strict host key checking must be turned off for remote hosts over the gateway.
-Because the gateway connection is achieved with the port forwarding, `known_hosts` does not work.
+. `known_hosts` of FrontGateway should contain `10.2.3.4` with the host key with FrontGateway.
+. `known_hosts` of MidGateway should contain `172.16.1.2` with the host key with MidGateway.
+. `known_hosts` of Target should contain `192.168.1.101` with the host key with Target.
 
 
 ==== Connect through a proxy server

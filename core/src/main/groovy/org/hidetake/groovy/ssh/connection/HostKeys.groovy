@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.connection
 import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.HostKeyRepository
 import com.jcraft.jsch.JSch
+import groovy.util.logging.Slf4j
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -12,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class HostKeys {
 
     private final Collection<HostKey> items
@@ -31,6 +33,15 @@ class HostKeys {
 
     Collection<String> keyTypes(String host, int port) {
         find(host, port)*.type.unique()
+    }
+
+    void duplicateForGateway(String host, int port, String gatewayHost, int gatewayPort) {
+        if ([host, port] != [gatewayHost, gatewayPort]) {
+            find(host, port).each { item ->
+                items.add(new HostKey("[$gatewayHost]:$gatewayPort", item.@type, item.@key, item.comment))
+                log.debug("Duplicated host key for gateway: $host:$port -> $gatewayHost:$gatewayPort")
+            }
+        }
     }
 
     void addTo(HostKeyRepository repository) {
