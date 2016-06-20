@@ -4,6 +4,7 @@ remotes {
         host = remotes.testServer.host
         user = remotes.testServer.user
         identity = remotes.testServer.identity
+        knownHosts = remotes.testServer.knownHosts
     }
 }
 

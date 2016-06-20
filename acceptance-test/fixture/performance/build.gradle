@@ -12,7 +12,7 @@ task('should execute many commands with much output') << {
     ssh.run {
         (1..100).each {
             session(remotes.testServer) {
-                execute 'sysctl -a', logging: 'none'
+                execute 'dmesg', logging: 'none'
             }
         }
     }

@@ -59,19 +59,15 @@ We can run acceptance tests to verify behavior of the plugin on Gradle environme
 
 Prerequisite:
 
-* SSH service must be started on localhost port 22
-* Current user must be able to log in with a private key placed at `~/.ssh/id_rsa` without any passphrase
-* SSH service must accept SFTP subsystem
+* SSH service should be available on the remote host given by env var `EXT_SSH_HOST`
+* SSH service should allow the user given by env var `EXT_SSH_USER` to login with the private key placed at `~/.ssh/id_ext` without passphrase
+* SSH service should accept SFTP subsystem
 
 Run `test` task.
 
 ```sh
-./gradlew install
-./gradlew -p acceptance-tests test
+./gradlew :acceptance-tests:test
 ```
-
-Some tests need to change the system configuration so they are separated to `testWithSideEffect` task.
-It should be run on a disposable container such as Travis CI or Docker.
 
 #### Release
 

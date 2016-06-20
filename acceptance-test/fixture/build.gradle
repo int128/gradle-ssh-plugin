@@ -17,9 +17,10 @@ apply plugin: 'org.hidetake.ssh'
 remotes {
     testServer {
         role 'testServers'
-        host = 'localhost'
-        user = System.getProperty('user.name')
-        identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+        host = System.getenv('EXT_SSH_HOST')
+        user = System.getenv('EXT_SSH_USER')
+        identity = file("${System.getProperty('user.home')}/.ssh/id_ext")
+        knownHosts = file("${System.getProperty('user.home')}/.ssh/known_hosts_ext")
     }
 }
 
