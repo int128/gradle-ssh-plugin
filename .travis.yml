@@ -32,7 +32,6 @@ install:
 - chmod -v 600 "$HOME/.ssh/id_ext"
 - unset EXT_SSH_KEY
 
-- ./os-integration-test/setup-local-ssh.sh
 - ./os-integration-test/setup-external-ssh.sh
 
 

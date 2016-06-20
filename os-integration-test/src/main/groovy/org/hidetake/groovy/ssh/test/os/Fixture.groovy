@@ -16,51 +16,29 @@ class Fixture {
         final home = System.getProperty('user.home')
         service.remotes {
             Default {
-                if (System.getenv('CI')) {
-                    host = 'localhost'
-                    user = System.getProperty('user.name')
-                    identity = new File("$home/.ssh/id_rsa")
-                } else {
-                    host = System.getenv('EXT_SSH_HOST')
-                    user = System.getenv('EXT_SSH_USER')
-                    identity = new File("$home/.ssh/id_ext")
-                    knownHosts = new File("$home/.ssh/known_hosts_ext")
-                }
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                identity = new File("$home/.ssh/id_ext")
+                knownHosts = new File("$home/.ssh/known_hosts_ext")
             }
-            RequireAgent {
+            DefaultWithPassphrase {
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                identity = new File("$home/.ssh/id_ext_passphrase")
+                passphrase = 'pass1234'
+                knownHosts = new File("$home/.ssh/known_hosts_ext")
+            }
+            DefaultWithEcdsaHostKey {
+                host = System.getenv('EXT_SSH_HOST')
+                user = System.getenv('EXT_SSH_USER')
+                identity = new File("$home/.ssh/id_ext")
+                knownHosts = new File("$home/.ssh/known_hosts_ext_ecdsa")
+            }
+            DefaultWithAgent {
                 host = System.getenv('EXT_SSH_HOST')
                 user = System.getenv('EXT_SSH_USER')
                 knownHosts = new File("$home/.ssh/known_hosts_ext")
                 agent = true
-            }
-            RequireSudo {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
-                identity = new File("$home/.ssh/id_ext")
-                knownHosts = new File("$home/.ssh/known_hosts_ext")
-            }
-            RequireGateway {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
-                identity = new File("$home/.ssh/id_ext")
-                knownHosts = new File("$home/.ssh/known_hosts_ext")
-            }
-            RequireEcdsaUserKey {
-                host = 'localhost'
-                user = System.getProperty('user.name')
-                identity = new File("$home/.ssh/id_ecdsa")
-            }
-            RequireEcdsaHostKey {
-                host = 'localhost'
-                user = System.getProperty('user.name')
-                identity = new File("$home/.ssh/id_rsa")
-                knownHosts = new File("$home/.ssh/known_hosts_ecdsa")
-            }
-            RequireKeyWithPassphrase {
-                host = 'localhost'
-                user = System.getProperty('user.name')
-                identity = new File("$home/.ssh/id_rsa_passphrase")
-                passphrase = 'pass1234'
             }
         }
     }

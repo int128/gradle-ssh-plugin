@@ -13,10 +13,6 @@ dependencies {
 test {
     useJUnit {
         excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
     }
 }
 
@@ -25,30 +21,6 @@ task testRequireAgent(type: Test) {
     finalizedBy 'stopSshAgent'
     useJUnit {
         includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-    }
-}
-
-task testRequireSudo(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireSudo'
-    }
-}
-
-task testRequireEcdsaUserKey(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaUserKey'
-    }
-}
-
-task testRequireEcdsaHostKey(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireEcdsaHostKey'
-    }
-}
-
-task testRequireKeyWithPassphrase(type: Test) {
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireKeyWithPassphrase'
     }
 }
 
