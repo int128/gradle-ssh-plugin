@@ -27,7 +27,7 @@ class GatewaySpec extends Specification {
 
     def "it should connect to target server via gateway server"() {
         given:
-        def knownHostsOfGateway = ssh.remotes.RequireGateway.knownHosts as File
+        def knownHostsOfGateway = ssh.remotes.Default.knownHosts as File
         def knownHostsOfTarget = temporaryFolder.newFile()
         knownHostsOfGateway.eachLine { line ->
             knownHostsOfTarget << line.replaceAll(/^[^ ]+/, '127.0.0.2') << '\n'
@@ -37,9 +37,9 @@ class GatewaySpec extends Specification {
             TargetServer {
                 host = '127.0.0.2'
                 knownHosts = knownHostsOfTarget
-                user = ssh.remotes.RequireGateway.user
-                identity = ssh.remotes.RequireGateway.identity
-                gateway = ssh.remotes.RequireGateway
+                user = ssh.remotes.Default.user
+                identity = ssh.remotes.Default.identity
+                gateway = ssh.remotes.Default
             }
         }
 
