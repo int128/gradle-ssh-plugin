@@ -2,6 +2,9 @@ package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.session.SessionExtension
+import org.hidetake.groovy.ssh.session.transfer.put.Instructions
+import org.hidetake.groovy.ssh.session.transfer.put.Scp
+import org.hidetake.groovy.ssh.session.transfer.put.Sftp
 
 /**
  * An extension class to put a file or directory.
@@ -9,7 +12,7 @@ import org.hidetake.groovy.ssh.session.SessionExtension
  * @author Hidetake Iwata
  */
 @Slf4j
-trait FilePut implements SessionExtension, SftpPut, ScpPut {
+trait FilePut implements SessionExtension {
 
     /**
      * Put file(s) or content to the remote host.
@@ -23,6 +26,8 @@ put(text: String, into: String)          // put a string into the remote file
 put(bytes: byte[], into: String)         // put a byte array into the remote file"""
 
         if (map.containsKey('from') && map.containsKey('into')) {
+            assert map.from != null, 'from must not be null'
+            assert map.into != null, 'into must not be null'
             try {
                 //noinspection GroovyAssignabilityCheck
                 putInternal(map.from, map.into as String)
@@ -30,9 +35,13 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
                 throw new IllegalArgumentException(usage, e)
             }
         } else if (map.containsKey('text') && map.containsKey('into')) {
+            assert map.text != null, 'text must not be null'
+            assert map.into != null, 'into must not be null'
             def stream = new ByteArrayInputStream((map.text as String).bytes)
             putInternal(stream, map.into as String)
         } else if (map.containsKey('bytes') && map.containsKey('into')) {
+            assert map.bytes != null, 'bytes must not be null'
+            assert map.into != null, 'into must not be null'
             def stream = new ByteArrayInputStream(map.bytes as byte[])
             putInternal(stream, map.into as String)
         } else {
@@ -47,16 +56,8 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      * @param remotePath
      */
     private void putInternal(InputStream stream, String remotePath) {
-        assert stream, 'input stream must be given'
-        assert remotePath, 'remote path must be given'
-        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftpPut(stream, remotePath)
-        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            scpPut(stream, remotePath)
-        } else {
-            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
-        }
-        log.info("Sent content to $remote.name: $remotePath")
+        def instructions = Instructions.forStreamContent(stream, remotePath)
+        putInternal(instructions)
     }
 
     /**
@@ -66,9 +67,8 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      * @param remotePath
      */
     private void putInternal(File localFile, String remotePath) {
-        assert remotePath, 'remote path must be given'
-        assert localFile, 'local file must be given'
-        putInternal([localFile], remotePath)
+        def instructions = Instructions.forFile(localFile, remotePath)
+        putInternal(instructions)
     }
 
     /**
@@ -78,24 +78,25 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
      * @param remotePath
      */
     private void putInternal(String localPath, String remotePath) {
-        assert remotePath, 'remote path must be given'
-        assert localPath, 'local path must be given'
         putInternal(new File(localPath), remotePath)
     }
 
     /**
-     * Put a collection of a file or directory to the remote host.
+     * Put a collection of files or directories to the remote host.
      *
      * @param localFiles
      * @param remotePath
      */
     private void putInternal(Iterable<File> localFiles, String remotePath) {
-        assert remotePath, 'remote path must be given'
-        assert localFiles, 'local files must be given'
+        def instructions = Instructions.forFiles(localFiles, remotePath)
+        putInternal(instructions)
+    }
+
+    private void putInternal(Instructions instructions) {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftpPut(localFiles, remotePath)
+            new Sftp(operations).put(instructions)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            scpPut(localFiles, remotePath)
+            new Scp(operations, mergedSettings).put(instructions)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }

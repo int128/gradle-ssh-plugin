@@ -289,7 +289,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
         then:
         AssertionError e = thrown()
-        e.localizedMessage.contains 'local'
+        e.localizedMessage.contains 'from'
     }
 
     def "put() should throw an error if destination is null"() {
@@ -305,7 +305,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
         then:
         AssertionError e = thrown()
-        e.localizedMessage.contains 'remote'
+        e.localizedMessage.contains 'into'
     }
 
     @Unroll

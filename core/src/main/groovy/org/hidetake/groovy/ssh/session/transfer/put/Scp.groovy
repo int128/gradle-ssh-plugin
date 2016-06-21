@@ -1,4 +1,4 @@
-package org.hidetake.groovy.ssh.session.transfer.scp
+package org.hidetake.groovy.ssh.session.transfer.put
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
@@ -7,30 +7,31 @@ import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.session.transfer.scp.Instructions.Content
-import org.hidetake.groovy.ssh.session.transfer.scp.Instructions.EnterDirectory
-import org.hidetake.groovy.ssh.session.transfer.scp.Instructions.LeaveDirectory
 import org.hidetake.groovy.ssh.util.FileTransferProgress
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
+/**
+ * Recursive SCP PUT executor.
+ *
+ * @author Hidetake Iwata
+ */
 @Slf4j
-class Sender {
+class Scp {
 
     private final Operations operations
     private final CompositeSettings mergedSettings
 
-    def Sender(Operations operations1, CompositeSettings mergedSettings1) {
+    def Scp(Operations operations1, CompositeSettings mergedSettings1) {
         operations = operations1
         mergedSettings = mergedSettings1
     }
 
-    void send(Instructions instructions) {
-        def remoteBase = instructions.remoteBase
-        log.debug("Requesting SCP command on $operations.remote.name: $remoteBase")
+    void put(Instructions instructions) {
+        log.debug("Requesting SCP command on $operations.remote.name: $instructions.base")
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(logging: LoggingMethod.none))
         def flags = instructions.recursive ? '-tr' : '-t'
-        def operation = operations.command(settings, "scp $flags $remoteBase")
+        def operation = operations.command(settings, "scp $flags $instructions.base")
         operation.addInteraction {
             when(partial: '\0', from: standardOutput) {
                 log.trace("Got NULL from $operations.remote.name in processInteraction")
@@ -44,9 +45,9 @@ class Sender {
 
         int exitStatus = operation.startSync()
         if (exitStatus == 0) {
-            log.debug("Success SCP command on $operations.remote.name: $remoteBase")
+            log.debug("Success SCP command on $operations.remote.name: $instructions.base")
         } else {
-            log.error("Failed SCP command on $operations.remote.name: $remoteBase")
+            log.error("Failed SCP command on $operations.remote.name: $instructions.base")
             throw new BadExitStatusException("SCP command returned exit status $exitStatus", exitStatus)
         }
     }
@@ -59,7 +60,7 @@ class Sender {
                 case File:
                     callWithDelegate(createFile, delegate, iterator, instruction)
                     break
-                case Content:
+                case StreamContent:
                     callWithDelegate(createContent, delegate, iterator, instruction)
                     break
                 case EnterDirectory:
@@ -120,8 +121,9 @@ class Sender {
         }
     }
 
-    private final createContent = interactionClosure { Iterator iterator, Content content ->
-        def size = content.bytes.length
+    private final createContent = interactionClosure { Iterator iterator, StreamContent content ->
+        def bytes = content.stream.bytes
+        def size = bytes.length
         def instruction = "C0644 $size $content.name"
 
         log.trace("Sending SCP instruction to $operations.remote.name: $instruction")
@@ -131,7 +133,7 @@ class Sender {
         when(partial: '\0', from: standardOutput) {
             log.trace("Got NULL from $operations.remote.name in createContent#1")
             log.debug("Sending $size bytes to $operations.remote.name: $content.name")
-            standardInput << content.bytes
+            standardInput << bytes
             standardInput.write(0)
             standardInput.flush()
 
