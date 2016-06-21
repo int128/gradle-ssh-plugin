@@ -54,79 +54,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
     }
 
 
-    def "put() should accept a path string as source"() {
-        given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put(sourceFile.path, toUnixSeparator(destinationFile.path))
-            }
-        }
-
-        then:
-        sourceFile.text == text
-        destinationFile.text == text
-    }
-
-    def "put() should accept a File object as source"() {
-        given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put(sourceFile, toUnixSeparator(destinationFile.path))
-            }
-        }
-
-        then:
-        sourceFile.text == text
-        destinationFile.text == text
-    }
-
-    def "put() should accept a collection of file as source"() {
-        given:
-        def sourceDir = temporaryFolder.newFolder()
-        def sourceFile1 = sourceDir / uuidgen() << uuidgen()
-        def sourceFile2 = sourceDir / uuidgen() << uuidgen()
-        def destinationDir = temporaryFolder.newFolder()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put([sourceFile1, sourceFile2], toUnixSeparator(destinationDir.path))
-            }
-        }
-
-        then:
-        (destinationDir / sourceFile1.name).text == sourceFile1.text
-        (destinationDir / sourceFile2.name).text == sourceFile2.text
-    }
-
-    def "put() should accept an input stream as source"() {
-        given:
-        def text = uuidgen()
-        def destinationFile = temporaryFolder.newFile()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                def stream = new ByteArrayInputStream(text.bytes)
-                put stream, toUnixSeparator(destinationFile.path)
-            }
-        }
-
-        then:
-        destinationFile.text == text
-    }
-
-    def "put() should accept a path string via map"() {
+    def "put() should accept a path string"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -144,7 +72,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "put() should accept a File object via map"() {
+    def "put() should accept a File object"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -162,7 +90,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "put() should accept a collection of file via map"() {
+    def "put() should accept a collection of file"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def sourceFile1 = sourceDir / uuidgen() << uuidgen()
@@ -181,7 +109,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         (destinationDir / sourceFile2.name).text == sourceFile2.text
     }
 
-    def "put() should accept a string content via map"() {
+    def "put() should accept a string content"() {
         given:
         def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
@@ -197,7 +125,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "put() should accept a byte array content via map"() {
+    def "put() should accept a byte array content"() {
         given:
         def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
@@ -213,7 +141,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "put() should accept an input stream via map"() {
+    def "put() should accept an input stream"() {
         given:
         def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
@@ -239,7 +167,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile.path, toUnixSeparator(destinationFile.path))
+                put from: sourceFile.path, into: toUnixSeparator(destinationFile.path)
             }
         }
 
@@ -257,7 +185,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, toUnixSeparator(destinationDir.path))
+                put from: sourceFile, into: toUnixSeparator(destinationDir.path)
             }
         }
 
@@ -278,7 +206,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceFile, toUnixSeparator(destinationDir.path))
+                put from: sourceFile, into: toUnixSeparator(destinationDir.path)
             }
         }
 
@@ -302,7 +230,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(source1Dir, toUnixSeparator(destinationDir.path))
+                put from: source1Dir, into: toUnixSeparator(destinationDir.path)
             }
         }
 
@@ -332,7 +260,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(source1Dir, toUnixSeparator(destination0Dir.path))
+                put from: source1Dir, into: toUnixSeparator(destination0Dir.path)
             }
         }
 
@@ -355,7 +283,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(sourceDir, toUnixSeparator(destinationDir.path))
+                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
             }
         }
 
@@ -370,7 +298,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(null, file.path)
+                put from: null, into: file.path
             }
         }
 
@@ -386,7 +314,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put(file.path, null)
+                put from: file.path, into: null
             }
         }
 
@@ -429,61 +357,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
     }
 
 
-    def "get() should accept a path string as destination"() {
-        given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationFile.path)
-            }
-        }
-
-        then:
-        sourceFile.text == text
-        destinationFile.text == text
-    }
-
-    def "get() should accept a file object as destination"() {
-        given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationFile)
-            }
-        }
-
-        then:
-        sourceFile.text == text
-        destinationFile.text == text
-    }
-
-    def "get() should accept an output stream as destination"() {
-        given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def outputStream = new ByteArrayOutputStream()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                get toUnixSeparator(sourceFile.path), outputStream
-            }
-        }
-
-        then:
-        sourceFile.text == text
-        outputStream.toByteArray() == text.bytes
-    }
-
-    def "get() should accept a path string via map"() {
+    def "get() should accept a path string"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -501,7 +375,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "get() should accept a file object via map"() {
+    def "get() should accept a file object"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -519,7 +393,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == text
     }
 
-    def "get() should accept an output stream via map"() {
+    def "get() should accept an output stream"() {
         given:
         def text = uuidgen()
         def sourceFile = temporaryFolder.newFile() << text
@@ -566,7 +440,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationFile.path)
+                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -587,7 +461,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationFile.path)
+                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -605,7 +479,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationDir)
+                get from: toUnixSeparator(sourceFile.path), into: destinationDir
             }
         }
 
@@ -627,7 +501,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceFile.path), destinationDir)
+                get from: toUnixSeparator(sourceFile.path), into: destinationDir
             }
         }
 
@@ -651,7 +525,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(source1Dir.path), destinationDir)
+                get from: toUnixSeparator(source1Dir.path), into: destinationDir
             }
         }
 
@@ -681,7 +555,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(source1Dir.path), destination0Dir)
+                get from: toUnixSeparator(source1Dir.path), into: destination0Dir
             }
         }
 
@@ -704,7 +578,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(toUnixSeparator(sourceDir.path), destinationDir)
+                get from: toUnixSeparator(sourceDir.path), into: destinationDir
             }
         }
 
@@ -719,7 +593,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(null, file.path)
+                get from: null, into: file.path
             }
         }
 
@@ -735,7 +609,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(file.path, '')
+                get from: file.path, into: ''
             }
         }
 
@@ -748,7 +622,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get(into: 'somefile')
+                get into: 'somefile'
             }
         }
 
