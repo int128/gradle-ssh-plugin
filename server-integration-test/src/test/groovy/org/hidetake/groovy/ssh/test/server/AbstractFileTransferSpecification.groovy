@@ -13,7 +13,6 @@ import spock.util.mop.Use
 
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixSeparator
-import static org.hidetake.groovy.ssh.test.server.Helper.uuidgen
 
 @Use(FileDivCategory)
 abstract class AbstractFileTransferSpecification extends Specification {
@@ -24,7 +23,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
     Service ssh
 
     @Rule
-    TemporaryFolder temporaryFolder=new TemporaryFolder(new File("build"))
+    TemporaryFolder temporaryFolder
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
@@ -56,8 +55,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
     def "put() should accept a path string"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFile()
 
         when:
@@ -68,14 +66,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "put() should accept a File object"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFile()
 
         when:
@@ -86,15 +83,16 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "put() should accept a collection of file"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
-        def sourceFile1 = sourceDir / uuidgen() << uuidgen()
-        def sourceFile2 = sourceDir / uuidgen() << uuidgen()
+        def sourceFile1 = sourceDir / 'file1' << 'Source Content 1'
+        def sourceFile2 = sourceDir / 'file2' << 'Source Content 2'
+
         def destinationDir = temporaryFolder.newFolder()
 
         when:
@@ -105,64 +103,60 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        (destinationDir / sourceFile1.name).text == sourceFile1.text
-        (destinationDir / sourceFile2.name).text == sourceFile2.text
+        (destinationDir / 'file1').text == 'Source Content 1'
+        (destinationDir / 'file2').text == 'Source Content 2'
     }
 
     def "put() should accept a string content"() {
         given:
-        def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put text: text, into: toUnixSeparator(destinationFile.path)
+                put text: 'Text Content', into: toUnixSeparator(destinationFile.path)
             }
         }
 
         then:
-        destinationFile.text == text
+        destinationFile.text == 'Text Content'
     }
 
     def "put() should accept a byte array content"() {
         given:
-        def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put bytes: text.bytes, into: toUnixSeparator(destinationFile.path)
+                put bytes: [0xff, 0xfe] as byte[], into: toUnixSeparator(destinationFile.path)
             }
         }
 
         then:
-        destinationFile.text == text
+        destinationFile.bytes == [0xff, 0xfe] as byte[]
     }
 
     def "put() should accept an input stream"() {
         given:
-        def text = uuidgen()
         def destinationFile = temporaryFolder.newFile()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                def stream = new ByteArrayInputStream(text.bytes)
+                def stream = new ByteArrayInputStream([0xff, 0xfe, 0xfd] as byte[])
                 put from: stream, into: toUnixSeparator(destinationFile.path)
             }
         }
 
         then:
-        destinationFile.text == text
+        destinationFile.bytes == [0xff, 0xfe, 0xfd] as byte[]
     }
 
     def "put() should overwrite a file if destination already exists"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile() << uuidgen()
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+        def destinationFile = temporaryFolder.newFile() << 'Destination Content'
 
         when:
         ssh.run {
@@ -172,14 +166,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "put() should save a file of same name if destination is a directory"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationDir = temporaryFolder.newFolder()
 
         when:
@@ -190,18 +183,17 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        (destinationDir / sourceFile.name).text == text
+        sourceFile.text == 'Source Content'
+        (destinationDir / sourceFile.name).text == 'Source Content'
     }
 
     def "put() should merge and overwrite a file to a directory if it is not empty"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
 
         def destinationDir = temporaryFolder.newFolder()
-        def destination1File = destinationDir / sourceFile.name << uuidgen()
-        def destination2File = destinationDir / uuidgen() << uuidgen()
+        def destination1File = destinationDir / sourceFile.name << 'Destination Content 1'
+        def destination2File = destinationDir / 'file2'         << 'Destination Content 2'
 
         when:
         ssh.run {
@@ -211,68 +203,61 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destination1File.text == text
-        destination2File.exists()
+        sourceFile.text == 'Source Content'
+        destination1File.text == 'Source Content'
+        destination2File.text == 'Destination Content 2'
     }
 
     def "put() should put a whole directory if both are directories"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = source1Dir / uuidgen() / DIRECTORY
-        def source3Dir = source2Dir / uuidgen() / DIRECTORY
-
-        def source1File = source1Dir / uuidgen() << uuidgen()
-        def source2File = source2Dir / uuidgen() << uuidgen()
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         def destinationDir = temporaryFolder.newFolder()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: source1Dir, into: toUnixSeparator(destinationDir.path)
+                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
             }
         }
 
         then:
-        (destinationDir / source1Dir.name / source1File.name).text == source1File.text
-        (destinationDir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
-        (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
     def "put() should merge and overwrite a directory to a directory if it is not empty"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = source1Dir / uuidgen() / DIRECTORY
-        def source3Dir = source2Dir / uuidgen() / DIRECTORY
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
-        def source1File = source1Dir / uuidgen() << uuidgen()
-        def source2File = source2Dir / uuidgen() << uuidgen()
-
-        def destination0Dir = temporaryFolder.newFolder()
-        def destination1Dir = destination0Dir / source1Dir.name / DIRECTORY
-        def destination2Dir = destination1Dir / source2Dir.name / DIRECTORY
-        def destination3Dir = destination2Dir / source3Dir.name / DIRECTORY
-
-        def destination1File = destination1Dir / source1File.name << uuidgen()
-        def destination2File = destination2Dir / source2File.name << uuidgen()
+        and:
+        def destinationDir = temporaryFolder.newFolder()
+        destinationDir / sourceDir.name / DIRECTORY
+        destinationDir / sourceDir.name / 'file1' << 'Destination Content 1'
+        destinationDir / sourceDir.name / 'dir2' / DIRECTORY
+        destinationDir / sourceDir.name / 'dir2' / 'file2' << 'Destination Content 2'
+        destinationDir / sourceDir.name / 'dir2' / 'dir3' / DIRECTORY
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: source1Dir, into: toUnixSeparator(destination0Dir.path)
+                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
             }
         }
 
         then:
-        (destination0Dir / source1Dir.name / source1File.name).text == source1File.text
-        (destination0Dir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
-        (destination0Dir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
-
-        and:
-        destination1File.text == source1File.text
-        destination2File.text == source2File.text
-        destination3Dir.exists()
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
     def "put() should put a whole directory even if empty"() {
@@ -359,8 +344,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
     def "get() should accept a path string"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFile()
 
         when:
@@ -371,14 +355,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "get() should accept a file object"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFile()
 
         when:
@@ -389,14 +372,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "get() should accept an output stream"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def outputStream = new ByteArrayOutputStream()
 
         when:
@@ -407,14 +389,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        outputStream.toByteArray() == text.bytes
+        sourceFile.text == 'Source Content'
+        outputStream.toByteArray() == 'Source Content'.bytes
     }
 
     def "get() should return content if into is not given"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
 
         when:
         def content = ssh.run {
@@ -424,8 +405,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        content == text
+        sourceFile.text == 'Source Content'
+        content == 'Source Content'
     }
 
     @Unroll
@@ -434,6 +415,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         def content = new byte[size]
         new Random().nextBytes(content)
 
+        and:
         def sourceFile = temporaryFolder.newFile() << content
         def destinationFile = temporaryFolder.newFile()
 
@@ -454,9 +436,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
     def "get() should overwrite a file if destination already exists"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
-        def destinationFile = temporaryFolder.newFile() << uuidgen()
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+        def destinationFile = temporaryFolder.newFile() << 'Destination Content'
 
         when:
         ssh.run {
@@ -466,14 +447,13 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destinationFile.text == text
+        sourceFile.text == 'Source Content'
+        destinationFile.text == 'Source Content'
     }
 
     def "get() should save a file of same name if destination is a directory"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationDir = temporaryFolder.newFolder()
 
         when:
@@ -484,19 +464,17 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-
-        and:
-        (destinationDir / sourceFile.name).text == text
+        sourceFile.text == 'Source Content'
+        (destinationDir / sourceFile.name).text == 'Source Content'
     }
 
     def "get() should merge and overwrite a file to a directory if it is not empty"() {
         given:
-        def text = uuidgen()
-        def sourceFile = temporaryFolder.newFile() << text
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+
         def destinationDir = temporaryFolder.newFolder()
-        def destination1File = destinationDir / sourceFile.name << text
-        def destination2File = destinationDir / uuidgen() << text
+        def destination1File = destinationDir / sourceFile.name << 'Destination Content 1'
+        def destination2File = destinationDir / 'file2'         << 'Destination Content 2'
 
         when:
         ssh.run {
@@ -506,68 +484,61 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        sourceFile.text == text
-        destination1File.text == text
-        destination2File.exists()
+        sourceFile.text == 'Source Content'
+        destination1File.text == 'Source Content'
+        destination2File.text == 'Destination Content 2'
     }
 
     def "get() should get a whole directory if source is a directory"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = source1Dir / uuidgen() / DIRECTORY
-        def source3Dir = source2Dir / uuidgen() / DIRECTORY
-
-        def source1File = source1Dir / uuidgen() << uuidgen()
-        def source2File = source2Dir / uuidgen() << uuidgen()
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         def destinationDir = temporaryFolder.newFolder()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(source1Dir.path), into: destinationDir
+                get from: toUnixSeparator(sourceDir.path), into: destinationDir
             }
         }
 
         then:
-        (destinationDir / source1Dir.name / source1File.name).text == source1File.text
-        (destinationDir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
-        (destinationDir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
     def "get() should merge and overwrite a directory to a directory if it is not empty"() {
         given:
-        def source1Dir = temporaryFolder.newFolder()
-        def source2Dir = source1Dir / uuidgen() / DIRECTORY
-        def source3Dir = source2Dir / uuidgen() / DIRECTORY
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
-        def source1File = source1Dir / uuidgen() << uuidgen()
-        def source2File = source2Dir / uuidgen() << uuidgen()
-
-        def destination0Dir = temporaryFolder.newFolder()
-        def destination1Dir = destination0Dir / source1Dir.name / DIRECTORY
-        def destination2Dir = destination1Dir / source2Dir.name / DIRECTORY
-        def destination3Dir = destination2Dir / source3Dir.name / DIRECTORY
-
-        def destination1File = destination1Dir / source1File.name << uuidgen()
-        def destination2File = destination2Dir / source2File.name << uuidgen()
+        and:
+        def destinationDir = temporaryFolder.newFolder()
+        destinationDir / sourceDir.name / DIRECTORY
+        destinationDir / sourceDir.name / 'file1' << 'Destination Content 1'
+        destinationDir / sourceDir.name / 'dir2' / DIRECTORY
+        destinationDir / sourceDir.name / 'dir2' / 'file2' << 'Destination Content 2'
+        destinationDir / sourceDir.name / 'dir2' / 'dir3' / DIRECTORY
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(source1Dir.path), into: destination0Dir
+                get from: toUnixSeparator(sourceDir.path), into: destinationDir
             }
         }
 
         then:
-        (destination0Dir / source1Dir.name / source1File.name).text == source1File.text
-        (destination0Dir / source1Dir.name / source2Dir.name / source2File.name).text == source2File.text
-        (destination0Dir / source1Dir.name / source2Dir.name / source3Dir.name).list() == []
-
-        and:
-        destination1File.text == source1File.text
-        destination2File.text == source2File.text
-        destination3Dir.exists()
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
     def "get() should get a whole directory even if empty"() {
