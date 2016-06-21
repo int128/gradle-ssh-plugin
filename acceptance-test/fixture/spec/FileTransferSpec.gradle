@@ -1,32 +1,4 @@
 ['sftp', 'scp'].each { method ->
-    task("should put, compute and get files via $method") << {
-        def x = randomInt()
-        def y = randomInt()
-
-        localWorkDir.mkdirs()
-        file("$localWorkDir/LX") << x
-        file("$localWorkDir/LY") << y
-
-        // should put and get files exactly
-        ssh.run {
-            settings {
-                fileTransfer = method
-            }
-            session(remotes.testServer) {
-                execute "mkdir -vp $remoteWorkDir"
-                put from: "$localWorkDir/LX", into: "$remoteWorkDir/RX"
-                put from: "$localWorkDir/LY", into: "$remoteWorkDir/RY"
-                execute "expr `cat $remoteWorkDir/RX` + `cat $remoteWorkDir/RY` > $remoteWorkDir/RA"
-                execute "expr `cat $remoteWorkDir/RX` - `cat $remoteWorkDir/RY` > $remoteWorkDir/RB"
-                get from: "$remoteWorkDir/RA", into: "$localWorkDir/LA"
-                get from: "$remoteWorkDir/RB", into: "$localWorkDir/LB"
-            }
-        }
-
-        assert file("$localWorkDir/LA").text as int == (x + y)
-        assert file("$localWorkDir/LB").text as int == (x - y)
-    }
-
     task("should put files of fileTree via $method") << {
         localWorkDir.mkdirs()
         file("$localWorkDir/a.dat") << 1
@@ -48,7 +20,7 @@
     }
 
     task("should get the large file and put it back via $method") << {
-        def fileSize = 1024 * 256
+        def fileSize = 1024 * 8
         localWorkDir.mkdirs()
 
         ssh.run {
