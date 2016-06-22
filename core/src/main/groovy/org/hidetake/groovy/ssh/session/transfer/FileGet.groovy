@@ -12,12 +12,42 @@ import org.hidetake.groovy.ssh.session.SessionExtension
 trait FileGet implements SessionExtension, SftpGet, ScpGet {
 
     /**
+     * Get file(s) or content from the remote host.
+     *
+     * @param map <code>from</code> and <code>into</code>
+     * @returns content as a string if <code>into</into> is not given
+     */
+    def get(HashMap map) {
+        final usage = """Got $map but not following signatures:
+get(from: String, into: String or File)  // get a file or directory recursively
+get(from: String, into: OutputStream)    // get a file into the stream
+get(from: String)                        // get a file and return the content"""
+
+        if (map.containsKey('from')) {
+            if (map.containsKey('into')) {
+                try {
+                    //noinspection GroovyAssignabilityCheck
+                    getInternal(map.from as String, map.into)
+                } catch (MissingMethodException e) {
+                    throw new IllegalArgumentException(usage, e)
+                }
+            } else {
+                def stream = new ByteArrayOutputStream()
+                getInternal(map.from as String, stream)
+                new String(stream.toByteArray())
+            }
+        } else {
+            throw new IllegalArgumentException(usage)
+        }
+    }
+
+    /**
      * Get a file or directory from the remote host.
      *
      * @param remotePath
      * @param stream
      */
-    void get(String remotePath, OutputStream stream) {
+    private void getInternal(String remotePath, OutputStream stream) {
         assert remotePath, 'remote path must be given'
         assert stream, 'output stream must be given'
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
@@ -36,10 +66,10 @@ trait FileGet implements SessionExtension, SftpGet, ScpGet {
      * @param remotePath
      * @param localPath
      */
-    void get(String remotePath, String localPath) {
+    private void getInternal(String remotePath, String localPath) {
         assert remotePath, 'remote path must be given'
         assert localPath,  'local path must be given'
-        get(remotePath, new File(localPath))
+        getInternal(remotePath, new File(localPath))
     }
 
     /**
@@ -48,7 +78,7 @@ trait FileGet implements SessionExtension, SftpGet, ScpGet {
      * @param remotePath
      * @param localFile
      */
-    void get(String remotePath, File localFile) {
+    private void getInternal(String remotePath, File localFile) {
         assert remotePath, 'remote path must be given'
         assert localFile,  'local file must be given'
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
@@ -57,36 +87,6 @@ trait FileGet implements SessionExtension, SftpGet, ScpGet {
             scpGet(remotePath, localFile)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
-        }
-    }
-
-    /**
-     * Get file(s) or content from the remote host.
-     *
-     * @param map <code>from</code> and <code>into</code>
-     * @returns content as a string if <code>into</into> is not given
-     */
-    def get(HashMap map) {
-        final usage = """Got $map but not following signatures:
-get(from: String, into: String or File)  // get a file or directory recursively
-get(from: String, into: OutputStream)    // get a file into the stream
-get(from: String)                        // get a file and return the content"""
-
-        if (map.containsKey('from')) {
-            if (map.containsKey('into')) {
-                try {
-                    //noinspection GroovyAssignabilityCheck
-                    get(map.from as String, map.into)
-                } catch (MissingMethodException e) {
-                    throw new IllegalArgumentException(usage, e)
-                }
-            } else {
-                def stream = new ByteArrayOutputStream()
-                get(map.from as String, stream)
-                new String(stream.toByteArray())
-            }
-        } else {
-            throw new IllegalArgumentException(usage)
         }
     }
 

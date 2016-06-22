@@ -1,5 +1,33 @@
 = Migration Guide
 
+== Migration from 2.3.x to 2.4.x
+
+This section explains how to migrate from 2.3.x to 2.4.x.
+
+=== No backward compatible change
+
+==== File transfer methods
+
+Following undocumented methods have been removed.
+Use map parameter methods instead.
+
+[source,groovy]
+----
+// FIXME: no longer supported
+put(InputStream stream, String remotePath)
+put(File localFile, String remotePath)
+put(String localPath, String remotePath)
+
+get(String remotePath, OutputStream stream)
+get(String remotePath, String localPath)
+get(String remotePath, File localFile)
+
+// Use followings instead
+put from: something, into: remotePath
+get from: remotePath, into: something
+----
+
+
 == Migration from 1.0.x to 1.1.x
 
 This section explains how to migrate from 1.0.x to 1.1.x.
