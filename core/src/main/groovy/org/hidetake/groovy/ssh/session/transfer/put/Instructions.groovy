@@ -10,6 +10,7 @@ class Instructions implements Iterable {
 
     final boolean recursive
     final String base
+
     private final Collection all
 
     def Instructions(boolean recursive1, String base1, Collection all1) {
@@ -45,16 +46,44 @@ class Instructions implements Iterable {
         new Instructions(true, remoteBase, localFiles.collect { localFile -> forFileRecursive(localFile)}.flatten())
     }
 
-    private static forFileRecursive(File path, List all = []) {
+    private static Collection forFileRecursive(File path) {
         if (path.directory) {
-            all.add(new EnterDirectory(path.name))
-            path.eachFile { file -> forFileRecursive(file, all) }
-            path.eachDir { dir -> forFileRecursive(dir, all) }
-            all.add(LeaveDirectory.instance)
+            def children = []
+            children.add(new EnterDirectory(path.name))
+            path.eachFile { file -> children.addAll(forFileRecursive(file)) }
+            path.eachDir { dir -> children.addAll(forFileRecursive(dir)) }
+            children.add(LeaveDirectory.instance)
+            children
         } else {
-            all.add(path)
+            [path]
         }
-        all
+    }
+
+    /**
+     * Create {@link Instructions} for filtered files.
+     *
+     * @param localPath a file or directory
+     * @param remoteBase base path of remote
+     * @param filter a closure called with a {@link File}
+     * @return an instance of {@link Instructions}
+     */
+    static Instructions forFileWithFilter(File localPath, String remoteBase, Closure<Boolean> filter) {
+        new Instructions(true, remoteBase, forFileWithFilterRecursive(localPath, filter))
+    }
+
+    private static Collection forFileWithFilterRecursive(File path, Closure<Boolean> filter) {
+        if (path.directory) {
+            def children = new ArrayDeque()
+            path.eachFile { file -> children.addAll(forFileWithFilterRecursive(file, filter)) }
+            path.eachDir { dir -> children.addAll(forFileWithFilterRecursive(dir, filter)) }
+            if (!children.empty) {
+                children.addFirst(new EnterDirectory(path.name))
+                children.addLast(LeaveDirectory.instance)
+            }
+            children
+        } else {
+            filter.call(path) ? [path] : []
+        }
     }
 
     /**

@@ -19,18 +19,26 @@ trait FilePut implements SessionExtension {
      */
     void put(HashMap map) {
         final usage = """Got $map but not following signatures:
-put(from: String or File, into: String)  // put a file or directory
-put(from: Iterable<File>, into: String)  // put files or directories
-put(from: InputStream, into: String)     // put a stream into the remote file
-put(text: String, into: String)          // put a string into the remote file
-put(bytes: byte[], into: String)         // put a byte array into the remote file"""
+put(from: String, into: String)             // put a file or directory
+put(from: File, into: String)               // put a file or directory
+put(from: File, into: String, filter: {})   // put files by file filter
+put(from: Iterable<File>, into: String)     // put files
+put(from: InputStream, into: String)        // put a stream into the remote file
+put(text: String, into: String)             // put a string into the remote file
+put(bytes: byte[], into: String)            // put a byte array into the remote file"""
 
         if (map.containsKey('from') && map.containsKey('into')) {
             assert map.from != null, 'from must not be null'
             assert map.into != null, 'into must not be null'
             try {
-                //noinspection GroovyAssignabilityCheck
-                putInternal(map.from, map.into as String)
+                if (map.containsKey('filter')) {
+                    assert map.filter != null, 'filter must not be null'
+                    //noinspection GroovyAssignabilityCheck
+                    putInternal(map.from, map.into as String, map.filter as Closure)
+                } else {
+                    //noinspection GroovyAssignabilityCheck
+                    putInternal(map.from, map.into as String)
+                }
             } catch (MissingMethodException e) {
                 throw new IllegalArgumentException(usage, e)
             }
@@ -90,6 +98,27 @@ put(bytes: byte[], into: String)         // put a byte array into the remote fil
     private void putInternal(Iterable<File> localFiles, String remotePath) {
         def instructions = Instructions.forFiles(localFiles, remotePath)
         putInternal(instructions)
+    }
+
+    /**
+     * Put filtered files to the remote host.
+     *
+     * @param localFile
+     * @param remotePath
+     */
+    private void putInternal(File localFile, String remotePath, Closure<Boolean> filter) {
+        def instructions = Instructions.forFileWithFilter(localFile, remotePath, filter)
+        putInternal(instructions)
+    }
+
+    /**
+     * Put filtered files to the remote host.
+     *
+     * @param localPath
+     * @param remotePath
+     */
+    private void putInternal(String localPath, String remotePath, Closure<Boolean> filter) {
+        putInternal(new File(localPath), remotePath, filter)
     }
 
     private void putInternal(Instructions instructions) {

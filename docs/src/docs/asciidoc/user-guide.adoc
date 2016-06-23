@@ -900,7 +900,8 @@ file.withOutputStream { stream ->
 def text = get from: '/remote/file'
 ----
 
-Call the `put` method to put a file or directory into the remote host. It also accepts content such as a string or byte array.
+Call the `put` method to put a file or directory into the remote host.
+It also accepts content such as a string or byte array.
 
 [source,groovy]
 ----
@@ -928,9 +929,12 @@ put from: files('local_file1', 'local_file2'), into: '/remote/folder'
 
 // specify a directory
 put from: buildDir, into: '/remote/folder'
+
+// specify a directory with file filter
+put from: buildDir, into: '/remote/folder', filter: { it.name =~ /\.xml$/ }
 ----
 
-The method throws an exception if an error occurred while the file transfer.
+These methods throw an exception if an error occurred while the file transfer.
 
 Following settings can be set in global, per-method or per-remote.
 
@@ -943,6 +947,47 @@ Following settings can be set in global, per-method or per-remote.
 |`String` or `FileTransferMethod`
 |File transfer method, that is `sftp` or `scp`. Defaults to `sftp`.
 |===
+
+[NOTE]
+.Difference of handling empty directories on put method
+====
+If a file filter is given, only matched files excluding empty directories will be put.
+Otherwise, all files including empty directories will be put.
+
+Let's see the example.
+It assumes the local host have following files and directories.
+
+----
+/dir1
+  /dir2
+    /file2.txt
+    /dir3
+      /file3.xml
+      /dir4
+----
+
+If no filter is given, all files and directories (same as above) will be put.
+
+If the filter `{ it.name =~ /\.txt$/ }` is given, following files and directories will be put.
+
+----
+/dir1
+  /dir2
+    /file2.txt
+----
+
+If the filter `{ it.name =~ /\.xml$/ }` is given, following files and directories will be put.
+
+----
+/dir1
+  /dir2
+    /dir3
+      /file3.xml
+----
+
+If the filter `{ it.name =~ /\.dat$/ }` is given, nothing will be put.
+
+====
 
 
 === Remove a file or directory
