@@ -12,7 +12,7 @@ import spock.lang.Unroll
 import spock.util.mop.Use
 
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
-import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixSeparator
+import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
 @Use(FileDivCategory)
 abstract class AbstractFileTransferSpecification extends Specification {
@@ -61,7 +61,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile.path, into: toUnixSeparator(destinationFile.path)
+                put from: sourceFile.path, into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -78,7 +78,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile, into: toUnixSeparator(destinationFile.path)
+                put from: sourceFile, into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -98,7 +98,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: [sourceFile1, sourceFile2], into: toUnixSeparator(destinationDir.path)
+                put from: [sourceFile1, sourceFile2], into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -114,7 +114,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put text: 'Text Content', into: toUnixSeparator(destinationFile.path)
+                put text: 'Text Content', into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -129,7 +129,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put bytes: [0xff, 0xfe] as byte[], into: toUnixSeparator(destinationFile.path)
+                put bytes: [0xff, 0xfe] as byte[], into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -145,7 +145,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 def stream = new ByteArrayInputStream([0xff, 0xfe, 0xfd] as byte[])
-                put from: stream, into: toUnixSeparator(destinationFile.path)
+                put from: stream, into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -161,7 +161,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile.path, into: toUnixSeparator(destinationFile.path)
+                put from: sourceFile.path, into: toUnixPath(destinationFile.path)
             }
         }
 
@@ -178,7 +178,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile, into: toUnixSeparator(destinationDir.path)
+                put from: sourceFile, into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -198,7 +198,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceFile, into: toUnixSeparator(destinationDir.path)
+                put from: sourceFile, into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -221,7 +221,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
+                put from: sourceDir, into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -250,7 +250,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
+                put from: sourceDir, into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -268,7 +268,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                put from: sourceDir, into: toUnixSeparator(destinationDir.path)
+                put from: sourceDir, into: toUnixPath(destinationDir.path)
             }
         }
 
@@ -350,7 +350,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
+                get from: toUnixPath(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -367,7 +367,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationFile
+                get from: toUnixPath(sourceFile.path), into: destinationFile
             }
         }
 
@@ -384,7 +384,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: outputStream
+                get from: toUnixPath(sourceFile.path), into: outputStream
             }
         }
 
@@ -400,7 +400,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         def content = ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path)
+                get from: toUnixPath(sourceFile.path)
             }
         }
 
@@ -422,7 +422,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
+                get from: toUnixPath(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -442,7 +442,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationFile.path
+                get from: toUnixPath(sourceFile.path), into: destinationFile.path
             }
         }
 
@@ -459,7 +459,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationDir
+                get from: toUnixPath(sourceFile.path), into: destinationDir
             }
         }
 
@@ -479,7 +479,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceFile.path), into: destinationDir
+                get from: toUnixPath(sourceFile.path), into: destinationDir
             }
         }
 
@@ -502,7 +502,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceDir.path), into: destinationDir
+                get from: toUnixPath(sourceDir.path), into: destinationDir
             }
         }
 
@@ -531,7 +531,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceDir.path), into: destinationDir
+                get from: toUnixPath(sourceDir.path), into: destinationDir
             }
         }
 
@@ -549,7 +549,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: toUnixSeparator(sourceDir.path), into: destinationDir
+                get from: toUnixPath(sourceDir.path), into: destinationDir
             }
         }
 

@@ -16,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static FilenameUtils.toUnixSeparator
+import static FilenameUtils.toUnixPath
 import static SshServerMock.commandWithExit
 
 class MainSpec extends Specification {
@@ -197,7 +197,7 @@ class MainSpec extends Specification {
         "ssh.run {" +
                 " session(host: 'localhost'," +
                 "  port: ${server.port}," +
-                "  knownHosts: new File('${toUnixSeparator(knownHostsFile.path)}')," +
+                "  knownHosts: new File('${toUnixPath(knownHostsFile.path)}')," +
                 "  user: 'someuser'," +
                 "  password: 'somepassword')" +
                 " { execute('somecommand') }" +

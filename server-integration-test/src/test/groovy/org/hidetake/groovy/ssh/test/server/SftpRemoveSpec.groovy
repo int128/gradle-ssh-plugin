@@ -12,7 +12,7 @@ import spock.lang.Specification
 import spock.util.mop.Use
 
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
-import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixSeparator
+import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 import static org.hidetake.groovy.ssh.test.server.Helper.uuidgen
 
 @Use(FileDivCategory)
@@ -64,7 +64,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(file.path))
+                remove(toUnixPath(file.path))
             }
         }
 
@@ -83,7 +83,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+                remove(toUnixPath(file1.path), toUnixPath(file2.path))
             }
         }
 
@@ -108,7 +108,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(folder1.path))
+                remove(toUnixPath(folder1.path))
             }
         }
 
@@ -135,7 +135,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(folder1.path), toUnixSeparator(file2.path))
+                remove(toUnixPath(folder1.path), toUnixPath(file2.path))
             }
         }
 
@@ -160,7 +160,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(file2.path))
+                remove(toUnixPath(file2.path))
             }
         }
 
@@ -183,7 +183,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+                remove(toUnixPath(file1.path), toUnixPath(file2.path))
             }
         }
 
@@ -206,7 +206,7 @@ class SftpRemoveSpec extends Specification {
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixSeparator(file1.path), toUnixSeparator(file2.path))
+                remove(toUnixPath(file1.path), toUnixPath(file2.path))
             }
         }
 
