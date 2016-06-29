@@ -2,6 +2,7 @@ package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.session.SessionExtension
+import org.hidetake.groovy.ssh.session.transfer.get.*
 
 /**
  * An extension class to get a file or directory.
@@ -9,7 +10,7 @@ import org.hidetake.groovy.ssh.session.SessionExtension
  * @author Hidetake Iwata
  */
 @Slf4j
-trait FileGet implements SessionExtension, SftpGet, ScpGet {
+trait FileGet implements SessionExtension {
 
     /**
      * Get file(s) or content from the remote host.
@@ -19,12 +20,15 @@ trait FileGet implements SessionExtension, SftpGet, ScpGet {
      */
     def get(HashMap map) {
         final usage = """Got $map but not following signatures:
-get(from: String, into: String or File)  // get a file or directory recursively
-get(from: String, into: OutputStream)    // get a file into the stream
-get(from: String)                        // get a file and return the content"""
+get(from: String, into: String)         // get a file or directory
+get(from: String, into: File)           // get a file or directory
+get(from: String, into: OutputStream)   // get a file into the stream
+get(from: String)                       // get a file and return the content"""
 
         if (map.containsKey('from')) {
+            assert map.from != null, 'from must not be null'
             if (map.containsKey('into')) {
+                assert map.into != null, 'into must not be null'
                 try {
                     //noinspection GroovyAssignabilityCheck
                     getInternal(map.from as String, map.into)
@@ -48,16 +52,7 @@ get(from: String)                        // get a file and return the content"""
      * @param stream
      */
     private void getInternal(String remotePath, OutputStream stream) {
-        assert remotePath, 'remote path must be given'
-        assert stream, 'output stream must be given'
-        if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftpGet(remotePath, stream)
-        } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            scpGet(remotePath, stream)
-        } else {
-            throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
-        }
-        log.info("Received content from $remote.name: $remotePath")
+        getInternalWithReceiver(remotePath, new StreamReceiver(stream))
     }
 
     /**
@@ -67,8 +62,6 @@ get(from: String)                        // get a file and return the content"""
      * @param localPath
      */
     private void getInternal(String remotePath, String localPath) {
-        assert remotePath, 'remote path must be given'
-        assert localPath,  'local path must be given'
         getInternal(remotePath, new File(localPath))
     }
 
@@ -79,12 +72,20 @@ get(from: String)                        // get a file and return the content"""
      * @param localFile
      */
     private void getInternal(String remotePath, File localFile) {
-        assert remotePath, 'remote path must be given'
-        assert localFile,  'local file must be given'
+        if (localFile.directory) {
+            getInternalWithReceiver(remotePath, new RecursiveReceiver(localFile))
+        } else {
+            getInternalWithReceiver(remotePath, new FileReceiver(localFile))
+        }
+    }
+
+    private void getInternalWithReceiver(String remotePath, def receiver) {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            sftpGet(remotePath, localFile)
+            //noinspection GroovyAssignabilityCheck
+            new Sftp(operations).get(remotePath, receiver)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            scpGet(remotePath, localFile)
+            //noinspection GroovyAssignabilityCheck
+            new Scp(operations, mergedSettings).get(remotePath, receiver)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }

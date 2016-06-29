@@ -604,23 +604,23 @@ abstract class AbstractFileTransferSpecification extends Specification {
 
         then:
         AssertionError e = thrown()
-        e.localizedMessage.contains 'remote'
+        e.localizedMessage.contains 'from'
     }
 
-    def "get() should throw an error if destination is null string"() {
+    def "get() should throw an error if destination is null"() {
         given:
         def file = temporaryFolder.newFile()
 
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
-                get from: file.path, into: ''
+                get from: file.path, into: null
             }
         }
 
         then:
         AssertionError e = thrown()
-        e.localizedMessage.contains 'local'
+        e.localizedMessage.contains 'into'
     }
 
     def "get() should throw an error if from is not given"() {
