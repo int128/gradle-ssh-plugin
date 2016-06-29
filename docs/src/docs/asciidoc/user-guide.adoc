@@ -891,6 +891,9 @@ get from: '/remote/file', into: 'local_file'
 // specify a file object
 get from: '/remote/file', into: buildDir
 
+// specify a file object with file filter
+get from: '/remote/folder', into: buildDir, filter: { it.name =~ /\.xml$/ }
+
 // specify an output stream
 file.withOutputStream { stream ->
   get from: '/remote/file', into: stream
@@ -948,11 +951,14 @@ Following settings can be set in global, per-method or per-remote.
 |File transfer method, that is `sftp` or `scp`. Defaults to `sftp`.
 |===
 
+If a filter closure is given, it will be called with an each file.
+A filter closure should return boolean to determine to transfer or not.
+
 [NOTE]
-.Difference of handling empty directories on put method
+.Difference of handling empty directories if a filter closure is given or not
 ====
-If a file filter is given, only matched files excluding empty directories will be put.
-Otherwise, all files including empty directories will be put.
+If a file filter is given, only matched files excluding empty directories will be transferred.
+Otherwise, all files including empty directories will be transferred.
 
 Let's see the example.
 It assumes the local host have following files and directories.
@@ -966,9 +972,9 @@ It assumes the local host have following files and directories.
       /dir4
 ----
 
-If no filter is given, all files and directories (same as above) will be put.
+If no filter is given, all files and directories (same as above) will be transferred.
 
-If the filter `{ it.name =~ /\.txt$/ }` is given, following files and directories will be put.
+If the filter `{ it.name =~ /\.txt$/ }` is given, following files and directories will be transferred.
 
 ----
 /dir1
@@ -976,7 +982,7 @@ If the filter `{ it.name =~ /\.txt$/ }` is given, following files and directorie
     /file2.txt
 ----
 
-If the filter `{ it.name =~ /\.xml$/ }` is given, following files and directories will be put.
+If the filter `{ it.name =~ /\.xml$/ }` is given, following files and directories will be transferred.
 
 ----
 /dir1
@@ -985,7 +991,7 @@ If the filter `{ it.name =~ /\.xml$/ }` is given, following files and directorie
       /file3.xml
 ----
 
-If the filter `{ it.name =~ /\.dat$/ }` is given, nothing will be put.
+If the filter `{ it.name =~ /\.dat$/ }` is given, nothing will be transferred.
 
 ====
 

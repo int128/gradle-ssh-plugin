@@ -591,6 +591,40 @@ abstract class AbstractFileTransferSpecification extends Specification {
         (destinationDir / sourceDir.name).list() == []
     }
 
+    @Unroll
+    def "get() should get filtered files with regex #regex"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
+
+        def destinationDir = temporaryFolder.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: toUnixPath(sourceDir.path), into: destinationDir, filter: { it.name =~ regex }
+            }
+        }
+
+        then:
+        (destinationDir / sourceDir.name).exists() == d1
+        (destinationDir / sourceDir.name / 'file1').exists() == f1
+        (destinationDir / sourceDir.name / 'dir2').exists() == d2
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').exists() == f2
+
+        and: 'empty directory should not be get'
+        !(destinationDir / sourceDir.name / 'dir2' / 'dir3').exists()
+
+        where:
+        regex | d1    | f1    | d2    | f2
+        /0$/  | false | false | false | false
+        /1$/  | true  | true  | false | false
+        /2$/  | true  | false | true  | true
+    }
+
     def "get() should throw an error if source is null"() {
         given:
         def file = temporaryFolder.newFile()

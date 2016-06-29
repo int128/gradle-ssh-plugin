@@ -7,10 +7,12 @@ class RecursiveReceiver {
 
     final File destination
 
+    private final Closure<Boolean> filter
     private final List<File> directoryStack
 
-    def RecursiveReceiver(File destination1) {
+    def RecursiveReceiver(File destination1, Closure<Boolean> filter1) {
         destination = destination1
+        filter = filter1
         directoryStack = [destination]
         assert destination.directory
     }
@@ -22,13 +24,19 @@ class RecursiveReceiver {
      * @return file
      */
     File createFile(String name) {
-        def child = new File(directoryStack.last(), name)
-        log.trace("Recreating destination file: $child")
-        if (child.file) {
-            child.delete()
+        def directory = directoryStack.last()
+        def file = new File(directory, name)
+        if (!filter || filter.call(file)) {
+            if (!directory.exists()) {
+                directory.mkdirs()
+            } else if (file.exists()) {
+                file.delete()
+            }
+            file.createNewFile()
+            file
+        } else {
+            null
         }
-        child.createNewFile()
-        child
     }
 
     /**
@@ -37,9 +45,11 @@ class RecursiveReceiver {
      * @param name
      */
     void enterDirectory(String name) {
-        def child = new File(directoryStack.last(), name)
-        child.mkdirs()
-        directoryStack.push(child)
+        def directory = new File(directoryStack.last(), name)
+        directoryStack.push(directory)
+        if (!filter) {
+            directory.mkdirs()
+        }
     }
 
     /**

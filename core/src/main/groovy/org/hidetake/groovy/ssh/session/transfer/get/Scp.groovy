@@ -49,7 +49,7 @@ class Scp {
                 def remaining = new Remaining(size, operations.remote, filename)
                 when(bytes: remaining.counter, from: standardOutput) { byte[] bytes ->
                     log.trace("Received $bytes.length bytes from $operations.remote.name: $filename")
-                    localFile.append(bytes)
+                    localFile?.append(bytes)
                     remaining.burn(bytes.length)
                 }
 
