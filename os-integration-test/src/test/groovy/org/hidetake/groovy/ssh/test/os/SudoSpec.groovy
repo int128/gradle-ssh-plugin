@@ -6,6 +6,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
+import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
 
 /**
  * Check if {@link org.hidetake.groovy.ssh.session.execution.Sudo} works with Linux system.
@@ -14,8 +15,8 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
  */
 class SudoSpec extends Specification {
 
-    private static final user1 = 'groovyssh1'
-    private static final user2 = 'groovyssh2'
+    private static final user1 = "groovyssh${randomInt()}a"
+    private static final user2 = "groovyssh${randomInt()}b"
 
     Service ssh
 

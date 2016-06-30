@@ -21,7 +21,7 @@ import static org.hidetake.groovy.ssh.test.os.Fixture.randomInt
  */
 class UserAuthenticationSpec extends Specification {
 
-    private static final user1 = 'groovyssh1'
+    private static final user1 = "groovyssh${randomInt()}"
 
     Service ssh
 
