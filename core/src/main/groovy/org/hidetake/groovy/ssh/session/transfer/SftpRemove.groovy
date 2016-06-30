@@ -51,12 +51,12 @@ trait SftpRemove implements SessionExtension {
                                 } else if (child.filename in ['.', '..']) {
                                     // ignore directory entries
                                 } else {
-                                    self.call(self, fullPath)
+                                    self(fullPath)
                                 }
                             }
                             rmdir(directory)
                             log.debug("Leaving directory on $remote.name: $directory")
-                        }.call(path)
+                        }(path)
                         log.info("Removed directory on $remote.name: $path")
                         break
 

@@ -18,7 +18,7 @@ class Utility {
     }
 
     static <T> Closure<T> currySelf(Closure<T> closure) {
-        closure.curry(closure)
+        closure.curry(closure.curry(closure))
     }
 
     /**
