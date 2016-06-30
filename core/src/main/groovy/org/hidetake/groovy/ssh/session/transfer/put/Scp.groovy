@@ -88,10 +88,10 @@ class Scp {
 
         when(partial: '\0', from: standardOutput) {
             log.trace("Got NULL from $operations.remote.name in createFile#1")
-            log.debug("Sending $size bytes to $operations.remote.name: $file.name")
+            log.debug("Sending $size bytes to $operations.remote.name: $file")
             file.withInputStream { stream ->
                 def progress = new FileTransferProgress(size, { percent ->
-                    log.info("Sending $percent to $operations.remote.name: $file.name")
+                    log.info("Sending $percent to $operations.remote.name: $file")
                 })
                 def readBuffer = new byte[1024 * 1024]
                 while (true) {
@@ -108,15 +108,16 @@ class Scp {
 
             when(partial: '\0', from: standardOutput) {
                 log.trace("Got NULL from $operations.remote.name in createFile#2")
+                log.info("Sent file to $operations.remote.name: $file")
                 callWithDelegate(processNextInstruction, delegate, iterator)
             }
             when(line: _) { String line ->
-                log.error("Failed SCP on $operations.remote.name: $file.name")
+                log.error("Failed SCP on $operations.remote.name: $file")
                 throw new IllegalStateException("SCP command returned error: $line")
             }
         }
         when(line: _) { String line ->
-            log.error("Failed SCP on $operations.remote.name: $file.name")
+            log.error("Failed SCP on $operations.remote.name: $file")
             throw new IllegalStateException("SCP command returned error: $line")
         }
     }
@@ -139,6 +140,7 @@ class Scp {
 
             when(partial: '\0', from: standardOutput) {
                 log.trace("Got NULL from $operations.remote.name in createContent#2")
+                log.info("Sent content to $operations.remote.name: $content.name")
                 callWithDelegate(processNextInstruction, delegate, iterator)
             }
             when(line: _) { String line ->
@@ -163,7 +165,7 @@ class Scp {
             callWithDelegate(processNextInstruction, delegate, iterator)
         }
         when(line: _) { String line ->
-            log.error("Failed SCP on $operations.remote.name: $enterDirectory")
+            log.error("Failed SCP on $operations.remote.name: $enterDirectory.name")
             throw new IllegalStateException("SCP command returned error: $line")
         }
     }

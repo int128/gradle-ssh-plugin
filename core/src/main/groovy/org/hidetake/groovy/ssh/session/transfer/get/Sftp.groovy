@@ -47,6 +47,7 @@ class Sftp {
                         def localFile = receiver.createFile(child.filename)
                         if (localFile) {
                             getFile(child.filename, localFile.path)
+                            log.info("Received file from $operations.remote.name: $child.filename -> $localFile")
                         }
                     }
                     entries.findAll { it.attrs.dir && !(it.filename in ['.', '..']) }.each { child ->
@@ -60,10 +61,10 @@ class Sftp {
                     }
                 }()
 
-                log.info("Received directory from $operations.remote.name: $remotePath -> $receiver.destination.path")
+                log.info("Received directory from $operations.remote.name: $remotePath -> $receiver.destination")
             } else {
                 getFile(remotePath, receiver.destination.path)
-                log.info("Received file from $operations.remote.name: $remotePath -> $receiver.destination.path")
+                log.info("Received file from $operations.remote.name: $remotePath -> $receiver.destination")
             }
         }
     }
