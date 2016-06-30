@@ -42,7 +42,7 @@ script:
   && pushd gradle-ssh-plugin
   && sed -i -e "s,groovy-ssh:[0-9.]*,groovy-ssh:${TRAVIS_TAG:-SNAPSHOT},g" build.gradle
   && git diff
-  && ./gradlew check
+  && ./gradlew -Ptarget.gradle.versions=1.12 check
 - popd
 
 
