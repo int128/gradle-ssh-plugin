@@ -8,18 +8,25 @@ class AcceptanceSpec extends Specification {
 
     @Unroll
     def "acceptance test should be success on Gradle #version"() {
-        when:
-        GradleRunner.create()
+        given:
+        def runner = GradleRunner.create()
                 .withProjectDir(new File('fixture'))
                 .withArguments('test')
                 .withGradleVersion(version)
-                .build()
+
+        and: 'show console on Gradle 2.x'
+        if (version =~ /^2\./) {
+            runner.forwardOutput()
+        }
+
+        when:
+        runner.build()
 
         then:
         noExceptionThrown()
 
         where:
-        version << ['2.13', '1.12']
+        version << System.getProperty('target.gradle.versions').split(/,/).toList()
     }
 
 }

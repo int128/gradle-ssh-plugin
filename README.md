@@ -66,7 +66,14 @@ Prerequisite:
 Run `test` task.
 
 ```sh
-./gradlew :acceptance-tests:test
+EXT_SSH_HOST=... EXT_SSH_USER=... ./gradlew :acceptance-tests:test
+```
+
+It runs on the current version and 1.12 of Gradle at default.
+Target versions can be given by `target.gradle.versions` property as follows:
+
+```sh
+./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-tests:test
 ```
 
 #### Release
