@@ -29,7 +29,7 @@ class Sftp {
                     case File:
                         def file = instruction as File
                         putFile(file.path, remotePath)
-                        log.info("Sent file to $remote.name: $file.path -> $remotePath")
+                        log.info("Sent file to $remote.name: $file -> $remotePath")
                         break
 
                     case StreamContent:

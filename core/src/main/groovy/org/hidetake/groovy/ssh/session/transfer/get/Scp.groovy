@@ -55,6 +55,9 @@ class Scp {
 
                 when(partial: '\0', from: standardOutput) {
                     log.trace("Got NULL from $operations.remote.name: $filename")
+                    if (localFile) {
+                        log.info("Received file from $operations.remote.name: $filename -> $localFile")
+                    }
                     sendNull(standardInput)
                     popContext()
                 }
@@ -112,6 +115,7 @@ class Scp {
 
                 when(partial: '\0', from: standardOutput) {
                     log.trace("Got NULL from $operations.remote.name: $filename")
+                    log.info("Received file from $operations.remote.name: $remoteFile")
                     sendNull(standardInput)
                     popContext()
                 }
