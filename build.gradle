@@ -13,3 +13,14 @@ allprojects {
         jcenter()
     }
 }
+
+
+def configureTestExecutionOrder(String... projects) {
+    def tasks = projects.collect { project -> tasks.getByPath(":$project:check") }.reverse()
+    tasks.tail().inject(tasks.head()) { after, before ->
+        after.dependsOn before
+        before
+    }
+}
+
+configureTestExecutionOrder('core', 'server-integration-test', 'cli', 'os-integration-test')
