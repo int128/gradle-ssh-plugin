@@ -78,12 +78,18 @@ class SudoSpec extends Specification {
                                  String expectedCommand,
                                  String expectedPassword,
                                  int status,
+                                 String lectureMessage = null,
                                  String outputMessage = null,
                                  String errorMessage = null) {
         SshServerMock.command { CommandContext c ->
             def parsed = parseSudoCommand(actualCommand)
             assert parsed.sudo == expectedSudo
             assert parsed.command == expectedCommand
+
+            if (lectureMessage) {
+                log.debug("[sudo] Sending to standard output: $lectureMessage")
+                c.outputStream << lectureMessage << '\n'
+            }
 
             log.debug("[sudo] Sending prompt: $parsed.prompt")
             c.outputStream << parsed.prompt
@@ -132,7 +138,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'Sorry, try again.\n')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, null, 'Sorry, try again.\n')
         }
 
         then:
@@ -168,7 +174,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 1, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 1, null, 'something output')
         }
 
         then:
@@ -185,7 +191,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', /'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', /'this '\''should'\'' be escaped'/, 'somepassword', 0, null, 'something output')
         }
 
         then:
@@ -255,7 +261,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, outputValue)
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, null, outputValue)
         }
 
         then:
@@ -268,6 +274,27 @@ class SudoSpec extends Specification {
         'a line with line sep' | 'some result\n'              | 'some result'
         'lines'                | 'some result\nsecond line'   | "some result${NL}second line"
         'lines with line sep'  | 'some result\nsecond line\n' | "some result${NL}second line"
+    }
+
+    @Unroll
+    def "executeSudo should exclude lecture message from result: #lectureMessage"() {
+        when:
+        def resultActual = ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand'
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(_) >> { String command ->
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, lectureMessage, 'something\noutput')
+        }
+
+        then:
+        resultActual == "something${NL}output"
+
+        where:
+        lectureMessage << ['lecture message', 'lecture\nmessage', 'lecture\nmessage\n']
     }
 
     def "executeSudo can return value via callback closure"() {
@@ -285,7 +312,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, null, 'something output')
         }
 
         then:
@@ -307,7 +334,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, null, 'something output')
         }
 
         then:
@@ -329,7 +356,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, null, 'something output')
         }
 
         then:
@@ -351,7 +378,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, 'something output')
+            commandWithSudoPrompt(command, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', 0, null, 'something output')
         }
 
         then:
@@ -375,7 +402,7 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String command ->
-            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, outputValue)
+            commandWithSudoPrompt(command, 'sudo', 'somecommand', 'somepassword', 0, null, outputValue)
         }
 
         then:

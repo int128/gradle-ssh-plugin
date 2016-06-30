@@ -45,6 +45,7 @@ class SudoHelper {
                     }
                     when(line: _, from: standardOutput) {
                         log.info("Success sudo authentication on $operations.remote.name")
+                        lines.clear()
                         lines << it
 
                         when(line: _, from: standardOutput) {
