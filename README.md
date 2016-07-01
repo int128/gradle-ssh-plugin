@@ -1,4 +1,4 @@
-Gradle SSH Plugin [![Build Status](https://travis-ci.org/int128/gradle-ssh-plugin.svg?branch=master)](https://travis-ci.org/int128/gradle-ssh-plugin) [![Gradle Status](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status)
+Gradle SSH Plugin [![CircleCI](https://circleci.com/gh/int128/gradle-ssh-plugin.svg?style=svg)](https://circleci.com/gh/int128/gradle-ssh-plugin) [![Gradle Status](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status)
 =================
 
 Gradle SSH Plugin provides SSH facilities such as command execution or file transfer on Gradle.
@@ -56,18 +56,7 @@ The document is maintained on the repository of Groovy SSH.
 #### Acceptance Test
 
 We can run acceptance tests to verify behavior of the plugin on Gradle environment.
-
-Prerequisite:
-
-* SSH service should be available on the remote host given by env var `EXT_SSH_HOST`
-* SSH service should allow the user given by env var `EXT_SSH_USER` to login with the private key placed at `~/.ssh/id_ext` without passphrase
-* SSH service should accept SFTP subsystem
-
-Run `test` task.
-
-```sh
-EXT_SSH_HOST=... EXT_SSH_USER=... ./gradlew :acceptance-tests:test
-```
+It expects a SSH server is running at localhost port 8022.
 
 It runs on the current version and 1.12 of Gradle at default.
 Target versions can be given by `target.gradle.versions` property as follows:
@@ -80,4 +69,4 @@ Target versions can be given by `target.gradle.versions` property as follows:
 
 Build with JDK 7 for compatibility. Do not build with JDK 8.
 
-Push a versioned tag to GitHub and Travis CI will upload the artifact to Bintray.
+Push a versioned tag to GitHub and CI will upload the artifact to Bintray.

@@ -2,6 +2,7 @@ remotes {
     yetAnotherServer {
         role 'testServers'
         host = remotes.testServer.host
+        port = remotes.testServer.port
         user = remotes.testServer.user
         identity = remotes.testServer.identity
         knownHosts = remotes.testServer.knownHosts
