@@ -1,2 +1,3 @@
 rootProject.name = 'gradle-ssh-plugin'
 include 'acceptance-test'
+include 'core'
