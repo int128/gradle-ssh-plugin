@@ -1,9 +1,7 @@
 allprojects {
     description = 'Groovy SSH library'
     group = 'org.hidetake'
-
-    // Set product version if tag is given on Travis CI
-    version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
+    version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
 
     ext.license = 'Apache-2.0'
     ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
@@ -11,6 +9,13 @@ allprojects {
 
     repositories {
         jcenter()
+    }
+
+    afterEvaluate {
+        tasks.withType(Test) {
+            maxHeapSize = '1g'
+            minHeapSize = '1g'
+        }
     }
 }
 

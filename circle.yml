@@ -1,0 +1,48 @@
+machine:
+  java:
+    version: openjdk7
+  environment:
+    TERM: dumb
+    GRADLE_OPTS: -Xmx1g -Xms1g
+  hosts:
+    sandbox.local: 127.0.0.1
+  services:
+    - docker
+
+checkout:
+  post:
+    - |
+      echo "https://${GITHUB_TOKEN}:@github.com" > "$HOME/.git-credentials"
+      git config --global user.name "$(git log -1 --format=format:%an)"
+      git config --global user.email "$(git log -1 --format=format:%ae)"
+      git config --global credential.helper store
+      git config --global core.autocrlf input
+      git config --global push.default current
+
+dependencies:
+  override:
+    - ./gradlew testClasses
+
+test:
+  pre:
+    - ./os-integration-test/setup-ssh.sh
+  override:
+    - ./gradlew check publishToMavenLocal
+    - ./test-with-gradle-ssh-plugin.sh
+  post:
+    - |
+      cp -a */build/test-results/*.xml $CIRCLE_TEST_REPORTS/
+      rsync -aR */build/reports $CIRCLE_ARTIFACTS/
+
+deployment:
+  release:
+    tag: /[0-9]+(\.[0-9]+)*/
+    commands:
+      - ./gradlew bintrayUpload
+      - ./cli/release-github.sh
+      - git -C gradle-ssh-plugin push origin
+
+  docs:
+    branch: master
+    commands:
+      - ./docs/release-github.sh

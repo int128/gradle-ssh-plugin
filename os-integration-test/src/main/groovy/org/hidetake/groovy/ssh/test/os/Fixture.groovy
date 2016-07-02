@@ -16,27 +16,31 @@ class Fixture {
         final home = System.getProperty('user.home')
         service.remotes {
             Default {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
+                host = 'sandbox.local'
+                port = 8022
+                user = 'tester'
                 identity = new File("$home/.ssh/id_ext")
                 knownHosts = new File("$home/.ssh/known_hosts_ext")
             }
             DefaultWithPassphrase {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
+                host = 'sandbox.local'
+                port = 8022
+                user = 'tester'
                 identity = new File("$home/.ssh/id_ext_passphrase")
                 passphrase = 'pass1234'
                 knownHosts = new File("$home/.ssh/known_hosts_ext")
             }
             DefaultWithEcdsaHostKey {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
+                host = 'sandbox.local'
+                port = 8022
+                user = 'tester'
                 identity = new File("$home/.ssh/id_ext")
                 knownHosts = new File("$home/.ssh/known_hosts_ext_ecdsa")
             }
             DefaultWithAgent {
-                host = System.getenv('EXT_SSH_HOST')
-                user = System.getenv('EXT_SSH_USER')
+                host = 'sandbox.local'
+                port = 8022
+                user = 'tester'
                 knownHosts = new File("$home/.ssh/known_hosts_ext")
                 agent = true
             }

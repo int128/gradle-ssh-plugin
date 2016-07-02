@@ -1,13 +1,10 @@
 ssh.remotes {
     tester {
-        host = System.getenv('EXT_SSH_HOST') ?: 'localhost'
-        user = System.getenv('EXT_SSH_USER') ?: System.getProperty('user.name')
-        identity = new File(System.getenv('EXT_SSH_HOST')
-                ? "${System.getProperty('user.home')}/.ssh/id_ext"
-                : "${System.getProperty('user.home')}/.ssh/id_rsa")
-        knownHosts = new File(System.getenv('EXT_SSH_HOST')
-                ? "${System.getProperty('user.home')}/.ssh/known_hosts_ext"
-                : "${System.getProperty('user.home')}/.ssh/known_hosts")
+        host = 'sandbox.local'
+        port = 8022
+        user = 'tester'
+        identity = new File("${System.getProperty('user.home')}/.ssh/id_ext")
+        knownHosts = new File("${System.getProperty('user.home')}/.ssh/known_hosts_ext")
     }
 }
 
@@ -16,7 +13,6 @@ ssh.run {
         put from: ssh.runtime.jar, into: '.'
         execute 'java -jar gssh.jar --version'
         execute 'java -jar gssh.jar --help'
-        execute 'sudo yum update -y', pty: true
         remove 'gssh.jar'
     }
 }
