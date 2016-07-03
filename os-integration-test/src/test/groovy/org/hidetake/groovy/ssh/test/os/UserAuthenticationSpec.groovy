@@ -1,13 +1,12 @@
 package org.hidetake.groovy.ssh.test.os
 
 import com.jcraft.jsch.JSch
+import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.KeyPair
-import com.jcraft.jsch.agentproxy.AgentProxyException
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.Rule
-import org.junit.experimental.categories.Category
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
@@ -27,6 +26,9 @@ class UserAuthenticationSpec extends Specification {
 
     @Rule
     TemporaryFolder temporaryFolder
+
+    @Rule
+    SshAgent sshAgent
 
     def setup() {
         ssh = Ssh.newService()
@@ -88,23 +90,22 @@ class UserAuthenticationSpec extends Specification {
     }
 
     def 'should fail if agent is not available'() {
-        given:
-        ssh.remotes.Default.agent = true
-
         when:
         ssh.run {
-            session(ssh.remotes.Default) {
+            session(ssh.remotes.DefaultWithAgent) {
                 execute "id"
             }
         }
 
         then:
-        thrown(AgentProxyException)
+        thrown(JSchException)
     }
 
-    @Category(RequireAgent)
     def 'should authenticate with SSH agent'() {
         given:
+        sshAgent.add(ssh.remotes.Default.identity.path)
+
+        and:
         def x = randomInt()
         def y = randomInt()
 
@@ -119,8 +120,10 @@ class UserAuthenticationSpec extends Specification {
         r == (x + y)
     }
 
-    @Category(RequireAgent)
     def 'login to localhost should fail if agent forwarding is disabled'() {
+        given:
+        sshAgent.add(ssh.remotes.Default.identity.path)
+
         when:
         ssh.run {
             session(ssh.remotes.DefaultWithAgent) {
@@ -132,8 +135,10 @@ class UserAuthenticationSpec extends Specification {
         thrown(BadExitStatusException)
     }
 
-    @Category(RequireAgent)
     def 'login to localhost should succeed if agent forwarding is enabled'() {
+        given:
+        sshAgent.add(ssh.remotes.Default.identity.path)
+
         when:
         def id = ssh.run {
             session(ssh.remotes.DefaultWithAgent) {
