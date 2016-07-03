@@ -5,59 +5,25 @@ plugins {
 dependencies {
     compile project(':core')
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    compile 'org.spockframework:spock-core:1.0-groovy-2.4'
 
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
-test {
-    useJUnit {
-        excludeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-    }
-}
-
-task testRequireAgent(type: Test) {
-    dependsOn 'addKeyToSshAgent'
-    finalizedBy 'stopSshAgent'
-    useJUnit {
-        includeCategories 'org.hidetake.groovy.ssh.test.os.RequireAgent'
-    }
-}
-
-
-
 task startSshAgent(type: Exec) {
-    finalizedBy 'stopSshAgent'
     commandLine 'ssh-agent'
     standardOutput = new ByteArrayOutputStream()
     doLast {
         standardOutput.toString().eachMatch(~/(.+?)=(.+?);/) { all, k, v ->
             assert k in ['SSH_AGENT_PID', 'SSH_AUTH_SOCK']
-            [addKeyToSshAgent, testRequireAgent, stopSshAgent]*.environment(k, v)
+            [test, stopSshAgent]*.environment(k, v)
         }
     }
 }
 
-task addKeyToSshAgent(type: Exec) {
-    dependsOn startSshAgent
-    commandLine 'ssh-add', "${System.getProperty('user.home')}/.ssh/id_ext"
-}
-
 task stopSshAgent(type: Exec) {
-    dependsOn startSshAgent
     commandLine 'ssh-agent', '-k'
 }
 
-
-
-task testReport(type: TestReport) {
-    destinationDir = testReportDir
-    reportOn tasks.withType(Test)*.binResultsDir
-}
-
-tasks.withType(Test) {
-    reports.html.enabled = false
-    finalizedBy testReport
-}
-
-check.dependsOn tasks.withType(Test)
+test.dependsOn startSshAgent
+test.finalizedBy stopSshAgent
