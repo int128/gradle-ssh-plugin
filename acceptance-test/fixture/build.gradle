@@ -8,7 +8,7 @@ buildscript {
         if (gradle.gradleVersion.startsWith('1.')) {
             classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
         }
-        classpath "org.hidetake:gradle-ssh-plugin:${System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'}"
+        classpath "org.hidetake:gradle-ssh-plugin:${System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'}"
     }
 }
 
@@ -17,8 +17,9 @@ apply plugin: 'org.hidetake.ssh'
 remotes {
     testServer {
         role 'testServers'
-        host = System.getenv('EXT_SSH_HOST')
-        user = System.getenv('EXT_SSH_USER')
+        host = 'sandbox.local'
+        port = 8022
+        user = 'tester'
         identity = file("${System.getProperty('user.home')}/.ssh/id_ext")
         knownHosts = file("${System.getProperty('user.home')}/.ssh/known_hosts_ext")
     }

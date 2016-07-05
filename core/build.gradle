@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.hidetake'
-version = System.getenv('TRAVIS_TAG') ?: 'SNAPSHOT'
+version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
