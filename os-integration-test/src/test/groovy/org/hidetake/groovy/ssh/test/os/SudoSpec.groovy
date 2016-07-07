@@ -43,6 +43,7 @@ class SudoSpec extends Specification {
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.Default.host
+                port = ssh.remotes.Default.port
                 identity = ssh.remotes.Default.identity
                 knownHosts = ssh.remotes.Default.knownHosts
                 user = user1
@@ -82,6 +83,7 @@ class SudoSpec extends Specification {
         ssh.remotes {
             PrivilegedUser {
                 host = ssh.remotes.Default.host
+                port = ssh.remotes.Default.port
                 identity = ssh.remotes.Default.identity
                 knownHosts = ssh.remotes.Default.knownHosts
                 user = user1

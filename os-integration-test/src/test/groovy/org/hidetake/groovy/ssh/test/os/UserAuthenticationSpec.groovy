@@ -56,6 +56,7 @@ class UserAuthenticationSpec extends Specification {
         ssh.remotes {
             Remote1 {
                 host = ssh.remotes.Default.host
+                port = ssh.remotes.Default.port
                 knownHosts = ssh.remotes.Default.knownHosts
                 identity = privateKey
                 user = user1

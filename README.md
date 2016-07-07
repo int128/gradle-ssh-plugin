@@ -1,4 +1,4 @@
-Groovy SSH [![Build Status](https://travis-ci.org/int128/groovy-ssh.svg?branch=master)](https://travis-ci.org/int128/groovy-ssh) [![Gradle Status](https://gradleupdate.appspot.com/int128/groovy-ssh/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/groovy-ssh/status)
+Groovy SSH [![CircleCI](https://circleci.com/gh/int128/groovy-ssh.svg?style=svg)](https://circleci.com/gh/int128/groovy-ssh) [![Gradle Status](https://gradleupdate.appspot.com/int128/groovy-ssh/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/groovy-ssh/status)
 ==========
 
 Groovy SSH is an automation tool based on DSL providing the remote command execution and file transfer.
@@ -69,13 +69,13 @@ It uses Apache MINA SSHD server as a test double.
 ### OS integration test
 
 OS integration test can be run on Gradle on Linux platform.
-It requires an external server for creating test users.
+It expects a SSH server is running at localhost port 8022 and sudo is available without a password.
 
 ```sh
-EXT_SSH_HOST=... EXT_SSH_USER=... EXT_SSH_KEY_PATH=... ./gradlew :os-integration-test:check
+./gradlew :os-integration-test:check
 ```
 
 
 ### Gradle 1.x integration test
 
-Gradle 1.x integration test will be run on Travis CI for inspection of backward compatibility.
+Gradle 1.x integration test runs on CI for inspection of backward compatibility.

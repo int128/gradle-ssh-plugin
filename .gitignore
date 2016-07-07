@@ -8,4 +8,4 @@ build
 .idea
 *.iml
 
-gradle-ssh-plugin
+/gradle-ssh-plugin
