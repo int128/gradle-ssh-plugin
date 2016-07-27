@@ -68,7 +68,14 @@ task setupRemoteWorkDir << {
 task cleanupRemoteWorkDir << {
     ssh.run {
         session(remotes.testServer) {
-            execute "rm -fr $remoteWorkDirBase"
+            execute "find $remoteWorkDirBase"
+            if (gradle.gradleVersion.startsWith('1.')) {
+                // remove method does not work on Gradle 1.x
+                execute "rm -fr $remoteWorkDirBase"
+            } else {
+                remove remoteWorkDirBase
+            }
+            execute "test ! -d $remoteWorkDirBase"
         }
     }
 }
