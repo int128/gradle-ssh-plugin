@@ -13,6 +13,7 @@ checkout:
   post:
     - |
       echo "https://${GITHUB_TOKEN}:@github.com" > "$HOME/.git-credentials"
+      git config --global --remove-section url."ssh://git@github.com:"
       git config --global user.name "$(git log -1 --format=format:%an)"
       git config --global user.email "$(git log -1 --format=format:%ae)"
       git config --global credential.helper store
