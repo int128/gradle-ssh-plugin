@@ -214,7 +214,7 @@ Also following settings can be set in a remote closure.
 
 |`knownHosts`
 |`File` or `List<File>`
-|One or more known hosts files. Defaults to `~/.ssh/known_hosts`. If `allowAnyHosts` is set, strict host key checking is turned off (only for testing purpose).
+|One or more known hosts files. Defaults to `new File("${System.properties['user.home']}/.ssh/known_hosts")`. If `allowAnyHosts` is set, strict host key checking is turned off (vulnerable to man-in-the-middle attacks).
 
 |`retryCount`
 |`int`
