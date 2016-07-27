@@ -189,8 +189,7 @@ Also following settings can be set in a remote closure.
 
 |`identity`
 |`File` or `String`
-|Private key for public-key authentication, that is a `File` of the key file or `String` of the key content.
- Defaults to no public-key authentication.
+|Private key for public-key authentication. Defaults to no public-key authentication.
 
 |`passphrase`
 |`String`
@@ -228,6 +227,22 @@ Also following settings can be set in a remote closure.
 |`int` (seconds)
 |Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
 |===
+
+Note that `identity` can be a `File` or `String`.
+If a `String` is set, it is treated as a content of the private key but not a path.
+
+[source,groovy]
+----
+ssh.settings {
+  // path to the private key
+  identity = new File('id_rsa')
+
+  // content of the private key
+  identity = """-----BEGIN RSA PRIVATE KEY-----
+BASE64ENCODEDKEY...
+------END RSA PRIVATE KEY-------"""
+}
+----
 
 These can be set globally in the project as follows.
 
