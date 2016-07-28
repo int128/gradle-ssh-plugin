@@ -76,6 +76,8 @@ It expects a SSH server is running at localhost port 8022 and sudo is available 
 ```
 
 
-### Gradle 1.x integration test
+### Gradle SSH Plugin integration test
 
-Gradle 1.x integration test runs on CI for inspection of backward compatibility.
+Gradle SSH Plugin integration test can be run on Linux platform.
+It expects a SSH server is running at localhost port 8022 and sudo is available without a password.
+See `circle.yml` for details.

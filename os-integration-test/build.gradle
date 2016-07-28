@@ -10,6 +10,10 @@ dependencies {
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
+test {
+    mustRunAfter ':server-integration-test:check'
+}
+
 task startSshAgent(type: Exec) {
     commandLine 'ssh-agent'
     standardOutput = new ByteArrayOutputStream()

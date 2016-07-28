@@ -5,9 +5,10 @@
 export ARTIFACT="$(dirname $0)/build/libs/gssh.jar"
 test -f "$ARTIFACT"
 
-curl -LO https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
-tar -jxf linux-amd64-github-release.tar.bz2
-export PATH="$PWD/bin/linux/amd64:$PATH"
+curl -L -o ~/github-release.tar.bz2 \
+  https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
+tar -C ~ -jxf ~/github-release.tar.bz2
+export PATH=~/bin/linux/amd64:"$PATH"
 
 github-release release \
   --user int128 \

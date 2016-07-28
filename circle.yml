@@ -19,6 +19,8 @@ checkout:
       git config --global credential.helper store
       git config --global core.autocrlf input
       git config --global push.default current
+    - |
+      git -C plugin-integration clone --depth 1 https://github.com/int128/gradle-ssh-plugin
 
 dependencies:
   override:
@@ -27,13 +29,17 @@ dependencies:
 test:
   pre:
     - ./os-integration-test/setup-ssh.sh
+
   override:
-    - ./gradlew check publishToMavenLocal
-    - ./test-with-gradle-ssh-plugin.sh
+    - ./gradlew check
+    - ./plugin-integration/run-plugin-integration-test.sh
+
   post:
     - |
-      cp -a */build/test-results/*.xml $CIRCLE_TEST_REPORTS/
-      rsync -aR */build/reports $CIRCLE_ARTIFACTS/
+      cp -a build/test-results/*.xml $CIRCLE_TEST_REPORTS/
+      cp -a build/reports $CIRCLE_ARTIFACTS/
+      cp -a plugin-integration/gradle-ssh-plugin/build/test-results/*.xml $CIRCLE_TEST_REPORTS/
+      cp -a plugin-integration/gradle-ssh-plugin/build/reports $CIRCLE_ARTIFACTS/plugin-reports
 
 deployment:
   release:
@@ -41,7 +47,7 @@ deployment:
     commands:
       - ./gradlew bintrayUpload
       - ./cli/release-github.sh
-      - git -C gradle-ssh-plugin push origin
+      - ./plugin-integration/create-branch-for-release.sh
 
   docs:
     branch: master

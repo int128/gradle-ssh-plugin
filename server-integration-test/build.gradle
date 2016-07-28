@@ -17,8 +17,10 @@ dependencies {
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
-if (System.getProperty('os.name') == 'Linux') {
-    tasks.withType(JavaForkOptions) {
+test {
+    mustRunAfter ':core:check'
+
+    if (System.getProperty('os.name') == 'Linux') {
         systemProperty 'java.security.egd', 'file:/dev/./urandom'
     }
 }

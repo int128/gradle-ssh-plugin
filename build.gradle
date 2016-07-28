@@ -1,11 +1,6 @@
 allprojects {
-    description = 'Groovy SSH library'
     group = 'org.hidetake'
     version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
-
-    ext.license = 'Apache-2.0'
-    ext.licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    ext.vcsUrl = 'https://github.com/int128/groovy-ssh.git'
 
     repositories {
         jcenter()
@@ -15,17 +10,16 @@ allprojects {
         tasks.withType(Test) {
             maxHeapSize = '1g'
             minHeapSize = '1g'
+
+            finalizedBy ':testReport'
+            testReport.reportOn binResultsDir
+            reports.html.enabled = false
+            reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
         }
     }
 }
 
-
-def configureTestExecutionOrder(String... projects) {
-    def tasks = projects.collect { project -> tasks.getByPath(":$project:check") }.reverse()
-    tasks.tail().inject(tasks.head()) { after, before ->
-        after.dependsOn before
-        before
-    }
+task testReport(type: TestReport) {
+    description 'Generates test report for all projects'
+    destinationDir = file("$buildDir/reports")
 }
-
-configureTestExecutionOrder('core', 'server-integration-test', 'cli', 'os-integration-test')

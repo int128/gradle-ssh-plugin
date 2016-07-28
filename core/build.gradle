@@ -35,35 +35,42 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
+description = 'Groovy SSH library'
+ext {
+    license = 'Apache-2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    vcsUrl = 'https://github.com/int128/groovy-ssh.git'
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-            groupId rootProject.group
-            artifactId rootProject.name
+            groupId parent.group
+            artifactId parent.name
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = DELEGATE_FIRST
-                    name rootProject.name
-                    description rootProject.description
-                    url rootProject.vcsUrl
+                    name parent.name
+                    description project.description
+                    url project.vcsUrl
                     scm {
-                        url rootProject.vcsUrl
-                        connection "scm:git:$rootProject.vcsUrl"
+                        url project.vcsUrl
+                        connection "scm:git:$project.vcsUrl"
                     }
                     licenses {
                         license {
-                            name rootProject.license
-                            url rootProject.licenseUrl
+                            name project.license
+                            url project.licenseUrl
                             distribution 'repo'
                         }
                     }
                     developers {
                         developer {
-                            id rootProject.group
-                            name rootProject.group
+                            id parent.group
+                            name parent.group
                         }
                     }
                 }
@@ -78,11 +85,11 @@ bintray {
     publications = ['maven']
     pkg {
         repo = 'maven'
-        name = rootProject.name
-        licenses = [rootProject.license]
-        vcsUrl = rootProject.vcsUrl
+        name = parent.name
+        licenses = [project.license]
+        vcsUrl = project.vcsUrl
         version {
-            name = rootProject.version
+            name = project.version
         }
     }
 }

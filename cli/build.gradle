@@ -24,19 +24,22 @@ dependencies {
     testRuntime 'org.objenesis:objenesis:2.2'
 }
 
+test {
+    mustRunAfter ':server-integration-test:check'
+
+    if (System.getProperty('os.name') == 'Linux') {
+        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+    }
+}
+
 shadowJar {
     baseName = 'gssh'
     classifier = ''
     version = ''
 }
 
-if (System.getProperty('os.name') == 'Linux') {
-    tasks.withType(JavaForkOptions) {
-        systemProperty 'java.security.egd', 'file:/dev/./urandom'
-    }
-}
-
-check.dependsOn runShadow
 runShadow {
     args 'gssh-example.groovy'
 }
+
+check.dependsOn runShadow
