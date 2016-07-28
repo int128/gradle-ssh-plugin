@@ -36,7 +36,7 @@ publishing {
         maven(MavenPublication) {
             from components.java
             groupId project.group
-            artifactId rootProject.name
+            artifactId parent.name
         }
     }
 }
@@ -48,10 +48,10 @@ bintray {
     publish = true
     pkg {
         repo = 'maven'
-        name = rootProject.name
+        name = parent.name
         version {
             attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
-            name = rootProject.version
+            name = project.version
         }
     }
 }
