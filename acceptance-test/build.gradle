@@ -14,7 +14,7 @@ dependencies {
 }
 
 test {
-    dependsOn ':core:publishToMavenLocal'
+    dependsOn "${parent.project('core').path}:publishToMavenLocal"
     systemProperty 'target.java.homes',
             project.findProperty('target.java.homes') ?: System.getProperty('java.home')
     systemProperty 'target.gradle.versions',
