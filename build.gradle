@@ -1,0 +1,8 @@
+allprojects {
+    group = 'org.hidetake'
+    version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
+
+    repositories {
+        jcenter()
+    }
+}

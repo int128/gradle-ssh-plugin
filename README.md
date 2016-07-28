@@ -58,13 +58,12 @@ The document is maintained on the repository of Groovy SSH.
 We can run acceptance tests to verify behavior of the plugin on Gradle environment.
 It expects a SSH server is running at localhost port 8022.
 
-At default, it runs on the current version and 1.12 of Gradle, and the default JVM.
 Test condition can be set by system properties as follows:
 
-System Property             | Value
-----------------------------|------
-`target.gradle.versions`    | List of target Gradle version
-`target.java.homes`         | List of target JVM
+System Property             | Value                         | Default
+----------------------------|-------------------------------|--------
+`target.gradle.versions`    | List of target Gradle version | current version and 1.12
+`target.java.home`          | Target JVM                    | current JVM
 
 e.g.
 

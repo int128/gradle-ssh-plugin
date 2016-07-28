@@ -6,21 +6,21 @@ import spock.lang.Unroll
 
 class AcceptanceSpec extends Specification {
 
-    static final matrix = []
+    static matrix = []
     static {
-        System.getProperty('target.gradle.versions').split(/,/).collect { gradleVersion ->
-            System.getProperty('target.java.homes').split(/,/).collect { javaHome ->
-                matrix << [gradleVersion, javaHome]
+        System.getProperty('target.product.versions').split(/,/).each { productVersion ->
+            System.getProperty('target.gradle.versions').split(/,/).each { gradleVersion ->
+                matrix << [productVersion, gradleVersion]
             }
         }
     }
 
     @Unroll
-    def "specs should be pass on Gradle #gradleVersion, Java #javaHome"() {
+    def "specs should be pass on Plugin #productVersion, Gradle #gradleVersion"() {
         given:
         def runner = GradleRunner.create()
                 .withProjectDir(new File('fixture'))
-                .withArguments("-Dorg.gradle.java.home=$javaHome", 'test')
+                .withArguments("-Ptarget.product.version=$productVersion", 'test')
                 .withGradleVersion(gradleVersion)
 
         and: 'show console on Gradle 2.x'
@@ -35,7 +35,7 @@ class AcceptanceSpec extends Specification {
         noExceptionThrown()
 
         where:
-        [gradleVersion, javaHome] << matrix
+        [productVersion, gradleVersion] << matrix
     }
 
 }

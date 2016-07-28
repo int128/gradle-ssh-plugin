@@ -6,3 +6,19 @@ fileTree(projectDir) {
 }.each {
     apply from: it
 }
+
+task test {
+    description = "Test all specs in $project"
+}
+
+test.dependsOn tasks.matching { it.name.startsWith 'should ' }.each { spec ->
+    spec.dependsOn parent.setup
+    spec.finalizedBy parent.cleanup
+
+    // inject paths
+    spec.ext.localWorkDir = file("${parent.localWorkDirBase}/${spec.hashCode()}")
+    spec.ext.remoteWorkDir = "${parent.remoteWorkDirBase}/${spec.hashCode()}"
+}
+
+// inject utility method
+ext.randomInt = { int max = 10000 -> (Math.random() * max) as int }

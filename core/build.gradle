@@ -4,16 +4,8 @@ plugins {
     id 'com.jfrog.bintray' version '1.6'
 }
 
-group = 'org.hidetake'
-version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
-
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
-
-repositories {
-    mavenLocal()
-    jcenter()
-}
 
 dependencies {
     compile gradleApi()
