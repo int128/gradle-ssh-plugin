@@ -6,21 +6,27 @@ import spock.lang.Unroll
 
 class AcceptanceSpec extends Specification {
 
+    static final matrix = []
+    static {
+        System.getProperty('target.gradle.versions').split(/,/).collect { gradleVersion ->
+            System.getProperty('target.java.homes').split(/,/).collect { javaHome ->
+                matrix << [gradleVersion, javaHome]
+            }
+        }
+    }
+
     @Unroll
-    def "acceptance test should be success on Gradle #version"() {
+    def "specs should be pass on Gradle #gradleVersion, Java #javaHome"() {
         given:
         def runner = GradleRunner.create()
                 .withProjectDir(new File('fixture'))
-                .withArguments('test')
-                .withGradleVersion(version)
+                .withArguments("-Dorg.gradle.java.home=$javaHome", 'test')
+                .withGradleVersion(gradleVersion)
 
         and: 'show console on Gradle 2.x'
-        if (version =~ /^2\./) {
+        if (gradleVersion =~ /^2\./) {
             runner.forwardOutput()
         }
-
-        and: 'show system properties'
-        System.properties.each { k, v -> println("$k = $v") }
 
         when:
         runner.build()
@@ -29,7 +35,7 @@ class AcceptanceSpec extends Specification {
         noExceptionThrown()
 
         where:
-        version << System.getProperty('target.gradle.versions').split(/,/).toList()
+        [gradleVersion, javaHome] << matrix
     }
 
 }
