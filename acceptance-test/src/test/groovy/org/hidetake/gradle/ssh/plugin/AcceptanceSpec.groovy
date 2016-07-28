@@ -19,6 +19,9 @@ class AcceptanceSpec extends Specification {
             runner.forwardOutput()
         }
 
+        and: 'show system properties'
+        System.properties.each { k, v -> println("$k = $v") }
+
         when:
         runner.build()
 

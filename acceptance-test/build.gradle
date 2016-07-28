@@ -15,7 +15,6 @@ dependencies {
 
 test {
     dependsOn ':core:publishToMavenLocal'
-    testLogging.showStandardStreams = true
     systemProperty 'target.gradle.versions',
             project.findProperty('target.gradle.versions') ?: "${gradle.gradleVersion},1.12"
 }
