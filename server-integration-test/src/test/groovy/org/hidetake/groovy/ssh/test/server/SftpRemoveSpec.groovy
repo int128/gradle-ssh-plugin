@@ -13,7 +13,6 @@ import spock.util.mop.Use
 
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
-import static org.hidetake.groovy.ssh.test.server.Helper.uuidgen
 
 @Use(FileDivCategory)
 class SftpRemoveSpec extends Specification {
@@ -56,10 +55,9 @@ class SftpRemoveSpec extends Specification {
     }
 
 
-    def "remove() should delete a file"() {
+    def "remove() should accept a path string"() {
         given:
-        def file = temporaryFolder.newFile() << 'file'
-        assert file.exists()
+        def file = temporaryFolder.newFile() << 'content'
 
         when:
         def result = ssh.run {
@@ -73,112 +71,70 @@ class SftpRemoveSpec extends Specification {
         !file.exists()
     }
 
-    def "remove() should delete files"() {
+    def "remove() should accept a list of paths"() {
         given:
-        def file1 = temporaryFolder.newFile() << 'file'
-        def file2 = temporaryFolder.newFile() << 'file'
-        assert file1.exists()
-        assert file2.exists()
+        def dir = temporaryFolder.newFolder()
+        def dir1 = dir / 'dir1' / DIRECTORY
+        dir / 'dir1' / 'file1' << 'content1'
+        def dir2 = dir / 'dir2' / DIRECTORY
+        def file2 = dir / 'dir2' / 'file2' << 'content2'
 
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixPath(file1.path), toUnixPath(file2.path))
+                remove(toUnixPath(dir1.path), toUnixPath(file2.path))
             }
         }
 
         then:
         result == true
-        !file1.exists()
+        !dir1.exists()
+        dir2.exists()
         !file2.exists()
     }
 
-    def "remove() should delete a directory"() {
+    def "remove() should delete a directory recursively"() {
         given:
-        def folder1 = temporaryFolder.newFolder()
-        def file1 = folder1 / uuidgen() << 'file1'
-        def folder2 = folder1 / uuidgen() / DIRECTORY
-        def file2 = folder2 / uuidgen() << 'file2'
-
-        assert file2.exists()
-        assert folder2.exists()
-        assert file1.exists()
-        assert folder1.exists()
+        def dir = temporaryFolder.newFolder()
+        dir / 'file1' << 'content1'
+        dir / 'dir2' / DIRECTORY
+        dir / 'dir2' / 'file2' << 'content2'
+        dir / 'dir2' / 'dir3' / DIRECTORY
 
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixPath(folder1.path))
+                remove(toUnixPath(dir.path))
             }
         }
 
         then:
         result == true
-        !file2.exists()
-        !folder2.exists()
-        !file1.exists()
-        !folder1.exists()
-    }
-
-    def "remove() should delete a directory and file"() {
-        given:
-        def folder1 = temporaryFolder.newFolder()
-        def file1 = folder1 / uuidgen() << 'file1'
-        def folder2 = temporaryFolder.newFolder()
-        def file2 = folder2 / uuidgen() << 'file2'
-
-        assert file2.exists()
-        assert folder2.exists()
-        assert file1.exists()
-        assert folder1.exists()
-
-        when:
-        def result = ssh.run {
-            session(ssh.remotes.testServer) {
-                remove(toUnixPath(folder1.path), toUnixPath(file2.path))
-            }
-        }
-
-        then:
-        result == true
-        !file2.exists()
-        folder2.exists()  // not deleted
-        !file1.exists()
-        !folder1.exists()
+        !dir.exists()
     }
 
     def "remove() should return false if target does not exist"() {
         given:
-        def folder1 = temporaryFolder.newFolder()
-        def file1 = folder1 / uuidgen() << 'file1'
-        def file2 = folder1 / uuidgen()
-
-        assert file1.exists()
-        assert !file2.exists()
-        assert folder1.exists()
+        def dir = temporaryFolder.newFolder()
+        def file1 = dir / 'file1'
+        def file2 = dir / 'file2'
 
         when:
         def result = ssh.run {
             session(ssh.remotes.testServer) {
-                remove(toUnixPath(file2.path))
+                remove(toUnixPath(file1.path), toUnixPath(file2.path))
             }
         }
 
         then:
         result == false
-        file1.exists()
-        !file2.exists()
     }
 
     def "remove() should return true if at least one is removed"() {
         given:
-        def folder1 = temporaryFolder.newFolder()
-        def file1 = folder1 / uuidgen() << 'file1'
-        def file2 = folder1 / uuidgen()
-
-        assert file1.exists()
-        assert !file2.exists()
-        assert folder1.exists()
+        def dir = temporaryFolder.newFolder()
+        def file1 = dir / 'file1'
+        def file2 = dir / 'file2' << 'content2'
 
         when:
         def result = ssh.run {
@@ -189,29 +145,6 @@ class SftpRemoveSpec extends Specification {
 
         then:
         result == true
-        !file1.exists()
-        !file2.exists()
-    }
-
-    def "remove() should return false if anything is not removed"() {
-        given:
-        def folder1 = temporaryFolder.newFolder()
-        def file1 = folder1 / uuidgen()
-        def file2 = folder1 / uuidgen()
-
-        assert !file1.exists()
-        assert !file2.exists()
-        assert folder1.exists()
-
-        when:
-        def result = ssh.run {
-            session(ssh.remotes.testServer) {
-                remove(toUnixPath(file1.path), toUnixPath(file2.path))
-            }
-        }
-
-        then:
-        result == false
         !file1.exists()
         !file2.exists()
     }
