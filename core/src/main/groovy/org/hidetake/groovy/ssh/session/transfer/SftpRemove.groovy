@@ -13,9 +13,6 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  */
 @Slf4j
 trait SftpRemove implements SessionExtension {
-    private static enum PathType {
-        File, Directory, NotFound
-    }
 
     /**
      * Remove files or directories.
@@ -27,45 +24,54 @@ trait SftpRemove implements SessionExtension {
      */
     boolean remove(String... paths) {
         sftp {
-            paths.collect { path ->
-                PathType pathType
-                try {
-                    pathType = stat(path).dir ? PathType.Directory : PathType.File
-                } catch (SftpNoSuchFileException ignore) {
-                    pathType = PathType.NotFound
+            paths.collect { remotePath ->
+                def remoteAttrs = Helper.nullIfNoSuchFile { stat(remotePath) }
+                if (remoteAttrs == null) {
+                    false
+                } else if (remoteAttrs.dir) {
+                    log.debug("Entering directory on $remote.name: $remotePath")
+                    cd(remotePath)
+
+                    currySelf { Closure self ->
+                        def entries = ls('.')
+                        entries.findAll { !it.attrs.dir }.each { child ->
+                            log.debug("Removing file on $remote.name: $child.filename")
+                            rm(child.filename)
+                        }
+                        entries.findAll { it.attrs.dir && !(it.filename in ['.', '..']) }.each { child ->
+                            log.debug("Entering directory on $remote.name: $child.filename")
+                            cd(child.filename)
+                            self()
+                            log.debug("Leaving directory on $remote.name: $child.filename")
+                            cd('..')
+                            log.debug("Removing directory on $remote.name: $child.filename")
+                            rmdir(child.filename)
+                        }
+                    }()
+
+                    log.debug("Leaving directory on $remote.name: $remotePath")
+                    cd('..')
+                    log.debug("Removing directory on $remote.name: $remotePath")
+                    rmdir(remotePath)
+                    log.info("Removed directory on $remote.name: $remotePath")
+                    true
+                } else {
+                    rm(remotePath)
+                    log.info("Removed file on $remote.name: $remotePath")
+                    true
                 }
-
-                switch (pathType) {
-                    case PathType.File:
-                        rm(path)
-                        log.info("Removed file on $remote.name: $path")
-                        break
-
-                    case PathType.Directory:
-                        currySelf { Closure self, String directory ->
-                            log.debug("Entering directory on $remote.name: $directory")
-                            ls(directory).each { child ->
-                                def fullPath = "$directory/$child.filename"
-                                if (!child.attrs.dir) {
-                                    rm(fullPath)
-                                } else if (child.filename in ['.', '..']) {
-                                    // ignore directory entries
-                                } else {
-                                    self(fullPath)
-                                }
-                            }
-                            rmdir(directory)
-                            log.debug("Leaving directory on $remote.name: $directory")
-                        }(path)
-                        log.info("Removed directory on $remote.name: $path")
-                        break
-
-                    case PathType.NotFound:
-                        log.warn("No such file or directory on $remote.name: $path")
-                        break
-                }
-                pathType
-            }.any { it in [PathType.File, PathType.Directory] }
+            }.any()
         }
     }
+
+    private static class Helper {
+        static <T> T nullIfNoSuchFile(Closure<T> closure) {
+            try {
+                closure()
+            } catch (SftpNoSuchFileException ignore) {
+                null
+            }
+        }
+    }
+
 }
