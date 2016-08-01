@@ -31,8 +31,8 @@ test:
     - ./gradlew check
   post:
     - |
-      cp -a */build/test-results/*.xml $CIRCLE_TEST_REPORTS/
-      rsync -aR */build/reports $CIRCLE_ARTIFACTS/
+      cp -a build/test-results/*.xml $CIRCLE_TEST_REPORTS/
+      cp -a build/reports $CIRCLE_ARTIFACTS/
 
 deployment:
   release:

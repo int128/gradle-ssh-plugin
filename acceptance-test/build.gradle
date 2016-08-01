@@ -10,8 +10,8 @@ dependencies {
 }
 
 test {
-    dependsOn "${parent.project('core').path}:test"
-    dependsOn "${parent.project('core').path}:publishToMavenLocal"
+    dependsOn ':core:test'
+    dependsOn ':core:publishToMavenLocal'
 
     systemProperty 'target.product.versions', project.version
 
