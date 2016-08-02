@@ -1,0 +1,10 @@
+root = true
+
+[*]
+indent_style = space
+end_of_line = lf
+charset = utf-8
+indent_size = 2
+
+[*.{groovy,java,gradle}]
+indent_size = 4
