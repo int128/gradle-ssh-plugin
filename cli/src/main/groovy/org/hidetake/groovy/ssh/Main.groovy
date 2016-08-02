@@ -62,6 +62,7 @@ class Main {
         def shell = Ssh.newShell()
         def service = shell.getVariable('ssh') as Service
         service.metaClass.runtime = Runtime.instance
+        service.metaClass.version = Ssh.release.toString()
         if (options.n) {
             service.settings {
                 dryRun = true

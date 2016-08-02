@@ -56,6 +56,22 @@ class MainSpec extends Specification {
         System.out = stdout
     }
 
+    def "release version should be available in the script"() {
+        given:
+        def stdout = System.out
+        def stdoutBuffer = new ByteArrayOutputStream()
+        System.out = new PrintStream(stdoutBuffer)
+
+        when:
+        Main.main '-e', 'println ssh.version'
+
+        then:
+        stdoutBuffer.toString('UTF-8').trim() == Ssh.release.toString()
+
+        cleanup:
+        System.out = stdout
+    }
+
 
     @ConfineMetaClassChanges(Command)
     def "main should read script from a file is path is given"() {
