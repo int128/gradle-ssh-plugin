@@ -18,6 +18,11 @@ trait ConnectionSettings implements UserAuthenticationSettings, HostAuthenticati
     Remote gateway
 
     /**
+     * Both connection timeout and socket read timeout in seconds.
+     */
+    Integer timeoutSec
+
+    /**
      * Retry count for connecting to a host.
      */
     Integer retryCount
@@ -50,6 +55,7 @@ trait ConnectionSettings implements UserAuthenticationSettings, HostAuthenticati
                 proxy: null,
                 agent: false,
                 knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
+                timeoutSec: 0,
                 retryCount: 0,
                 retryWaitSec: 0,
                 keepAliveSec: 60,

@@ -86,6 +86,7 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
             def jsch = new JSch()
             def session = jsch.getSession(settings.user, host, port)
             session.setServerAliveInterval(settings.keepAliveSec * 1000)
+            session.timeout = settings.timeoutSec * 1000
 
             configureHostAuthentication(jsch, session, remote, settings)
             configureUserAuthentication(jsch, session, remote, settings)
