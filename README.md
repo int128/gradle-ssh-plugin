@@ -1,44 +1,10 @@
-Gradle SSH Plugin [![CircleCI](https://circleci.com/gh/int128/gradle-ssh-plugin.svg?style=svg)](https://circleci.com/gh/int128/gradle-ssh-plugin) [![Gradle Status](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status)
+Gradle SSH Plugin [![CircleCI](https://circleci.com/gh/int128/gradle-ssh-plugin.svg?style=shield)](https://circleci.com/gh/int128/gradle-ssh-plugin) [![Gradle Status](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/gradle-ssh-plugin/status)
 =================
 
 Gradle SSH Plugin provides SSH facilities such as command execution or file transfer on Gradle.
 
-Read [the document](https://gradle-ssh-plugin.github.io) for details,
-and get [the template project](https://github.com/gradle-ssh-plugin/template) for quick start.
+https://gradle-ssh-plugin.github.io
 
-
-Getting Started
----------------
-
-Add the plugin into your build script.
-Check the latest version in [releases](https://github.com/int128/gradle-ssh-plugin/releases).
-
-```groovy
-plugins {
-  id 'org.hidetake.ssh' version 'x.y.z'
-}
-```
-
-Define remote hosts and describe SSH operations in the task.
-
-```groovy
-remotes {
-  webServer {
-    host = '192.168.1.101'
-    user = 'jenkins'
-    identity = file('id_ecdsa')
-  }
-}
-
-task deploy << {
-  ssh.run {
-    session(remotes.webServer) {
-      put from: file('example.war'), into: '/webapps'
-      execute 'sudo service tomcat restart'
-    }
-  }
-}
-```
 
 Contributions
 -------------
@@ -71,8 +37,27 @@ e.g.
 ./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-tests:test
 ```
 
-#### Release
-
-Build with JDK 7 for compatibility. Do not build with JDK 8.
+### Release
 
 Push a versioned tag to GitHub and CI will upload the artifact to Bintray.
+
+
+License
+-------
+
+```
+Copyright 2012-2016 Hidetake Iwata
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
