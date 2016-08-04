@@ -27,6 +27,20 @@ class Shell implements Operation {
         channelConnectionTimeoutSec = settings.timeoutSec
 
         interactions = new Interactions(channel.outputStream, channel.inputStream, settings.encoding)
+        if (settings.inputStream) {
+            interactions.add {
+                standardInput.withStream {
+                    log.debug("Sending to standard input on command $connection.remote.name#$channel.id")
+                    try {
+                        standardInput << settings.inputStream
+                    } finally {
+                        if (settings.inputStream instanceof Closeable) {
+                            settings.inputStream.close()
+                        }
+                    }
+                }
+            }
+        }
         if (settings.outputStream) {
             interactions.pipe(Stream.StandardOutput, settings.outputStream)
         }

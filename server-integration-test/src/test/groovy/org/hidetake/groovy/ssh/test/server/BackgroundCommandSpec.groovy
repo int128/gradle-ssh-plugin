@@ -385,4 +385,28 @@ class BackgroundCommandSpec extends Specification {
         noExceptionThrown()
     }
 
+    @Unroll
+    def "executeBackground should send to standard input if given #input"() {
+        given:
+        def actual = new ByteArrayOutputStream()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeBackground 'somecommand', inputStream: input
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            actual << inputStream
+        }
+
+        then:
+        actual.toString() == 'some message'
+
+        where:
+        input << [new ByteArrayInputStream('some message'.bytes), 'some message', 'some message'.bytes]
+    }
+
 }

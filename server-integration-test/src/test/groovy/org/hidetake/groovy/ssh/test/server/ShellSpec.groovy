@@ -210,4 +210,28 @@ class ShellSpec extends Specification {
         }
     }
 
+    @Unroll
+    def "shell should send stream to standard input if given #input"() {
+        given:
+        def actual = new ByteArrayOutputStream()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                shell inputStream: input
+            }
+        }
+
+        then:
+        1 * server.shellFactory.create() >> command(0) {
+            actual << inputStream
+        }
+
+        then:
+        actual.toString() == 'some message'
+
+        where:
+        input << [new ByteArrayInputStream('some message'.bytes), 'some message', 'some message'.bytes]
+    }
+
 }
