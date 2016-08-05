@@ -17,7 +17,7 @@ import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static FilenameUtils.toUnixPath
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class MainSpec extends Specification {
 
@@ -202,7 +202,10 @@ class MainSpec extends Specification {
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         server.commandFactory = Mock(CommandFactory)
-        server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+        server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'some message'
+            errorStream << 'error'
+        }
         server.start()
         server
     }

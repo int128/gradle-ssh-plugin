@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class RetryAndTimeoutSpec extends Specification {
 
@@ -20,7 +20,7 @@ class RetryAndTimeoutSpec extends Specification {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.commandFactory = Mock(CommandFactory) {
-            createCommand('somecommand1') >> commandWithExit(0)
+            createCommand('somecommand1') >> command(0)
         }
 
         ssh = Ssh.newService()

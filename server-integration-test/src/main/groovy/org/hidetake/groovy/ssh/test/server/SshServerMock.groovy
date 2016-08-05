@@ -6,6 +6,8 @@ import org.apache.sshd.server.Command
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.ExitCallback
 
+import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
+
 /**
  * A helper class for server-based integration tests.
  *
@@ -22,7 +24,7 @@ class SshServerMock {
         Environment environment
     }
 
-    static command(Closure interaction) {
+    static command(int status, @DelegatesTo(CommandContext) Closure interaction = {}) {
         def context = new CommandContext()
         [setInputStream: { InputStream inputStream ->
             context.inputStream = inputStream
@@ -39,31 +41,19 @@ class SshServerMock {
         start: { Environment env ->
             context.environment = env
             Thread.start {
-                def threadName = Thread.currentThread().name
-                log.debug("Started interaction thread $threadName")
+                log.debug("[ssh-server-mock] Started interaction thread")
                 try {
-                    interaction.call(context)
+                    callWithDelegate(interaction, context)
+                    context.exitCallback.onExit(status)
                 } catch (Throwable t) {
-                    log.error("Error occurred on interaction thread $threadName", t)
+                    log.error("[ssh-server-mock] Error occurred on interaction thread", t)
                     context.exitCallback.onExit(-1, t.message)
                 }
-                log.debug("Terminated interaction thread $threadName")
+                log.debug("[ssh-server-mock] Terminated interaction thread")
             }
         },
         destroy: { ->
         }] as Command
-    }
-
-    static commandWithExit(int status, String outputMessage = null, String errorMessage = null) {
-        command { CommandContext c ->
-            if (outputMessage) {
-                c.outputStream.withWriter('UTF-8') { it << outputMessage }
-            }
-            if (errorMessage) {
-                c.errorStream.withWriter('UTF-8') { it << errorMessage }
-            }
-            c.exitCallback.onExit(status)
-        }
     }
 
     static SshServer setUpLocalhostServer(provider = HostKeyFixture.keyPairProvider()) {

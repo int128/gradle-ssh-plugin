@@ -11,8 +11,8 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-import static SshServerMock.commandWithExit
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class GatewaySpec extends Specification {
 
@@ -79,7 +79,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
-        1 * targetServer.shellFactory.create() >> commandWithExit(0)
+        1 * targetServer.shellFactory.create() >> command(0)
     }
 
     def "it should connect to target server via 2 gateway servers"() {
@@ -133,7 +133,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
 
         then:
-        1 * targetServer.shellFactory.create() >> commandWithExit(0)
+        1 * targetServer.shellFactory.create() >> command(0)
     }
 
 

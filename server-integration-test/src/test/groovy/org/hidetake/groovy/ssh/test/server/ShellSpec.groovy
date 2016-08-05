@@ -15,7 +15,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class ShellSpec extends Specification {
 
@@ -62,7 +62,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(0)
+        1 * server.shellFactory.create() >> command(0)
     }
 
     def "it should throw an exception if the shell exits with non zero status"() {
@@ -74,7 +74,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(1)
+        1 * server.shellFactory.create() >> command(1)
 
         then:
         BadExitStatusException e = thrown()
@@ -90,7 +90,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(1)
+        1 * server.shellFactory.create() >> command(1)
     }
 
     @Unroll
@@ -109,7 +109,9 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(0, outputValue)
+        1 * server.shellFactory.create() >> command(0) {
+            outputStream << outputValue
+        }
 
         then:
         logMessages.each { logMessage ->
@@ -143,7 +145,9 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
+        1 * server.shellFactory.create() >> command(0) {
+            outputStream << 'some message'
+        }
 
         then:
         stdout * System.out.println({ it =~ /testServer#\d+?\|some message/ })
@@ -173,7 +177,9 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
+        1 * server.shellFactory.create() >> command(0) {
+            outputStream << 'some message'
+        }
 
         then:
         logFile.text == 'some message'
@@ -188,7 +194,9 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> commandWithExit(0, 'some message')
+        1 * server.shellFactory.create() >> command(0) {
+            outputStream << 'some message'
+        }
     }
 
 }

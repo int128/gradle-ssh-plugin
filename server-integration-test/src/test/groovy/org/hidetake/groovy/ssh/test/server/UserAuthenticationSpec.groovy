@@ -12,7 +12,7 @@ import spock.lang.Unroll
 
 import java.security.PublicKey
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.KeyType
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.privateKey
 
@@ -61,7 +61,7 @@ class UserAuthenticationSpec extends Specification {
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
     }
 
     def "password authentication should fail if wrong one is given"() {
@@ -123,7 +123,7 @@ class UserAuthenticationSpec extends Specification {
                 'someuser', { PublicKey k -> k.algorithm == keyType } as PublicKey, _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
 
         where:
         keyType | type      | identitySetting
@@ -163,7 +163,7 @@ class UserAuthenticationSpec extends Specification {
                 'someuser', { PublicKey k -> k.algorithm == keyType } as PublicKey, _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
 
         where:
         keyType | type      | identitySetting
@@ -206,9 +206,9 @@ class UserAuthenticationSpec extends Specification {
         e.message == 'Auth fail'
 
         where:
-        type      | identitySetting
-        'File'   | privateKey()
-        'String' | privateKey().text
+        type        | identitySetting
+        'File'      | privateKey()
+        'String'    | privateKey().text
     }
 
     def "public key authentication should accept the passphrase of identity"() {
@@ -237,7 +237,7 @@ class UserAuthenticationSpec extends Specification {
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
     }
 
     @Unroll
@@ -270,7 +270,7 @@ class UserAuthenticationSpec extends Specification {
         pw * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
 
         where:
         userAuthenticationMethods   | pw    | pk
@@ -363,7 +363,7 @@ class UserAuthenticationSpec extends Specification {
         (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
 
         then:
-        1 * server.commandFactory.createCommand('ls') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('ls') >> command(0)
     }
 
     def "public key authentication should fail if wrong passphrase is given"() {

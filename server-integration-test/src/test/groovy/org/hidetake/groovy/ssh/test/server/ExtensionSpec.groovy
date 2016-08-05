@@ -7,7 +7,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class ExtensionSpec extends Specification {
 
@@ -56,7 +56,7 @@ class ExtensionSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> command(0)
     }
 
     def "adding map to settings.extensions should extends DSL"() {
@@ -72,7 +72,7 @@ class ExtensionSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> command(0)
     }
 
 }

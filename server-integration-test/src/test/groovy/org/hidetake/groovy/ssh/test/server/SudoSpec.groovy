@@ -10,7 +10,6 @@ import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.interaction.InteractionException
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.hidetake.groovy.ssh.test.server.SshServerMock.CommandContext
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -81,34 +80,33 @@ class SudoSpec extends Specification {
                                  String lectureMessage = null,
                                  String outputMessage = null,
                                  String errorMessage = null) {
-        SshServerMock.command { CommandContext c ->
+        SshServerMock.command(status) {
             def parsed = parseSudoCommand(actualCommand)
             assert parsed.sudo == expectedSudo
             assert parsed.command == expectedCommand
 
             if (lectureMessage) {
                 log.debug("[sudo] Sending to standard output: $lectureMessage")
-                c.outputStream << lectureMessage << '\n'
+                outputStream << lectureMessage << '\n'
             }
 
             log.debug("[sudo] Sending prompt: $parsed.prompt")
-            c.outputStream << parsed.prompt
-            c.outputStream.flush()
+            outputStream << parsed.prompt
+            outputStream.flush()
 
             log.debug("[sudo] Waiting for password: $parsed.prompt")
-            def actualPassword = c.inputStream.withReader { it.readLine() }
+            def actualPassword = inputStream.withReader { it.readLine() }
             assert actualPassword == expectedPassword
 
-            c.outputStream << '\n'
+            outputStream << '\n'
             if (outputMessage) {
                 log.debug("[sudo] Sending to standard output: $outputMessage")
-                c.outputStream << outputMessage
+                outputStream << outputMessage
             }
             if (errorMessage) {
                 log.debug("[sudo] Sending to standard error: $errorMessage")
-                c.errorStream << errorMessage
+                errorStream << errorMessage
             }
-            c.exitCallback.onExit(status)
         }
     }
 

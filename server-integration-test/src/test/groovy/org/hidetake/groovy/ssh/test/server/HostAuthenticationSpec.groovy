@@ -15,10 +15,10 @@ import spock.lang.Unroll
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-import static SshServerMock.commandWithExit
 import static org.apache.sshd.common.KeyPairProvider.*
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 @Slf4j
 class HostAuthenticationSpec extends Specification {
@@ -71,7 +71,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
     def "strict host key checking should be turned off by remote specific settings"() {
@@ -91,7 +91,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
     @Unroll
@@ -112,7 +112,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType
@@ -151,7 +151,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType
@@ -189,7 +189,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType

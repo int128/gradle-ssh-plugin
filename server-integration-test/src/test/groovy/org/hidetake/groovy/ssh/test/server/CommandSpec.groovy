@@ -16,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static SshServerMock.commandWithExit
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class CommandSpec extends Specification {
 
@@ -66,9 +66,9 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('somecommand1') >> commandWithExit(0)
-        then: 1 * server.commandFactory.createCommand('somecommand2') >> commandWithExit(0)
-        then: 1 * server.commandFactory.createCommand('somecommand3') >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand('somecommand1') >> command(0)
+        then: 1 * server.commandFactory.createCommand('somecommand2') >> command(0)
+        then: 1 * server.commandFactory.createCommand('somecommand3') >> command(0)
     }
 
     def "it should throw an exception if the command exits with non zero status"() {
@@ -80,7 +80,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(1)
+        1 * server.commandFactory.createCommand('somecommand') >> command(1)
 
         then:
         BadExitStatusException e = thrown()
@@ -96,7 +96,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(1, 'something output')
+        1 * server.commandFactory.createCommand('somecommand') >> command(1) {
+            outputStream << 'something output'
+        }
 
         then:
         resultActual == 'something output'
@@ -110,7 +112,7 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(/'this '\''should'\'' be escaped'/) >> commandWithExit(0)
+        then: 1 * server.commandFactory.createCommand(/'this '\''should'\'' be escaped'/) >> command(0)
     }
 
     @Unroll
@@ -123,7 +125,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, outputValue)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << outputValue
+        }
 
         then:
         resultActual == resultExpected
@@ -151,7 +155,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'something output')
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'something output'
+        }
 
         then:
         resultActual == 'something output'
@@ -170,7 +176,9 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
+        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
+            outputStream << 'something output'
+        }
 
         then:
         resultActual == 'something output'
@@ -190,7 +198,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'something output')
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'something output'
+        }
 
         then:
         resultActual == 'something output'
@@ -210,7 +220,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> commandWithExit(0, 'something output')
+        1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
+            outputStream << 'something output'
+        }
 
         then:
         resultActual == 'something output'
@@ -232,7 +244,9 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, outputValue)
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << outputValue
+        }
 
         then:
         logMessages.each { logMessage ->
@@ -268,7 +282,10 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'some message'
+            errorStream << 'error'
+        }
 
         then:
         stdout * System.out.println({ it =~ /testServer#\d+?\|some message/ })
@@ -306,7 +323,10 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'some message'
+            errorStream << 'error'
+        }
 
         then:
         logFile.text in expectedLog
@@ -328,7 +348,10 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> commandWithExit(0, 'some message', 'error')
+        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'some message'
+            errorStream << 'error'
+        }
 
         then:
         noExceptionThrown()
