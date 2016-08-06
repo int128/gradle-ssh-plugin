@@ -17,7 +17,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class BackgroundCommandSpec extends Specification {
 
@@ -57,7 +57,7 @@ class BackgroundCommandSpec extends Specification {
     }
 
 
-    def "commands should be executed sequentially in ssh.run"() {
+    def "executeBackground should execute commands sequentially"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -72,7 +72,7 @@ class BackgroundCommandSpec extends Specification {
         then: 1 * server.commandFactory.createCommand('somecommand3') >> command(0)
     }
 
-    def "it should throw an exception if the command exits with non zero status"() {
+    def "executeBackground should throw an exception if the command exits with non zero status"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -92,7 +92,7 @@ class BackgroundCommandSpec extends Specification {
         e0.exitStatus == 1
     }
 
-    def "it should ignore the exit status if ignoreError is given"() {
+    def "executeBackground should ignore the exit status if ignoreError is true"() {
         given:
         def resultActual
 
@@ -112,7 +112,7 @@ class BackgroundCommandSpec extends Specification {
         resultActual == 'something output'
     }
 
-    def "execute should escape arguments if string list is given"() {
+    def "executeBackground should escape arguments if string list is given"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -124,7 +124,7 @@ class BackgroundCommandSpec extends Specification {
     }
 
     @Unroll
-    def "all commands should be executed even if error, A=#exitA B=#exitB C=#exitC"() {
+    def "executeBackground should execute all commands even if error, A=#exitA B=#exitB C=#exitC"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -155,7 +155,7 @@ class BackgroundCommandSpec extends Specification {
         4     | 5     | 6     || [4, 5, 6]
     }
 
-    def "all commands should be executed even if callback occurs error"() {
+    def "executeBackground should execute all commands even if callback occurs error"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {

@@ -11,8 +11,8 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 class GatewaySpec extends Specification {
 

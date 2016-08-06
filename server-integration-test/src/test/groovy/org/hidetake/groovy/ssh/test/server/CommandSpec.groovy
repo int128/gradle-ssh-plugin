@@ -16,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class CommandSpec extends Specification {
 
@@ -56,7 +56,7 @@ class CommandSpec extends Specification {
     }
 
 
-    def "commands should be executed sequentially in ssh.run"() {
+    def "execute should execute commands sequentially"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -71,7 +71,7 @@ class CommandSpec extends Specification {
         then: 1 * server.commandFactory.createCommand('somecommand3') >> command(0)
     }
 
-    def "it should throw an exception if the command exits with non zero status"() {
+    def "execute should throw an exception if the command exits with non zero status"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -87,7 +87,7 @@ class CommandSpec extends Specification {
         e.exitStatus == 1
     }
 
-    def "it should ignore the exit status if ignoreError is given"() {
+    def "execute should ignore the exit status if ignoreError is true"() {
         when:
         def resultActual = ssh.run {
             session(ssh.remotes.testServer) {

@@ -17,7 +17,7 @@ import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static FilenameUtils.toUnixPath
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class MainSpec extends Specification {
 

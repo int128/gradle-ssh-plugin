@@ -15,7 +15,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class ShellSpec extends Specification {
 
@@ -53,7 +53,7 @@ class ShellSpec extends Specification {
     }
 
 
-    def "it should success if the shell exits with zero status"() {
+    def "shell should not throw an exception if the shell exits with zero status"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -65,7 +65,7 @@ class ShellSpec extends Specification {
         1 * server.shellFactory.create() >> command(0)
     }
 
-    def "it should throw an exception if the shell exits with non zero status"() {
+    def "shell should throw an exception if the shell exits with non zero status"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -81,7 +81,7 @@ class ShellSpec extends Specification {
         e.exitStatus == 1
     }
 
-    def "it should ignore the exit status if ignoreError is given"() {
+    def "shell should ignore the exit status if ignoreError is true"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {

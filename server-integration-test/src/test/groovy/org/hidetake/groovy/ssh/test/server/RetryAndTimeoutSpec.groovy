@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
 
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class RetryAndTimeoutSpec extends Specification {
 

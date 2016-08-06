@@ -12,7 +12,7 @@ import spock.lang.Unroll
 
 import java.security.PublicKey
 
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.KeyType
 import static org.hidetake.groovy.ssh.test.server.UserKeyFixture.privateKey
 

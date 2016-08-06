@@ -16,9 +16,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 import static org.apache.sshd.common.KeyPairProvider.*
+import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.command
 
 @Slf4j
 class HostAuthenticationSpec extends Specification {
@@ -60,7 +60,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
 
-    def "strict host key checking should be turned off if knownHosts is allowAnyHosts"() {
+    def "strict host key checking should be turned off by global settings"() {
         given:
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -74,7 +74,7 @@ class HostAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
-    def "strict host key checking should be turned off by remote specific settings"() {
+    def "strict host key checking should be turned off by per-remote settings"() {
         given:
         ssh.remotes {
             testServer {
