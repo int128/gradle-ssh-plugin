@@ -417,4 +417,31 @@ class SudoSpec extends Specification {
         'lines with line sep'  | 'some result\nsecond line\n' | ['some result', 'second line']
     }
 
+    @Unroll
+    def "executeSudo should send to standard input if given #input"() {
+        given:
+        def actual = new ByteArrayOutputStream()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                executeSudo 'somecommand', inputStream: input
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+            sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
+                log.debug("[sudo] Reading output of the command: $commandLine")
+                actual << inputStream
+            }
+        }
+
+        then:
+        actual.toString() == 'some\nmessage'
+
+        where:
+        input << [new ByteArrayInputStream('some\nmessage'.bytes), 'some\nmessage', 'some\nmessage'.bytes]
+    }
+
 }
