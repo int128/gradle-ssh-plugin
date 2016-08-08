@@ -80,6 +80,9 @@ class GatewaySpec extends Specification {
 
         then:
         1 * targetServer.shellFactory.create() >> commandWithExit(0)
+
+        then: 'Make sure the gateway session is closed, too'
+        gateway1Server.activeSessions.size() == 0
     }
 
     def "it should connect to target server via 2 gateway servers"() {
