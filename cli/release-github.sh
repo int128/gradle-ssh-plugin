@@ -1,5 +1,6 @@
 #!/bin/bash -xe
 
+cd "$(dirname $0)/.."
 ./gradlew shadowJar
 
 export ARTIFACT="$(dirname $0)/build/libs/gssh.jar"
