@@ -10,6 +10,7 @@ import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 import static SshServerMock.commandWithExit
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
@@ -82,9 +83,11 @@ class GatewaySpec extends Specification {
         1 * targetServer.shellFactory.create() >> commandWithExit(0)
 
         then: 'Make sure target and gateway session is closed, too'
-        sleep(500)
-        gateway1Server.activeSessions.size() == 0
-        targetServer.activeSessions.size() == 0
+        def conditions = new PollingConditions(timeout: 10, initialDelay: 0.1)
+        conditions.eventually {
+            assert gateway1Server.activeSessions.size() == 0
+            assert targetServer.activeSessions.size() == 0
+        }
     }
 
     def "it should connect to target server via 2 gateway servers"() {
