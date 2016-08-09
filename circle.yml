@@ -45,11 +45,17 @@ deployment:
   release:
     tag: /[0-9]+(\.[0-9]+)*/
     commands:
-      - ./gradlew bintrayUpload
-      - ./cli/release-github.sh
-      - ./plugin-integration/create-branch-for-release.sh
+      - |
+        if [ "$GITHUB_TOKEN" -a "$BINTRAY_KEY" ]; then
+          ./gradlew bintrayUpload
+          ./cli/release-github.sh
+          ./plugin-integration/create-branch-for-release.sh
+        fi
 
   docs:
     branch: master
     commands:
-      - ./docs/release-github.sh
+      - |
+        if [ "$GITHUB_TOKEN" ]; then
+          ./docs/release-github.sh
+        fi
