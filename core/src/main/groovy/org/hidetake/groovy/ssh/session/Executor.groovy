@@ -71,9 +71,7 @@ class Executor {
                 callWithDelegate(plan.closure, sessionHandler)
             }
         } finally {
-            log.debug('Waiting for pending sessions')
             manager.waitAndClose()
-            log.debug('Completed all sessions')
         }
     }
 }

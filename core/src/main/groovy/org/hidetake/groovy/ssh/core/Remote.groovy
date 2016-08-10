@@ -58,6 +58,6 @@ class Remote implements CompositeSettings {
     }
 
     String toString() {
-        "$name [$host:$port]"
+        "$name[$host:$port]"
     }
 }

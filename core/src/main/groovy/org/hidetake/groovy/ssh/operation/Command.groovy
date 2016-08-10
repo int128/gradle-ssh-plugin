@@ -68,6 +68,7 @@ class Command implements Operation {
         try {
             interactions.start()
             interactions.waitForEndOfStream()
+            log.debug("Waiting for command $connection.remote.name#$channel.id: $commandLine")
             while (!channel.closed) {
                 sleep(100)
             }

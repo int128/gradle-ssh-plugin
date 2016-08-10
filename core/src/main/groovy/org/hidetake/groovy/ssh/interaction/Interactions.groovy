@@ -92,7 +92,9 @@ class Interactions {
      * Waits for all receiver threads.
      */
     void waitForEndOfStream() {
+        log.debug("Waiting for interaction threads: $threads")
         threads*.join()
+        log.debug("Terminated interaction threads: $threads")
         if (!exceptions.empty) {
             throw new InteractionException(*exceptions)
         }
