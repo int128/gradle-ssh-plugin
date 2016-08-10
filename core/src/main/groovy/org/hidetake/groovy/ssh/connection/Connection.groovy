@@ -140,6 +140,12 @@ class Connection {
             channels.clear()
         } finally {
             session.disconnect()
+            log.info("Disconnected from $remote")
         }
+    }
+
+    @Override
+    String toString() {
+        "Connection[$remote]"
     }
 }

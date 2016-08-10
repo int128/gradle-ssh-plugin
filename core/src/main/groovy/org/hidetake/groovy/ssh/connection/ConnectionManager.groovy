@@ -93,7 +93,7 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
             configureProxyConnection(jsch, session, remote, settings)
 
             session.connect()
-            log.info("Connected to $remote")
+            log.info("Connected to $remote (${session.serverVersion})")
             session
         }
     }
@@ -105,8 +105,10 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
      */
     void waitAndClose() {
         try {
+            log.debug("Waiting for connections: $connections")
             waitForPending()
         } finally {
+            log.debug("Closing connections: $connections")
             connections*.close()
             connections.clear()
         }
