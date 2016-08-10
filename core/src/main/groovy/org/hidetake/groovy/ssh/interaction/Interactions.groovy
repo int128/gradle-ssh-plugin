@@ -19,9 +19,10 @@ class Interactions {
 
     private final uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
         @Override
-        void uncaughtException(Thread t, Throwable e) {
-            log.debug("Uncaught exception at $t", e)
-            exceptions.add(e)
+        void uncaughtException(Thread thread, Throwable throwable) {
+            log.debug("Uncaught exception at $thread", throwable)
+            exceptions.add(throwable)
+            threads*.interrupt()
         }
     }
 
