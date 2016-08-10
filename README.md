@@ -15,7 +15,7 @@ Feel free to open issues or pull requests.
 
 ### Unit test
 
-Unit test can be run on IntelliJ or Gradle on any platform.
+We can run the unit test as follows:
 
 ```sh
 ./gradlew :core:check
@@ -24,8 +24,7 @@ Unit test can be run on IntelliJ or Gradle on any platform.
 
 ### Server integration test
 
-Server integration test can be run on IntelliJ or Gradle on any platform but some specs may fail on Windows.
-It uses Apache MINA SSHD server as a test double.
+We can run the server integration test using Apache MINA SSHD server as follows:
 
 ```sh
 ./gradlew :server-integration-test:check
@@ -34,8 +33,7 @@ It uses Apache MINA SSHD server as a test double.
 
 ### CLI test
 
-Server integration test can be run on IntelliJ or Gradle on any platform.
-It uses Apache MINA SSHD server as a test double.
+We can run the integration test of CLI as follows:
 
 ```sh
 ./gradlew :cli:check
@@ -44,19 +42,26 @@ It uses Apache MINA SSHD server as a test double.
 
 ### OS integration test
 
-OS integration test can be run on Gradle on Linux platform.
-It expects a SSH server is running at localhost port 8022 and sudo is available without a password.
+We can run the OS integration test using OpenSSH server as follows:
 
 ```sh
+# Setup SSH server on Docker
+./os-integration-test/setup-ssh.sh
+
+# Run test
 ./gradlew :os-integration-test:check
 ```
 
 
 ### Gradle SSH Plugin integration test
 
-Gradle SSH Plugin integration test can be run on Linux platform.
-It expects a SSH server is running at localhost port 8022 and sudo is available without a password.
-See `circle.yml` for details.
+We can run the test with Gradle SSH Plugin.
+See `plugin-integration/run-plugin-integration-test.sh` for details.
+
+
+### Release
+
+Push a versioned tag to GitHub and CI will upload the artifact to Bintray.
 
 
 License

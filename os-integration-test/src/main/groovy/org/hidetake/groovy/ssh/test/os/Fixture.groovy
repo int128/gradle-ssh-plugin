@@ -13,35 +13,35 @@ class Fixture {
     }
 
     static createRemotes(Service service) {
-        final home = System.getProperty('user.home')
+        final buildDir = 'build'
         service.remotes {
             Default {
-                host = 'sandbox.local'
+                host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
-                identity = new File("$home/.ssh/id_ext")
-                knownHosts = new File("$home/.ssh/known_hosts_ext")
+                identity = new File("$buildDir/id_rsa")
+                knownHosts = new File("$buildDir/known_hosts")
             }
             DefaultWithPassphrase {
-                host = 'sandbox.local'
+                host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
-                identity = new File("$home/.ssh/id_ext_passphrase")
+                identity = new File("$buildDir/id_rsa_passphrase")
                 passphrase = 'pass1234'
-                knownHosts = new File("$home/.ssh/known_hosts_ext")
+                knownHosts = new File("$buildDir/known_hosts")
             }
             DefaultWithEcdsaHostKey {
-                host = 'sandbox.local'
+                host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
-                identity = new File("$home/.ssh/id_ext")
-                knownHosts = new File("$home/.ssh/known_hosts_ext_ecdsa")
+                identity = new File("$buildDir/id_rsa")
+                knownHosts = new File("$buildDir/known_hosts_ecdsa")
             }
             DefaultWithAgent {
-                host = 'sandbox.local'
+                host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
-                knownHosts = new File("$home/.ssh/known_hosts_ext")
+                knownHosts = new File("$buildDir/known_hosts")
                 agent = true
             }
         }

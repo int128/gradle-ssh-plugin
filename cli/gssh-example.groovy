@@ -1,10 +1,10 @@
 ssh.remotes {
     tester {
-        host = 'sandbox.local'
+        host = 'sandbox.127.0.0.1.xip.io'
         port = 8022
         user = 'tester'
-        identity = new File("${System.getProperty('user.home')}/.ssh/id_ext")
-        knownHosts = new File("${System.getProperty('user.home')}/.ssh/known_hosts_ext")
+        identity = new File('id_rsa')
+        knownHosts = new File('known_hosts')
     }
 }
 
