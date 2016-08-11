@@ -21,9 +21,7 @@ The document is maintained on the repository of Groovy SSH.
 
 #### Acceptance Test
 
-We can run acceptance tests to verify behavior of the plugin on Gradle environment.
-It expects a SSH server is running at localhost port 8022.
-
+We can run the acceptance test to verify behavior of the plugin on Gradle.
 Test condition can be set by system properties as follows:
 
 System Property             | Value                         | Default
@@ -34,6 +32,10 @@ System Property             | Value                         | Default
 e.g.
 
 ```sh
+# Setup SSH server on Docker
+./acceptance-test/setup-ssh.sh
+
+# Run test
 ./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-tests:test
 ```
 
