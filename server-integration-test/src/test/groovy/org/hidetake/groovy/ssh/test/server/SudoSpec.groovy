@@ -10,6 +10,7 @@ import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.interaction.InteractionException
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
+import org.hidetake.groovy.ssh.session.execution.SudoException
 import org.slf4j.Logger
 import spock.lang.Shared
 import spock.lang.Specification
@@ -109,14 +110,18 @@ class SudoSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand(_) >> { String commandLine ->
-            sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
-                outputStream << 'Sorry, try again.\n'
+            sudoCommand(commandLine, 1, 'sudo', 'somecommand', 'somepassword', null) {
+                outputStream << 'Sorry, try again.' << '\n'
+                outputStream.flush()
+                log.debug("[sudo] Sending prompt again: $parsedCommandLine.prompt")
+                outputStream << parsedCommandLine.prompt
+                outputStream.flush()
             }
         }
 
         then:
         InteractionException e = thrown()
-        e.message.contains('sudo authentication failed')
+        e.exceptions.any { it instanceof SudoException }
     }
 
     def "executeSudo should throw an exception if the command exits with non zero status"() {

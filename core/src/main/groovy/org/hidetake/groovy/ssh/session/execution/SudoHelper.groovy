@@ -39,14 +39,16 @@ class SudoHelper {
                 standardInput.flush()
 
                 when(line: _, from: standardOutput) {
-                    when(line: 'Sorry, try again.') {
-                        log.error("Failed sudo authentication on $operations.remote.name")
-                        throw new RuntimeException('sudo authentication failed')
-                    }
+                    log.debug("Got ACK to the password on $operations.remote.name")
+
                     when(line: _, from: standardOutput) {
-                        log.info("Success sudo authentication on $operations.remote.name")
                         lines.clear()
                         lines << it
+
+                        when(partial: prompt, from: standardOutput) {
+                            log.error("Failed sudo authentication on $operations.remote.name")
+                            throw new SudoException(operations.remote, lines.join('\n'))
+                        }
 
                         when(line: _, from: standardOutput) {
                             lines << it
