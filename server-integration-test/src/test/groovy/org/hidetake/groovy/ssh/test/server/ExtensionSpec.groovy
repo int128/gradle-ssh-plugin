@@ -5,23 +5,32 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
+import spock.lang.Shared
 import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class ExtensionSpec extends Specification {
 
+    @Shared
     SshServer server
 
     Service ssh
 
-    def setup() {
+    def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
-        server.commandFactory = Mock(CommandFactory)
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            (1.._) * authenticate('someuser', 'somepassword', _) >> true
+            authenticate('someuser', 'somepassword', _) >> true
         }
         server.start()
+    }
+
+    def cleanupSpec() {
+        server.stop(true)
+    }
+
+    def setup() {
+        server.commandFactory = Mock(CommandFactory)
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -35,10 +44,6 @@ class ExtensionSpec extends Specification {
                 password = 'somepassword'
             }
         }
-    }
-
-    def cleanup() {
-        server.stop(true)
     }
 
     def "adding map to ssh.settings.extensions should extends DSL"() {

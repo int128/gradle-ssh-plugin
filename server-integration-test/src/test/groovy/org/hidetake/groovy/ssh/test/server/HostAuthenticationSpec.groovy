@@ -9,6 +9,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -23,6 +24,7 @@ import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
 @Slf4j
 class HostAuthenticationSpec extends Specification {
 
+    @Shared
     SshServer server
 
     Service ssh
@@ -30,11 +32,20 @@ class HostAuthenticationSpec extends Specification {
     @Rule
     TemporaryFolder temporaryFolder
 
-    def setup() {
+    def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
-        server.passwordAuthenticator = Mock(PasswordAuthenticator)
-        server.commandFactory = Mock(CommandFactory)
+        server.passwordAuthenticator = Mock(PasswordAuthenticator) {
+            authenticate('someuser', 'somepassword', _) >> true
+        }
         server.start()
+    }
+
+    def cleanupSpec() {
+        server.stop(true)
+    }
+
+    def setup() {
+        server.commandFactory = Mock(CommandFactory)
 
         ssh = Ssh.newService()
         ssh.remotes {
@@ -43,18 +54,6 @@ class HostAuthenticationSpec extends Specification {
                 port = server.port
                 user = 'someuser'
                 password = 'somepassword'
-            }
-        }
-    }
-
-    def cleanup() {
-        server.stop(true)
-    }
-
-    def executeCommand() {
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                execute 'somecommand'
             }
         }
     }
@@ -70,7 +69,6 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
@@ -90,7 +88,6 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
@@ -111,7 +108,6 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
@@ -150,7 +146,6 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
@@ -188,7 +183,6 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         where:
@@ -222,13 +216,22 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        0 * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _)
         0 * server.commandFactory.createCommand('somecommand')
 
         then:
         JSchException e = thrown()
         e.message.contains 'reject HostKey'
     }
+
+
+    private executeCommand() {
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                execute 'somecommand'
+            }
+        }
+    }
+
 
     private static hashHost(String host, int port) {
         def hostname = "[$host]:$port"

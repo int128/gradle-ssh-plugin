@@ -11,6 +11,7 @@ import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
 import spock.lang.Unroll
@@ -21,6 +22,7 @@ import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 @Timeout(10)
 class ShellSpec extends Specification {
 
+    @Shared
     SshServer server
 
     Service ssh
@@ -28,13 +30,20 @@ class ShellSpec extends Specification {
     @Rule
     TemporaryFolder temporaryFolder
 
-    def setup() {
+    def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
-            (1.._) * authenticate('someuser', 'somepassword', _) >> true
+            authenticate('someuser', 'somepassword', _) >> true
         }
-        server.shellFactory = Mock(Factory)
         server.start()
+    }
+
+    def cleanupSpec() {
+        server.stop(true)
+    }
+
+    def setup() {
+        server.shellFactory = Mock(Factory)
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -48,10 +57,6 @@ class ShellSpec extends Specification {
                 password = 'somepassword'
             }
         }
-    }
-
-    def cleanup() {
-        server.stop(true)
     }
 
 
