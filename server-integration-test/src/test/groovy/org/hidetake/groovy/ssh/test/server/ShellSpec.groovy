@@ -12,11 +12,13 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Specification
+import spock.lang.Timeout
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
+@Timeout(10)
 class ShellSpec extends Specification {
 
     SshServer server

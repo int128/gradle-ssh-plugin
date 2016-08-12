@@ -12,12 +12,14 @@ import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.slf4j.Logger
 import spock.lang.Specification
+import spock.lang.Timeout
 import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static org.hidetake.groovy.ssh.test.server.SudoHelper.sudoCommand
 
 @Slf4j
+@Timeout(10)
 class SudoSpec extends Specification {
 
     private static final NL = Utilities.eol()
