@@ -50,10 +50,12 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
         def settings = new ConnectionSettings.With(connectionSettings, remote)
         if (settings.gateway && settings.gateway != remote) {
             log.debug("Connecting to $remote via $settings.gateway")
-            def session = connectViaGateway(settings.gateway)
+            def gatewaySession = connectViaGateway(settings.gateway)
+            def gatewayConnection = new Connection(settings.gateway, gatewaySession)
+            connections.add(gatewayConnection)
 
             log.debug("Requesting port forwarding to $remote")
-            def localPort = session.setPortForwardingL(0, remote.host, remote.port)
+            def localPort = gatewaySession.setPortForwardingL(0, remote.host, remote.port)
             log.info("Enabled local port forwarding from $LOCALHOST:$localPort to $remote")
 
             connectInternal(remote, LOCALHOST, localPort)
