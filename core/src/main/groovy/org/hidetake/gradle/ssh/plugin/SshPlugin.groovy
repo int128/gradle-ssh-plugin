@@ -24,6 +24,18 @@ class SshPlugin implements Plugin<Project> {
         project.ssh.settings.logging = 'stdout'
 
         project.ssh.metaClass.mixin(VersionExtension)
+
+        // TODO
+        if (project.gradle.gradleVersion =~ /^1\./) {
+            log.warn('Gradle 1.x support will be removed in the future release. ' +
+                'Please see https://github.com/int128/gradle-ssh-plugin/issues/230')
+        }
+
+        // TODO
+        if (System.getProperty('java.version') =~ /^1\.6/) {
+            log.warn('Java 6 support will be removed in the future release. ' +
+                'Please see https://github.com/int128/gradle-ssh-plugin/issues/266')
+        }
     }
 
     private static createRemoteContainer(Project project) {
