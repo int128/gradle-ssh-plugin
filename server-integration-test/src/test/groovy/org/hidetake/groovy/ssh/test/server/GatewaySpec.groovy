@@ -40,6 +40,11 @@ class GatewaySpec extends Specification {
     }
 
     def cleanupSpec() {
+        new PollingConditions().eventually {
+            assert targetServer.activeSessions.empty
+            assert gateway1Server.activeSessions.empty
+            assert gateway2Server.activeSessions.empty
+        }
         [targetServer, gateway1Server, gateway2Server]*.stop(true)
     }
 
@@ -91,13 +96,6 @@ class GatewaySpec extends Specification {
 
         then:
         1 * targetServer.shellFactory.create() >> command(0)
-
-        then: 'Make sure target and gateway session is closed, too'
-        def conditions = new PollingConditions(timeout: 10, initialDelay: 0.1)
-        conditions.eventually {
-            assert gateway1Server.activeSessions.size() == 0
-            assert targetServer.activeSessions.size() == 0
-        }
     }
 
     def "it should connect to target server via 2 gateway servers"() {

@@ -7,6 +7,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
@@ -26,7 +27,10 @@ class ExtensionSpec extends Specification {
     }
 
     def cleanupSpec() {
-        server.stop(true)
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
     }
 
     def setup() {

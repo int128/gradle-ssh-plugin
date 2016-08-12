@@ -12,6 +12,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.concurrent.PollingConditions
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -41,7 +42,10 @@ class HostAuthenticationSpec extends Specification {
     }
 
     def cleanupSpec() {
-        server.stop(true)
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
     }
 
     def setup() {

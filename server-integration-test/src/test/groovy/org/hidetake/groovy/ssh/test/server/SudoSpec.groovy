@@ -15,6 +15,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
 import spock.lang.Unroll
+import spock.util.concurrent.PollingConditions
 import spock.util.mop.ConfineMetaClassChanges
 
 import static org.hidetake.groovy.ssh.test.server.SudoHelper.sudoCommand
@@ -39,7 +40,10 @@ class SudoSpec extends Specification {
     }
 
     def cleanupSpec() {
-        server.stop(true)
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
     }
 
     def setup() {

@@ -12,6 +12,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 @Slf4j
 class PortForwardingSpec extends Specification {
@@ -44,7 +45,10 @@ class PortForwardingSpec extends Specification {
     }
 
     def cleanupSpec() {
-        sshServer.stop(true)
+        new PollingConditions().eventually {
+            assert sshServer.activeSessions.empty
+        }
+        sshServer.stop()
         httpServer.stop(0)
     }
 
