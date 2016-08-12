@@ -44,14 +44,18 @@ trait UserManagementExtension implements SessionExtension {
         """, pty: true
     }
 
-    void configureSudo(String user, String spec) {
-        put text: "$user $spec", into: "/tmp/$user"
+    void configureSudoers(String content) {
+        put text: content, into: '/tmp/groovy-ssh-sudoers'
         execute """
-            sudo chmod 440 /tmp/$user
-            sudo chown 0.0 /tmp/$user
+            sudo chmod 440 /tmp/groovy-ssh-sudoers
+            sudo chown 0.0 /tmp/groovy-ssh-sudoers
             sudo mkdir -p -m 700 /etc/sudoers.d
-            sudo mv /tmp/$user /etc/sudoers.d/$user
+            sudo mv /tmp/groovy-ssh-sudoers /etc/sudoers.d/groovy-ssh-sudoers
         """, pty: true
+    }
+
+    void cleanupSudoers() {
+        execute 'sudo rm -f /etc/sudoers.d/groovy-ssh-sudoers'
     }
 
 }
