@@ -11,7 +11,9 @@ rm -f "$BUILD_DIR/known_hosts_ecdsa"
 
 ssh-keygen -t rsa -N '' -f "$BUILD_DIR/id_rsa"
 
-docker run -d -e authorized_key="$(cat "$BUILD_DIR/id_rsa.pub")" -p 8022:22 int128/integration-test-box:latest
+docker stop groovy-ssh-integration-test-box || true
+docker rm groovy-ssh-integration-test-box || true
+docker run -d --name groovy-ssh-integration-test-box -e authorized_key="$(cat "$BUILD_DIR/id_rsa.pub")" -p 8022:22 int128/integration-test-box:latest
 sleep 1
 
 # generate known_hosts with RSA
