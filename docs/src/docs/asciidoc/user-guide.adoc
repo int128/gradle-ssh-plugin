@@ -109,10 +109,7 @@ execute('sudo service httpd reload', logging: false)
 
 == Manage remote hosts
 
-The plugin adds a container of remote hosts to the project.
-
-
-=== Add a remote host
+The remote hosts container named as `remotes` is automatically added to the project.
 
 Following code adds a remote host to the remote hosts container:
 
@@ -126,32 +123,42 @@ remotes {
 }
 ----
 
-A remote host can be added by calling `remotes.create(name)`.
+
+=== Associate with roles
+
+Call `role` method to associate the host with one or more roles.
 
 [source,groovy]
 ----
-task setupRemote << {
-  ssh.run {
-    session(remotes.web01) {
-      def targetHost = execute 'cat settings/hostname'
-      def targetUser = execute 'cat settings/username'
-      // Create and add a remote host
-      remotes.create('db01') {
-        host = targetHost
-        user = targetUser
-      }
-    }
-  }
-}
-
-task something(dependsOn: setupRemote) << {
-  ssh.run {
-    session(remotes.db01) {
-      //execute ...
-    }
+remotes {
+  web01 {
+    role('webServers')
+    role('servers')
+    host = '192.168.1.101'
+    user = 'jenkins'
   }
 }
 ----
+
+We can specify one or mote roles on a session.
+
+[source,groovy]
+----
+// remote hosts associated to servers
+session(remotes.role('servers')) {
+}
+
+// remote hosts associated to webServer OR appServer
+session(remotes.role('webServer', 'appServer')) {
+}
+
+// remote hosts associated to webServer AND appServer
+session(remotes.allRoles('webServer', 'appServer')) {
+}
+----
+
+
+=== Connection settings
 
 Following settings can be set in a remote closure.
 
@@ -168,9 +175,6 @@ Following settings can be set in a remote closure.
 |`int`
 |Port. Defaults to port 22.
 |===
-
-
-==== Set connection settings
 
 Also following settings can be set in a remote closure.
 
@@ -242,9 +246,11 @@ ssh.settings {
   identity = new File('id_rsa')
 
   // content of the private key
-  identity = """-----BEGIN RSA PRIVATE KEY-----
-BASE64ENCODEDKEY...
-------END RSA PRIVATE KEY-------"""
+  identity = """\
+    -----BEGIN RSA PRIVATE KEY-----
+    BASE64ENCODEDKEY...
+    ------END RSA PRIVATE KEY-------
+  """.stripIndent()
 }
 ----
 
@@ -258,11 +264,12 @@ ssh.settings {
 ----
 
 
-==== Connect through gateway servers
+=== Gateway access
 
 A remote host can be connected through one or more gateway servers.
+Gateway access is achieved by the port forwarding tunnel.
 
-===== Through one gateway
+Following code connects through a gateway server:
 
 [source,groovy]
 ----
@@ -279,18 +286,20 @@ remotes {
 }
 ----
 
-It will:
+When the code runs, it does:
 
 . connect to Gateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to Target (`192.168.1.101`).
 . connect to the tunnelled port (`127.0.0.1:X`) and perform operations.
 
-If strict host key checking is turned on,
+If `knownHosts` is set,
 
-. `known_hosts` of Gateway should contain `10.2.3.4` with the host key of Gateway.
-. `known_hosts` of Target should contain `192.168.1.101` with the host key of Target.
+. `knownHosts` of Gateway should contain `10.2.3.4` with the host key of Gateway.
+. `knownHosts` of Target should contain `192.168.1.101` with the host key of Target.
 
 
-===== Through two-hop gateways
+==== More gateway servers
+
+Following code connects through two gateway servers:
 
 [source,groovy]
 ----
@@ -312,20 +321,20 @@ remotes {
 }
 ----
 
-It will:
+When the code runs, it does:
 
 . connect to FrontGateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to MidGateway (`172.16.1.2`).
 . connect to the tunnelled port (`127.0.0.1:X`) and tunnel from an auto-allocated port (`127.0.0.1:Y`) to Target (`192.168.1.101`).
 . connect to the tunnelled port (`127.0.0.1:Y`) and perform operations.
 
-If strict host key checking is turned on,
+If `knownHosts` is set,
 
-. `known_hosts` of FrontGateway should contain `10.2.3.4` with the host key with FrontGateway.
-. `known_hosts` of MidGateway should contain `172.16.1.2` with the host key with MidGateway.
-. `known_hosts` of Target should contain `192.168.1.101` with the host key with Target.
+. `knownHosts` of FrontGateway should contain `10.2.3.4` with the host key with FrontGateway.
+. `knownHosts` of MidGateway should contain `172.16.1.2` with the host key with MidGateway.
+. `knownHosts` of Target should contain `192.168.1.101` with the host key with Target.
 
 
-==== Connect through a proxy server
+=== Proxy access
 
 A remote host can specify that connections should be made through a proxy server.
 Individual proxy server connections are configured in the `proxies` container provided by the plugin.
@@ -441,40 +450,34 @@ task jarSearch << {
 ----
 
 
-=== Associate with roles
+=== More about remote host container
 
-Call `role` method to associate the host with one or more roles.
+A remote host can be added by calling `remotes.create(name)`.
 
 [source,groovy]
 ----
-remotes {
-  web01 {
-    role('webServers')
-    role('servers')
-    host = '192.168.1.101'
-    user = 'jenkins'
+task setupRemote << {
+  ssh.run {
+    session(remotes.web01) {
+      def targetHost = execute 'cat settings/hostname'
+      def targetUser = execute 'cat settings/username'
+      // Create and add a remote host
+      remotes.create('db01') {
+        host = targetHost
+        user = targetUser
+      }
+    }
+  }
+}
+
+task something(dependsOn: setupRemote) << {
+  ssh.run {
+    session(remotes.db01) {
+      //execute ...
+    }
   }
 }
 ----
-
-We can specify one or mote roles on a session.
-
-[source,groovy]
-----
-// remote hosts associated to servers
-session(remotes.role('servers')) {
-}
-
-// remote hosts associated to webServer OR appServer
-session(remotes.role('webServer', 'appServer')) {
-}
-
-// remote hosts associated to webServer AND appServer
-session(remotes.allRoles('webServer', 'appServer')) {
-}
-----
-
-=== Remote host container
 
 Implementation of the remote hosts container is different between Gradle SSH Plugin and Groovy SSH.
 
