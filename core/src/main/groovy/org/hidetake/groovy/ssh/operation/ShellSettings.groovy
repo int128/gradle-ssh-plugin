@@ -49,6 +49,12 @@ trait ShellSettings {
      */
     Closure interaction
 
+    /**
+     * Timeout for the shell channel to be connected in seconds.
+     * @see org.hidetake.groovy.ssh.connection.ConnectionSettings#timeoutSec
+     */
+    Integer timeoutSec
+
 
     @EqualsAndHashCode
     static class With implements ShellSettings, ToStringProperties {
@@ -63,6 +69,7 @@ trait ShellSettings {
                 agentForwarding: false,
                 logging: LoggingMethod.slf4j,
                 encoding: 'UTF-8',
+                timeoutSec: 0,
         )
     }
 }

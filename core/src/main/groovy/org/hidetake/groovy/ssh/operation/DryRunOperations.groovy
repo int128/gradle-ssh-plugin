@@ -4,6 +4,7 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
+import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
 
 /**
  * Dry-run implementation of {@link Operations}.
@@ -47,7 +48,7 @@ class DryRunOperations implements Operations {
     }
 
     @Override
-    def <T> T sftp(Closure<T> closure) {
+    def <T> T sftp(FileTransferSettings settings, @DelegatesTo(SftpOperations) Closure<T> closure) {
         log.info("Requesting SFTP subsystem on $remote")
         null
     }

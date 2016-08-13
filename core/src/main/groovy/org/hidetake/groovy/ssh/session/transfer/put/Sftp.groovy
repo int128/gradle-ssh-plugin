@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.session.transfer.put
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.operation.SftpFailureException
+import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
 
 /**
  * Recursive SFTP PUT executor.
@@ -13,14 +14,16 @@ import org.hidetake.groovy.ssh.operation.SftpFailureException
 class Sftp {
 
     private final Operations operations
+    final FileTransferSettings mergedSettings
 
-    def Sftp(Operations operations1) {
+    def Sftp(Operations operations1, FileTransferSettings mergedSettings1) {
         operations = operations1
+        mergedSettings = mergedSettings1
     }
 
     void put(Instructions instructions) {
         def directoryStack = [instructions.base]
-        operations.sftp {
+        operations.sftp(mergedSettings) {
             instructions.each { instruction ->
                 def remotePath = directoryStack.join('/')
 

@@ -52,6 +52,6 @@ class SessionHandler implements SessionExtensions {
     @Override
     def <T> T sftp(@DelegatesTo(SftpOperations) Closure<T> closure) {
         assert closure, 'closure must be given'
-        operations.sftp(closure)
+        operations.sftp(mergedSettings, closure)
     }
 }

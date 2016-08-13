@@ -117,7 +117,7 @@ get(from: String)                           // get a file and return the content
     private void getInternalWithReceiver(String remotePath, def receiver) {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
             //noinspection GroovyAssignabilityCheck
-            new Sftp(operations).get(remotePath, receiver)
+            new Sftp(operations, mergedSettings).get(remotePath, receiver)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
             //noinspection GroovyAssignabilityCheck
             new Scp(operations, mergedSettings).get(remotePath, receiver)

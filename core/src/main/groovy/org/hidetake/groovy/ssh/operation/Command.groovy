@@ -19,10 +19,12 @@ class Command implements Operation {
     private final ChannelExec channel
     private final String commandLine
     private final Interactions interactions
+    private final int channelConnectionTimeoutSec
 
     def Command(Connection connection1, CommandSettings settings, String commandLine1) {
         connection = connection1
         commandLine = commandLine1
+        channelConnectionTimeoutSec = settings.timeoutSec
 
         channel = connection.createExecutionChannel()
         channel.command = commandLine
@@ -63,7 +65,7 @@ class Command implements Operation {
 
     @Override
     int startSync() {
-        channel.connect()
+        channel.connect(channelConnectionTimeoutSec * 1000)
         log.info("Started command $connection.remote.name#$channel.id: $commandLine")
         try {
             interactions.start()
@@ -96,7 +98,7 @@ class Command implements Operation {
             }
             closure.call(exitStatus)
         }
-        channel.connect()
+        channel.connect(channelConnectionTimeoutSec * 1000)
         interactions.start()
         log.info("Started command $connection.remote.name#$channel.id: $commandLine")
     }

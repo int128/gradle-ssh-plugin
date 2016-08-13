@@ -123,7 +123,7 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
 
     private void putInternal(Instructions instructions) {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            new Sftp(operations).put(instructions)
+            new Sftp(operations, mergedSettings).put(instructions)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
             new Scp(operations, mergedSettings).put(instructions)
         } else {

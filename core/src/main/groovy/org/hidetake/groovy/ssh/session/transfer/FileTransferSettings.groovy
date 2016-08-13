@@ -10,6 +10,13 @@ trait FileTransferSettings {
      */
     FileTransferMethod fileTransfer
 
+    /**
+     * Timeout for the SFTP or command channel to be connected in seconds.
+     * @see org.hidetake.groovy.ssh.connection.ConnectionSettings#timeoutSec
+     */
+    Integer timeoutSec
+
+
     @EqualsAndHashCode
     static class With implements FileTransferSettings {
         def With() {}
@@ -18,7 +25,8 @@ trait FileTransferSettings {
         }
 
         static FileTransferSettings DEFAULT = new FileTransferSettings.With(
-                fileTransfer: FileTransferMethod.sftp
+            fileTransfer: FileTransferMethod.sftp,
+            timeoutSec: 0,
         )
     }
 
