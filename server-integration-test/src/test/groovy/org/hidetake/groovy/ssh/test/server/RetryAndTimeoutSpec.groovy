@@ -7,6 +7,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
@@ -38,7 +39,10 @@ class RetryAndTimeoutSpec extends Specification {
     }
 
     def cleanup() {
-        server.stop(true)
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
     }
 
 
@@ -50,7 +54,7 @@ class RetryAndTimeoutSpec extends Specification {
         }
 
         and: 'start SSH server after 2 second'
-        Thread.start {
+        def thread = Thread.start {
             Thread.sleep(2000L)
             server.start()
         }
@@ -68,6 +72,9 @@ class RetryAndTimeoutSpec extends Specification {
         then: 'should cause connection refused'
         JSchException e = thrown()
         e.cause instanceof ConnectException
+
+        then:
+        thread.join()
     }
 
     def 'should retry and success'() {

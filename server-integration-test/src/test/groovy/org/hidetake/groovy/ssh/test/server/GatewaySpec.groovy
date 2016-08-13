@@ -9,42 +9,57 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.upLocalhostServer
 
 class GatewaySpec extends Specification {
 
-    SshServer targetServer
-    SshServer gateway1Server
-    SshServer gateway2Server
+    @Shared SshServer targetServer
+    @Shared SshServer gateway1Server
+    @Shared SshServer gateway2Server
 
     Service ssh
 
     @Rule
     TemporaryFolder temporaryFolder
 
-    def setup() {
-        targetServer = setupServer('ssh-dss')
-        gateway1Server = setupServer('ssh-rsa')
-        gateway2Server = setupServer('ecdsa-sha2-nistp256')
-        ssh = Ssh.newService()
+    def setupSpec() {
+        targetServer = setUpLocalhostServer(keyPairProvider(['ssh-dss']))
+        gateway1Server = setUpLocalhostServer(keyPairProvider(['ssh-rsa']))
+        gateway2Server = setUpLocalhostServer(keyPairProvider(['ecdsa-sha2-nistp256']))
+        [targetServer, gateway1Server, gateway2Server].each { server ->
+            server.passwordAuthenticator = Mock(PasswordAuthenticator)
+            server.start()
+        }
     }
 
-    def cleanup() {
-        targetServer.stop(true)
-        gateway1Server.stop(true)
-        gateway2Server.stop(true)
+    def cleanupSpec() {
+        new PollingConditions().eventually {
+            assert targetServer.activeSessions.empty
+            assert gateway1Server.activeSessions.empty
+            assert gateway2Server.activeSessions.empty
+        }
+        [targetServer, gateway1Server, gateway2Server]*.stop(true)
+    }
+
+    def setup() {
+        ssh = Ssh.newService()
+        [targetServer, gateway1Server, gateway2Server].each { server ->
+            server.passwordAuthenticator = Mock(PasswordAuthenticator)
+            server.shellFactory = Mock(Factory)
+            server.tcpipForwardingFilter = Mock(ForwardingFilter)
+        }
     }
 
 
     def "it should connect to target server via gateway server"() {
         given:
-        gateway1Server.start()
-        targetServer.start()
-
         def knownHostsFile = temporaryFolder.newFile()
         publicKeys(['ssh-dss']).each { publicKey -> knownHostsFile << "[$targetServer.host]:$targetServer.port $publicKey" }
         publicKeys(['ssh-rsa']).each { publicKey -> knownHostsFile << "[$gateway1Server.host]:$gateway1Server.port $publicKey" }
@@ -81,21 +96,10 @@ class GatewaySpec extends Specification {
 
         then:
         1 * targetServer.shellFactory.create() >> command(0)
-
-        then: 'Make sure target and gateway session is closed, too'
-        def conditions = new PollingConditions(timeout: 10, initialDelay: 0.1)
-        conditions.eventually {
-            assert gateway1Server.activeSessions.size() == 0
-            assert targetServer.activeSessions.size() == 0
-        }
     }
 
     def "it should connect to target server via 2 gateway servers"() {
         given:
-        gateway1Server.start()
-        gateway2Server.start()
-        targetServer.start()
-
         def knownHostsFile = temporaryFolder.newFile()
         publicKeys(['ssh-dss']).each { publicKey -> knownHostsFile << "[$targetServer.host]:$targetServer.port $publicKey" }
         publicKeys(['ssh-rsa']).each { publicKey -> knownHostsFile << "[$gateway1Server.host]:$gateway1Server.port $publicKey" }
@@ -144,14 +148,6 @@ class GatewaySpec extends Specification {
         1 * targetServer.shellFactory.create() >> command(0)
     }
 
-
-    private setupServer(String keyType) {
-        def server = SshServerMock.setUpLocalhostServer(HostKeyFixture.keyPairProvider([keyType]))
-        server.passwordAuthenticator = Mock(PasswordAuthenticator)
-        server.shellFactory = Mock(Factory)
-        server.tcpipForwardingFilter = Mock(ForwardingFilter)
-        server
-    }
 
     private static addressOf(SshServer server) {
         new SshdSocketAddress(server.host, server.port)

@@ -7,22 +7,22 @@ import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.RESTClient
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.ForwardingFilter
-import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 
 @Slf4j
 class PortForwardingSpec extends Specification {
 
     Service ssh
 
-    SshServer sshServer
-
     @Shared HttpServer httpServer
     @Shared int httpServerPort
+
+    @Shared SshServer sshServer
 
     def setupSpec() {
         httpServerPort = SshServerMock.pickUpFreePort()
@@ -32,14 +32,27 @@ class PortForwardingSpec extends Specification {
             httpExchange.responseBody.close()
         }
         httpServer.start()
+
+        sshServer = SshServerMock.setUpLocalhostServer()
+        sshServer.passwordAuthenticator = Mock(PasswordAuthenticator) {
+            authenticate("someUser", "somePassword", _) >> true
+        }
+        sshServer.tcpipForwardingFilter = Mock(ForwardingFilter) {
+            canConnect(_, _) >> true
+            canListen(_, _) >> true
+        }
+        sshServer.start()
+    }
+
+    def cleanupSpec() {
+        new PollingConditions().eventually {
+            assert sshServer.activeSessions.empty
+        }
+        sshServer.stop()
+        httpServer.stop(0)
     }
 
     def setup() {
-        sshServer = SshServerMock.setUpLocalhostServer()
-        sshServer.passwordAuthenticator = Mock(PasswordAuthenticator)
-        sshServer.tcpipForwardingFilter = Mock(ForwardingFilter)
-        sshServer.start()
-
         ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -54,13 +67,6 @@ class PortForwardingSpec extends Specification {
         }
     }
 
-    def cleanup() {
-        sshServer.stop(true)
-    }
-
-    def cleanupSpec() {
-        httpServer.stop(0)
-    }
 
     def "HTTP server should response 200"() {
         when:
@@ -80,9 +86,8 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then: (1.._) * sshServer.passwordAuthenticator.authenticate("someUser", "somePassword", _) >> true
-        then: 1 * sshServer.tcpipForwardingFilter.canConnect(_, _) >> true
-        then: response.status == 200
+        then:
+        response.status == 200
     }
 
     def "specified local port should be forwarded to the HTTP server"() {
@@ -95,9 +100,8 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then: (1.._) * sshServer.passwordAuthenticator.authenticate("someUser", "somePassword", _) >> true
-        then: 1 * sshServer.tcpipForwardingFilter.canConnect(_, _) >> true
-        then: response.status == 200
+        then:
+        response.status == 200
     }
 
     def "specified local port should be forwarded to the HTTP server with addresses"() {
@@ -110,9 +114,8 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then: (1.._) * sshServer.passwordAuthenticator.authenticate("someUser", "somePassword", _) >> true
-        then: 1 * sshServer.tcpipForwardingFilter.canConnect(_, _) >> true
-        then: response.status == 200
+        then:
+        response.status == 200
     }
 
 
@@ -126,9 +129,8 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then: (1.._) * sshServer.passwordAuthenticator.authenticate("someUser", "somePassword", _) >> true
-        then: 1 * sshServer.tcpipForwardingFilter.canListen(_, _) >> true
-        then: response.status == 200
+        then:
+        response.status == 200
     }
 
     def "specified remote port should be forwarded to the HTTP server with addresses"() {
@@ -141,14 +143,9 @@ class PortForwardingSpec extends Specification {
             }
         }
 
-        then: (1.._) * sshServer.passwordAuthenticator.authenticate("someUser", "somePassword", _) >> true
-        then: 1 * sshServer.tcpipForwardingFilter.canListen(_, _) >> true
-        then: response.status == 200
+        then:
+        response.status == 200
     }
 
-
-    static addressOf(SshServer server) {
-        new SshdSocketAddress(server.host, server.port)
-    }
 
 }

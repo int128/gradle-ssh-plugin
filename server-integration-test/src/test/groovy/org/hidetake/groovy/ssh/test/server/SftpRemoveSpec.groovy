@@ -9,6 +9,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
 import spock.util.mop.Use
 
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
@@ -35,7 +36,10 @@ class SftpRemoveSpec extends Specification {
     }
 
     def cleanupSpec() {
-        server.stop(true)
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
     }
 
 

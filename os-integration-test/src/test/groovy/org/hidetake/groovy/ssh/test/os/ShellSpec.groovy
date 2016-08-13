@@ -5,9 +5,11 @@ import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.Timeout
 
 import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
 
+@Timeout(10)
 class ShellSpec extends Specification {
 
     Service ssh
