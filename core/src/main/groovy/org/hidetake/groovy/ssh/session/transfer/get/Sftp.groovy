@@ -12,7 +12,7 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
  * @author Hidetake Iwata
  */
 @Slf4j
-class Sftp {
+class Sftp implements Provider {
 
     final Operations operations
     final FileTransferSettings mergedSettings

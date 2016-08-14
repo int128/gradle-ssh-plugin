@@ -11,7 +11,7 @@ import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
  * @author Hidetake Iwata
  */
 @Slf4j
-class Sftp {
+class Sftp implements Provider {
 
     private final Operations operations
     final FileTransferSettings mergedSettings

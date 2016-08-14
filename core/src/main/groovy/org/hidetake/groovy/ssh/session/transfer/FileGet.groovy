@@ -59,7 +59,7 @@ get(from: String)                           // get a file and return the content
      * @param stream
      */
     private void getInternal(String remotePath, OutputStream stream) {
-        getInternalWithReceiver(remotePath, new StreamReceiver(stream))
+        createGetProvider().get(remotePath, new StreamReceiver(stream))
     }
 
     /**
@@ -90,9 +90,9 @@ get(from: String)                           // get a file and return the content
      */
     private void getInternal(String remotePath, File localFile) {
         if (localFile.directory) {
-            getInternalWithReceiver(remotePath, new RecursiveReceiver(localFile, null))
+            createGetProvider().get(remotePath, new RecursiveReceiver(localFile, null))
         } else {
-            getInternalWithReceiver(remotePath, new FileReceiver(localFile))
+            createGetProvider().get(remotePath, new FileReceiver(localFile))
         }
     }
 
@@ -104,23 +104,21 @@ get(from: String)                           // get a file and return the content
      */
     private void getInternal(String remotePath, File localFile, Closure<Boolean> filter) {
         if (localFile.directory) {
-            getInternalWithReceiver(remotePath, new RecursiveReceiver(localFile, filter))
+            createGetProvider().get(remotePath, new RecursiveReceiver(localFile, filter))
         } else {
             if (filter.call(localFile)) {
-                getInternalWithReceiver(remotePath, new FileReceiver(localFile))
+                createGetProvider().get(remotePath, new FileReceiver(localFile))
             } else {
                 log.debug("Skipped transfer because filter returned false: $remotePath -> $localFile")
             }
         }
     }
 
-    private void getInternalWithReceiver(String remotePath, def receiver) {
+    private Provider createGetProvider() {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            //noinspection GroovyAssignabilityCheck
-            new Sftp(operations, mergedSettings).get(remotePath, receiver)
+            new Sftp(operations, mergedSettings)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            //noinspection GroovyAssignabilityCheck
-            new Scp(operations, mergedSettings).get(remotePath, receiver)
+            new Scp(operations, mergedSettings)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }
