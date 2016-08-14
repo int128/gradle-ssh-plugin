@@ -29,7 +29,7 @@ test:
     - ./os-integration-test/setup-ssh.sh
 
   override:
-    - ./gradlew check
+    - ./gradlew check publishToMavenLocal
     - ./plugin-integration/run-plugin-integration-test.sh
 
   post:

@@ -1,8 +1,5 @@
 #!/bin/bash -xe
 
-cd "$(dirname $0)/.."
-./gradlew publishToMavenLocal
-
 cd "$(dirname $0)/gradle-ssh-plugin"
 git reset --hard
 
