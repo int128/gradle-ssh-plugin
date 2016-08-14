@@ -17,7 +17,7 @@ import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
  * @author Hidetake Iwata
  */
 @Slf4j
-class Scp {
+class Scp implements Provider {
 
     private final Operations operations
     private final CompositeSettings mergedSettings

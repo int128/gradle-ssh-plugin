@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.session.transfer
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.session.SessionExtension
 import org.hidetake.groovy.ssh.session.transfer.put.Instructions
+import org.hidetake.groovy.ssh.session.transfer.put.Provider
 import org.hidetake.groovy.ssh.session.transfer.put.Scp
 import org.hidetake.groovy.ssh.session.transfer.put.Sftp
 
@@ -65,7 +66,7 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      */
     private void putInternal(InputStream stream, String remotePath) {
         def instructions = Instructions.forStreamContent(stream, remotePath)
-        putInternal(instructions)
+        createPutProvider().put(instructions)
     }
 
     /**
@@ -76,7 +77,7 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      */
     private void putInternal(File localFile, String remotePath) {
         def instructions = Instructions.forFile(localFile, remotePath)
-        putInternal(instructions)
+        createPutProvider().put(instructions)
     }
 
     /**
@@ -97,7 +98,7 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      */
     private void putInternal(Iterable<File> localFiles, String remotePath) {
         def instructions = Instructions.forFiles(localFiles, remotePath)
-        putInternal(instructions)
+        createPutProvider().put(instructions)
     }
 
     /**
@@ -108,7 +109,7 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      */
     private void putInternal(File localFile, String remotePath, Closure<Boolean> filter) {
         def instructions = Instructions.forFileWithFilter(localFile, remotePath, filter)
-        putInternal(instructions)
+        createPutProvider().put(instructions)
     }
 
     /**
@@ -121,11 +122,11 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
         putInternal(new File(localPath), remotePath, filter)
     }
 
-    private void putInternal(Instructions instructions) {
+    private Provider createPutProvider() {
         if (mergedSettings.fileTransfer == FileTransferMethod.sftp) {
-            new Sftp(operations, mergedSettings).put(instructions)
+            new Sftp(operations, mergedSettings)
         } else if (mergedSettings.fileTransfer == FileTransferMethod.scp) {
-            new Scp(operations, mergedSettings).put(instructions)
+            new Scp(operations, mergedSettings)
         } else {
             throw new IllegalStateException("Unknown file transfer method: ${mergedSettings.fileTransfer}")
         }

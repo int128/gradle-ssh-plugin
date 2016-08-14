@@ -20,7 +20,7 @@ import java.util.regex.Matcher
  * @author Hidetake Iwata
  */
 @Slf4j
-class Scp {
+class Scp implements Provider {
 
     final Operations operations
     final CompositeSettings mergedSettings
@@ -89,6 +89,14 @@ class Scp {
             log.error("Failed SCP GET: $operations.remote.name:$remotePath")
             throw new BadExitStatusException("SCP command returned exit status $exitStatus", exitStatus)
         }
+    }
+
+    void get(String remotePath, FileReceiver receiver) {
+        get(remotePath, receiver as WritableReceiver)
+    }
+
+    void get(String remotePath, StreamReceiver receiver) {
+        get(remotePath, receiver as WritableReceiver)
     }
 
     void get(String remoteFile, WritableReceiver receiver) {
