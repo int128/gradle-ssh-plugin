@@ -83,6 +83,7 @@ bintray {
     user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
     key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
     publications = ['maven']
+    publish = true
     pkg {
         repo = 'maven'
         name = parent.name
