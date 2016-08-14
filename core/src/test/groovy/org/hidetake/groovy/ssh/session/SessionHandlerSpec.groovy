@@ -26,7 +26,7 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.sftp(closure) >> 'something'
+        1 * operations.sftp(globalSettings, closure) >> 'something'
 
         then:
         result == 'something'

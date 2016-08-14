@@ -5,6 +5,7 @@ import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
+import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -67,10 +68,10 @@ class DefaultOperations implements Operations {
     }
 
     @Override
-    def <T> T sftp(Closure<T> closure) {
+    def <T> T sftp(FileTransferSettings settings, @DelegatesTo(SftpOperations) Closure<T> closure) {
         log.debug("Requesting SFTP subsystem on $remote")
         def channel = connection.createSftpChannel()
-        channel.connect()
+        channel.connect(settings.timeoutSec * 1000)
         try {
             log.debug("Started SFTP $remote.name#$channel.id")
             def result = callWithDelegate(closure, new SftpOperations(remote, channel))

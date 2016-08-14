@@ -2,6 +2,7 @@ package org.hidetake.groovy.ssh.session.transfer.get
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.Operations
+import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
 
@@ -14,27 +15,29 @@ import static org.hidetake.groovy.ssh.util.Utility.currySelf
 class Sftp {
 
     final Operations operations
+    final FileTransferSettings mergedSettings
 
-    def Sftp(Operations operations1) {
+    def Sftp(Operations operations1, FileTransferSettings mergedSettings1) {
         operations = operations1
+        mergedSettings = mergedSettings1
     }
 
     void get(String remotePath, FileReceiver receiver) {
-        operations.sftp {
+        operations.sftp(mergedSettings) {
             getFile(remotePath, receiver.destination.path)
             log.info("Received file from $operations.remote.name: $remotePath -> $receiver.destination")
         }
     }
 
     void get(String remotePath, StreamReceiver receiver) {
-        operations.sftp {
+        operations.sftp(mergedSettings) {
             getContent(remotePath, receiver.stream)
             log.info("Received content from $operations.remote.name: $remotePath")
         }
     }
 
     void get(String remotePath, RecursiveReceiver receiver) {
-        operations.sftp {
+        operations.sftp(mergedSettings) {
             def remoteAttrs = stat(remotePath)
             if (remoteAttrs.dir) {
                 log.debug("Entering directory on $remote.name: $remotePath")

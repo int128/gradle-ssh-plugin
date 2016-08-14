@@ -221,7 +221,7 @@ Also following settings can be set in a remote closure.
 
 |`timeoutSec`
 |`int` (seconds)
-|Both connection timeout and socket read timeout. Defaults to 0 (OS default).
+|Connection timeout and socket read timeout. Defaults to 0 (OS default).
 
 |`retryCount`
 |`int`
@@ -708,6 +708,10 @@ The method accepts following settings:
 |`interaction`
 |`Closure`
 |Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the command channel to be connected. Defaults to 0 (default).
 |===
 
 The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
@@ -891,6 +895,10 @@ The method accepts following settings:
 |`interaction`
 |`Closure`
 |Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the shell channel to be connected. Defaults to 0 (default).
 |===
 
 The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
@@ -971,6 +979,10 @@ Following settings can be set in global, per-method or per-remote.
 |`fileTransfer`
 |`String` or `FileTransferMethod`
 |File transfer method, that is `sftp` or `scp`. Defaults to `sftp`.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the SFTP or command channel to be connected. Defaults to 0 (default).
 |===
 
 If a filter closure is given, it will be called with an each file.

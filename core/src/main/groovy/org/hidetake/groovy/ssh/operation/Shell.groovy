@@ -18,11 +18,13 @@ class Shell implements Operation {
     private final Connection connection
     private final ChannelShell channel
     private final Interactions interactions
+    private final int channelConnectionTimeoutSec
 
     def Shell(Connection connection1, ShellSettings settings) {
         connection = connection1
         channel = connection.createShellChannel()
         channel.agentForwarding = settings.agentForwarding
+        channelConnectionTimeoutSec = settings.timeoutSec
 
         interactions = new Interactions(channel.outputStream, channel.inputStream, settings.encoding)
         if (settings.outputStream) {
@@ -55,7 +57,7 @@ class Shell implements Operation {
 
     @Override
     int startSync() {
-        channel.connect()
+        channel.connect(channelConnectionTimeoutSec * 1000)
         try {
             log.info("Started shell $connection.remote.name#$channel.id")
             interactions.start()
@@ -87,7 +89,7 @@ class Shell implements Operation {
             }
             closure.call(exitStatus)
         }
-        channel.connect()
+        channel.connect(channelConnectionTimeoutSec * 1000)
         interactions.start()
         log.info("Started shell $connection.remote.name#$channel.id")
     }
