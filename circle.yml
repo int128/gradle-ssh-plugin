@@ -4,6 +4,8 @@ machine:
   environment:
     TERM: dumb
     GRADLE_OPTS: -Xmx1g -Xms1g
+  hosts:
+    sandbox.127.0.0.1.xip.io: 127.0.0.1
   services:
     - docker
 
