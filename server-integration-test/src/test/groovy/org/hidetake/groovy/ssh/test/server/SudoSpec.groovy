@@ -11,6 +11,8 @@ import org.hidetake.groovy.ssh.interaction.InteractionException
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.execution.SudoException
+import org.junit.ClassRule
+import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Shared
 import spock.lang.Specification
@@ -31,6 +33,9 @@ class SudoSpec extends Specification {
     SshServer server
 
     Service ssh
+
+    @Shared @ClassRule
+    TemporaryFolder temporaryFolder
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
@@ -441,7 +446,12 @@ class SudoSpec extends Specification {
         actual.toString() == 'some\nmessage'
 
         where:
-        input << [new ByteArrayInputStream('some\nmessage'.bytes), 'some\nmessage', 'some\nmessage'.bytes]
+        input << [
+            new ByteArrayInputStream('some\nmessage'.bytes),
+            'some\nmessage',
+            'some\nmessage'.bytes,
+            temporaryFolder.newFile() << 'some\nmessage',
+        ]
     }
 
 }

@@ -35,7 +35,7 @@ trait ShellSettings {
 
     /**
      * An input stream to send to the standard input.
-     * This should be a {@link InputStream}, {@code byte[]} or {@link String}.
+     * This should be a {@link InputStream}, {@code byte[]}, {@link String} or {@link File}.
      */
     def inputStream
 

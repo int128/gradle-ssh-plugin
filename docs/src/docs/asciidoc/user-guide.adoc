@@ -694,7 +694,7 @@ The method accepts following settings:
  Defaults to `slf4j`.
 
 |`inputStream`
-|`InputStream`, `byte[]` or `String`
+|`InputStream`, `byte[]`, `String` or `File`
 |An input data to sent to the standard input of remote command. Defaults to null.
 
 |`outputStream`
@@ -889,7 +889,7 @@ The method accepts following settings:
  Defaults to `slf4j`.
 
 |`inputStream`
-|`InputStream`, `byte[]` or `String`
+|`InputStream`, `byte[]`, `String` or `File`
 |An input data to sent to the standard input of remote command. Defaults to null.
 
 |`outputStream`
