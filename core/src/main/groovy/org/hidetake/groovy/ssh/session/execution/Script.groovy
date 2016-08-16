@@ -31,18 +31,11 @@ trait Script implements Command {
     }
 
     private static class Helper {
-        static HashMap createSettings(HashMap settings, String script) {
+        static HashMap createSettings(HashMap settings, def script) {
             if (settings.inputStream) {
                 throw new IllegalArgumentException("executeScript does not work with inputStream: $settings")
             }
             [:] << settings << [inputStream: script] as HashMap
-        }
-
-        static HashMap createSettings(HashMap settings, File script) {
-            if (settings.inputStream) {
-                throw new IllegalArgumentException("executeScript does not work with inputStream: $settings")
-            }
-            [:] << settings << [inputStream: script.newInputStream()] as HashMap
         }
 
         static String guessInterpreter(String script) {

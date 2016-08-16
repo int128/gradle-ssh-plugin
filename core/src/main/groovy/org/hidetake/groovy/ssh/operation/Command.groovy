@@ -4,6 +4,7 @@ import com.jcraft.jsch.ChannelExec
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.connection.Connection
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
+import org.hidetake.groovy.ssh.core.type.InputStreamValue
 import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.interaction.Interactions
 import org.hidetake.groovy.ssh.interaction.Stream
@@ -33,16 +34,11 @@ class Command implements Operation {
 
         interactions = new Interactions(channel.outputStream, channel.inputStream, channel.errStream, settings.encoding)
         if (settings.inputStream) {
+            def inputStreamValue = new InputStreamValue(settings.inputStream)
             interactions.add {
                 standardInput.withStream {
                     log.debug("Sending to standard input on command $connection.remote.name#$channel.id")
-                    try {
-                        standardInput << settings.inputStream
-                    } finally {
-                        if (settings.inputStream instanceof Closeable) {
-                            settings.inputStream.close()
-                        }
-                    }
+                    inputStreamValue >> standardInput
                 }
             }
         }

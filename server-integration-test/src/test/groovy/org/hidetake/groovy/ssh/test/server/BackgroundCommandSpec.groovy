@@ -10,7 +10,7 @@ import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Shared
@@ -30,7 +30,7 @@ class BackgroundCommandSpec extends Specification {
 
     Service ssh
 
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
 
     def setupSpec() {
@@ -403,10 +403,15 @@ class BackgroundCommandSpec extends Specification {
         }
 
         then:
-        actual.toString() == 'some message'
+        actual.toString() == 'some\nmessage'
 
         where:
-        input << [new ByteArrayInputStream('some message'.bytes), 'some message', 'some message'.bytes]
+        input << [
+            new ByteArrayInputStream('some\nmessage'.bytes),
+            'some\nmessage',
+            'some\nmessage'.bytes,
+            temporaryFolder.newFile() << 'some\nmessage',
+        ]
     }
 
 }

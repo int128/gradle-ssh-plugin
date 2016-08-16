@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.ToStringProperties
+import org.hidetake.groovy.ssh.core.type.InputStreamValue
 import org.hidetake.groovy.ssh.operation.CommandSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
@@ -31,6 +32,7 @@ class SudoHelper {
         final prompt = UUID.randomUUID().toString()
         final lines = []
         final sudoCommandLine = "$sudoSettings.sudoPath -S -p '$prompt' $commandLine"
+        final inputStreamValue = new InputStreamValue(sudoSettings.inputStream)
 
         final command = operations.command(commandSettings, sudoCommandLine)
         command.addInteraction {
@@ -42,16 +44,10 @@ class SudoHelper {
                 when(line: _, from: standardOutput) {
                     log.debug("Got ACK to the password on $operations.remote.name")
 
-                    if (sudoSettings.inputStream) {
-                        log.debug("Sending to standard input on $operations.remote.name")
+                    if (inputStreamValue) {
                         standardInput.withStream {
-                            try {
-                                standardInput << sudoSettings.inputStream
-                            } finally {
-                                if (sudoSettings.inputStream instanceof Closeable) {
-                                    sudoSettings.inputStream.close()
-                                }
-                            }
+                            log.debug("Sending to standard input on $operations.remote.name")
+                            inputStreamValue >> standardInput
                         }
                     }
 
