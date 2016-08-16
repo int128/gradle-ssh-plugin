@@ -13,40 +13,24 @@ import org.hidetake.groovy.ssh.session.SessionExtension
  * @author Hidetake Iwata
  */
 trait Command implements SessionExtension {
-    String execute(String commandLine) {
-        execute([:], commandLine)
-    }
-
-    String execute(List<String> commandLineArgs) {
-        execute([:], commandLineArgs)
-    }
-
-    void execute(String commandLine, Closure callback) {
-        execute([:], commandLine, callback)
-    }
-
-    void execute(List<String> commandLineArgs, Closure callback) {
-        execute([:], commandLineArgs, callback)
-    }
-
-    void execute(HashMap map, String commandLine, Closure callback) {
+    void execute(HashMap map = [:], String commandLine, Closure callback) {
         assert callback, 'callback must be given'
         callback.call(execute(map, commandLine))
     }
 
-    void execute(HashMap map, List<String> commandLineArgs, Closure callback) {
+    void execute(HashMap map = [:], List<String> commandLineArgs, Closure callback) {
         assert callback, 'callback must be given'
         callback.call(execute(map, commandLineArgs))
     }
 
-    String execute(HashMap map, String commandLine) {
+    String execute(HashMap map = [:], String commandLine) {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
         Helper.execute(operations, settings, commandLine)
     }
 
-    String execute(HashMap map, List<String> commandLineArgs) {
+    String execute(HashMap map = [:], List<String> commandLineArgs) {
         assert commandLineArgs, 'commandLineArgs must be given'
         assert map != null, 'map must not be null'
         execute(map, Escape.escape(commandLineArgs))

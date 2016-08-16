@@ -13,23 +13,7 @@ import org.hidetake.groovy.ssh.session.SessionExtension
  * @author Hidetake Iwata
  */
 trait BackgroundCommand implements SessionExtension {
-    void executeBackground(String commandLine) {
-        executeBackground([:], commandLine)
-    }
-
-    void executeBackground(List<String> commandLineArgs) {
-        executeBackground([:], commandLineArgs)
-    }
-
-    void executeBackground(String commandLine, Closure callback) {
-        executeBackground([:], commandLine, callback)
-    }
-
-    void executeBackground(List<String> commandLineArgs, Closure callback) {
-        executeBackground([:], commandLineArgs, callback)
-    }
-
-    void executeBackground(HashMap map, String commandLine) {
+    void executeBackground(HashMap map = [:], String commandLine) {
         assert commandLine, 'commandLine must be given'
         assert map != null, 'map must not be null'
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(map))
@@ -41,11 +25,11 @@ trait BackgroundCommand implements SessionExtension {
         }
     }
 
-    void executeBackground(HashMap map, List<String> commandLineArgs) {
+    void executeBackground(HashMap map = [:], List<String> commandLineArgs) {
         executeBackground(map, Escape.escape(commandLineArgs))
     }
 
-    void executeBackground(HashMap map, String commandLine, Closure callback) {
+    void executeBackground(HashMap map = [:], String commandLine, Closure callback) {
         assert commandLine, 'commandLine must be given'
         assert callback, 'callback must be given'
         assert map != null, 'map must not be null'
@@ -53,7 +37,7 @@ trait BackgroundCommand implements SessionExtension {
         Helper.execute(operations, settings, commandLine, callback)
     }
 
-    void executeBackground(HashMap map, List<String> commandLineArgs, Closure callback) {
+    void executeBackground(HashMap map = [:], List<String> commandLineArgs, Closure callback) {
         executeBackground(map, Escape.escape(commandLineArgs), callback)
     }
 
