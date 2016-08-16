@@ -917,6 +917,54 @@ shell ignoreError: true, interaction: {...}
 ----
 
 
+=== Execute a script
+
+Call the `executeScript` method to execute a script.
+The method executes the shell and gives the script through the standard input.
+The shell is guessed from shebang `#!` of the script and defaults to `/bin/sh`.
+
+[source,groovy]
+----
+// execute a script
+executeScript '''#!/bin/sh
+echo "Hello World!"
+'''
+
+// execute a script from local file
+executeScript file('deploy.sh')
+
+// execute a script with settings
+executeScript '''#!/bin/sh
+echo "Hello World!"
+''', pty: true
+----
+
+The method waits until the command is completed and returns a result from standard output of the command.
+Line separators are converted to the platform native.
+
+[source,groovy]
+----
+def result = executeScript '''#!/bin/sh
+echo "Hello World!"
+'''
+println result
+----
+
+A result can be retrieved as an argument if a closure is given.
+
+[source,groovy]
+----
+executeScript('''#!/bin/sh
+echo "Hello World!"
+''') { result ->
+  println result
+}
+----
+
+The method throws an exception if it is called with the `inputStream` setting,
+because the script execution is achieved by using the standard input.
+
+
 === Transfer a file or directory
 
 Call the `get` method to get a file or directory from the remote host.
