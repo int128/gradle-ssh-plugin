@@ -693,13 +693,17 @@ The method accepts following settings:
  If this is `none`, console logging is turned off.
  Defaults to `slf4j`.
 
+|`inputStream`
+|`InputStream`, `byte[]` or `String`
+|An input data to sent to the standard input of remote command. Defaults to null.
+
 |`outputStream`
 |`OutputStream`
-|If this is set, standard output of the remote command is sent to the stream. Defaults to null.
+|An output stream to receive from the standard output of remote command. Defaults to null.
 
 |`errorStream`
 |`OutputStream`
-|If this is set, standard error of the remote command is sent to the stream. Defaults to null.
+|An output stream to receive from the standard error of remote command. Defaults to null.
 
 |`encoding`
 |`String`
@@ -884,9 +888,13 @@ The method accepts following settings:
  If this is `none`, console logging is turned off.
  Defaults to `slf4j`.
 
+|`inputStream`
+|`InputStream`, `byte[]` or `String`
+|An input data to sent to the standard input of remote command. Defaults to null.
+
 |`outputStream`
 |`OutputStream`
-|If this is set, standard output of the remote command is sent to the stream. Defaults to null.
+|An output stream to receive from the standard output of remote command. Defaults to null.
 
 |`encoding`
 |`String`

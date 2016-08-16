@@ -15,6 +15,12 @@ trait SudoSettings {
      */
     String sudoPath
 
+    /**
+     * An input stream to send to the standard input.
+     * @see org.hidetake.groovy.ssh.operation.CommandSettings#inputStream
+     */
+    def inputStream
+
 
     @EqualsAndHashCode
     static class With implements SudoSettings, ToStringProperties {

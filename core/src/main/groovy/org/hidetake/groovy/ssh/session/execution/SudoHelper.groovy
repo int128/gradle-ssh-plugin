@@ -19,6 +19,7 @@ class SudoHelper {
     def SudoHelper(Operations operations1, CompositeSettings mergedSettings, SudoCommandSettings perMethodSettings) {
         operations = operations1
         commandSettings = new CommandSettings.With(mergedSettings, perMethodSettings)
+        commandSettings.inputStream = null
         sudoSettings = new SudoSettings.With(
                 new SudoSettings.With(sudoPassword: operations.remote.password),
                 mergedSettings,
@@ -40,6 +41,19 @@ class SudoHelper {
 
                 when(line: _, from: standardOutput) {
                     log.debug("Got ACK to the password on $operations.remote.name")
+
+                    if (sudoSettings.inputStream) {
+                        log.debug("Sending to standard input on $operations.remote.name")
+                        standardInput.withStream {
+                            try {
+                                standardInput << sudoSettings.inputStream
+                            } finally {
+                                if (sudoSettings.inputStream instanceof Closeable) {
+                                    sudoSettings.inputStream.close()
+                                }
+                            }
+                        }
+                    }
 
                     when(line: _, from: standardOutput) {
                         lines.clear()

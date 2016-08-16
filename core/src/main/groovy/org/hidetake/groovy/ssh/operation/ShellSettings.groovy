@@ -34,7 +34,13 @@ trait ShellSettings {
     LoggingMethod logging
 
     /**
-     * An output stream to forward the standard output.
+     * An input stream to send to the standard input.
+     * This should be a {@link InputStream}, {@code byte[]} or {@link String}.
+     */
+    def inputStream
+
+    /**
+     * An output stream to receive from the standard output.
      */
     OutputStream outputStream
 

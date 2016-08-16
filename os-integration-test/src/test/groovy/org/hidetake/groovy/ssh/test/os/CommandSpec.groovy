@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.test.os
 
+import org.codehaus.groovy.tools.Utilities
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
@@ -225,6 +226,21 @@ expr $x + `cat $remoteA` > $remoteB
 
         then:
         resultFile.text.contains('hoge')
+    }
+
+    def 'should execute command via standard input'() {
+        when:
+        def actual = ssh.run {
+            session(ssh.remotes.Default) {
+                execute '/bin/sh', inputStream: '''#!/bin/sh
+echo 1
+echo 2
+'''
+            }
+        }
+
+        then:
+        actual == "1${Utilities.eol()}2"
     }
 
 }
