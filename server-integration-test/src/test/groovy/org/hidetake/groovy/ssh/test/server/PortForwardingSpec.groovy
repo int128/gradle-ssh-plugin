@@ -17,12 +17,12 @@ import spock.util.concurrent.PollingConditions
 @Slf4j
 class PortForwardingSpec extends Specification {
 
-    Service ssh
-
     @Shared HttpServer httpServer
     @Shared int httpServerPort
 
     @Shared SshServer sshServer
+
+    Service ssh
 
     def setupSpec() {
         httpServerPort = SshServerMock.pickUpFreePort()

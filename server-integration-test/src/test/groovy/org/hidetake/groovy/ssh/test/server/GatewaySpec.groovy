@@ -7,7 +7,7 @@ import org.apache.sshd.common.SshdSocketAddress
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
@@ -16,7 +16,7 @@ import spock.util.concurrent.PollingConditions
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
-import static org.hidetake.groovy.ssh.test.server.SshServerMock.upLocalhostServer
+import static org.hidetake.groovy.ssh.test.server.SshServerMock.setUpLocalhostServer
 
 class GatewaySpec extends Specification {
 
@@ -24,10 +24,10 @@ class GatewaySpec extends Specification {
     @Shared SshServer gateway1Server
     @Shared SshServer gateway2Server
 
-    Service ssh
-
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         targetServer = setUpLocalhostServer(keyPairProvider(['ssh-dss']))

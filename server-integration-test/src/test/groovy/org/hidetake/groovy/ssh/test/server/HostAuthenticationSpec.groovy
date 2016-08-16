@@ -7,7 +7,7 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
@@ -28,10 +28,10 @@ class HostAuthenticationSpec extends Specification {
     @Shared
     SshServer server
 
-    Service ssh
-
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()

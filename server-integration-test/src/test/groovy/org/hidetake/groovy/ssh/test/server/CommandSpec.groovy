@@ -27,10 +27,10 @@ class CommandSpec extends Specification {
     @Shared
     SshServer server
 
-    Service ssh
-
     @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
