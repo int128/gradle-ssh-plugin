@@ -172,7 +172,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "knownHosts can be a list of files where known-hosts #knownHostsType and server-key #serverKeyType"() {
+    def "strict host key checking should pass with multiple known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
         server.keyPairProvider = keyPairProvider(serverKeyType)
 
@@ -225,6 +225,30 @@ class HostAuthenticationSpec extends Specification {
         then:
         JSchException e = thrown()
         e.message.contains 'reject HostKey'
+    }
+
+    def "strict host key checking should fail if a wrong host key is given"() {
+        given:
+        server.keyPairProvider = keyPairProvider([ECDSA_SHA2_NISTP256])
+
+        def knownHostsFile = temporaryFolder.newFile()
+        publicKeys(["${ECDSA_SHA2_NISTP256}_another"]).each { publicKey ->
+            knownHostsFile << "[$server.host]:$server.port $publicKey"
+        }
+
+        ssh.settings {
+            knownHosts = knownHostsFile
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        0 * server.commandFactory.createCommand('somecommand')
+
+        then:
+        JSchException e = thrown()
+        e.message.contains 'HostKey has been changed'
     }
 
 
