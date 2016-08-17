@@ -19,8 +19,7 @@ import javax.crypto.spec.SecretKeySpec
 
 import static org.apache.sshd.common.KeyPairProvider.*
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
-import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
-import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.*
 
 @Slf4j
 class HostAuthenticationSpec extends Specification {
@@ -229,12 +228,10 @@ class HostAuthenticationSpec extends Specification {
 
     def "strict host key checking should fail if a wrong host key is given"() {
         given:
-        server.keyPairProvider = keyPairProvider([ECDSA_SHA2_NISTP256])
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
 
         def knownHostsFile = temporaryFolder.newFile()
-        publicKeys(["${ECDSA_SHA2_NISTP256}_another"]).each { publicKey ->
-            knownHostsFile << "[$server.host]:$server.port $publicKey"
-        }
+        knownHostsFile << "[$server.host]:$server.port ${publicKey("${ECDSA_SHA2_NISTP256}_another")}"
 
         ssh.settings {
             knownHosts = knownHostsFile
