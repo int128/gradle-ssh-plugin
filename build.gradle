@@ -16,6 +16,13 @@ allprojects {
     }
 }
 
+task resolveDependencies << {
+    allprojects.each { project ->
+        project.buildscript.configurations*.resolve()
+        project.configurations*.resolve()
+    }
+}
+
 task testReport(type: TestReport) {
     description 'Generates test report for all projects'
     destinationDir = file("$buildDir/reports")

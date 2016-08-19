@@ -20,7 +20,7 @@ checkout:
 
 dependencies:
   override:
-    - ./gradlew testClasses
+    - ./gradlew resolveDependencies
 
 test:
   pre:
