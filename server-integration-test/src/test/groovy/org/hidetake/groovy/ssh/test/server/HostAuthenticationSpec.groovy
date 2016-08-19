@@ -62,7 +62,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
 
-    def "strict host key checking should be turned off by global settings"() {
+    def "[allowAnyHosts] host key checking should be turned off by global settings"() {
         given:
         ssh.settings {
             knownHosts = allowAnyHosts
@@ -75,7 +75,7 @@ class HostAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
     }
 
-    def "strict host key checking should be turned off by per-remote settings"() {
+    def "[allowAnyHosts] host key checking should be turned off by per-remote settings"() {
         given:
         ssh.remotes {
             testServer {
@@ -95,7 +95,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "strict host key checking should pass with known-hosts #knownHostsType and server-key #serverKeyType"() {
+    def "[file] host key checking should pass with known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
         server.keyPairProvider = keyPairProvider(serverKeyType)
 
@@ -133,7 +133,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "strict host key checking should pass with hashed known-hosts #knownHostsType and server-key #serverKeyType"() {
+    def "[file] host key checking should pass with hashed known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
         server.keyPairProvider = keyPairProvider(serverKeyType)
 
@@ -171,7 +171,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "strict host key checking should pass with multiple known-hosts #knownHostsType and server-key #serverKeyType"() {
+    def "[files] host key checking should pass with known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
         server.keyPairProvider = keyPairProvider(serverKeyType)
 
@@ -207,7 +207,7 @@ class HostAuthenticationSpec extends Specification {
         [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
-    def "strict host key checking should fail if an empty known-hosts is given"() {
+    def "[file] host key checking should fail if an empty known-hosts is given"() {
         given:
         def knownHostsFile = temporaryFolder.newFile()
 
@@ -226,7 +226,7 @@ class HostAuthenticationSpec extends Specification {
         e.message.contains 'reject HostKey'
     }
 
-    def "strict host key checking should fail if a wrong host key is given"() {
+    def "[file] host key checking should fail if a wrong host key is given"() {
         given:
         server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
 
@@ -235,6 +235,90 @@ class HostAuthenticationSpec extends Specification {
 
         ssh.settings {
             knownHosts = knownHostsFile
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        0 * server.commandFactory.createCommand('somecommand')
+
+        then:
+        JSchException e = thrown()
+        e.message.contains 'HostKey has been changed'
+    }
+
+    def "[addHostKey] knownHosts file should be created if it does not exist"() {
+        given:
+        server.keyPairProvider = keyPairProvider(SSH_DSS)
+
+        def knownHostsFile = temporaryFolder.newFile()
+        knownHostsFile.delete()
+
+        ssh.settings {
+            knownHosts = addHostKey(knownHostsFile)
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+
+        and: 'knownHosts should be created'
+        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(SSH_DSS)}" as String
+    }
+
+    def "[addHostKey] knownHosts file should be appended if it exists"() {
+        given:
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
+
+        def initialContent = "example.com ${publicKey("${ECDSA_SHA2_NISTP256}_another")}"
+        def knownHostsFile = temporaryFolder.newFile() << initialContent
+
+        ssh.settings {
+            knownHosts = addHostKey(knownHostsFile)
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+
+        and: 'knownHosts should be appended'
+        knownHostsFile.text ==
+            (initialContent + "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}") as String
+    }
+
+    def "[addHostKey] knownHosts file should not be modified if host key already exists"() {
+        given:
+        server.keyPairProvider = keyPairProvider(SSH_DSS)
+
+        def knownHostsFile = temporaryFolder.newFile()
+        knownHostsFile << "[$server.host]:$server.port ${publicKey(SSH_DSS)}"
+
+        ssh.settings {
+            knownHosts = addHostKey(knownHostsFile)
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(SSH_DSS)}" as String
+    }
+
+    def "[addHostKey] strict host key checking should fail if a wrong host key is given"() {
+        given:
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
+
+        def knownHostsFile = temporaryFolder.newFile()
+        knownHostsFile << "[$server.host]:$server.port ${publicKey("${ECDSA_SHA2_NISTP256}_another")}"
+
+        ssh.settings {
+            knownHosts = addHostKey(knownHostsFile)
         }
 
         when:

@@ -1,55 +1,100 @@
 package org.hidetake.groovy.ssh.connection
 
+import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 
-@Slf4j
 trait HostAuthentication {
 
     void validateHostAuthentication(HostAuthenticationSettings settings, Remote remote) {
-        assert settings.knownHosts != null, "knownHosts must not be null (remote ${remote.name})"
-        assert settings.knownHosts instanceof AllowAnyHosts || settings.knownHosts instanceof File || settings.knownHosts instanceof Collection
+        switch (settings.knownHosts) {
+            case AllowAnyHosts:
+                break
+            case AddHostKey:
+                break
+            case File:
+                def file = settings.knownHosts as File
+                if (!file.exists()) {
+                    throw new FileNotFoundException("knownHosts file not found: $file")
+                }
+                break
+            case Collection:
+                break
+            default:
+                throw new IllegalArgumentException("knownHosts must be allowAnyHosts, addHostKey, a File or collection of files: $settings.knownHosts")
+        }
     }
 
     void configureHostAuthentication(JSch jsch, Session session, Remote remote, HostAuthenticationSettings settings) {
-        switch (settings.knownHosts) {
-            case AllowAnyHosts:
-                session.setConfig('StrictHostKeyChecking', 'no')
-                log.warn('Host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
-                break
-
-            case File:
-                def file = settings.knownHosts as File
-                log.debug("Using known-hosts file for $remote.name: $file")
-                Helper.enableHostAuthentication(session, remote, [file])
-                break
-
-            case Collection:
-                def files = settings.knownHosts as Collection<File>
-                log.debug("Using known-hosts files for $remote.name: $files")
-                Helper.enableHostAuthentication(session, remote, files)
-                break
-
-            default:
-                throw new IllegalArgumentException("knownHosts must be AllowAnyHosts, File or List")
-        }
+        def helper = new Helper(jsch, session, remote)
+        //noinspection GroovyAssignabilityCheck
+        helper.configureHostAuthentication(settings.knownHosts)
     }
 
     @Slf4j
     private static class Helper {
-        static void enableHostAuthentication(Session session, Remote remote, Collection<File> files) {
+        final JSch jsch
+        final Session session
+        final Remote remote
+
+        def Helper(JSch jsch1, Session session1, Remote remote1) {
+            jsch = jsch1
+            session = session1
+            remote = remote1
+        }
+
+        void configureHostAuthentication(AllowAnyHosts allowAnyHosts) {
+            log.warn('Host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
+            session.setConfig('StrictHostKeyChecking', 'no')
+        }
+
+        void configureHostAuthentication(AddHostKey addHostKey) {
+            def file = addHostKey.knownHostsFile
+            if (file.createNewFile()) {
+                log.info("Created knownHosts file: $file")
+            }
+            log.debug("Using known-hosts file for $remote.name: $file")
+            jsch.setKnownHosts(file.path)
+            session.setConfig('StrictHostKeyChecking', 'ask')
+            session.userInfo = new HostAuthenticationPrompt()
+            configureHostKeyTypes()
+            configureForGateway()
+        }
+
+        void configureHostAuthentication(File file) {
+            log.debug("Using known-hosts file for $remote.name: $file")
+            jsch.setKnownHosts(file.path)
             session.setConfig('StrictHostKeyChecking', 'yes')
+            configureHostKeyTypes()
+            configureForGateway()
+        }
 
+        void configureHostAuthentication(Collection<File> files) {
+            log.debug("Using known-hosts files for $remote.name: $files")
             def hostKeys = HostKeys.fromKnownHosts(files)
-            hostKeys.duplicateForGateway(remote.host, remote.port, session.host, session.port)
-            hostKeys.addTo(session.hostKeyRepository)
+            hostKeys.each { hostKey -> session.hostKeyRepository.add(hostKey, null) }
+            session.setConfig('StrictHostKeyChecking', 'yes')
+            configureHostKeyTypes()
+            configureForGateway()
+        }
 
-            def keyTypes = hostKeys.keyTypes(session.host, session.port).join(',')
+        private void configureHostKeyTypes() {
+            def keyTypes = HostKeys.fromSession(session).keyTypes(session.host, session.port).join(',')
             if (keyTypes) {
                 session.setConfig('server_host_key', keyTypes)
                 log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
+            }
+        }
+
+        private void configureForGateway() {
+            if ([session.host, session.port] != [remote.host, remote.port]) {
+                HostKeys.fromSession(session).find(remote.host, remote.port).each { hostKey ->
+                    def hostKeyForGateway = new HostKey("[$session.host]:$session.port", hostKey.@type, hostKey.@key, hostKey.comment)
+                    session.hostKeyRepository.add(hostKeyForGateway, null)
+                    log.debug("Duplicated host key for gateway: $remote.host:$remote.port -> $session.host:$session.port")
+                }
             }
         }
     }
