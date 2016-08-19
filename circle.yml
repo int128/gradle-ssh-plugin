@@ -31,7 +31,7 @@ test:
     - ./os-integration-test/setup-ssh.sh
 
   override:
-    - ./gradlew check publishToMavenLocal
+    - ./gradlew check publishPluginIntegrationPublicationToMavenLocal
     - ./plugin-integration/run-plugin-integration-test.sh
 
   post:

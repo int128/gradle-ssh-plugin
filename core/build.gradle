@@ -44,11 +44,14 @@ ext {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        pluginIntegration(MavenPublication) {
+            from components.java
+            artifactId parent.name
+        }
+        release(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
-            groupId parent.group
             artifactId parent.name
             pom.withXml {
                 asNode().children().last() + {
@@ -82,7 +85,7 @@ publishing {
 bintray {
     user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
     key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
-    publications = ['maven']
+    publications = ['release']
     publish = true
     pkg {
         repo = 'maven'
