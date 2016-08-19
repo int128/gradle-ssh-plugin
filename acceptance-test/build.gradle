@@ -10,7 +10,7 @@ dependencies {
 }
 
 test {
-    dependsOn ':core:test'
+    mustRunAfter ':core:test'
     dependsOn ':core:publishToMavenLocal'
 
     systemProperty 'target.product.versions', project.version
