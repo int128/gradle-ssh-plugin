@@ -20,8 +20,8 @@ remotes {
         host = 'sandbox.127.0.0.1.xip.io'
         port = 8022
         user = 'tester'
-        identity = file("$buildDir/id_rsa")
-        knownHosts = file("$buildDir/known_hosts")
+        identity = file("$buildDir/.ssh/id_rsa")
+        knownHosts = file("$buildDir/.ssh/known_hosts")
     }
 }
 
