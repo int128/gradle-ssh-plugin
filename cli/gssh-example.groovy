@@ -3,8 +3,8 @@ ssh.remotes {
         host = 'sandbox.127.0.0.1.xip.io'
         port = 8022
         user = 'tester'
-        identity = new File('id_rsa')
-        knownHosts = new File('known_hosts')
+        identity = new File('.ssh/id_rsa')
+        knownHosts = new File('.ssh/known_hosts')
     }
 }
 
