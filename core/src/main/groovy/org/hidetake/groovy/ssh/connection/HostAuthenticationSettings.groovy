@@ -15,6 +15,16 @@ trait HostAuthenticationSettings {
     final allowAnyHosts = AllowAnyHosts.instance
 
     /**
+     * Represents that a host key is automatically appended to the known hosts file.
+     * @param knownHostsFile
+     * @return
+     * @see #knownHosts
+     */
+    AddHostKey addHostKey(File knownHostsFile) {
+        new AddHostKey(knownHostsFile)
+    }
+
+    /**
      * Hides constant from result of {@link #toString()}.
      */
     def toString__allowAnyHosts() {}

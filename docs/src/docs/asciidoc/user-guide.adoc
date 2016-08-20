@@ -216,8 +216,10 @@ Also following settings can be set in a remote closure.
 |If this is `true`, Putty Agent or ssh-agent is used on authentication. Defaults to `false`.
 
 |`knownHosts`
-|`File` or `List<File>`
-|One or more known hosts files. Defaults to `new File("${System.properties['user.home']}/.ssh/known_hosts")`. If `allowAnyHosts` is set, strict host key checking is turned off (vulnerable to man-in-the-middle attacks).
+|`addHostKey(File)`, `File`, `Collection<File>` or `allowAnyHosts`
+|Known hosts for host key checking.
+ See below section.
+ Defaults to `File("${System.properties['user.home']}/.ssh/known_hosts")`.
 
 |`timeoutSec`
 |`int` (seconds)
@@ -236,7 +238,19 @@ Also following settings can be set in a remote closure.
 |Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
 |===
 
-Note that `identity` can be a `File` or `String`.
+These can be set globally in the project as follows.
+
+[source,groovy]
+----
+ssh.settings {
+  timeoutSec = 600
+}
+----
+
+
+==== `identity`: Public key authentication
+
+`identity` should be a `File` or `String`.
 If a `String` is set, it is treated as a content of the private key but not a path.
 
 [source,groovy]
@@ -254,13 +268,36 @@ ssh.settings {
 }
 ----
 
-These can be set globally in the project as follows.
+
+==== `knownHosts`: Host key checking
+
+`knownHosts` should be a `File`, `Collection<File>`, `addHostKey(File)` or `allowAnyHosts`.
+
+If a `File` or `Collection<File>` is set, host key checking is turned on without write access to the file.
+It fails when a host key to connect is different from the file or does not exist in the file.
 
 [source,groovy]
 ----
-ssh.settings {
-  knownHosts = allowAnyHosts
-}
+knownHosts = file('known_hosts')
+
+knownHosts = files('known_hosts', 'known_hosts_additional')
+----
+
+If `addHostKey(File)` is set, host key checking is turned on with write access to the file.
+It fails when a host key to connect is different from the file.
+Any new hosts are automatically appended to the file.
+
+[source,groovy]
+----
+knownHosts = addHostKey(file("$buildDir/known_hosts"))
+----
+
+If `allowAnyHosts` is set, host key checking is turned off.
+It is vulnerable to man-in-the-middle attacks and not recommended for production.
+
+[source,groovy]
+----
+knownHosts = allowAnyHosts
 ----
 
 
