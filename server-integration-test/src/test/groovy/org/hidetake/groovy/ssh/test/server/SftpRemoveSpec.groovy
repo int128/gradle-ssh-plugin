@@ -5,7 +5,7 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.apache.sshd.server.sftp.SftpSubsystem
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
@@ -21,10 +21,10 @@ class SftpRemoveSpec extends Specification {
     @Shared
     SshServer server
 
-    Service ssh
-
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()

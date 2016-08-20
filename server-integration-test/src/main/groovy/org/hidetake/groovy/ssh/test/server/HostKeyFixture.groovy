@@ -2,17 +2,21 @@ package org.hidetake.groovy.ssh.test.server
 
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider
 
-import static org.apache.sshd.common.KeyPairProvider.SSH_DSS
-
 class HostKeyFixture {
 
-    static publicKeys(List<String> keyTypes) {
-        keyTypes.collect { keyType ->
-            HostKeyFixture.getResourceAsStream("/hostkey_${keyType}.pub").text
-        }
+    static publicKey(String keyType) {
+        HostKeyFixture.getResourceAsStream("/hostkey_${keyType}.pub").text
     }
 
-    static keyPairProvider(List<String> keyTypes = [SSH_DSS]) {
+    static publicKeys(List<String> keyTypes) {
+        keyTypes.collect { keyType ->  publicKey(keyType) }
+    }
+
+    static keyPairProvider(String... keyTypes) {
+        keyPairProvider(keyTypes.toList())
+    }
+
+    static keyPairProvider(List<String> keyTypes) {
         new FileKeyPairProvider(keyTypes.collect { keyType ->
             HostKeyFixture.getResource("/hostkey_$keyType").file
         } as String[])

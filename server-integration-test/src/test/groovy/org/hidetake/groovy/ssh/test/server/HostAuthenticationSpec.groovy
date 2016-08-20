@@ -7,7 +7,7 @@ import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
@@ -19,8 +19,7 @@ import javax.crypto.spec.SecretKeySpec
 
 import static org.apache.sshd.common.KeyPairProvider.*
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
-import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
-import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKeys
+import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.*
 
 @Slf4j
 class HostAuthenticationSpec extends Specification {
@@ -28,10 +27,10 @@ class HostAuthenticationSpec extends Specification {
     @Shared
     SshServer server
 
-    Service ssh
-
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
@@ -172,7 +171,7 @@ class HostAuthenticationSpec extends Specification {
     }
 
     @Unroll
-    def "knownHosts can be a list of files where known-hosts #knownHostsType and server-key #serverKeyType"() {
+    def "strict host key checking should pass with multiple known-hosts #knownHostsType and server-key #serverKeyType"() {
         given:
         server.keyPairProvider = keyPairProvider(serverKeyType)
 
@@ -225,6 +224,28 @@ class HostAuthenticationSpec extends Specification {
         then:
         JSchException e = thrown()
         e.message.contains 'reject HostKey'
+    }
+
+    def "strict host key checking should fail if a wrong host key is given"() {
+        given:
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
+
+        def knownHostsFile = temporaryFolder.newFile()
+        knownHostsFile << "[$server.host]:$server.port ${publicKey("${ECDSA_SHA2_NISTP256}_another")}"
+
+        ssh.settings {
+            knownHosts = knownHostsFile
+        }
+
+        when:
+        executeCommand()
+
+        then:
+        0 * server.commandFactory.createCommand('somecommand')
+
+        then:
+        JSchException e = thrown()
+        e.message.contains 'HostKey has been changed'
     }
 
 

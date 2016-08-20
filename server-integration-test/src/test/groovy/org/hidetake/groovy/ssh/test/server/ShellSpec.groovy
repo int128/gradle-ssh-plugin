@@ -8,7 +8,7 @@ import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
 import org.hidetake.groovy.ssh.operation.Shell
 import org.hidetake.groovy.ssh.session.BadExitStatusException
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import spock.lang.Shared
@@ -26,10 +26,10 @@ class ShellSpec extends Specification {
     @Shared
     SshServer server
 
-    Service ssh
-
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    Service ssh
 
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()

@@ -8,12 +8,14 @@ import org.apache.sshd.server.PasswordAuthenticator
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.test.server.FilenameUtils
 import org.hidetake.groovy.ssh.test.server.SshServerMock
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.concurrent.PollingConditions
 import spock.util.mop.ConfineMetaClassChanges
 
 import static FilenameUtils.toUnixPath
@@ -21,8 +23,53 @@ import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 
 class MainSpec extends Specification {
 
-    @Rule
+    @Shared
+    SshServer server
+
+    @Shared
+    String script
+
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
+
+    def setupSpec() {
+        def privateKey = MainSpec.getResource('/hostkey_dsa').file
+        def publicKey = MainSpec.getResourceAsStream('/hostkey_dsa.pub').text
+
+        server = SshServerMock.setUpLocalhostServer(new FileKeyPairProvider(privateKey))
+        server.passwordAuthenticator = Mock(PasswordAuthenticator)
+        server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
+        server.commandFactory = Mock(CommandFactory)
+        server.commandFactory.createCommand('somecommand') >> command(0) {
+            outputStream << 'some message'
+            errorStream << 'error'
+        }
+        server.start()
+        server
+
+        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${publicKey}"
+        script = """\
+ssh.run {
+    session(
+        host: 'localhost',
+        port: ${server.port},
+        knownHosts: new File('${toUnixPath(knownHostsFile.path)}'),
+        user: 'someuser',
+        password: 'somepassword'
+    ) {
+        execute('somecommand')
+    }
+}
+"""
+    }
+
+    def cleanupSpec() {
+        new PollingConditions().eventually {
+            assert server.activeSessions.empty
+        }
+        server.stop()
+    }
+
 
     def "main should show usage if no arg is given"() {
         given:
@@ -76,9 +123,6 @@ class MainSpec extends Specification {
     @ConfineMetaClassChanges(Command)
     def "main should read script from a file is path is given"() {
         given:
-        def server = createServer()
-        def script = createScript(server)
-
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
@@ -93,17 +137,11 @@ class MainSpec extends Specification {
         then:
         1 * logger.info ({ it =~ /Remote\d+?#\d+?\|some message/ })
         1 * logger.error({ it =~ /Remote\d+?#\d+?\|error/})
-
-        cleanup:
-        server.stop()
     }
 
     @ConfineMetaClassChanges(Command)
     def "main should evaluate a script line if -e is given"() {
         given:
-        def server = createServer()
-        def script = createScript(server)
-
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
@@ -115,17 +153,11 @@ class MainSpec extends Specification {
         then:
         1 * logger.info ({ it =~ /Remote\d+?#\d+?\|some message/ })
         1 * logger.error({ it =~ /Remote\d+?#\d+?\|error/})
-
-        cleanup:
-        server.stop()
     }
 
     @ConfineMetaClassChanges(Command)
     def "main should read script from standard input if --stdin is given"() {
         given:
-        def server = createServer()
-        def script = createScript(server)
-
         def logger = Mock(Logger)
         logger.isInfoEnabled() >> true
         logger.isErrorEnabled() >> true
@@ -143,7 +175,6 @@ class MainSpec extends Specification {
 
         cleanup:
         System.in = stdin
-        server.stop()
     }
 
 
@@ -193,34 +224,6 @@ class MainSpec extends Specification {
 
         then:
         root.level == Level.ERROR
-    }
-
-
-    private SshServer createServer() {
-        def privateKey = MainSpec.getResource('/hostkey_dsa').file
-        def server = SshServerMock.setUpLocalhostServer(new FileKeyPairProvider(privateKey))
-        server.passwordAuthenticator = Mock(PasswordAuthenticator)
-        server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
-        server.commandFactory = Mock(CommandFactory)
-        server.commandFactory.createCommand('somecommand') >> command(0) {
-            outputStream << 'some message'
-            errorStream << 'error'
-        }
-        server.start()
-        server
-    }
-
-    private String createScript(SshServer server) {
-        def publicKey = MainSpec.getResourceAsStream('/hostkey_dsa.pub').text
-        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${publicKey}"
-        "ssh.run {" +
-                " session(host: 'localhost'," +
-                "  port: ${server.port}," +
-                "  knownHosts: new File('${toUnixPath(knownHostsFile.path)}')," +
-                "  user: 'someuser'," +
-                "  password: 'somepassword')" +
-                " { execute('somecommand') }" +
-                "}"
     }
 
 
