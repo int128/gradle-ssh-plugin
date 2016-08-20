@@ -20,7 +20,7 @@ class AcceptanceSpec extends Specification {
         given:
         def runner = GradleRunner.create()
                 .withProjectDir(new File('fixture'))
-                .withArguments("-Ptarget.product.version=$productVersion", 'test')
+                .withArguments("-Ptarget.product.version=$productVersion", '-s', 'test')
                 .withGradleVersion(gradleVersion)
 
         and: 'show console on Gradle 2.x'
