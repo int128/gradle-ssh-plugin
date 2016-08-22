@@ -1,9 +1,11 @@
 package org.hidetake.groovy.ssh.connection
 
 import com.jcraft.jsch.JSch
+import com.jcraft.jsch.JSchException
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
+import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 
 import static org.hidetake.groovy.ssh.util.Utility.retry
 
@@ -14,7 +16,6 @@ import static org.hidetake.groovy.ssh.util.Utility.retry
  */
 @Slf4j
 class ConnectionManager implements UserAuthentication, HostAuthentication, ProxyConnection {
-    protected static final LOCALHOST = '127.0.0.1'
 
     /**
      * Settings with default, global and per-service.
@@ -31,48 +32,36 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
     /**
      * Establish a connection.
      *
-     * @param remote the remote host
+     * @param remote target remote host
      * @return a connection
      */
-    Connection connect(Remote remote) {
-        def connection = new Connection(remote, connectViaGateway(remote))
-        connections.add(connection)
-        connection
-    }
-
-    /**
-     * Establish a JSch session.
-     *
-     * @param remote target remote host
-     * @return a JSch session
-     */
-    private connectViaGateway(Remote remote) {
+    private Connection connect(Remote remote) {
         def settings = new ConnectionSettings.With(connectionSettings, remote)
         if (settings.gateway && settings.gateway != remote) {
             log.debug("Connecting to $remote via $settings.gateway")
-            def gatewaySession = connectViaGateway(settings.gateway)
-            def gatewayConnection = new Connection(settings.gateway, gatewaySession)
-            connections.add(gatewayConnection)
+            def gatewayConnection = connect(settings.gateway)
 
             log.debug("Requesting port forwarding to $remote")
-            def localPort = gatewaySession.setPortForwardingL(0, remote.host, remote.port)
-            log.info("Enabled local port forwarding from $LOCALHOST:$localPort to $remote")
+            def localPort = gatewayConnection.forwardLocalPort(new LocalPortForwardSettings.With(
+                host: remote.host, hostPort: remote.port, bind: '127.0.0.1', port: 0,
+            ))
+            log.info("Enabled local port forwarding from localhost:$localPort to $remote")
 
-            connectInternal(remote, LOCALHOST, localPort)
+            connectInternal(remote, '127.0.0.1', localPort)
         } else {
             connectInternal(remote)
         }
     }
 
     /**
-     * Establish a JSch session via given host and port.
+     * Establish a connection via given host and port.
      *
      * @param remote target remote host
      * @param host endpoint host (usually <code>remote.host</code>)
      * @param port endpoint port (usually <code>remote.port</code>)
-     * @return a JSch session
+     * @return a connection
      */
-    private connectInternal(Remote remote, String host = remote.host, int port = remote.port) {
+    private Connection connectInternal(Remote remote, String host = remote.host, int port = remote.port) {
         def settings = new ConnectionSettings.With(connectionSettings, remote)
         log.debug("Connecting to $remote with $settings")
 
@@ -85,19 +74,37 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
         assert settings.keepAliveSec >= 0, "keepAliveMillis must be zero or positive (remote ${remote.name})"
 
         retry(settings.retryCount, settings.retryWaitSec) {
-            def jsch = new JSch()
-            def session = jsch.getSession(settings.user, host, port)
-            session.setServerAliveInterval(settings.keepAliveSec * 1000)
-            session.timeout = settings.timeoutSec * 1000
+            try {
+                connectInternal(remote, host, port, settings)
+            } catch (JSchException e) {
+                if (settings.knownHosts instanceof AddHostKey && e.message.startsWith('UnknownHostKey')) {
+                    log.info(e.message)
 
-            configureHostAuthentication(jsch, session, remote, settings)
-            configureUserAuthentication(jsch, session, remote, settings)
-            configureProxyConnection(jsch, session, remote, settings)
-
-            session.connect()
-            log.info("Connected to $remote (${session.serverVersion})")
-            session
+                    configureToAddNewHostKey(settings)
+                    connectInternal(remote, host, port, settings)
+                } else {
+                    throw e
+                }
+            }
         }
+    }
+
+    private Connection connectInternal(Remote remote, String host, int port, ConnectionSettings settings) {
+        def jsch = new JSch()
+        def session = jsch.getSession(settings.user, host, port)
+        session.setServerAliveInterval(settings.keepAliveSec * 1000)
+        session.timeout = settings.timeoutSec * 1000
+
+        configureHostAuthentication(jsch, session, remote, settings)
+        configureUserAuthentication(jsch, session, remote, settings)
+        configureProxyConnection(jsch, session, remote, settings)
+
+        session.connect()
+
+        log.info("Connected to $remote (${session.serverVersion})")
+        def connection = new Connection(remote, session)
+        connections.add(connection)
+        connection
     }
 
     /**
@@ -140,4 +147,5 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
             throw new BackgroundCommandException(exceptions)
         }
     }
+
 }
