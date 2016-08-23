@@ -4,7 +4,7 @@ ssh.remotes {
         port = 8022
         user = 'tester'
         identity = new File('.ssh/id_rsa')
-        knownHosts = new File('.ssh/known_hosts')
+        knownHosts = addHostKey(new File('.ssh/known_hosts'))
     }
 }
 
@@ -15,4 +15,8 @@ ssh.run {
         execute 'java -jar gssh.jar --help'
         remove 'gssh.jar'
     }
+}
+
+assert new File('.ssh/known_hosts').readLines().any { line ->
+    line.startsWith('[sandbox.127.0.0.1.xip.io]:8022 ssh-rsa')
 }

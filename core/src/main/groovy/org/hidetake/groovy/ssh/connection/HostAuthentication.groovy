@@ -1,19 +1,15 @@
 package org.hidetake.groovy.ssh.connection
 
-import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 
+@Slf4j
 trait HostAuthentication {
 
     void validateHostAuthentication(HostAuthenticationSettings settings, Remote remote) {
         switch (settings.knownHosts) {
-            case AllowAnyHosts:
-                break
-            case AddHostKey:
-                break
             case File:
                 def file = settings.knownHosts as File
                 if (!file.exists()) {
@@ -22,105 +18,106 @@ trait HostAuthentication {
                 break
             case Collection:
                 break
+            case AddHostKey:
+                break
+            case AllowAnyHosts:
+                log.warn('Host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
+                break
             default:
                 throw new IllegalArgumentException("knownHosts must be allowAnyHosts, addHostKey, a File or collection of files: $settings.knownHosts")
         }
     }
 
     void configureHostAuthentication(JSch jsch, Session session, Remote remote, HostAuthenticationSettings settings) {
-        def helper = new Helper(jsch, session, remote)
-        //noinspection GroovyAssignabilityCheck
-        helper.configureHostAuthentication(settings.knownHosts)
+        def helper = new Helper(session, remote)
+        switch (settings.knownHosts) {
+            case File:
+                def file = settings.knownHosts as File
+                helper.configureHostAuthentication('yes', [file])
+                break
+            case Collection:
+                def files = settings.knownHosts as Collection<File>
+                helper.configureHostAuthentication('yes', files)
+                break
+            case AddHostKey:
+                def file = (settings.knownHosts as AddHostKey).knownHostsFile
+                if (file.createNewFile()) {
+                    log.info("Created known-hosts file: $file")
+                }
+                helper.configureHostAuthentication('ask', [file])
+                break
+            case AllowAnyHosts:
+                helper.configureHostAuthentication('no')
+                break
+        }
     }
 
-    void configureToAddNewHostKey(HostAuthenticationSettings settings) {
-        assert settings.knownHosts instanceof AddHostKey
-        settings.knownHosts = new AddNewHostKey(settings.knownHosts as AddHostKey)
-    }
-
-    private static class AddNewHostKey {
-        final AddHostKey addHostKey
-
-        def AddNewHostKey(AddHostKey addHostKey1) {
-            addHostKey = addHostKey1
-        }
-
-        @Override
-        String toString() {
-            addHostKey.toString()
-        }
+    void addHostKeyToKnownHostsFile(AddHostKey addHostKey, Session session, Remote remote) {
+        def helper = new Helper(session, remote)
+        helper.addHostKeyToKnownHostsFile(addHostKey.knownHostsFile)
     }
 
     @Slf4j
     private static class Helper {
-        final JSch jsch
         final Session session
         final Remote remote
 
-        def Helper(JSch jsch1, Session session1, Remote remote1) {
-            jsch = jsch1
+        def Helper(Session session1, Remote remote1) {
             session = session1
             remote = remote1
         }
 
-        void configureHostAuthentication(AllowAnyHosts allowAnyHosts) {
-            log.warn('Host key checking is off. It may be vulnerable to man-in-the-middle attacks.')
-            session.setConfig('StrictHostKeyChecking', 'no')
+        boolean isViaGateway() {
+            [session.host, session.port] != [remote.host, remote.port]
         }
 
-        void configureHostAuthentication(AddHostKey addHostKey) {
-            def file = addHostKey.knownHostsFile
-            if (file.createNewFile()) {
-                log.info("Created known-hosts file: $file")
+        void configureHostAuthentication(String strictHostKeyChecking, Collection<File> knownHostsFiles = []) {
+            session.setConfig('StrictHostKeyChecking', strictHostKeyChecking)
+            knownHostsFiles.each { file ->
+                log.debug("Using known-hosts file for $remote: $file")
+                configureKnownHostsFile(file)
             }
-            log.debug("Using known-hosts file for $remote: $file")
-            jsch.setKnownHosts(file.path)
-            session.setConfig('StrictHostKeyChecking', 'ask')
-            configureHostKeyTypes()
-            configureForGateway()
+            configureKeyExchangeAlgorithm()
         }
 
-        void configureHostAuthentication(AddNewHostKey addNewHostKey) {
-            def file = addNewHostKey.addHostKey.knownHostsFile
-            log.info("Adding host key of $remote to known-hosts file")
-            jsch.setKnownHosts(file.path)
-            session.setConfig('StrictHostKeyChecking', 'no')
-            configureHostKeyTypes()
-            configureForGateway()
+        void addHostKeyToKnownHostsFile(File knownHostsFile) {
+            def hostKeys = HostKeyRepository.create(session).findAll()
+            def repository = HostKeyRepository.create(knownHostsFile)
+            if (viaGateway) {
+                repository.addAll(
+                    hostKeys.collect { hostKey ->
+                        log.debug("Adding translated host key for remote: $session.host:$session.port -> $remote.host:$remote.port")
+                        HostKeyRepository.translateHostPort(hostKey, remote.host, remote.port)
+                    })
+            } else {
+                repository.addAll(hostKeys)
+            }
         }
 
-        void configureHostAuthentication(File file) {
-            log.debug("Using known-hosts file for $remote: $file")
-            jsch.setKnownHosts(file.path)
-            session.setConfig('StrictHostKeyChecking', 'yes')
-            configureHostKeyTypes()
-            configureForGateway()
+        private void configureKnownHostsFile(File knownHostsFile) {
+            def hostKeys = HostKeyRepository.create(knownHostsFile).findAll()
+            def repository = HostKeyRepository.create(session)
+            if (viaGateway) {
+                repository.addAll(
+                    hostKeys.collect { hostKey ->
+                        if (HostKeyRepository.compare(hostKey, remote.host, remote.port)) {
+                            log.debug("Using translated host key for gateway: $remote.host:$remote.port -> $session.host:$session.port")
+                            HostKeyRepository.translateHostPort(hostKey, session.host, session.port)
+                        } else {
+                            hostKey
+                        }
+                    })
+            } else {
+                repository.addAll(hostKeys)
+            }
         }
 
-        void configureHostAuthentication(Collection<File> files) {
-            log.debug("Using known-hosts files for $remote: $files")
-            def hostKeys = HostKeys.fromKnownHosts(files)
-            hostKeys.each { hostKey -> session.hostKeyRepository.add(hostKey, null) }
-            session.setConfig('StrictHostKeyChecking', 'yes')
-            configureHostKeyTypes()
-            configureForGateway()
-        }
-
-        private void configureHostKeyTypes() {
-            def keyTypes = HostKeys.fromSession(session).keyTypes(session.host, session.port).join(',')
+        private void configureKeyExchangeAlgorithm() {
+            def keys = HostKeyRepository.create(session).findAll(session.host, session.port)
+            def keyTypes = keys*.type.unique().join(',')
             if (keyTypes) {
                 session.setConfig('server_host_key', keyTypes)
                 log.debug("Using key exhange algorithm for $remote: $keyTypes")
-            }
-        }
-
-        private void configureForGateway() {
-            if ([session.host, session.port] != [remote.host, remote.port]) {
-                HostKeys.fromSession(session).find(remote.host, remote.port).each { hostKey ->
-                    def hostKeyForGateway = new HostKey("[$session.host]:$session.port", hostKey.@type, hostKey.@key, hostKey.comment)
-                    session.hostKeyRepository.add(hostKeyForGateway, null)
-                    log.debug("Duplicated host key for gateway: $remote.host:$remote.port -> $session.host:$session.port")
-                }
             }
         }
     }

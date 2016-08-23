@@ -323,18 +323,24 @@ remotes {
 }
 ----
 
-When the code runs, it does:
+When the code runs,
 
-. connect to Gateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to Target (`192.168.1.101`).
-. connect to the tunnelled port (`127.0.0.1:X`) and perform operations.
+. It connects to Gateway (`10.2.3.4`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:X`) to Target (`192.168.1.101`).
+. It connects to the tunnelled port (`127.0.0.1:X`) and performs operations.
 
-If `knownHosts` is set,
+If host key checking is turned on,
 
 . `knownHosts` of Gateway should contain `10.2.3.4` with the host key of Gateway.
 . `knownHosts` of Target should contain `192.168.1.101` with the host key of Target.
+  It is actually translated to the tunnelled port (`127.0.0.1:X`) in host key checking.
+
+If host key checking is turned on with `addHostKey()`,
+
+. The host key of Gateway is stored to the `knownHosts` as `10.2.3.4`.
+. The host key of Target is stored to the `knownHosts` as `192.168.1.101`, translated from the tunnelled port (`127.0.0.1:X`).
 
 
-==== More gateway servers
+Let's see also the example for more gateway servers.
 
 Following code connects through two gateway servers:
 
@@ -358,17 +364,11 @@ remotes {
 }
 ----
 
-When the code runs, it does:
+When the code runs,
 
-. connect to FrontGateway (`10.2.3.4`) and tunnel from an auto-allocated port (`127.0.0.1:X`) to MidGateway (`172.16.1.2`).
-. connect to the tunnelled port (`127.0.0.1:X`) and tunnel from an auto-allocated port (`127.0.0.1:Y`) to Target (`192.168.1.101`).
-. connect to the tunnelled port (`127.0.0.1:Y`) and perform operations.
-
-If `knownHosts` is set,
-
-. `knownHosts` of FrontGateway should contain `10.2.3.4` with the host key with FrontGateway.
-. `knownHosts` of MidGateway should contain `172.16.1.2` with the host key with MidGateway.
-. `knownHosts` of Target should contain `192.168.1.101` with the host key with Target.
+. It connects to FrontGateway (`10.2.3.4`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:X`) to MidGateway (`172.16.1.2`).
+. It connects to the tunnelled port (`127.0.0.1:X`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:Y`) to Target (`192.168.1.101`).
+. It connects to the tunnelled port (`127.0.0.1:Y`) and performs operations.
 
 
 === Proxy access

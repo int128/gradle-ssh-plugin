@@ -23,35 +23,45 @@ class GatewaySpec extends Specification {
     def setup() {
         ssh = Ssh.newService()
         createRemotes(ssh)
-    }
-
-    def "it should connect to target server via gateway server"() {
-        given:
-        def knownHostsOfGateway = ssh.remotes.Default.knownHosts as File
-        def knownHostsOfTarget = temporaryFolder.newFile()
-        knownHostsOfGateway.eachLine { line ->
-            knownHostsOfTarget << line.replaceAll(/^[^ ]+/, '127.0.0.2') << '\n'
-        }
-
         ssh.remotes {
-            TargetServer {
-                host = '127.0.0.2'
-                knownHosts = knownHostsOfTarget
+            InternalServer {
+                host = 'groovy-ssh-integration-test-internal-box'
                 user = ssh.remotes.Default.user
                 identity = ssh.remotes.Default.identity
                 gateway = ssh.remotes.Default
             }
         }
+    }
+
+    def "it should connect to target server via gateway server"() {
+        given:
+        def knownHostsFile = temporaryFolder.newFile()
 
         when:
-        def from = ssh.run {
-            session(ssh.remotes.TargetServer) {
-                execute 'echo ${SSH_CLIENT%% *}'
+        ssh.run {
+            settings {
+                knownHosts = addHostKey(knownHostsFile)
+            }
+            session(ssh.remotes.InternalServer) {
+                execute 'hostname'
             }
         }
 
         then:
-        from == '127.0.0.1'
+        knownHostsFile.text =~ /^groovy-ssh-integration-test-internal-box .+/
+
+        when:
+        ssh.run {
+            settings {
+                knownHosts = knownHostsFile
+            }
+            session(ssh.remotes.InternalServer) {
+                execute 'hostname'
+            }
+        }
+
+        then:
+        knownHostsFile.text =~ /^groovy-ssh-integration-test-internal-box .+/
     }
 
 }
