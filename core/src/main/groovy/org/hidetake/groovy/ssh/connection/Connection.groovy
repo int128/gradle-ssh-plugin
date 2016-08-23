@@ -9,7 +9,7 @@ import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
 
 /**
- * A SSH connection.
+ * A connected SSH connection.
  *
  * @author Hidetake Iwata
  */
@@ -21,6 +21,12 @@ class Connection {
     private final List<Channel> channels = []
     private final List<Closure> callbackForClosedChannels = []
 
+    /**
+     * Constructor
+     * @param remote1
+     * @param session1 connected session
+     * @return an instance
+     */
     def Connection(Remote remote1, Session session1) {
         remote = remote1
         session = session1

@@ -33,6 +33,24 @@ trait HostAuthentication {
         helper.configureHostAuthentication(settings.knownHosts)
     }
 
+    void configureToAddNewHostKey(HostAuthenticationSettings settings) {
+        assert settings.knownHosts instanceof AddHostKey
+        settings.knownHosts = new AddNewHostKey(settings.knownHosts as AddHostKey)
+    }
+
+    private static class AddNewHostKey {
+        final AddHostKey addHostKey
+
+        def AddNewHostKey(AddHostKey addHostKey1) {
+            addHostKey = addHostKey1
+        }
+
+        @Override
+        String toString() {
+            addHostKey.toString()
+        }
+    }
+
     @Slf4j
     private static class Helper {
         final JSch jsch
@@ -53,12 +71,20 @@ trait HostAuthentication {
         void configureHostAuthentication(AddHostKey addHostKey) {
             def file = addHostKey.knownHostsFile
             if (file.createNewFile()) {
-                log.info("Created knownHosts file: $file")
+                log.info("Created known-hosts file: $file")
             }
             log.debug("Using known-hosts file for $remote.name: $file")
             jsch.setKnownHosts(file.path)
             session.setConfig('StrictHostKeyChecking', 'ask')
-            session.userInfo = new HostAuthenticationPrompt()
+            configureHostKeyTypes()
+            configureForGateway()
+        }
+
+        void configureHostAuthentication(AddNewHostKey addNewHostKey) {
+            def file = addNewHostKey.addHostKey.knownHostsFile
+            log.info("Adding host key of $remote to known-hosts file")
+            jsch.setKnownHosts(file.path)
+            session.setConfig('StrictHostKeyChecking', 'no')
             configureHostKeyTypes()
             configureForGateway()
         }
