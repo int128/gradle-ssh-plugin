@@ -34,17 +34,13 @@ class DryRunOperations implements Operations {
 
     @Override
     int forwardLocalPort(LocalPortForwardSettings settings) {
-        log.info("Requesting port forwarding from " +
-                 "local (${settings.bind}:${settings.port}) to remote (${settings.host}:${settings.hostPort})" +
-                 "on $remote")
+        log.info("Requesting local port forwarding on $remote with ${new LocalPortForwardSettings.With(settings)}")
         0
     }
 
     @Override
     void forwardRemotePort(RemotePortForwardSettings settings) {
-        log.info("Requesting port forwarding from " +
-                 "remote (${settings.bind}:${settings.port}) to local (${settings.host}:${settings.hostPort})" +
-                 "on $remote")
+        log.info("Requesting remote port forwarding on $remote with ${new RemotePortForwardSettings.With(settings)}")
     }
 
     @Override

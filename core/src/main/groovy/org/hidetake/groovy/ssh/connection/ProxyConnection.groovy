@@ -28,18 +28,18 @@ trait ProxyConnection {
                     def proxy = new ProxySOCKS5(settings.proxy.host, settings.proxy.port)
                     proxy.setUserPasswd(settings.proxy.user, settings.proxy.password)
                     session.proxy = proxy
-                    log.debug("Using SOCKS5 proxy for $remote.name: $settings.proxy")
+                    log.debug("Using SOCKS5 proxy for $remote: $settings.proxy")
                 } else {
                     def proxy = new ProxySOCKS4(settings.proxy.host, settings.proxy.port)
                     proxy.setUserPasswd(settings.proxy.user, settings.proxy.password)
                     session.proxy = proxy
-                    log.debug("Using SOCKS4 proxy for $remote.name: $settings.proxy")
+                    log.debug("Using SOCKS4 proxy for $remote: $settings.proxy")
                 }
             } else {
                 def proxy = new ProxyHTTP(settings.proxy.host, settings.proxy.port)
                 proxy.setUserPasswd(settings.proxy.user, settings.proxy.password)
                 session.proxy = proxy
-                log.debug("Using HTTP proxy for $remote.name: $settings.proxy")
+                log.debug("Using HTTP proxy for $remote: $settings.proxy")
             }
         }
     }

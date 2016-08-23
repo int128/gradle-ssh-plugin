@@ -73,7 +73,7 @@ trait HostAuthentication {
             if (file.createNewFile()) {
                 log.info("Created known-hosts file: $file")
             }
-            log.debug("Using known-hosts file for $remote.name: $file")
+            log.debug("Using known-hosts file for $remote: $file")
             jsch.setKnownHosts(file.path)
             session.setConfig('StrictHostKeyChecking', 'ask')
             configureHostKeyTypes()
@@ -90,7 +90,7 @@ trait HostAuthentication {
         }
 
         void configureHostAuthentication(File file) {
-            log.debug("Using known-hosts file for $remote.name: $file")
+            log.debug("Using known-hosts file for $remote: $file")
             jsch.setKnownHosts(file.path)
             session.setConfig('StrictHostKeyChecking', 'yes')
             configureHostKeyTypes()
@@ -98,7 +98,7 @@ trait HostAuthentication {
         }
 
         void configureHostAuthentication(Collection<File> files) {
-            log.debug("Using known-hosts files for $remote.name: $files")
+            log.debug("Using known-hosts files for $remote: $files")
             def hostKeys = HostKeys.fromKnownHosts(files)
             hostKeys.each { hostKey -> session.hostKeyRepository.add(hostKey, null) }
             session.setConfig('StrictHostKeyChecking', 'yes')
@@ -110,7 +110,7 @@ trait HostAuthentication {
             def keyTypes = HostKeys.fromSession(session).keyTypes(session.host, session.port).join(',')
             if (keyTypes) {
                 session.setConfig('server_host_key', keyTypes)
-                log.debug("Using key exhange algorithm for $remote.name: $keyTypes")
+                log.debug("Using key exhange algorithm for $remote: $keyTypes")
             }
         }
 

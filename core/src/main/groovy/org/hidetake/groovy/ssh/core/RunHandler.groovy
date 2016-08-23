@@ -40,7 +40,7 @@ class RunHandler {
      */
     void session(Remote remote, @DelegatesTo(SessionHandler) Closure closure) {
         assert remote, 'remote must be given'
-        assert remote.host, "host must be given for the remote ${remote.name}"
+        assert remote.host, "host must be given ($remote)"
         assert closure, 'closure must be given'
         sessions.add(new Plan(remote, closure))
     }

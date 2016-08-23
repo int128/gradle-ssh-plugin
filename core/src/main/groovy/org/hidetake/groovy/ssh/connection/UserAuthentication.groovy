@@ -11,9 +11,9 @@ import org.hidetake.groovy.ssh.core.Remote
 trait UserAuthentication {
 
     void validateUserAuthentication(UserAuthenticationSettings settings, Remote remote) {
-        assert settings.user, "user must be given (remote ${remote.name})"
+        assert settings.user, "user must be given ($remote)"
         assert settings.identity instanceof File || settings.identity instanceof String || settings.identity == null,
-                "identity must be a File, String or null (remote ${remote.name})"
+                "identity must be a File, String or null ($remote)"
     }
 
     void configureUserAuthentication(JSch jsch, Session session, Remote remote, UserAuthenticationSettings settings) {
@@ -21,12 +21,12 @@ trait UserAuthentication {
 
         if (settings.password) {
             session.password = settings.password
-            log.debug("Using password authentication for $remote.name")
+            log.debug("Using password authentication for $remote")
         }
 
         if (settings.agent) {
             jsch.identityRepository = RemoteIdentityRepositoryLocator.get()
-            log.debug("Using SSH agent authentication for $remote.name")
+            log.debug("Using SSH agent authentication for $remote")
         } else {
             jsch.identityRepository = null    /* null means the default repository */
             jsch.removeAllIdentity()
@@ -34,10 +34,10 @@ trait UserAuthentication {
                 final identity = settings.identity
                 if (identity instanceof File) {
                     jsch.addIdentity(identity.path, settings.passphrase as String)
-                    log.debug("Using public key authentication for $remote.name: $identity.path")
+                    log.debug("Using public key authentication for $remote: $identity.path")
                 } else if (identity instanceof String) {
                     jsch.addIdentity("identity-${identity.hashCode()}", identity.bytes, null, settings.passphrase?.bytes)
-                    log.debug("Using public key authentication for $remote.name")
+                    log.debug("Using public key authentication for $remote")
                 }
             }
         }
