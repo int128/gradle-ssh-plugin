@@ -69,9 +69,9 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
         validateUserAuthentication(settings, remote)
         validateProxyConnection(settings, remote)
 
-        assert settings.retryCount   >= 0, "retryCount must be zero or positive (remote ${remote.name})"
-        assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive (remote ${remote.name})"
-        assert settings.keepAliveSec >= 0, "keepAliveMillis must be zero or positive (remote ${remote.name})"
+        assert settings.retryCount   >= 0, "retryCount must be zero or positive ($remote)"
+        assert settings.retryWaitSec >= 0, "retryWaitSec must be zero or positive ($remote)"
+        assert settings.keepAliveSec >= 0, "keepAliveSec must be zero or positive ($remote)"
 
         retry(settings.retryCount, settings.retryWaitSec) {
             try {

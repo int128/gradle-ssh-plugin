@@ -37,16 +37,16 @@ class SudoHelper {
         final command = operations.command(commandSettings, sudoCommandLine)
         command.addInteraction {
             when(partial: prompt, from: standardOutput) {
-                log.info("Providing password for sudo prompt on $operations.remote.name")
+                log.info("Providing password for sudo prompt on $operations.remote")
                 standardInput << sudoSettings.sudoPassword << '\n'
                 standardInput.flush()
 
                 when(line: _, from: standardOutput) {
-                    log.debug("Got ACK to the password on $operations.remote.name")
+                    log.debug("Got ACK to the password on $operations.remote")
 
                     if (inputStreamValue) {
                         standardInput.withStream {
-                            log.debug("Sending to standard input on $operations.remote.name")
+                            log.debug("Sending to standard input on $operations.remote")
                             inputStreamValue >> standardInput
                         }
                     }
@@ -56,7 +56,7 @@ class SudoHelper {
                         lines << it
 
                         when(partial: prompt, from: standardOutput) {
-                            log.error("Failed sudo authentication on $operations.remote.name")
+                            log.error("Failed sudo authentication on $operations.remote")
                             throw new SudoException(operations.remote, lines.join('\n'))
                         }
 

@@ -34,37 +34,29 @@ class DefaultOperations implements Operations {
 
     @Override
     Operation shell(ShellSettings settings) {
-        log.debug("Executing shell on $remote.name: $settings")
+        log.debug("Executing shell on $remote: $settings")
         new Shell(connection, settings)
     }
 
     @Override
     Operation command(CommandSettings settings, String commandLine) {
-        log.debug("Executing command on $remote.name: $commandLine: $settings")
+        log.debug("Executing command on $remote: $commandLine: $settings")
         new Command(connection, settings, commandLine)
     }
 
     @Override
     int forwardLocalPort(LocalPortForwardSettings settings) {
-        log.debug("Requesting port forwarding " +
-                  "from $settings.bind:$settings.port " +
-                  "to $remote.name [$settings.host:$settings.hostPort]")
+        log.debug("Requesting local port forwarding on $remote with ${new LocalPortForwardSettings.With(settings)}")
         int port = connection.forwardLocalPort(settings)
-        log.info("Enabled port forwarding " +
-                 "from $settings.bind:$settings.port " +
-                 "to $remote.name [$settings.host:$settings.hostPort]")
+        log.info("Enabled local port forwarding on $remote with ${new LocalPortForwardSettings.With(settings)}")
         port
     }
 
     @Override
     void forwardRemotePort(RemotePortForwardSettings settings) {
-        log.debug("Requesting port forwarding " +
-                  "from $remote.name [$settings.bind:$settings.port] " +
-                  "to $settings.host:$settings.hostPort")
+        log.debug("Requesting remote port forwarding on $remote with ${new RemotePortForwardSettings.With(settings)}")
         connection.forwardRemotePort(settings)
-        log.info("Enabled port forwarding from " +
-                 "from $remote.name [$settings.bind:$settings.port] " +
-                 "to $settings.host:$settings.hostPort")
+        log.info("Enabled remote port forwarding from on $remote with ${new RemotePortForwardSettings.With(settings)}")
     }
 
     @Override
