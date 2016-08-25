@@ -77,11 +77,9 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
             try {
                 connectInternal(remote, host, port, settings)
             } catch (JSchException e) {
-                if (settings.knownHosts instanceof AddHostKey && e.message.startsWith('UnknownHostKey')) {
+                if (e.message.startsWith('UnknownHostKey') && settings.knownHosts instanceof AddHostKey) {
                     log.info(e.message)
-
-                    configureToAddNewHostKey(settings)
-                    connectInternal(remote, host, port, settings)
+                    reconnectToAddHostKey(remote, host, port, settings)
                 } else {
                     throw e
                 }
@@ -100,10 +98,21 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
         configureProxyConnection(jsch, session, remote, settings)
 
         session.connect()
-
-        log.info("Connected to $remote (${session.serverVersion})")
         def connection = new Connection(remote, session)
         connections.add(connection)
+
+        log.info("Connected to $remote (${session.serverVersion})")
+        connection
+    }
+
+    private Connection reconnectToAddHostKey(Remote remote, String host, int port, ConnectionSettings settings) {
+        def addHostKey = settings.knownHosts as AddHostKey
+        settings.knownHosts = AllowAnyHosts.instance
+
+        def connection = connectInternal(remote, host, port, settings)
+
+        addHostKeyToKnownHostsFile(addHostKey, connection.session, remote)
+        log.info("Added host key received from $remote")
         connection
     }
 

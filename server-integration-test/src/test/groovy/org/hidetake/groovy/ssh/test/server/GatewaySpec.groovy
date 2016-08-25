@@ -61,9 +61,11 @@ class GatewaySpec extends Specification {
 
     def "it should connect to target server via gateway server"() {
         given:
-        def knownHostsFile = temporaryFolder.newFile()
-        knownHostsFile << "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}"
-        knownHostsFile << "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}"
+        def knownHostsContent = [
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+        ].join('')
+        def knownHostsFile = temporaryFolder.newFile() << knownHostsContent
 
         ssh.remotes {
             gw {
@@ -94,17 +96,63 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
         then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
+        then: 1 * targetServer.shellFactory.create() >> command(0)
 
         then:
-        1 * targetServer.shellFactory.create() >> command(0)
+        knownHostsFile.text == knownHostsContent
+    }
+
+    def "it should connect to target server via gateway server and add host keys"() {
+        given:
+        def knownHostsFile = temporaryFolder.newFile()
+        def expectedKnownHosts = [
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+        ].join('')
+
+        ssh.remotes {
+            gw {
+                host = gateway1Server.host
+                port = gateway1Server.port
+                user = 'gateway1User'
+                password = 'gateway1Password'
+            }
+            target {
+                host = targetServer.host
+                port = targetServer.port
+                user = 'targetUser'
+                password = 'targetPassword'
+                gateway = ssh.remotes.gw
+            }
+        }
+
+        when:
+        ssh.run {
+            settings {
+                knownHosts = addHostKey(knownHostsFile)
+            }
+            session(ssh.remotes.target) {
+                shell(interaction: {})
+            }
+        }
+
+        then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
+        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
+        then: 1 * targetServer.shellFactory.create() >> command(0)
+
+        then:
+        knownHostsFile.text == expectedKnownHosts
     }
 
     def "it should connect to target server via 2 gateway servers"() {
         given:
-        def knownHostsFile = temporaryFolder.newFile()
-        knownHostsFile << "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}"
-        knownHostsFile << "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}"
-        knownHostsFile << "[$gateway2Server.host]:$gateway2Server.port ${publicKey(ECDSA_SHA2_NISTP256)}"
+        def knownHostsContent = [
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$gateway2Server.host]:$gateway2Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+        ].join('')
+        def knownHostsFile = temporaryFolder.newFile() << knownHostsContent
 
         ssh.remotes {
             gw01 {
@@ -144,9 +192,63 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
         then: 1 * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
+        then: 1 * targetServer.shellFactory.create() >> command(0)
 
         then:
-        1 * targetServer.shellFactory.create() >> command(0)
+        knownHostsFile.text == knownHostsContent
+    }
+
+    def "it should connect to target server via 2 gateway servers and add host keys"() {
+        given:
+        def knownHostsFile = temporaryFolder.newFile()
+        def expectedKnownHosts = [
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$gateway2Server.host]:$gateway2Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+        ].join('')
+
+        ssh.remotes {
+            gw01 {
+                host = gateway1Server.host
+                port = gateway1Server.port
+                user = 'gateway1User'
+                password = 'gateway1Password'
+            }
+            gw02 {
+                host = gateway2Server.host
+                port = gateway2Server.port
+                user = 'gateway2User'
+                password = 'gateway2Password'
+                gateway = ssh.remotes.gw01
+            }
+            target {
+                host = targetServer.host
+                port = targetServer.port
+                user = 'targetUser'
+                password = 'targetPassword'
+                gateway = ssh.remotes.gw02
+            }
+        }
+
+        when:
+        ssh.run {
+            settings {
+                knownHosts = addHostKey(knownHostsFile)
+            }
+            session(ssh.remotes.target) {
+                shell(interaction: {})
+            }
+        }
+
+        then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
+        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
+        then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
+        then: (1.._) * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
+        then: 1 * targetServer.shellFactory.create() >> command(0)
+
+        then:
+        knownHostsFile.text == expectedKnownHosts
     }
 
 

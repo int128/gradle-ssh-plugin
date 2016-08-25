@@ -20,7 +20,7 @@ class Fixture {
                 port = 8022
                 user = 'tester'
                 identity = new File("$buildDir/.ssh/id_rsa")
-                knownHosts = new File("$buildDir/.ssh/known_hosts")
+                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
             }
             DefaultWithPassphrase {
                 host = 'sandbox.127.0.0.1.xip.io'
@@ -28,20 +28,20 @@ class Fixture {
                 user = 'tester'
                 identity = new File("$buildDir/.ssh/id_rsa_passphrase")
                 passphrase = 'pass1234'
-                knownHosts = new File("$buildDir/.ssh/known_hosts")
+                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
             }
-            DefaultWithEcdsaHostKey {
+            DefaultWithOpenSSHKnownHosts {
                 host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
                 identity = new File("$buildDir/.ssh/id_rsa")
-                knownHosts = new File("$buildDir/.ssh/known_hosts_ecdsa")
+                knownHosts = new File("$buildDir/.ssh/known_hosts_openssh")
             }
             DefaultWithAgent {
                 host = 'sandbox.127.0.0.1.xip.io'
                 port = 8022
                 user = 'tester'
-                knownHosts = new File("$buildDir/.ssh/known_hosts")
+                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
                 agent = true
             }
         }

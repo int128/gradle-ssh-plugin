@@ -16,8 +16,8 @@ import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
 @Slf4j
 class Connection {
     final Remote remote
+    final Session session
 
-    private final Session session
     private final List<Channel> channels = []
     private final List<Closure> callbackForClosedChannels = []
 
