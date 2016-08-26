@@ -21,7 +21,7 @@ remotes {
         port = 8022
         user = 'tester'
         identity = file("$buildDir/.ssh/id_rsa")
-        knownHosts = file("$buildDir/.ssh/known_hosts")
+        knownHosts = addHostKey(file("$buildDir/.ssh/known_hosts"))
     }
 }
 
