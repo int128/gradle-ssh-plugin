@@ -1,0 +1,21 @@
+
+task('should execute the script') << {
+    def x = randomInt()
+    def y = randomInt()
+    def a
+    def b
+    ssh.run {
+        session(remotes.testServer) {
+            executeScript """\
+            #!/bin/bash -xe
+            mkdir -vp $remoteWorkDir
+            expr $x + $y > $remoteWorkDir/A
+            expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
+            """.stripIndent()
+            a = get from: "$remoteWorkDir/A"
+            b = get from: "$remoteWorkDir/B"
+        }
+    }
+    assert a as int == (x + y)
+    assert b as int == (x + x + y)
+}
