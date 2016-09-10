@@ -46,7 +46,7 @@ Settings can be set in global and overridden by each `ssh.run` method, remote ho
 [options="header,autowidth"]
 |===
 |Settings                           | Global | Per `ssh.run`  | Per remote  | Per method
-|Session settings                   | x      | x              | -           | -
+|Session settings                   | x      | x              | x           | -
 |Connection settings                | x      | x              | x           | -
 |Command settings                   | x      | x              | x           | x
 |Shell settings                     | x      | x              | x           | x
@@ -107,7 +107,7 @@ execute('sudo service httpd reload', logging: false)
 ----
 
 
-== Manage remote hosts
+== Remote hosts
 
 The remote hosts container named as `remotes` is automatically added to the project.
 
@@ -535,10 +535,11 @@ The remote hosts container supports following methods and almost code should wor
 * `allRoles(String...)`
 
 
-== Add sessions
+== Sessions
 
-`ssh.run` method connects to all remote hosts and evaluates each closure of sessions in order.
-For example of following, the method connects to `web01` and `web02`, and executes `command1` and `command2`.
+`ssh.run` method accepts one or more sessions and runs them in parallel.
+
+In following example, the method runs 2 sessions in parallel, i.e. `command1` on `web01` and `command2` on `web02`.
 
 [source,groovy]
 ----
@@ -564,7 +565,7 @@ Following settings can be set in global:
 
 |`dryRun`
 |`boolean`
-|If this is `true`, no actual connection or operation will be performed. Defaults to `false`.
+|If this is `true`, no actual connection or operation is performed. Defaults to `false`.
 
 |`jschLog`
 |`boolean`
@@ -576,10 +577,42 @@ Following settings can be set in global:
 |===
 
 
-=== Obtain the result of session
+=== Result
 
-`ssh.run` method will return the result of last declared session.
-So we can use the method to retrieve a result of remote command as like:
+Return type of `ssh.run` method is depending on count of sessions given.
+
+- If no session is given, the method returns null.
+- If a session is given, the method returns its result.
+- If sessions are given, the method returns a list of results.
+
+The method returns a result of the session if a session is given.
+
+[source,groovy]
+----
+def result = ssh.run {
+  session(remotes.web01) {
+    'result1'
+  }
+}
+assert result == 'result1'
+----
+
+The method returns a list of result if 2 or more sessions are given.
+
+[source,groovy]
+----
+def results = ssh.run {
+  session(remotes.web01) {
+    'result1'
+  }
+  session(remotes.web02) {
+    'result2'
+  }
+}
+assert results == ['result1', 'result2']
+----
+
+We can use the method to retrieve a result of remote command.
 
 [source,groovy]
 ----
@@ -600,9 +633,45 @@ task syncKernelParam << {
 ----
 
 
-=== More about sessions
+=== Exception
 
-A session consists of a remote host to connect and a closure.
+Exception type of `ssh.run` method is is depending on count of sessions given.
+
+- If no session is given, the method never throw an exception.
+- If a session is given and it caused an error, the method throws the exception.
+- If sessions are given and 1 or more caused error(s), the method throws `ParallelSessionsException` which includes all exception(s).
+
+The method throws the exception if the session throws an exception.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'false'
+  }
+}
+// -> BadExitStatusException
+----
+
+The method aggregates 1 or more exceptions as a `ParallelSessionsException`.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'false'
+  }
+  session(remotes.web02) {
+    execute 'true'
+  }
+}
+// -> ParallelSessionsException (contains a BadExitStatusException)
+----
+
+
+=== Session for remote host
+
+A session consists of a remote host to connect and a closure to operate.
 Following code declares a session which connects to _web01_ and executes a command.
 
 [source,groovy]
@@ -612,49 +681,40 @@ session(remotes.web01) {
 }
 ----
 
-If more than one remote hosts are given, the plugin will connect to all remote hosts at once and execute closures in order.
+If 2 or more remote hosts are given, the method expands to sessions.
 For instance, followings are all equivalent.
 
 [source,groovy]
 ----
+// give a list of remote hosts
 session([remotes.web01, remotes.web02]) {
-  //execute ...
 }
-----
 
-[source,groovy]
-----
+// give remote hosts as arguments
 session(remotes.web01, remotes.web02) {
-  //execute ...
 }
-----
 
-[source,groovy]
-----
+// enumerate sessions
 session(remotes.web01) {
-  //execute ...
 }
 session(remotes.web02) {
-  //execute ...
 }
 ----
 
-`session` method also accepts a map of settings of the remote host.
+The method also accepts a map of settings for a remote host without defining in the `remotes` block.
 
 [source,groovy]
 ----
 session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
-  //execute ...
 }
 
-// If name is not given, auto-generated name such as Remote1 will be shown in console log
+// If name is not given, auto-generated name such as Remote1 is shown in console log
 session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
-  //execute ...
 }
 ----
 
 
-== Perform operations
+== Operations
 
 Following methods are available in a session closure.
 

@@ -71,7 +71,7 @@ class SudoHelper {
             }
         }
 
-        final exitStatus = command.startSync()
+        final exitStatus = command.execute()
         if (exitStatus != 0 && !commandSettings.ignoreError) {
             throw new BadExitStatusException("Command returned exit status $exitStatus: $sudoCommandLine", exitStatus)
         }

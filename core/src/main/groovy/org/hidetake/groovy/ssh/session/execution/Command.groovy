@@ -47,7 +47,7 @@ trait Command implements SessionExtension {
                 }
             }
 
-            def exitStatus = operation.startSync()
+            def exitStatus = operation.execute()
             if (exitStatus != 0 && !settings.ignoreError) {
                 throw new BadExitStatusException("Command returned exit status $exitStatus: $commandLine", exitStatus)
             }

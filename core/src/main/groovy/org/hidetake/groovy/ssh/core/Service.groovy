@@ -4,8 +4,11 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.container.ContainerBuilder
 import org.hidetake.groovy.ssh.core.container.ProxyContainer
 import org.hidetake.groovy.ssh.core.container.RemoteContainer
+import org.hidetake.groovy.ssh.core.settings.CompositeSettings
 import org.hidetake.groovy.ssh.core.settings.GlobalSettings
-import org.hidetake.groovy.ssh.session.Executor
+import org.hidetake.groovy.ssh.session.SessionTask
+
+import java.util.concurrent.ForkJoinPool
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -67,15 +70,31 @@ class Service {
      * Run a closure.
      *
      * @param closure
-     * @return returned value of the last session
+     * @return null if no session, a result of last session otherwise
      */
     def run(@DelegatesTo(RunHandler) Closure closure) {
         assert closure, 'closure must be given'
         def handler = new RunHandler()
         callWithDelegate(closure, handler)
 
-        def executor = new Executor(settings, handler.settings)
-        def results = executor.execute(handler.sessions)
-        results.empty ? null : results.last()
+        log.debug("Using default settings: $CompositeSettings.With.DEFAULT")
+        log.debug("Using global settings: $settings")
+        log.debug("Using per-service settings: $handler.settings")
+
+        def pool = new ForkJoinPool(10,
+            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+            null,
+            true /* use FIFO mode */)
+        def futures = handler.sessions.collect { session ->
+            pool.submit(new SessionTask(session, settings, handler.settings))
+        }
+        pool.shutdown()
+
+        def results = futures*.get()
+        switch (results.size()) {
+            case 0: return null
+            case 1: return results.last()
+            default: return results.last()
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.hidetake.groovy.ssh.connection
 
+import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Logger
 import groovy.util.logging.Slf4j
 
@@ -12,14 +13,26 @@ import groovy.util.logging.Slf4j
 @Singleton
 @Slf4j
 class JSchLogger implements Logger {
+    private static final ThreadLocal<Boolean> enabledInCurrentThread = new ThreadLocal<>()
+
+    static void setEnabledInCurrentThread(boolean enabled) {
+        JSch.logger = JSchLogger.instance
+        enabledInCurrentThread.set(enabled)
+        log.debug("${enabled ? 'Enabled' : 'Disabled'} JSch logging on ${Thread.currentThread()}")
+    }
+
     @Override
     boolean isEnabled(int logLevel) {
-        switch (logLevel) {
-            case INFO:  return log.isDebugEnabled()
-            case WARN:  return log.isInfoEnabled()
-            case ERROR: return log.isWarnEnabled()
-            case FATAL: return log.isErrorEnabled()
-            default:    return false
+        if (enabledInCurrentThread.get()) {
+            switch (logLevel) {
+                case INFO:  return log.isDebugEnabled()
+                case WARN:  return log.isInfoEnabled()
+                case ERROR: return log.isWarnEnabled()
+                case FATAL: return log.isErrorEnabled()
+                default: return false
+            }
+        } else {
+            false
         }
     }
 

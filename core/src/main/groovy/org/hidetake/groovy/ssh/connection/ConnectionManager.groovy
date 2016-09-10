@@ -4,6 +4,8 @@ import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
+import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
 import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 
@@ -24,9 +26,15 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
 
     private final List<Connection> connections = []
 
+    def ConnectionManager(GlobalSettings globalSettings, PerServiceSettings perServiceSettings) {
+        this(new ConnectionSettings.With(
+            ConnectionSettings.With.DEFAULT,
+            globalSettings,
+            perServiceSettings))
+    }
+
     def ConnectionManager(ConnectionSettings connectionSettings1) {
         connectionSettings = connectionSettings1
-        assert connectionSettings
     }
 
     /**
@@ -35,7 +43,7 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
      * @param remote target remote host
      * @return a connection
      */
-    private Connection connect(Remote remote) {
+    Connection connect(Remote remote) {
         def settings = new ConnectionSettings.With(connectionSettings, remote)
         if (settings.gateway && settings.gateway != remote) {
             log.debug("Connecting to $remote via $settings.gateway")

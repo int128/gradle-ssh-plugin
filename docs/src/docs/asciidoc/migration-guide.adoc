@@ -1,5 +1,73 @@
 = Migration Guide
 
+== Migration from 2.6.x to 2.7.x
+
+This section explains how to migrate from 2.6.x to 2.7.x.
+
+=== No backward compatible change
+
+==== Return type of `ssh.run` method is changed
+
+Now `ssh.run` method runs sessions in parallel if 2 or more sessions are given.
+Return type of the method has been changed as followings:
+
+- If no session is given, the method returns null. (as-is)
+- If a session is given, the method returns its result. (as-is)
+- If sessions are given, the method returns a list of results. (changed since 2.7.0)
+
+[source,groovy]
+----
+// run a session
+ssh.run {
+  session(remotes.server) { 'value' }
+}
+// -> 'value'
+
+// run sessions
+ssh.run {
+  session(remotes.server) { 'value1' }
+  session(remotes.server) { 'value2' }
+}
+// -> ['value1', 'value2']
+----
+
+
+==== Exception type of `ssh.run` method is changed
+
+`ssh.run` method throws an exception which contains 1 or more exceptions if 2 or more sessions are given.
+Exception type of the method has been changed as followings:
+
+- If no session is given, the method never throw an exception. (as-is)
+- If a session is given and it caused an error, the method throws the exception. (as-is)
+- If sessions are given and 1 or more caused error(s), the method throws `ParallelSessionsException` which includes all exception(s). (changed since 2.7.0)
+
+
+==== `executeBackground` is not supported
+
+`executeBackground` method has been deprecated and same as `execute` method.
+Please use `execute` in parallel as follows:
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.server) {
+    executeBackground 'foo'
+    executeBackground 'bar'
+  }
+}
+
+// above should be rewrote to below since 2.7.0
+ssh.run {
+  session(remotes.server) {
+    execute 'foo'
+  }
+  session(remotes.server) {
+    execute 'bar'
+  }
+}
+----
+
+
 == Migration from 2.3.x to 2.4.x
 
 This section explains how to migrate from 2.3.x to 2.4.x.

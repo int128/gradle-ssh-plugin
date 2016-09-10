@@ -9,10 +9,11 @@ import org.hidetake.groovy.ssh.interaction.InteractionHandler
  */
 interface Operation {
     /**
-     * Start the operation synchronously.
+     * Execute the operation.
+     *
      * @return exit status
      */
-    int startSync()
+    int execute()
 
     /**
      * Start the operation asynchronously.

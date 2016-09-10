@@ -66,7 +66,7 @@ class Shell implements Operation {
     }
 
     @Override
-    int startSync() {
+    int execute() {
         channel.connect(channelConnectionTimeoutSec * 1000)
         try {
             log.info("Started shell $connection.remote.name#$channel.id")

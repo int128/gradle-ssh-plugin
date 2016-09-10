@@ -1,14 +1,17 @@
 package org.hidetake.groovy.ssh.core
 
-import org.hidetake.groovy.ssh.session.Plan
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
+import org.hidetake.groovy.ssh.session.Session
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class RunHandlerSpec extends Specification {
 
+    GlobalSettings globalSettings
     RunHandler runHandler
 
     def setup() {
+        globalSettings = new GlobalSettings()
         runHandler = new RunHandler()
     }
 
@@ -23,7 +26,7 @@ class RunHandlerSpec extends Specification {
         runHandler.session(remote, closure)
 
         then:
-        runHandler.sessions == [new Plan(remote, closure)]
+        runHandler.sessions == [new Session(remote, closure)]
     }
 
     def "add a session with null remote throws assertion error"() {
@@ -73,7 +76,10 @@ class RunHandlerSpec extends Specification {
         runHandler.session([remote1, remote2], closure)
 
         then:
-        runHandler.sessions == [new Plan(remote1, closure), new Plan(remote2, closure)]
+        runHandler.sessions == [
+            new Session(remote1, closure),
+            new Session(remote2, closure),
+        ]
     }
 
     def "add session for multiple remotes by var args"() {
@@ -90,7 +96,10 @@ class RunHandlerSpec extends Specification {
         runHandler.session(remote1, remote2, closure)
 
         then:
-        runHandler.sessions == [new Plan(remote1, closure), new Plan(remote2, closure)]
+        runHandler.sessions == [
+            new Session(remote1, closure),
+            new Session(remote2, closure),
+        ]
     }
 
     def "add session for remote with proxy"() {
@@ -106,7 +115,7 @@ class RunHandlerSpec extends Specification {
         runHandler.session(remote, closure)
 
         then:
-        runHandler.sessions == [new Plan(remote, closure)]
+        runHandler.sessions == [new Session(remote, closure)]
     }
 
     def "add session for empty remotes throws assertion error"() {

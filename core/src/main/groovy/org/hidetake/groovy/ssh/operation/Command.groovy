@@ -74,7 +74,7 @@ class Command implements Operation {
     }
 
     @Override
-    int startSync() {
+    int execute() {
         channel.connect(channelConnectionTimeoutSec * 1000)
         log.info("Started command $connection.remote.name#$channel.id: $commandLine")
         try {

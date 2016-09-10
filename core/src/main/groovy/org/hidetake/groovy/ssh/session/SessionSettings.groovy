@@ -12,7 +12,6 @@ import org.hidetake.groovy.ssh.core.settings.ToStringProperties
 trait SessionSettings {
     /**
      * Dry-run flag.
-     * If <code>true</code>, performs no action.
      */
     Boolean dryRun
 
@@ -45,9 +44,9 @@ trait SessionSettings {
         }
 
         static final SessionSettings DEFAULT = new SessionSettings.With(
-                dryRun: false,
-                jschLog: false,
-                extensions: [],
+            dryRun: false,
+            jschLog: false,
+            extensions: [],
         )
     }
 }

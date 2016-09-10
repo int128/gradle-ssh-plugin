@@ -4,7 +4,7 @@ import org.hidetake.groovy.ssh.interaction.InteractionHandler
 
 class DryRunOperation implements Operation {
     @Override
-    int startSync() {
+    int execute() {
         0
     }
 
