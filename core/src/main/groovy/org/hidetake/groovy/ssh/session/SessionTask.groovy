@@ -63,7 +63,7 @@ class SessionTask<T> implements Callable<T> {
             def sessionHandler = SessionHandler.create(operations, globalSettings, perServiceSettings)
             callWithDelegate(session.closure, sessionHandler)
         } finally {
-            manager.waitAndClose()
+            manager.close()
         }
     }
 

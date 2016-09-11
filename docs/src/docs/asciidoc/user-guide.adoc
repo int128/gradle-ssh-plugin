@@ -78,7 +78,7 @@ ssh.run {
     pty = true
   }
   session(remotes.role('webServers')) {
-    executeBackground('sudo service httpd reload')
+    execute('sudo service httpd reload')
   }
 }
 ----
@@ -719,7 +719,6 @@ session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
 Following methods are available in a session closure.
 
 * `execute` - Execute a command.
-* `executeBackground` - Execute a command in background.
 * `executeSudo` - Execute a command with sudo prompt support.
 * `shell` - Execute a shell.
 * `put` - Put a file or directory into the remote host.
@@ -820,65 +819,6 @@ The method throws an exception if an exit status of the command was not zero. It
 [source,groovy]
 ----
 execute 'exit 1', ignoreError: true
-----
-
-
-=== Execute a command in background
-
-Call the `executeBackground` method with a command to execute in background.
-
-[source,groovy]
-----
-executeBackground 'sudo service httpd reload'
-
-// with settings
-executeBackground 'sudo service httpd reload', pty: true
-----
-
-The method does not wait for the command.
-Other commands are executed concurrently.
-
-[source,groovy]
-----
-// httpd processes on all web servers will be reloaded concurrently
-session(remotes.role('webServers')) {
-  executeBackground 'sudo service httpd reload'
-}
-
-// ping to many hosts concurrently
-session(remotes.web01) {
-  (1..127).each { lastOctet ->
-    executeBackground "ping -c 1 -w 1 192.168.1.$lastOctet"
-  }
-}
-----
-
-The method escapes command arguments if a list of strings is given.
-
-[source,groovy]
-----
-executeBackground(['perl', '-e', /print 'current: ', time, "\n"/])
-----
-
-A result can be retrieved as an argument if a closure is given.
-
-[source,groovy]
-----
-executeBackground('ping -c 3 server') { result ->
-  def average = result.find('min/avg/.+=.+?/.+?/').split('/')[-1]
-}
-----
-
-The method accepts settings same as `execute` method.
-
-The method throws an exception if an exit status of the command is not zero.
-If a background command returned an error, `ssh.run` method waits for any other commands and throws an exception finally.
-
-It ignores the exit status if the `ignoreError` setting is given as follow:
-
-[source,groovy]
-----
-executeBackground 'exit 1', ignoreError: true
 ----
 
 

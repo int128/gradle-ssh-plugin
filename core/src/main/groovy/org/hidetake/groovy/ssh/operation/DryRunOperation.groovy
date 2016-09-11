@@ -9,11 +9,6 @@ class DryRunOperation implements Operation {
     }
 
     @Override
-    void startAsync(Closure closure) {
-        closure.call(0)
-    }
-
-    @Override
     void addInteraction(@DelegatesTo(InteractionHandler) Closure closure) {
     }
 }

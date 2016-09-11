@@ -88,23 +88,6 @@ class Shell implements Operation {
     }
 
     @Override
-    void startAsync(Closure closure) {
-        connection.whenClosed(channel) {
-            interactions.waitForEndOfStream()
-            int exitStatus = channel.exitStatus
-            if (exitStatus == 0) {
-                log.info("Success shell $connection.remote.name#$channel.id")
-            } else {
-                log.error("Failed shell $connection.remote.name#$channel.id with status $exitStatus")
-            }
-            closure.call(exitStatus)
-        }
-        channel.connect(channelConnectionTimeoutSec * 1000)
-        interactions.start()
-        log.info("Started shell $connection.remote.name#$channel.id")
-    }
-
-    @Override
     void addInteraction(@DelegatesTo(InteractionHandler) Closure closure) {
         interactions.add(closure)
     }

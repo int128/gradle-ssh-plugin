@@ -16,12 +16,6 @@ interface Operation {
     int execute()
 
     /**
-     * Start the operation asynchronously.
-     * @param closure callback
-     */
-    void startAsync(Closure closure)
-
-    /**
      * Adds an interaction.
      *
      * @param closure definition of interaction

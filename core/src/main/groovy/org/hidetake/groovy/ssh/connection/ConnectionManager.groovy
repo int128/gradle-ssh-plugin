@@ -6,7 +6,6 @@ import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.GlobalSettings
 import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
-import org.hidetake.groovy.ssh.session.BackgroundCommandException
 import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 
 import static org.hidetake.groovy.ssh.util.Utility.retry
@@ -17,7 +16,7 @@ import static org.hidetake.groovy.ssh.util.Utility.retry
  * @author Hidetake Iwata
  */
 @Slf4j
-class ConnectionManager implements UserAuthentication, HostAuthentication, ProxyConnection {
+class ConnectionManager implements Closeable, UserAuthentication, HostAuthentication, ProxyConnection {
 
     /**
      * Settings with default, global and per-service.
@@ -124,45 +123,10 @@ class ConnectionManager implements UserAuthentication, HostAuthentication, Proxy
         connection
     }
 
-    /**
-     * Wait for pending connections and close all.
-     *
-     * @throws BackgroundCommandException if any error occurs
-     */
-    void waitAndClose() {
-        try {
-            log.debug("Waiting for connections: $connections")
-            waitForPending()
-        } finally {
-            log.debug("Closing connections: $connections")
-            connections*.close()
-            connections.clear()
-        }
-    }
-
-    private void waitForPending() {
-        List<Exception> exceptions = []
-        while (connections*.anyPending.any()) {
-            connections.each { connection ->
-                try {
-                    connection.executeCallbackForClosedChannels()
-                } catch (BackgroundCommandException e) {
-                    exceptions.addAll(e.exceptionsOfBackgroundExecution)
-                }
-            }
-            sleep(100)
-        }
-
-        connections.each { connection ->
-            try {
-                connection.executeCallbackForClosedChannels()
-            } catch (BackgroundCommandException e) {
-                exceptions.addAll(e.exceptionsOfBackgroundExecution)
-            }
-        }
-        if (!exceptions.empty) {
-            throw new BackgroundCommandException(exceptions)
-        }
+    void close() {
+        log.debug("Closing connections: $connections")
+        connections*.close()
+        connections.clear()
     }
 
 }
