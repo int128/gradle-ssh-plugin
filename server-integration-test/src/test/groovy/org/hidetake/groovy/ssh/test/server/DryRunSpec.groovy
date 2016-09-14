@@ -12,12 +12,12 @@ class DryRunSpec extends Specification {
         ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
-            dryRun = true
         }
         ssh.remotes {
             testServer {
                 host = 'localhost'
                 user = 'user'
+                dryRun = true
             }
         }
     }

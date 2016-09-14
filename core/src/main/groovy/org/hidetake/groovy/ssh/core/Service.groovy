@@ -9,6 +9,7 @@ import org.hidetake.groovy.ssh.core.settings.GlobalSettings
 import org.hidetake.groovy.ssh.session.SessionTask
 
 import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.TimeUnit
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 
@@ -70,7 +71,7 @@ class Service {
      * Run a closure.
      *
      * @param closure
-     * @return null if no session, a result of last session otherwise
+     * @return null if no session, a result if one session is given, a list of results otherwise
      */
     def run(@DelegatesTo(RunHandler) Closure closure) {
         assert closure, 'closure must be given'
@@ -81,20 +82,53 @@ class Service {
         log.debug("Using global settings: $settings")
         log.debug("Using per-service settings: $handler.settings")
 
+        if (handler.sessions.size() == 0) {
+            null
+        } else if (handler.sessions.size() == 1) {
+            runInternal(new SessionTask(handler.sessions.head(), settings, handler.settings))
+        } else {
+            runInternal(handler.sessions.collect { session ->
+                new SessionTask(session, settings, handler.settings)
+            })
+        }
+    }
+
+    private static <T> T runInternal(SessionTask<T> task) {
+        task.call()
+    }
+
+    private static List<?> runInternal(List<SessionTask<?>> tasks) {
+        log.debug("Running ${tasks.size()} sessions")
         def pool = new ForkJoinPool(10,
             ForkJoinPool.defaultForkJoinWorkerThreadFactory,
             null,
             true /* use FIFO mode */)
-        def futures = handler.sessions.collect { session ->
-            pool.submit(new SessionTask(session, settings, handler.settings))
-        }
-        pool.shutdown()
 
-        def results = futures*.get()
-        switch (results.size()) {
-            case 0: return null
-            case 1: return results.last()
-            default: return results.last()
+        def futures = tasks.collect { session -> pool.submit(session) }
+        pool.shutdown()
+        pool.awaitTermination(1, TimeUnit.DAYS)
+
+        if (futures*.completedNormally.every()) {
+            futures*.get()
+        } else {
+            def failures = futures.count { task -> task.completedAbnormally }
+            def rate = (failures / futures.size() * 100) as int
+            def message = failures == 1 ?
+                "1 of ${futures.size()} session ($rate%) failed" :
+                "$failures of ${futures.size()} sessions ($rate%) failed"
+
+            log.error(message)
+            futures.eachWithIndex { task, i ->
+                if (task.completedAbnormally) {
+                    def e = task.exception
+                    if (log.debugEnabled) {
+                        log.debug("Session #${i + 1} failed", e)
+                    } else {
+                        log.error("Session #${i + 1} failed: $e")
+                    }
+                }
+            }
+            throw new ParallelSessionsException(message, futures)
         }
     }
 }
