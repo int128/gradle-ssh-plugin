@@ -17,7 +17,7 @@ task('should execute the command on multiple remotes specified by brace list') <
         session([remotes.testServer, remotes.yetAnotherServer]) {
             execute "expr $x + $y"
         }
-    } as int == (x + y)
+    }.every { it as int == (x + y) }
 }
 
 task('should execute the command on multiple remotes specified by arguments') << {
@@ -27,7 +27,7 @@ task('should execute the command on multiple remotes specified by arguments') <<
         session(remotes.testServer, remotes.yetAnotherServer) {
             execute "expr $x + $y"
         }
-    } as int == (x + y)
+    }.every { it as int == (x + y) }
 }
 
 task('should execute the command on multiple remotes specified by the role') << {
@@ -37,5 +37,5 @@ task('should execute the command on multiple remotes specified by the role') << 
         session(remotes.role('testServers')) {
             execute "expr $x + $y"
         }
-    } as int == (x + y)
+    }.every { it as int == (x + y) }
 }
