@@ -58,6 +58,9 @@ We can run the OS integration test using OpenSSH server as follows:
 We can run the test with Gradle SSH Plugin.
 See `plugin-integration/run-plugin-integration-test.sh` for details.
 
+If you are planning to release with specification change breaking backward compatibility,
+create `groovy-ssh-acceptance-test` branch on Gradle SSH Plugin to pass the acceptance test.
+
 
 ### Release
 
