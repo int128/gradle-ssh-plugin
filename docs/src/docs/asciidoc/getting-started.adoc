@@ -6,7 +6,7 @@
 
 Gradle SSH Plugin requires following:
 
-* Java 6 or later
+* Java 7 or later
 * Gradle 2.0 or later (Gradle 1.x is also supported with the backport library)
 
 

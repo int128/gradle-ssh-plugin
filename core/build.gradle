@@ -4,8 +4,13 @@ plugins {
     id 'com.jfrog.bintray' version '1.4'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-targetCompatibility = JavaVersion.VERSION_1_6
+configure([compileJava, compileGroovy]) {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+    if (System.getenv('JAVA_HOME_7')) {
+        options.bootClasspath = "${System.getenv('JAVA_HOME_7')}/jre/lib/rt.jar"
+    }
+}
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.7'

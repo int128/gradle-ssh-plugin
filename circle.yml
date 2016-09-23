@@ -1,7 +1,8 @@
 machine:
   java:
-    version: openjdk7
+    version: openjdk8
   environment:
+    JAVA_HOME_7: /usr/lib/jvm/java-7-openjdk-amd64
     TERM: dumb
     GRADLE_OPTS: -Xmx1g -Xms1g
   hosts:
