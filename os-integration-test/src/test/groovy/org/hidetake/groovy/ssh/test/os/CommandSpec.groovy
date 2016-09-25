@@ -105,31 +105,15 @@ expr $x + `cat $remoteA` > $remoteB
         envWithPty.contains('SSH_TTY=')
     }
 
-    def 'should execute the command without the PTY allocation in foreground'() {
-        when:
-        def envWithoutPty = ssh.run {
-            session(ssh.remotes.Default) {
-                execute 'env'
-            }
-        }
-
-        then:
-        !envWithoutPty.contains('SSH_TTY=')
-    }
-
-    def 'should execute the command with the PTY allocation in background'() {
+    def 'should execute the command with the PTY allocation'() {
         when:
         def envWithoutPty
         def envWithPty
 
         ssh.run {
             session(ssh.remotes.Default) {
-                executeBackground('env') { result ->
-                    envWithoutPty = result
-                }
-                executeBackground('env', pty: true) { result ->
-                    envWithPty = result
-                }
+                envWithoutPty = execute('env')
+                envWithPty = execute('env', pty: true)
             }
         }
 
@@ -138,24 +122,27 @@ expr $x + `cat $remoteA` > $remoteB
         envWithPty.contains('SSH_TTY=')
     }
 
-    def 'should execute commands concurrently'() {
+    def 'should execute commands in parallel'() {
         given:
         def remoteX = remoteTmpPath()
 
         when:
         ssh.run {
-            // task should start sessions concurrently
             session(ssh.remotes.Default) {
-                executeBackground "sleep 3 && echo C >> $remoteX"
+                execute "sleep 3 && echo C >> $remoteX"
             }
             session(ssh.remotes.Default) {
-                executeBackground "sleep 5 && echo D >> $remoteX"
-                executeBackground "sleep 1 && echo B >> $remoteX"
-                executeBackground "sleep 0 && echo A >> $remoteX"
+                execute "sleep 5 && echo D >> $remoteX"
+            }
+            session(ssh.remotes.Default) {
+                execute "sleep 1 && echo B >> $remoteX"
+            }
+            session(ssh.remotes.Default) {
+                execute "sleep 0 && echo A >> $remoteX"
             }
         }
 
-        // all commands should be completed at this point
+        and: 'all commands should be completed at this point'
         def result = ssh.run {
             session(ssh.remotes.Default) {
                 get from: remoteX
@@ -177,19 +164,6 @@ expr $x + `cat $remoteA` > $remoteB
         then:
         RuntimeException e = thrown()
         e.localizedMessage.contains('status 1')
-    }
-
-    def 'should throw an exception due to the error exit status on background'() {
-        when:
-        ssh.run {
-            session(ssh.remotes.Default) {
-                executeBackground 'exit 1'
-            }
-        }
-
-        then:
-        RuntimeException e = thrown()
-        e.localizedMessage == 'Error in background command execution'
     }
 
     def 'should write output of the command to the file'() {

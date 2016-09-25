@@ -1,10 +1,11 @@
 package org.hidetake.groovy.ssh.connection
 
-import com.jcraft.jsch.*
+import com.jcraft.jsch.ChannelExec
+import com.jcraft.jsch.ChannelSftp
+import com.jcraft.jsch.ChannelShell
+import com.jcraft.jsch.Session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
-import org.hidetake.groovy.ssh.session.BackgroundCommandException
-import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.forwarding.LocalPortForwardSettings
 import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
 
@@ -17,9 +18,6 @@ import org.hidetake.groovy.ssh.session.forwarding.RemotePortForwardSettings
 class Connection {
     final Remote remote
     final Session session
-
-    private final List<Channel> channels = []
-    private final List<Closure> callbackForClosedChannels = []
 
     /**
      * Constructor
@@ -40,9 +38,7 @@ class Connection {
      * @return a channel
      */
     ChannelExec createExecutionChannel() {
-        def channel = session.openChannel('exec') as ChannelExec
-        channels.add(channel)
-        channel
+        session.openChannel('exec') as ChannelExec
     }
 
     /**
@@ -52,9 +48,7 @@ class Connection {
      * @return a channel
      */
     ChannelShell createShellChannel() {
-        def channel = session.openChannel('shell') as ChannelShell
-        channels.add(channel)
-        channel
+        session.openChannel('shell') as ChannelShell
     }
 
     /**
@@ -63,9 +57,7 @@ class Connection {
      * @return a channel
      */
     ChannelSftp createSftpChannel() {
-        def channel = session.openChannel('sftp') as ChannelSftp
-        channels.add(channel)
-        channel
+        session.openChannel('sftp') as ChannelSftp
     }
 
     /**
@@ -88,66 +80,11 @@ class Connection {
     }
 
     /**
-     * Register a closure called when the channel is closed.
-     *
-     * @param channel the channel
-     * @param closure callback closure
-     */
-    void whenClosed(Channel channel, Closure closure) {
-        boolean executed = false
-        callbackForClosedChannels.add { ->
-            if (!executed && channel.closed) {
-                executed = true
-                closure(channel)
-            }
-        }
-    }
-
-    /**
-     * Execute registered closures.
-     * This method throws a {@link BackgroundCommandException} if any closure returns an exception.
-     *
-     * @see #whenClosed(com.jcraft.jsch.Channel, groovy.lang.Closure)
-     */
-    void executeCallbackForClosedChannels() {
-        List<Exception> exceptions = []
-        callbackForClosedChannels.each { callback ->
-            try {
-                callback.call()
-            } catch (Exception e) {
-                exceptions.add(e)
-                if (e instanceof BadExitStatusException) {
-                    log.error("${e.class.name}: ${e.localizedMessage}")
-                } else {
-                    log.error("Error occurred on $remote", e)
-                }
-            }
-        }
-        if (!exceptions.empty) {
-            throw new BackgroundCommandException(exceptions)
-        }
-    }
-
-    /**
-     * Return if any channel is pending.
-     *
-     * @return true if at least one is pending
-     */
-    boolean isAnyPending() {
-        channels.any { channel -> channel.connected && !channel.closed }
-    }
-
-    /**
      * Cleanup the connection and all channels.
      */
     void close() {
-        try {
-            channels*.disconnect()
-            channels.clear()
-        } finally {
-            session.disconnect()
-            log.info("Disconnected from $remote")
-        }
+        session.disconnect()
+        log.info("Disconnected from $remote")
     }
 
     @Override

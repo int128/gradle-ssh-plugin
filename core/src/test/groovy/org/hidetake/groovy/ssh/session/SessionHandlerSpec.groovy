@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh.session
 
-import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
+import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import spock.lang.Specification
 
@@ -8,12 +9,10 @@ class SessionHandlerSpec extends Specification {
 
     def defaultSessionHandler
     Operations operations
-    CompositeSettings globalSettings
 
     def setup() {
         operations = Mock(Operations)
-        globalSettings = new CompositeSettings.With(CompositeSettings.With.DEFAULT, new CompositeSettings.With(dryRun: true))
-        defaultSessionHandler = SessionHandler.create(operations, globalSettings)
+        defaultSessionHandler = SessionHandler.create(operations, new GlobalSettings(), new PerServiceSettings())
     }
 
     def "sftp should return value of the closure"() {
@@ -26,7 +25,7 @@ class SessionHandlerSpec extends Specification {
         }
 
         then:
-        1 * operations.sftp(globalSettings, closure) >> 'something'
+        1 * operations.sftp(_, closure) >> 'something'
 
         then:
         result == 'something'

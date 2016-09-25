@@ -82,7 +82,7 @@ class Scp implements Provider {
             }
         }
 
-        int exitStatus = command.startSync()
+        int exitStatus = command.execute()
         if (exitStatus == 0) {
             log.debug("Success SCP GET: $operations.remote.name:$remotePath")
         } else {
@@ -135,7 +135,7 @@ class Scp implements Provider {
             }
         }
 
-        int exitStatus = command.startSync()
+        int exitStatus = command.execute()
         if (exitStatus == 0) {
             log.debug("Success SCP GET: $operations.remote.name:$remoteFile")
         } else {

@@ -43,7 +43,7 @@ class Scp implements Provider {
             }
         }
 
-        int exitStatus = operation.startSync()
+        int exitStatus = operation.execute()
         if (exitStatus == 0) {
             log.debug("Success SCP command on $operations.remote.name: $instructions.base")
         } else {

@@ -23,7 +23,7 @@ trait Shell implements SessionExtension {
         def settings = new ShellSettings.With(mergedSettings, new ShellSettings.With(map))
         def operation = operations.shell(settings)
 
-        def exitStatus = operation.startSync()
+        def exitStatus = operation.execute()
         if (exitStatus != 0 && !settings.ignoreError) {
             throw new BadExitStatusException("Shell returned exit status $exitStatus", exitStatus)
         }

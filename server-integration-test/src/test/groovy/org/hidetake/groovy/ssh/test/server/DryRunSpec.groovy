@@ -12,12 +12,12 @@ class DryRunSpec extends Specification {
         ssh = Ssh.newService()
         ssh.settings {
             knownHosts = allowAnyHosts
-            dryRun = true
         }
         ssh.remotes {
             testServer {
                 host = 'localhost'
                 user = 'user'
+                dryRun = true
             }
         }
     }
@@ -96,64 +96,6 @@ class DryRunSpec extends Specification {
         ssh.run {
             session(ssh.remotes.testServer) {
                 execute('ls -l', pty: true) {
-                    callbackExecuted = true
-                }
-            }
-        }
-
-        then:
-        callbackExecuted
-    }
-
-    def "dry-run command in background should work without server"() {
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground('ls -l')
-            }
-        }
-
-        then:
-        noExceptionThrown()
-    }
-
-    def "dry-run command in background with callback should work without server"() {
-        given:
-        def callbackExecuted = false
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground('ls -l') {
-                    callbackExecuted = true
-                }
-            }
-        }
-
-        then:
-        callbackExecuted
-    }
-
-    def "dry-run command with options in background should work without server"() {
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground('ls -l', pty: true)
-            }
-        }
-
-        then:
-        noExceptionThrown()
-    }
-
-    def "dry-run command with options and callback in background should work without server"() {
-        given:
-        def callbackExecuted = false
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground('ls -l', pty: true) {
                     callbackExecuted = true
                 }
             }

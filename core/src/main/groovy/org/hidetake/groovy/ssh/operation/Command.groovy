@@ -74,7 +74,7 @@ class Command implements Operation {
     }
 
     @Override
-    int startSync() {
+    int execute() {
         channel.connect(channelConnectionTimeoutSec * 1000)
         log.info("Started command $connection.remote.name#$channel.id: $commandLine")
         try {
@@ -94,23 +94,6 @@ class Command implements Operation {
         } finally {
             channel.disconnect()
         }
-    }
-
-    @Override
-    void startAsync(Closure closure) {
-        connection.whenClosed(channel) {
-            interactions.waitForEndOfStream()
-            int exitStatus = channel.exitStatus
-            if (exitStatus == 0) {
-                log.info("Success command $connection.remote.name#$channel.id: $commandLine")
-            } else {
-                log.error("Failed command $connection.remote.name#$channel.id with status $exitStatus: $commandLine")
-            }
-            closure.call(exitStatus)
-        }
-        channel.connect(channelConnectionTimeoutSec * 1000)
-        interactions.start()
-        log.info("Started command $connection.remote.name#$channel.id: $commandLine")
     }
 
     @Override

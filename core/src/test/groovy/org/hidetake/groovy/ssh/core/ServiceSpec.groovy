@@ -74,7 +74,7 @@ class ServiceSpec extends Specification {
         'managementServer'  | 'http'
     }
 
-    def "ssh.run() should return last result of sessions"() {
+    def "ssh.run() should return results of each session"() {
         given:
         def remote1 = new Remote('myRemote1')
         remote1.user = 'myUser1'
@@ -94,7 +94,7 @@ class ServiceSpec extends Specification {
         }
 
         then:
-        result == 'result-myRemote2'
+        result == ['result-myRemote1', 'result-myRemote2']
     }
 
     def "ssh.run(null) causes error"() {

@@ -3,6 +3,8 @@ package org.hidetake.groovy.ssh.session
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Remote
 import org.hidetake.groovy.ssh.core.settings.CompositeSettings
+import org.hidetake.groovy.ssh.core.settings.GlobalSettings
+import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
 import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.operation.SftpOperations
 
@@ -20,9 +22,9 @@ class SessionHandler implements SessionExtensions {
      */
     final CompositeSettings mergedSettings
 
-    static def create(Operations operations, CompositeSettings mergedSettings) {
-        def handler = new SessionHandler(operations, mergedSettings)
-        mergedSettings.extensions.inject(handler) { applied, extension ->
+    static def create(Operations operations, GlobalSettings globalSettings, PerServiceSettings perServiceSettings) {
+        def handler = new SessionHandler(operations, globalSettings, perServiceSettings)
+        handler.mergedSettings.extensions.inject(handler) { applied, extension ->
             if (extension instanceof Class) {
                 log.debug("Applying extension: $extension")
                 applied.withTraits(extension)
@@ -39,9 +41,13 @@ class SessionHandler implements SessionExtensions {
         }
     }
 
-    private def SessionHandler(Operations operations1, CompositeSettings mergedSettings1) {
+    private def SessionHandler(Operations operations1, GlobalSettings globalSettings, PerServiceSettings perServiceSettings) {
         operations = operations1
-        mergedSettings = mergedSettings1
+        mergedSettings = new CompositeSettings.With(
+            CompositeSettings.With.DEFAULT,
+            globalSettings,
+            perServiceSettings,
+            operations.remote)
     }
 
     @Override

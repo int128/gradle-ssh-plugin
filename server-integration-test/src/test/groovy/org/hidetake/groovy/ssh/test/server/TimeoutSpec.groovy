@@ -109,31 +109,6 @@ class TimeoutSpec extends Specification {
         e.message == 'channel request: timeout'
     }
 
-    def 'should reach channel timeout set by timeoutSec on executeBackground()'() {
-        given:
-        server.commandFactory = Mock(CommandFactory)
-        ssh.settings {
-            timeoutSec = 1
-        }
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                executeBackground 'somecommand1'
-            }
-        }
-
-        then:
-        1 * server.commandFactory.createCommand('somecommand1') >> {
-            Thread.sleep(2000L)
-            command(0)
-        }
-
-        then:
-        JSchException e = thrown()
-        e.message == 'channel request: timeout'
-    }
-
     def 'should reach channel timeout set by timeoutSec on shell()'() {
         given:
         server.shellFactory = Mock(Factory)

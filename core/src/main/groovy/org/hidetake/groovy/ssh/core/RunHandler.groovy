@@ -1,7 +1,7 @@
 package org.hidetake.groovy.ssh.core
 
 import org.hidetake.groovy.ssh.core.settings.PerServiceSettings
-import org.hidetake.groovy.ssh.session.Plan
+import org.hidetake.groovy.ssh.session.Session
 import org.hidetake.groovy.ssh.session.SessionHandler
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
@@ -20,7 +20,7 @@ class RunHandler {
     /**
      * Sessions added in the closure of {@link Service#run(groovy.lang.Closure)}.
      */
-    final List<Plan> sessions = []
+    final List<Session> sessions = []
 
     /**
      * Configure per service settings.
@@ -42,7 +42,7 @@ class RunHandler {
         assert remote, 'remote must be given'
         assert remote.host, "host must be given ($remote)"
         assert closure, 'closure must be given'
-        sessions.add(new Plan(remote, closure))
+        sessions.add(new Session(remote, closure))
     }
 
     /**

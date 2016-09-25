@@ -46,19 +46,19 @@ trait ConnectionSettings implements UserAuthenticationSettings, HostAuthenticati
         }
 
         static final ConnectionSettings DEFAULT = new ConnectionSettings.With(
-                user: null,
-                authentications: ['publickey', 'keyboard-interactive', 'password'],
-                password: null,
-                identity: null,
-                passphrase: null,
-                gateway: null,
-                proxy: null,
-                agent: false,
-                knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
-                timeoutSec: 0,
-                retryCount: 0,
-                retryWaitSec: 0,
-                keepAliveSec: 60,
+            user: null,
+            authentications: ['publickey', 'keyboard-interactive', 'password'],
+            password: null,
+            identity: null,
+            passphrase: null,
+            gateway: null,
+            proxy: null,
+            agent: false,
+            knownHosts: new File("${System.properties['user.home']}/.ssh/known_hosts"),
+            timeoutSec: 0,
+            retryCount: 0,
+            retryWaitSec: 0,
+            keepAliveSec: 60,
         )
     }
 }
