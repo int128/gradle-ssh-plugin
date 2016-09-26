@@ -42,10 +42,6 @@ expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
 task('should execute the command with the PTY allocation') << {
     ssh.run {
         session(remotes.testServer) {
-            executeBackground "env | grep -v SSH_TTY"
-            executeBackground "env | grep SSH_TTY", pty: true
-        }
-        session(remotes.testServer) {
             execute "env | grep -v SSH_TTY"
             execute "env | grep SSH_TTY", pty: true
         }
@@ -62,19 +58,6 @@ task('should throw an exception due to the error exit status') << {
         assert false, 'an exception should be thrown'
     } catch(RuntimeException e) {
         assert e.localizedMessage.contains('status 1')
-    }
-}
-
-task('should throw an exception due to the error exit status on background') << {
-    try {
-        ssh.run {
-            session(remotes.testServer) {
-                executeBackground 'exit 1'
-            }
-        }
-        assert false, 'an exception should be thrown'
-    } catch (RuntimeException e) {
-        assert e.localizedMessage == 'Error in background command execution'
     }
 }
 

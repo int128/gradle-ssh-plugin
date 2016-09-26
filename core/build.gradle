@@ -10,7 +10,7 @@ targetCompatibility = JavaVersion.VERSION_1_6
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile('org.hidetake:groovy-ssh:2.6.0') {
+    compile('org.hidetake:groovy-ssh:2.7.0') {
         exclude module: 'groovy-all'
     }
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
