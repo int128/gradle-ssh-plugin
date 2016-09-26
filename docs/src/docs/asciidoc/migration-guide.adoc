@@ -6,10 +6,27 @@ This section explains how to migrate from 2.6.x to 2.7.x.
 
 === No backward compatible change
 
+==== Behavior of `ssh.run` method is changed
+
+`ssh.run` method runs sessions in parallel if 2 or more sessions are given.
+
+See the example.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.server) { execute 'foo' }
+  session(remotes.server) { execute 'bar' }
+}
+----
+
+In 2.6.0 or earlier, `foo` is executed and then `bar` is executed.
+Since 2.7.0, commands are executed in parallel.
+
+
 ==== Return type of `ssh.run` method is changed
 
-Now `ssh.run` method runs sessions in parallel if 2 or more sessions are given.
-Return type of the method has been changed as followings:
+Return type of `ssh.run` method has been changed as followings:
 
 - If no session is given, the method returns null. (as-is)
 - If a session is given, the method returns its result. (as-is)
@@ -34,18 +51,17 @@ ssh.run {
 
 ==== Exception type of `ssh.run` method is changed
 
-`ssh.run` method throws an exception which contains 1 or more exceptions if 2 or more sessions are given.
-Exception type of the method has been changed as followings:
+Exception type of `ssh.run` method has been changed as followings:
 
 - If no session is given, the method never throw an exception. (as-is)
 - If a session is given and it caused an error, the method throws the exception. (as-is)
 - If sessions are given and 1 or more caused error(s), the method throws `ParallelSessionsException` which includes all exception(s). (changed since 2.7.0)
 
 
-==== `executeBackground` is not supported
+==== `executeBackground` is deprecated
 
-`executeBackground` method has been deprecated and same as `execute` method.
-Please use `execute` in parallel as follows:
+`executeBackground` method has been deprecated and now same as `execute` method.
+Please rewrite with `execute` in parallel as follows:
 
 [source,groovy]
 ----
