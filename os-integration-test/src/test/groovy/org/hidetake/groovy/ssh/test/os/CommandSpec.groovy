@@ -142,7 +142,6 @@ expr $x + `cat $remoteA` > $remoteB
             }
         }
 
-        and: 'all commands should be completed at this point'
         def result = ssh.run {
             session(ssh.remotes.Default) {
                 get from: remoteX
@@ -151,6 +150,33 @@ expr $x + `cat $remoteA` > $remoteB
 
         then:
         result.readLines() == ['A', 'B', 'C', 'D']
+    }
+
+    def 'should execute commands in serial'() {
+        given:
+        def remoteX = remoteTmpPath()
+
+        when:
+        ssh.runInOrder {
+            session(ssh.remotes.Default) {
+                execute "echo C >> $remoteX"
+            }
+            session(ssh.remotes.Default) {
+                execute "sleep 1 && echo B >> $remoteX"
+            }
+            session(ssh.remotes.Default) {
+                execute "echo A >> $remoteX"
+            }
+        }
+
+        def result = ssh.run {
+            session(ssh.remotes.Default) {
+                get from: remoteX
+            }
+        }
+
+        then:
+        result.readLines() == ['C', 'B', 'A']
     }
 
     def 'should throw an exception due to the error exit status'() {

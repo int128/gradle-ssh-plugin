@@ -68,36 +68,49 @@ class Service {
     }
 
     /**
-     * Run a closure.
+     * Run session(s) in parallel.
      *
      * @param closure
      * @return null if no session, a result if one session is given, a list of results otherwise
      */
     def run(@DelegatesTo(RunHandler) Closure closure) {
         assert closure, 'closure must be given'
-        def handler = new RunHandler()
-        callWithDelegate(closure, handler)
-
-        log.debug("Using default settings: $CompositeSettings.With.DEFAULT")
-        log.debug("Using global settings: $settings")
-        log.debug("Using per-service settings: $handler.settings")
-
-        if (handler.sessions.size() == 0) {
-            null
-        } else if (handler.sessions.size() == 1) {
-            runInternal(new SessionTask(handler.sessions.head(), settings, handler.settings))
-        } else {
-            runInternal(handler.sessions.collect { session ->
-                new SessionTask(session, settings, handler.settings)
-            })
+        def tasks = evaluateSessions(closure)
+        switch (tasks.size()) {
+            case 0:  return null
+            case 1:  return tasks.head().call()
+            default: return runInParallel(tasks)
         }
     }
 
-    private static <T> T runInternal(SessionTask<T> task) {
-        task.call()
+    /**
+     * Run session(s) in order.
+     *
+     * @param closure
+     * @return null if no session, a result if one session is given, a list of results otherwise
+     */
+    def runInOrder(@DelegatesTo(RunHandler) Closure closure) {
+        assert closure, 'closure must be given'
+        def tasks = evaluateSessions(closure)
+        switch (tasks.size()) {
+            case 0:  return null
+            case 1:  return tasks.head().call()
+            default: return tasks*.call()
+        }
     }
 
-    private static List<?> runInternal(List<SessionTask<?>> tasks) {
+    private List<SessionTask<?>> evaluateSessions(@DelegatesTo(RunHandler) Closure closure) {
+        def handler = new RunHandler()
+        callWithDelegate(closure, handler)
+        log.debug("Using default settings: $CompositeSettings.With.DEFAULT")
+        log.debug("Using global settings: $settings")
+        log.debug("Using per-service settings: $handler.settings")
+        handler.sessions.collect { session ->
+            new SessionTask(session, settings, handler.settings)
+        }
+    }
+
+    private static List<?> runInParallel(List<SessionTask<?>> tasks) {
         log.debug("Running ${tasks.size()} sessions")
         def pool = new ForkJoinPool(10,
             ForkJoinPool.defaultForkJoinWorkerThreadFactory,

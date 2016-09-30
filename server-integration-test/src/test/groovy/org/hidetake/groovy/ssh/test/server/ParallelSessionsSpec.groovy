@@ -55,7 +55,7 @@ class ParallelSessionsSpec extends Specification {
 
 
     @Unroll
-    def "ssh.run should execute all sessions and throw SshException if exit status is A=#exitA B=#exitB C=#exitC"() {
+    def "ssh.run should execute all sessions and throw ParallelSessionsException if exit status is A=#exitA B=#exitB C=#exitC"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -92,7 +92,7 @@ class ParallelSessionsSpec extends Specification {
         4     | 5     | 6     || [4, 5, 6]
     }
 
-    def "ssh.run should execute all sessions and throw SshException if one caused error"() {
+    def "ssh.run should execute all sessions and throw ParallelSessionsException if one caused error"() {
         when:
         ssh.run {
             session(ssh.remotes.testServer) {
@@ -117,6 +117,65 @@ class ParallelSessionsSpec extends Specification {
         e.cause instanceof IllegalStateException
         e.causes.size() == 1
         e.causes.head() instanceof IllegalStateException
+    }
+
+    @Unroll
+    def "ssh.runInOrder should execute sessions and throw the exception if exit status is A=#exitA B=#exitB C=#exitC"() {
+        when:
+        ssh.runInOrder {
+            session(ssh.remotes.testServer) {
+                execute 'commandA'
+            }
+            session(ssh.remotes.testServer) {
+                execute 'commandB'
+            }
+            session(ssh.remotes.testServer) {
+                execute 'commandC'
+            }
+        }
+
+        then: tA * server.commandFactory.createCommand('commandA') >> command(exitA)
+        then: tB * server.commandFactory.createCommand('commandB') >> command(exitB)
+        then: tC * server.commandFactory.createCommand('commandC') >> command(exitC)
+
+        then:
+        BadExitStatusException e = thrown()
+        e.exitStatus == expectedExitStatus
+
+        where:
+        exitA | exitB | exitC || tA | tB | tC | expectedExitStatus
+        1     | 0     | 0     || 1  | 0  | 0  | 1
+        0     | 2     | 0     || 1  | 1  | 0  | 2
+        0     | 0     | 3     || 1  | 1  | 1  | 3
+        4     | 5     | 0     || 1  | 0  | 0  | 4
+        0     | 5     | 6     || 1  | 1  | 0  | 5
+        4     | 0     | 6     || 1  | 0  | 0  | 4
+        4     | 5     | 6     || 1  | 0  | 0  | 4
+    }
+
+    def "ssh.runInOrder should execute sessions and throw the first exception"() {
+        when:
+        ssh.runInOrder {
+            session(ssh.remotes.testServer) {
+                execute 'commandA'
+            }
+            session(ssh.remotes.testServer) {
+                execute('commandB')
+                throw new IllegalStateException('hoge')
+            }
+            session(ssh.remotes.testServer) {
+                execute 'commandC'
+            }
+        }
+
+        then:
+        1 * server.commandFactory.createCommand('commandA') >> command(0)
+        1 * server.commandFactory.createCommand('commandB') >> command(0)
+        0 * server.commandFactory.createCommand('commandC') >> command(0)
+
+        then:
+        IllegalStateException e = thrown()
+        e.message == 'hoge'
     }
 
 }

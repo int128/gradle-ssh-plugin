@@ -537,55 +537,69 @@ The remote hosts container supports following methods and almost code should wor
 
 == Sessions
 
-`ssh.run` method accepts one or more sessions and runs them in parallel.
+We provides 2 methods to run sessions.
 
-In following example, the method runs 2 sessions in parallel, i.e. `command1` on `web01` and `command2` on `web02`.
+- `ssh.run` - Run sessions in parallel (i.e. out of order).
+- `ssh.runInOrder` - Run sessions in serial (i.e. in order).
+
+`run` method runs sessions in parallel.
+In following example, the method runs 2 sessions in parallel.
 
 [source,groovy]
 ----
 ssh.run {
   session(remotes.web01) {
-    execute 'command1'
+    execute 'command1'  //<1>
   }
   session(remotes.web02) {
-    execute 'command2'
+    execute 'command2'  //<1>
   }
 }
 ----
+<1> `command1` and `command2` are executed in parallel.
+
+`runInOrder` method runs sessions in order.
+In following example, the method runs 2 sessions in order.
+
+[source,groovy]
+----
+ssh.runInOrder {
+  session(remotes.web01) {
+    execute 'command1'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'command2'  //<2>
+  }
+}
+----
+<1> `command1` is executed.
+<2> `command2` is executed after `command1` is finished.
+
+Note that behavior of `run` method and `runInOrder` method is exactly same if 1 or less session is given.
 
 
-=== Session settings
+=== Return value
 
-Following settings can be set in global:
+Behavior of return value is same between `run` method and `runInOrder` method.
 
-.Session settings
+`run` method and `runInOrder` method returns a value depending on count of sessions given.
+
+.Return value of `run` method and `runInOrder` method
 [options="header,autowidth"]
 |===
-|Key |Type |Description
+|Given |Return value
 
-|`dryRun`
-|`boolean`
-|If this is `true`, no actual connection or operation is performed. Defaults to `false`.
+|no session
+|always `null`
 
-|`jschLog`
-|`boolean`
-|If this is `true`, JSch verbose log is shown. Defaults to `false`.
+|1 session
+|the result of session
 
-|`extensions`
-|`List` of `Trait` or `Map`
-|DSL extensions. Defaults to an empty list.
+|2 or more sessions
+|a list of results
 |===
 
-
-=== Result
-
-Return type of `ssh.run` method is depending on count of sessions given.
-
-- If no session is given, the method returns null.
-- If a session is given, the method returns its result.
-- If sessions are given, the method returns a list of results.
-
-The method returns a result of the session if a session is given.
+It returns a result of the session if a session is given.
 
 [source,groovy]
 ----
@@ -597,7 +611,7 @@ def result = ssh.run {
 assert result == 'result1'
 ----
 
-The method returns a list of result if 2 or more sessions are given.
+It returns a list of result if 2 or more sessions are given.
 
 [source,groovy]
 ----
@@ -633,15 +647,25 @@ task syncKernelParam << {
 ----
 
 
-=== Exception
+=== Exception handling
 
-Exception type of `ssh.run` method is is depending on count of sessions given.
+Behavior of exception handling is different between `run` method and `runInOrder` method.
 
-- If no session is given, the method never throw an exception.
-- If a session is given and it caused an error, the method throws the exception.
-- If sessions are given and 1 or more caused error(s), the method throws `ParallelSessionsException` which includes all exception(s).
+.Behavior of `run` method and `runInOrder` method if exception(s) occurred
+[options="header,autowidth"]
+|===
+|Given |`run` method |`runInOrder` method
 
-The method throws the exception if the session throws an exception.
+|1 session
+|executes the session and throws the exception occurred
+|<-
+
+|2 or more sessions
+|executes *all* sessions and throws `ParallelSessionsException` which contains exception(s)
+|executes session(s) *until* the exception occurred and throws it
+|===
+
+`run` method throws the exception as-is if the session throws an exception.
 
 [source,groovy]
 ----
@@ -649,24 +673,67 @@ ssh.run {
   session(remotes.web01) {
     execute 'false'
   }
-}
-// -> BadExitStatusException
+} //<1>
 ----
+<1> The method throws `BadExitStatusException`.
 
-The method aggregates 1 or more exceptions as a `ParallelSessionsException`.
+`run` method aggregates 1 or more exceptions as a `ParallelSessionsException`.
 
 [source,groovy]
 ----
 ssh.run {
   session(remotes.web01) {
-    execute 'false'
+    execute 'false'  //<1>
   }
   session(remotes.web02) {
-    execute 'true'
+    execute 'true'  //<2>
   }
-}
-// -> ParallelSessionsException (contains a BadExitStatusException)
+} //<3>
 ----
+<1> `false` command is executed but causes an error.
+<2> `true` command is executed.
+<3> The method throws `ParallelSessionsException` that contains a `BadExitStatusException` caused by `false`.
+
+`runInOrder` method throws the exception first caused.
+It does not aggregate exceptions.
+
+[source,groovy]
+----
+ssh.runInOrder {
+  session(remotes.web01) {
+    execute 'false'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'true'  //<2>
+  }
+} //<3>
+----
+<1> `false` command causes an error.
+<2> `true` command is never executed due to the error.
+<3> The method throws `BadExitStatusException` caused by `false`.
+
+
+=== Session settings
+
+Following settings can be set in global:
+
+.Session settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`dryRun`
+|`boolean`
+|If this is `true`, no actual connection or operation is performed. Defaults to `false`.
+
+|`jschLog`
+|`boolean`
+|If this is `true`, JSch verbose log is shown. Defaults to `false`.
+
+|`extensions`
+|`List` of `Trait` or `Map`
+|DSL extensions. Defaults to an empty list.
+|===
 
 
 === Session for remote host

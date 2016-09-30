@@ -8,54 +8,60 @@ This section explains how to migrate from 2.6.x to 2.7.x.
 
 ==== Behavior of `ssh.run` method is changed
 
-`ssh.run` method runs sessions in parallel if 2 or more sessions are given.
+`ssh.run` method has been changed to parallel since 2.7.0.
+Also `ssh.runInOrder` method is added in 2.7.1.
 
-See the example.
+.Methods to run sessions
+[options="header,autowidth"]
+|===
+|Feature |2.6.x |2.7.0 |2.7.1
 
-[source,groovy]
-----
-ssh.run {
-  session(remotes.server) { execute 'foo' }
-  session(remotes.server) { execute 'bar' }
-}
-----
+|Run sessions in order
+|`ssh.run` method
+|&times;
+|`ssh.runInOrder` method
 
-In 2.6.0 or earlier, `foo` is executed and then `bar` is executed.
-Since 2.7.0, commands are executed in parallel.
+|Run sessions in parallel
+|&times;
+|`ssh.run` method
+|<-
+|===
 
+Behavior of `ssh.run` method has been changed as follows:
 
-==== Return type of `ssh.run` method is changed
+.Return value of `ssh.run` method
+[options="header,autowidth"]
+|===
+|Given |2.6.x |2.7.x
 
-Return type of `ssh.run` method has been changed as followings:
+|no session
+|always `null`
+|<-
 
-- If no session is given, the method returns null. (as-is)
-- If a session is given, the method returns its result. (as-is)
-- If sessions are given, the method returns a list of results. (changed since 2.7.0)
+|1 session
+|the result of session
+|<-
 
-[source,groovy]
-----
-// run a session
-ssh.run {
-  session(remotes.server) { 'value' }
-}
-// -> 'value'
+|2 or more sessions
+|the result of last session
+|a list of results
+|===
 
-// run sessions
-ssh.run {
-  session(remotes.server) { 'value1' }
-  session(remotes.server) { 'value2' }
-}
-// -> ['value1', 'value2']
-----
+.Exception handling of `ssh.run` method
+[options="header,autowidth"]
+|===
+|Given |When |2.6.x |2.7.x
 
+|1 session
+|caused an exception
+|throws the exception
+|<-
 
-==== Exception type of `ssh.run` method is changed
-
-Exception type of `ssh.run` method has been changed as followings:
-
-- If no session is given, the method never throw an exception. (as-is)
-- If a session is given and it caused an error, the method throws the exception. (as-is)
-- If sessions are given and 1 or more caused error(s), the method throws `ParallelSessionsException` which includes all exception(s). (changed since 2.7.0)
+|2 or more sessions
+|caused exception(s)
+|executes session(s) *until* the exception and throws it
+|executes *all* sessions and throws `ParallelSessionsException` which contains exception(s)
+|===
 
 
 ==== `executeBackground` is deprecated
