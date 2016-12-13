@@ -1,47 +1,51 @@
 ['sftp', 'scp'].each { method ->
-    task("should put files of fileTree via $method") << {
-        localWorkDir.mkdirs()
-        file("$localWorkDir/a.dat") << 1
-        file("$localWorkDir/b.txt") << 2
-        file("$localWorkDir/c.dat") << 3
+    task("should put files of fileTree via $method") {
+        doLast {
+            localWorkDir.mkdirs()
+            file("$localWorkDir/a.dat") << 1
+            file("$localWorkDir/b.txt") << 2
+            file("$localWorkDir/c.dat") << 3
 
-        ssh.run {
-            settings {
-                fileTransfer = method
-            }
-            session(remotes.testServer) {
-                execute "mkdir -vp $remoteWorkDir"
-                put from: fileTree(dir: localWorkDir, include: '*.dat'), into: remoteWorkDir
-                execute "test   -f $remoteWorkDir/a.dat"
-                execute "test ! -f $remoteWorkDir/b.txt"
-                execute "test   -f $remoteWorkDir/c.dat"
+            ssh.run {
+                settings {
+                    fileTransfer = method
+                }
+                session(remotes.testServer) {
+                    execute "mkdir -vp $remoteWorkDir"
+                    put from: fileTree(dir: localWorkDir, include: '*.dat'), into: remoteWorkDir
+                    execute "test   -f $remoteWorkDir/a.dat"
+                    execute "test ! -f $remoteWorkDir/b.txt"
+                    execute "test   -f $remoteWorkDir/c.dat"
+                }
             }
         }
     }
 
-    task("should get the large file and put it back via $method") << {
-        def fileSize = 1024 * 8
-        localWorkDir.mkdirs()
+    task("should get the large file and put it back via $method") {
+        doLast {
+            def fileSize = 1024 * 8
+            localWorkDir.mkdirs()
 
-        ssh.run {
-            settings {
-                fileTransfer = method
+            ssh.run {
+                settings {
+                    fileTransfer = method
+                }
+                session(remotes.testServer) {
+                    execute "mkdir -vp $remoteWorkDir"
+                    execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
+                    get from: "$remoteWorkDir/result", into: localWorkDir
+                }
             }
-            session(remotes.testServer) {
-                execute "mkdir -vp $remoteWorkDir"
-                execute "dd if=/dev/zero of=$remoteWorkDir/result bs=1024 count=$fileSize"
-                get from: "$remoteWorkDir/result", into: localWorkDir
-            }
-        }
-        assert file("$localWorkDir/result").size() == 1024 * fileSize
+            assert file("$localWorkDir/result").size() == 1024 * fileSize
 
-        ssh.run {
-            settings {
-                fileTransfer = method
-            }
-            session(remotes.testServer) {
-                put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
-                assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+            ssh.run {
+                settings {
+                    fileTransfer = method
+                }
+                session(remotes.testServer) {
+                    put from: "$localWorkDir/result", into: "$remoteWorkDir/back"
+                    assert execute("wc -c < $remoteWorkDir/back") as int == 1024 * fileSize
+                }
             }
         }
     }

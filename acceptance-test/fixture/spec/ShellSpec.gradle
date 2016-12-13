@@ -1,50 +1,56 @@
 
-task('should execute the shell') << {
-    ssh.run {
-        session(remotes.testServer) {
-            shell(interaction: {
-                when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                    standardInput << 'uname -a' << '\n'
-
-                    when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                        standardInput << 'exit 0' << '\n'
-                    }
-                    when(line: _, from: standardOutput) {}
-                }
-                when(line: _, from: standardOutput) {}
-            })
-        }
-    }
-}
-
-task('should write output of the shell to the file') << {
-    def x = randomInt()
-    def y = randomInt()
-    localWorkDir.mkdirs()
-    def resultFile = file("$localWorkDir/result")
-    resultFile.withOutputStream { stream ->
+task('should execute the shell') {
+    doLast {
         ssh.run {
             session(remotes.testServer) {
-                execute "expr $x + $y", outputStream: stream
+                shell(interaction: {
+                    when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                        standardInput << 'uname -a' << '\n'
+
+                        when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                            standardInput << 'exit 0' << '\n'
+                        }
+                        when(line: _, from: standardOutput) {}
+                    }
+                    when(line: _, from: standardOutput) {}
+                })
             }
         }
     }
-    assert resultFile.text as int == (x + y)
 }
 
-task('should write output of the shell to the standard output') << {
-    ssh.run {
-        session(remotes.testServer) {
-            shell outputStream: System.out, interaction: {
-                when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                    standardInput << 'uname -a' << '\n'
+task('should write output of the shell to the file') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        localWorkDir.mkdirs()
+        def resultFile = file("$localWorkDir/result")
+        resultFile.withOutputStream { stream ->
+            ssh.run {
+                session(remotes.testServer) {
+                    execute "expr $x + $y", outputStream: stream
+                }
+            }
+        }
+        assert resultFile.text as int == (x + y)
+    }
+}
 
+task('should write output of the shell to the standard output') {
+    doLast {
+        ssh.run {
+            session(remotes.testServer) {
+                shell outputStream: System.out, interaction: {
                     when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                        standardInput << 'exit 0' << '\n'
+                        standardInput << 'uname -a' << '\n'
+
+                        when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                            standardInput << 'exit 0' << '\n'
+                        }
+                        when(line: _, from: standardOutput) {}
                     }
                     when(line: _, from: standardOutput) {}
                 }
-                when(line: _, from: standardOutput) {}
             }
         }
     }

@@ -28,10 +28,12 @@ class DryRunSpec extends Specification {
     def "dry-run shell should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(remotes.testServer) {
-                        shell(interaction: {})
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(remotes.testServer) {
+                            shell(interaction: {})
+                        }
                     }
                 }
             }
@@ -47,10 +49,12 @@ class DryRunSpec extends Specification {
     def "dry-run shell with options should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        shell(logging: 'none')
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            shell(logging: 'none')
+                        }
                     }
                 }
             }
@@ -66,10 +70,12 @@ class DryRunSpec extends Specification {
     def "dry-run command should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        execute('ls -l')
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            execute('ls -l')
+                        }
                     }
                 }
             }
@@ -85,11 +91,13 @@ class DryRunSpec extends Specification {
     def "dry-run command with callback should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        execute('ls -l') {
-                            project.ext.callbackExecuted = true
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            execute('ls -l') {
+                                project.ext.callbackExecuted = true
+                            }
                         }
                     }
                 }
@@ -107,10 +115,12 @@ class DryRunSpec extends Specification {
     def "dry-run command with options should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        execute('ls -l', pty: true)
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            execute('ls -l', pty: true)
+                        }
                     }
                 }
             }
@@ -126,11 +136,13 @@ class DryRunSpec extends Specification {
     def "dry-run command with options and callback should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        execute('ls -l', pty: true) {
-                            project.ext.callbackExecuted = true
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            execute('ls -l', pty: true) {
+                                project.ext.callbackExecuted = true
+                            }
                         }
                     }
                 }
@@ -148,10 +160,12 @@ class DryRunSpec extends Specification {
     def "dry-run command in background should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        executeBackground('ls -l')
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            executeBackground('ls -l')
+                        }
                     }
                 }
             }
@@ -167,11 +181,13 @@ class DryRunSpec extends Specification {
     def "dry-run command in background with callback should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        executeBackground('ls -l') {
-                            project.ext.callbackExecuted = true
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            executeBackground('ls -l') {
+                                project.ext.callbackExecuted = true
+                            }
                         }
                     }
                 }
@@ -189,10 +205,12 @@ class DryRunSpec extends Specification {
     def "dry-run command with options in background should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        executeBackground('ls -l', pty: true)
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            executeBackground('ls -l', pty: true)
+                        }
                     }
                 }
             }
@@ -208,11 +226,13 @@ class DryRunSpec extends Specification {
     def "dry-run command with options and callback in background should work without server"() {
         given:
         project.with {
-            task('testTask') << {
-                ssh.run {
-                    session(project.remotes.testServer) {
-                        executeBackground('ls -l', pty: true) {
-                            project.ext.callbackExecuted = true
+            task('testTask') {
+                doLast {
+                    ssh.run {
+                        session(project.remotes.testServer) {
+                            executeBackground('ls -l', pty: true) {
+                                project.ext.callbackExecuted = true
+                            }
                         }
                     }
                 }
