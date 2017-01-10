@@ -36,7 +36,7 @@ class Utility {
                 closure()
             } catch (JSchException e) {
                 log.warn("Retrying: ${e.getClass().name}: ${e.localizedMessage}")
-                sleep(retryWaitSec * 1000L)
+                ManagedBlocking.sleep(retryWaitSec * 1000L)
                 retry(retryCount - 1, retryWaitSec, closure)
             }
         } else {

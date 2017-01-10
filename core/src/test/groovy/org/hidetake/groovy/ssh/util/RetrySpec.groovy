@@ -5,14 +5,14 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
 
-@ConfineMetaClassChanges(Utility)
+@ConfineMetaClassChanges(ManagedBlocking)
 class RetrySpec extends Specification {
 
     @Shared
     Closure sleepMock
 
     def setupSpec() {
-        Utility.metaClass.static.sleep = { long ms ->
+        ManagedBlocking.metaClass.static.sleep = { long ms ->
             sleepMock.call(ms)
         }
     }
