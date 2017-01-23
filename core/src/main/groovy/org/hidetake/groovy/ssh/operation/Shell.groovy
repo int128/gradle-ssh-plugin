@@ -8,6 +8,7 @@ import org.hidetake.groovy.ssh.core.type.InputStreamValue
 import org.hidetake.groovy.ssh.interaction.InteractionHandler
 import org.hidetake.groovy.ssh.interaction.Interactions
 import org.hidetake.groovy.ssh.interaction.Stream
+import org.hidetake.groovy.ssh.util.ManagedBlocking
 
 /**
  * A shell operation.
@@ -72,9 +73,10 @@ class Shell implements Operation {
             log.info("Started shell $connection.remote.name#$channel.id")
             interactions.start()
             interactions.waitForEndOfStream()
-            while (!channel.closed) {
-                sleep(100)
+            ManagedBlocking.until {
+                channel.closed
             }
+
             int exitStatus = channel.exitStatus
             if (exitStatus == 0) {
                 log.info("Success shell $connection.remote.name#$channel.id")
