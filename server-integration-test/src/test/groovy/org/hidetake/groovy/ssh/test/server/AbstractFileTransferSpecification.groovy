@@ -12,6 +12,7 @@ import spock.lang.Unroll
 import spock.util.concurrent.PollingConditions
 import spock.util.mop.Use
 
+import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORIES
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
@@ -189,6 +190,42 @@ abstract class AbstractFileTransferSpecification extends Specification {
         then:
         sourceFile.text == 'Source Content'
         (destinationDir / sourceFile.name).text == 'Source Content'
+    }
+
+    def "put() should put a directory recursively"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / DIRECTORIES
+
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / 'file3' << 'Source Content 3'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'file4' << 'Source Content 4'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5' << 'Source Content 5'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6' << 'Source Content 6'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7' << 'Source Content 7'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8' << 'Source Content 8'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9' << 'Source Content 9'
+
+        def destinationDir = temporaryFolder.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                put from: toUnixPath(sourceDir.path), into: destinationDir
+            }
+        }
+
+        then:
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'file3').text == 'Source Content 3'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'file4').text == 'Source Content 4'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5').text == 'Source Content 5'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6').text == 'Source Content 6'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7').text == 'Source Content 7'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8').text == 'Source Content 8'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9').text == 'Source Content 9'
     }
 
     def "put() should merge and overwrite a file to a directory if it is not empty"() {
@@ -504,6 +541,42 @@ abstract class AbstractFileTransferSpecification extends Specification {
         then:
         sourceFile.text == 'Source Content'
         (destinationDir / sourceFile.name).text == 'Source Content'
+    }
+
+    def "get() should get a directory recursively"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / DIRECTORIES
+
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / 'file3' << 'Source Content 3'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'file4' << 'Source Content 4'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5' << 'Source Content 5'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6' << 'Source Content 6'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7' << 'Source Content 7'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8' << 'Source Content 8'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9' << 'Source Content 9'
+
+        def destinationDir = temporaryFolder.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.testServer) {
+                get from: toUnixPath(sourceDir.path), into: destinationDir
+            }
+        }
+
+        then:
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'file3').text == 'Source Content 3'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'file4').text == 'Source Content 4'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5').text == 'Source Content 5'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6').text == 'Source Content 6'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7').text == 'Source Content 7'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8').text == 'Source Content 8'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9').text == 'Source Content 9'
     }
 
     def "get() should merge and overwrite a file to a directory if it is not empty"() {

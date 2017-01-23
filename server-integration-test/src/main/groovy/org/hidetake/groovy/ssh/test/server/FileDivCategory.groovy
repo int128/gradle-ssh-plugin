@@ -8,13 +8,24 @@ class FileDivCategory {
     }
 
     File div(DirectoryType type) {
-        assert type == DirectoryType.DIRECTORY
-        assert mkdir()
+        switch (type) {
+            case DirectoryType.DIRECTORY:
+                assert mkdir()
+                break
+
+            case DirectoryType.DIRECTORIES:
+                assert mkdirs()
+                break
+
+            default:
+                throw new IllegalArgumentException("Unknown directory type: $type")
+        }
         this
     }
 
     static enum DirectoryType {
-        DIRECTORY
+        DIRECTORY,
+        DIRECTORIES
     }
 
 }
