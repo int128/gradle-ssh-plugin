@@ -17,8 +17,17 @@ class Utility {
         cloned.call(*arguments)
     }
 
+    /**
+     * Curry a method with self for recursive.
+     *
+     * @param closure
+     * @return curried closure
+     */
     static <T> Closure<T> currySelf(Closure<T> closure) {
-        closure.curry(closure.curry(closure))
+        final curried
+        curried = closure.curry {
+            closure.call(curried)
+        }
     }
 
     /**

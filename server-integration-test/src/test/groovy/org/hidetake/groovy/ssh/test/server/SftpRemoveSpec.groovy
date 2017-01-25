@@ -12,6 +12,7 @@ import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 import spock.util.mop.Use
 
+import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORIES
 import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.DIRECTORY
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
@@ -100,10 +101,17 @@ class SftpRemoveSpec extends Specification {
     def "remove() should delete a directory recursively"() {
         given:
         def dir = temporaryFolder.newFolder()
-        dir / 'file1' << 'content1'
-        dir / 'dir2' / DIRECTORY
-        dir / 'dir2' / 'file2' << 'content2'
-        dir / 'dir2' / 'dir3' / DIRECTORY
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / DIRECTORIES
+
+        dir / 'file1' << 'Content 1'
+        dir / 'dir2' / 'file2' << 'Content 2'
+        dir / 'dir2' / 'dir3' / 'file3' << 'Content 3'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'file4' << 'Content 4'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5' << 'Content 5'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6' << 'Content 6'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7' << 'Content 7'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8' << 'Content 8'
+        dir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9' << 'Content 9'
 
         when:
         def result = ssh.run {
