@@ -36,7 +36,7 @@ e.g.
 ./acceptance-test/setup-ssh.sh
 
 # Run test
-./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-tests:test
+./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-test:test
 ```
 
 ### Release
