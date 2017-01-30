@@ -1111,7 +1111,7 @@ def text = get from: '/remote/file'
 
 |File
 |Non-existent directory
-|Throw an error.
+|Throw `IOException`.
 
 |Directory
 |Directory
@@ -1120,11 +1120,11 @@ def text = get from: '/remote/file'
 
 |Directory
 |Non-existent directory
-|Throw an error.
+|Throw `IOException`.
 
 |Non-existent file or directory
 |-
-|Throw an error.
+|Throw `IOException`.
 |===
 
 Call the `put` method to put a file or directory into the remote host.
@@ -1177,7 +1177,7 @@ put from: buildDir, into: '/remote/folder', filter: { it.name =~ /\.xml$/ }
 
 |File
 |Non-existent directory
-|Throw an error.
+|Throw `IOException`.
 
 |Directory
 |Directory
@@ -1186,11 +1186,11 @@ put from: buildDir, into: '/remote/folder', filter: { it.name =~ /\.xml$/ }
 
 |Directory
 |Non-existent directory
-|Throw an error.
+|Throw `IOException`.
 
 |Non-existent file or directory
 |-
-|Throw an error.
+|Throw `FileNotFoundException`.
 |===
 
 These methods throw an exception if an error occurred while the file transfer.

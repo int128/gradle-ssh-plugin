@@ -228,7 +228,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         thrown(IllegalArgumentException)
     }
 
-    def "put() should throw an error if source does not exist"() {
+    def "put() should throw FileNotFoundException if source does not exist"() {
         given:
         def sourceFile = temporaryFolder.newFolder() / 'file1'
         def destinationFile = temporaryFolder.newFolder()
@@ -241,8 +241,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        //FIXME
-        thrown()
+        FileNotFoundException e = thrown()
+        e.message.contains(toUnixPath(sourceFile.path))
     }
 
 
@@ -306,7 +306,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == 'Source Content'
     }
 
-    def "put(file) should throw an error if destination and its parent do not exist"() {
+    def "put(file) should throw IOException if destination and its parent do not exist"() {
         given:
         def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFolder() / 'dir1' / 'file1'
@@ -319,8 +319,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        //FIXME
-        thrown()
+        IOException e = thrown()
+        e.message.contains(toUnixPath(destinationFile.path))
     }
 
 
@@ -397,23 +397,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
-    def "put(dir) should throw an error if destination does not exist"() {
-        given:
-        def sourceDir = temporaryFolder.newFolder()
-        def destinationDir = temporaryFolder.newFolder() / 'dir1'
-        assert !destinationDir.exists()
-
-        when:
-        ssh.run {
-            session(ssh.remotes.testServer) {
-                put from: sourceDir, into: toUnixPath(destinationDir.path)
-            }
-        }
-
-        then:
-        //FIXME
-        thrown()
-    }
+    //FIXME: put into SftpSpec due to bug of Apache SSHD
+    //def "put(dir) should throw IOException if destination does not exist"() {
 
     def "put(dir) should put a directory recursively"() {
         given:
@@ -627,7 +612,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         thrown(IllegalArgumentException)
     }
 
-    def "get() should throw an error if source does not exist"() {
+    def "get() should throw IOException if source does not exist"() {
         given:
         def sourceFile = temporaryFolder.newFolder() / 'file1'
         def destinationDir = temporaryFolder.newFolder()
@@ -640,8 +625,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        //FIXME
-        thrown()
+        IOException e = thrown()
+        e.message.contains(toUnixPath(sourceFile.path))
     }
 
 
@@ -706,7 +691,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         destinationFile.text == 'Source Content'
     }
 
-    def "get(file) should throw an error if destination and its parent do not exist"() {
+    def "get(file) should throw IOException if destination and its parent do not exist"() {
         given:
         def sourceFile = temporaryFolder.newFile() << 'Source Content'
         def destinationFile = temporaryFolder.newFolder() / 'dir1' / 'file1'
@@ -719,8 +704,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        //FIXME
-        thrown()
+        IOException e = thrown()
+        e.message.contains(toUnixPath(destinationFile.path))
     }
 
 
@@ -797,7 +782,7 @@ abstract class AbstractFileTransferSpecification extends Specification {
         (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
-    def "get(dir) should throw an error if destination does not exist"() {
+    def "get(dir) should throw IOException if destination does not exist"() {
         given:
         def sourceDir = temporaryFolder.newFolder()
         def destinationDir = temporaryFolder.newFolder() / 'dir1'
@@ -811,8 +796,8 @@ abstract class AbstractFileTransferSpecification extends Specification {
         }
 
         then:
-        //FIXME
-        thrown()
+        IOException e = thrown()
+        e.message.contains(toUnixPath(destinationDir.path))
     }
 
     def "get(dir) should get a directory recursively"() {

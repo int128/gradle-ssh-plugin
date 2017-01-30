@@ -7,7 +7,7 @@ import com.jcraft.jsch.SftpException as JschSftpException
  *
  * @author Hidetake Iwata
  */
-class SftpException extends Exception {
+class SftpException extends IOException {
     final SftpError error
 
     def SftpException(String contextMessage, JschSftpException cause) {

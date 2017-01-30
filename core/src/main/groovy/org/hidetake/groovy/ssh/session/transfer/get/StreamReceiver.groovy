@@ -17,4 +17,9 @@ class StreamReceiver implements WritableReceiver {
         stream.write(bytes)
     }
 
+    @Override
+    String toString() {
+        stream.class.simpleName
+    }
+
 }

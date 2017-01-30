@@ -100,7 +100,7 @@ class Scp implements Provider {
     }
 
     void get(String remoteFile, WritableReceiver receiver) {
-        log.debug("Requesting SCP GET: $operations.remote.name:$remoteFile")
+        log.debug("Requesting SCP GET: $operations.remote.name:$remoteFile -> $receiver")
 
         def settings = new CommandSettings.With(mergedSettings, new CommandSettings.With(logging: LoggingMethod.none))
         def command = operations.command(settings, "scp -f $remoteFile")
@@ -130,17 +130,19 @@ class Scp implements Provider {
             }
 
             when(line: _) { String line ->
-                log.error("Failed SCP GET: $operations.remote.name:$remoteFile")
-                throw new IllegalStateException("SCP command returned error: $line")
+                log.error("Failed SCP GET: $operations.remote.name:$remoteFile -> $receiver: $line")
+                throw new ScpException("Failed SCP GET: $operations.remote.name:$remoteFile -> $receiver: " +
+                    "SCP command returned error: $line")
             }
         }
 
         int exitStatus = command.execute()
         if (exitStatus == 0) {
-            log.debug("Success SCP GET: $operations.remote.name:$remoteFile")
+            log.debug("Success SCP GET: $operations.remote.name:$remoteFile -> $receiver")
         } else {
-            log.error("Failed SCP GET: $operations.remote.name:$remoteFile")
-            throw new BadExitStatusException("SCP command returned exit status $exitStatus", exitStatus)
+            log.error("Failed SCP GET: $operations.remote.name:$remoteFile -> $receiver")
+            throw new BadExitStatusException("Failed SCP GET: $operations.remote.name:$remoteFile -> $receiver: " +
+                "SCP command returned exit status $exitStatus", exitStatus)
         }
     }
 
