@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.test.server
 
 import groovy.util.logging.Slf4j
-import org.apache.sshd.SshServer
-import org.apache.sshd.common.KeyPairProvider
+import org.apache.sshd.common.keyprovider.KeyPairProvider
+import org.apache.sshd.server.SshServer
 
-import static org.apache.sshd.common.KeyPairProvider.SSH_DSS
+import static org.apache.sshd.common.keyprovider.KeyPairProvider.SSH_DSS
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 
 /**

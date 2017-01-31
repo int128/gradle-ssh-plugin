@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh
 
 import ch.qos.logback.classic.Level
-import org.apache.sshd.SshServer
-import org.apache.sshd.common.keyprovider.FileKeyPairProvider
+import org.apache.sshd.common.util.SecurityUtils
 import org.apache.sshd.server.CommandFactory
-import org.apache.sshd.server.PasswordAuthenticator
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
 import org.hidetake.groovy.ssh.operation.Command
 import org.hidetake.groovy.ssh.test.server.FilenameUtils
 import org.hidetake.groovy.ssh.test.server.SshServerMock
@@ -33,10 +33,11 @@ class MainSpec extends Specification {
     TemporaryFolder temporaryFolder
 
     def setupSpec() {
-        def privateKey = MainSpec.getResource('/hostkey_dsa').file
-        def publicKey = MainSpec.getResourceAsStream('/hostkey_dsa.pub').text
+        def keyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider()
+        keyPairProvider.resourceLoader = MainSpec.classLoader
+        keyPairProvider.resources = ['hostkey_dsa']
 
-        server = SshServerMock.setUpLocalhostServer(new FileKeyPairProvider(privateKey))
+        server = SshServerMock.setUpLocalhostServer(keyPairProvider)
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         server.commandFactory = Mock(CommandFactory)
@@ -47,6 +48,7 @@ class MainSpec extends Specification {
         server.start()
         server
 
+        def publicKey = MainSpec.getResourceAsStream('/hostkey_dsa.pub').text
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${publicKey}"
         script = """\
 ssh.run {

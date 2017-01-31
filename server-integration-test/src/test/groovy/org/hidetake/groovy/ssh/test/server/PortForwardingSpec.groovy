@@ -5,9 +5,9 @@ import com.sun.net.httpserver.HttpServer
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.RESTClient
-import org.apache.sshd.SshServer
-import org.apache.sshd.common.ForwardingFilter
-import org.apache.sshd.server.PasswordAuthenticator
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.forward.ForwardingFilter
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Shared
@@ -38,7 +38,7 @@ class PortForwardingSpec extends Specification {
             authenticate("someUser", "somePassword", _) >> true
         }
         sshServer.tcpipForwardingFilter = Mock(ForwardingFilter) {
-            canConnect(_, _) >> true
+            canConnect(_, _, _) >> true
             canListen(_, _) >> true
         }
         sshServer.start()

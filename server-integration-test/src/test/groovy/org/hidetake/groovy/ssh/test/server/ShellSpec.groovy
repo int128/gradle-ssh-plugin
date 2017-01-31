@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
-import org.apache.sshd.server.PasswordAuthenticator
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod

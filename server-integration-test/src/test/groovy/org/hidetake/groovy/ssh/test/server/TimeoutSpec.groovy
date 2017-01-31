@@ -1,11 +1,11 @@
 package org.hidetake.groovy.ssh.test.server
 
 import com.jcraft.jsch.JSchException
-import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
 import org.apache.sshd.server.CommandFactory
-import org.apache.sshd.server.PasswordAuthenticator
-import org.apache.sshd.server.sftp.SftpSubsystem
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import spock.lang.Shared
@@ -136,7 +136,7 @@ class TimeoutSpec extends Specification {
 
     def 'should reach channel timeout set by timeoutSec on sftp()'() {
         given:
-        server.subsystemFactories = [Mock(SftpSubsystem.Factory)]
+        server.subsystemFactories = [Mock(SftpSubsystemFactory)]
         ssh.settings {
             timeoutSec = 1
         }
@@ -152,7 +152,7 @@ class TimeoutSpec extends Specification {
         server.subsystemFactories[0].getName() >> 'sftp'
         server.subsystemFactories[0].create() >> {
             Thread.sleep(2000L)
-            new SftpSubsystem()
+            new SftpSubsystemFactory().create()
         }
 
         then:
