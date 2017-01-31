@@ -2,8 +2,11 @@ package org.hidetake.groovy.ssh.session.transfer.put
 
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.operation.Operations
-import org.hidetake.groovy.ssh.operation.SftpFailureException
+import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.transfer.FileTransferSettings
+
+import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FAILURE
+import static org.hidetake.groovy.ssh.operation.SftpError.SSH_FX_FILE_ALREADY_EXISTS
 
 /**
  * Recursive SFTP PUT executor.
@@ -47,8 +50,12 @@ class Sftp implements Provider {
                         def remoteDir = "$remotePath/$directory.name"
                         try {
                             mkdir(remoteDir)
-                        } catch (SftpFailureException ignore) {
-                            log.info("Remote directory already exists on $remote.name: $remoteDir")
+                        } catch (SftpException e) {
+                            if (e.error in [SSH_FX_FILE_ALREADY_EXISTS, SSH_FX_FAILURE]) {
+                                log.info("Remote directory already exists on $remote.name: $remoteDir")
+                            } else {
+                                throw e
+                            }
                         }
                         directoryStack.push(directory.name)
                         break

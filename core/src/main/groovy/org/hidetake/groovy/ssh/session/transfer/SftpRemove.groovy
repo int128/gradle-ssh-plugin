@@ -1,7 +1,8 @@
 package org.hidetake.groovy.ssh.session.transfer
 
 import groovy.util.logging.Slf4j
-import org.hidetake.groovy.ssh.operation.SftpNoSuchFileException
+import org.hidetake.groovy.ssh.operation.SftpError
+import org.hidetake.groovy.ssh.operation.SftpException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
 import static org.hidetake.groovy.ssh.util.Utility.currySelf
@@ -68,8 +69,12 @@ trait SftpRemove implements SessionExtension {
         static <T> T nullIfNoSuchFile(Closure<T> closure) {
             try {
                 closure()
-            } catch (SftpNoSuchFileException ignore) {
-                null
+            } catch (SftpException e) {
+                if (e.error == SftpError.SSH_FX_NO_SUCH_FILE) {
+                    null
+                } else {
+                    throw e
+                }
             }
         }
     }
