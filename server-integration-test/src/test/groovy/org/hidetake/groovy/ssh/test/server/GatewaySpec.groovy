@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.SshServer
 import org.apache.sshd.common.Factory
-import org.apache.sshd.common.ForwardingFilter
-import org.apache.sshd.common.SshdSocketAddress
-import org.apache.sshd.server.PasswordAuthenticator
+import org.apache.sshd.common.util.net.SshdSocketAddress
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.forward.ForwardingFilter
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.ClassRule
@@ -13,7 +13,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-import static org.apache.sshd.common.KeyPairProvider.*
+import static org.apache.sshd.common.keyprovider.KeyPairProvider.*
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.publicKey
@@ -94,7 +94,7 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -137,7 +137,7 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -188,9 +188,9 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
+        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
-        then: 1 * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: 1 * gateway2Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -241,9 +241,9 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(addressOf(gateway2Server), _) >> true
+        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
-        then: (1.._) * gateway2Server.tcpipForwardingFilter.canConnect(addressOf(targetServer), _) >> true
+        then: (1.._) * gateway2Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 

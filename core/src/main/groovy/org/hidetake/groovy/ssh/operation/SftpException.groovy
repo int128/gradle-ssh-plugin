@@ -10,18 +10,11 @@ import com.jcraft.jsch.SftpException as JschSftpException
 class SftpException extends Exception {
     final SftpError error
 
-    static SftpException createFrom(JschSftpException cause, String contextMessage) {
-        def sftpError = SftpError.find(cause.id)
-        if (sftpError == SftpError.SSH_FX_NO_SUCH_FILE) {
-            new SftpNoSuchFileException(contextMessage, cause)
-        } else if (sftpError == SftpError.SSH_FX_FAILURE) {
-            new SftpFailureException(contextMessage, cause)
-        } else {
-            new SftpException(contextMessage, cause, sftpError)
-        }
+    def SftpException(String contextMessage, JschSftpException cause) {
+        this(contextMessage, cause, SftpError.find(cause.id))
     }
 
-    protected def SftpException(String contextMessage, JschSftpException cause, SftpError error) {
+    def SftpException(String contextMessage, JschSftpException cause, SftpError error) {
         super("$contextMessage: (${error.name()}: ${error.message}): ${cause.message}", cause)
         this.error = error
     }

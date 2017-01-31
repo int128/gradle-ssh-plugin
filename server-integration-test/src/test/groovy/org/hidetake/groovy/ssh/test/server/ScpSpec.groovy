@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.server.command.ScpCommandFactory
+import org.apache.sshd.server.scp.ScpCommandFactory
 import org.hidetake.groovy.ssh.session.transfer.FileTransferMethod
 import spock.lang.Timeout
 

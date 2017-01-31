@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.SshServer
-import org.apache.sshd.server.PasswordAuthenticator
-import org.apache.sshd.server.sftp.SftpSubsystem
+import org.apache.sshd.server.SshServer
+import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.ClassRule
@@ -32,7 +32,7 @@ class SftpRemoveSpec extends Specification {
         server.passwordAuthenticator = Mock(PasswordAuthenticator) {
             (1.._) * authenticate('someuser', 'somepassword', _) >> true
         }
-        server.subsystemFactories = [new SftpSubsystem.Factory()]
+        server.subsystemFactories = [new SftpSubsystemFactory()]
         server.start()
     }
 

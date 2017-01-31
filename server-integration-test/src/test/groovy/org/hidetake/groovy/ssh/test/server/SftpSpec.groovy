@@ -1,13 +1,13 @@
 package org.hidetake.groovy.ssh.test.server
 
 import com.jcraft.jsch.JSchException
-import org.apache.sshd.server.sftp.SftpSubsystem
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.operation.SftpException
 
 class SftpSpec extends AbstractFileTransferSpecification {
 
     def setupSpec() {
-        server.subsystemFactories = [new SftpSubsystem.Factory()]
+        server.subsystemFactories = [new SftpSubsystemFactory()]
         server.start()
     }
 
