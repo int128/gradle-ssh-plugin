@@ -38,6 +38,8 @@ class Receiver implements Runnable {
             log.trace("Started receiver $this")
             try {
                 readStream()
+            } catch (InterruptedIOException e) {
+                log.debug("Interrupted receiver $this", e)
             } finally {
                 inputStream.close()
             }
@@ -50,7 +52,7 @@ class Receiver implements Runnable {
         listener.start(stream)
 
         def readBuffer = new byte[READ_BUFFER_SIZE]
-        while (true) {
+        while (!Thread.currentThread().interrupted) {
             log.trace("Waiting for $stream")
             def readLength = inputStream.read(readBuffer)
             if (readLength < 0) {

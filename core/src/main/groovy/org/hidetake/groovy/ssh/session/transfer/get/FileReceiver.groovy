@@ -12,7 +12,7 @@ class FileReceiver implements WritableReceiver {
         if (destination.exists()) {
             destination.delete()
         }
-        destination.createNewFile()
+        destination.withWriter { writer -> writer.flush() }
         ({})
     }()
 
@@ -26,6 +26,11 @@ class FileReceiver implements WritableReceiver {
         recreateAtFirst()
         log.trace("Writing $bytes.length bytes into file: $destination")
         destination.append(bytes)
+    }
+
+    @Override
+    String toString() {
+        destination.path
     }
 
 }

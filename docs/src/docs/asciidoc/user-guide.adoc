@@ -1075,16 +1075,14 @@ Call the `get` method to get a file or directory from the remote host.
 
 [source,groovy]
 ----
-// specify a file path
+// get a file or directory
 get from: '/remote/file', into: 'local_file'
-
-// specify a file object
 get from: '/remote/file', into: buildDir
 
-// specify a file object with file filter
+// get files by a file filter
 get from: '/remote/folder', into: buildDir, filter: { it.name =~ /\.xml$/ }
 
-// specify an output stream
+// get content as an output stream
 file.withOutputStream { stream ->
   get from: '/remote/file', into: stream
 }
@@ -1093,39 +1091,107 @@ file.withOutputStream { stream ->
 def text = get from: '/remote/file'
 ----
 
+.Behavior of `get` method
+[options="header,autowidth"]
+|===
+|Source (remote) |Destination (local) |Behavior
+
+|File
+|File
+|Overwrite the destination file.
+
+|File
+|Directory
+|Create a file in the destination directory.
+ Overwrite if it already exists.
+
+|File
+|Non-existent file in a directory
+|Create a file as the destination path.
+
+|File
+|Non-existent directory
+|Throw `IOException`.
+
+|Directory
+|Directory
+|Create a directory in the destination.
+ Overwrite if it already exists.
+
+|Directory
+|Non-existent directory
+|Throw `IOException`.
+
+|Non-existent file or directory
+|-
+|Throw `IOException`.
+|===
+
 Call the `put` method to put a file or directory into the remote host.
 It also accepts content such as a string or byte array.
 
 [source,groovy]
 ----
-// specify a file path
+// put a file or directory
 put from: 'local_file', into: '/remote/file'
-
-// specify a file object
 put from: file('fixture.dat'), into: '/remote/folder'
+put from: buildDir, into: '/remote/folder'
 
-// specify an input stream
+// put files
+put from: files('local_file1', 'local_file2'), into: '/remote/folder'
+
+// put content from an input stream
 file.withInputStream { stream ->
   put from: stream, into: '/remote/file.txt'
 }
 
-// specify a string
+// put content from a string
 put text: '''#!/bin/sh
 echo 'hello world'
 ''', into: '/remote/script.sh'
 
-// specify a byte array
+// put content from a byte array
 put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
 
-// specify files
-put from: files('local_file1', 'local_file2'), into: '/remote/folder'
-
-// specify a directory
-put from: buildDir, into: '/remote/folder'
-
-// specify a directory with file filter
+// put files by a file filter
 put from: buildDir, into: '/remote/folder', filter: { it.name =~ /\.xml$/ }
 ----
+
+.Behavior of `put` method
+[options="header,autowidth"]
+|===
+|Source (local) |Destination (remote) |Behavior
+
+|File
+|File
+|Overwrite the destination file.
+
+|File
+|Directory
+|Create a file in the destination directory.
+ Overwrite if it already exists.
+
+|File
+|Non-existent file in a directory
+|Create a file as the destination path.
+
+|File
+|Non-existent directory
+|Throw `IOException`.
+
+|Directory
+|Directory
+|Create a directory in the destination.
+ Overwrite if it already exists.
+
+|Directory
+|Non-existent directory
+|Throw `IOException`.
+
+|Non-existent file or directory
+|-
+|Throw `FileNotFoundException`.
+|===
 
 These methods throw an exception if an error occurred while the file transfer.
 

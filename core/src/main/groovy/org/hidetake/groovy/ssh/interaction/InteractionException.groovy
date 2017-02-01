@@ -5,7 +5,7 @@ package org.hidetake.groovy.ssh.interaction
  *
  * @author Hidetake Iwata
  */
-class InteractionException extends RuntimeException {
+class InteractionException extends IOException {
     final List<Throwable> exceptions
 
     def InteractionException(Throwable exception) {

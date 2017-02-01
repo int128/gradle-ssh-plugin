@@ -76,6 +76,9 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      * @param remotePath
      */
     private void putInternal(File localFile, String remotePath) {
+        if (!localFile.exists()) {
+            throw new FileNotFoundException(localFile.path)
+        }
         def instructions = Instructions.forFile(localFile, remotePath)
         createPutProvider().put(instructions)
     }
@@ -97,6 +100,11 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      * @param remotePath
      */
     private void putInternal(Iterable<File> localFiles, String remotePath) {
+        localFiles.each { localFile ->
+            if (!localFile.exists()) {
+                throw new FileNotFoundException(localFile.path)
+            }
+        }
         def instructions = Instructions.forFiles(localFiles, remotePath)
         createPutProvider().put(instructions)
     }
@@ -108,6 +116,9 @@ put(bytes: byte[], into: String)            // put a byte array into the remote 
      * @param remotePath
      */
     private void putInternal(File localFile, String remotePath, Closure<Boolean> filter) {
+        if (!localFile.exists()) {
+            throw new FileNotFoundException(localFile.path)
+        }
         def instructions = Instructions.forFileWithFilter(localFile, remotePath, filter)
         createPutProvider().put(instructions)
     }

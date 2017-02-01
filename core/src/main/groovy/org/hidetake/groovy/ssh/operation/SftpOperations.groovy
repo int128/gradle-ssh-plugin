@@ -49,7 +49,7 @@ class SftpOperations {
      * @param stream
      */
     void getContent(String remotePath, OutputStream stream) {
-        tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> stream") {
+        tryCatchSftpException("SFTP GET: $remote.name:$remotePath -> ${stream.class.simpleName}") {
             channel.get(remotePath, stream, new SftpProgress({ percent ->
                 log.info("Receiving $percent from $remote.name: $remotePath")
             }))
