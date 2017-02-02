@@ -5,8 +5,8 @@ machine:
     JAVA_HOME_7: /usr/lib/jvm/java-7-openjdk-amd64
     TERM: dumb
     GRADLE_OPTS: -Xmx1g -Xms1g
-  hosts:
-    sandbox.127.0.0.1.xip.io: 127.0.0.1
+    DOCKER_SSH_PORT: 8022
+    DOCKER_SSH_USER: tester
   services:
     - docker
 
