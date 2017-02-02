@@ -17,7 +17,7 @@ import static org.hidetake.groovy.ssh.test.server.FileDivCategory.DirectoryType.
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
 @Use(FileDivCategory)
-abstract class AbstractFileTransferSpecification extends Specification {
+abstract class AbstractFileTransferSpec extends Specification {
 
     @Shared
     SshServer server
