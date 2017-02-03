@@ -1,19 +1,25 @@
 package org.hidetake.groovy.ssh.test.os
 
-import groovy.io.FileType
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.Unroll
+import spock.util.mop.Use
 
-import static org.hidetake.groovy.ssh.test.os.Fixture.*
+import static org.hidetake.groovy.ssh.test.os.FileDivCategory.DirectoryType.DIRECTORIES
+import static org.hidetake.groovy.ssh.test.os.FileDivCategory.DirectoryType.DIRECTORY
+import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
+import static org.hidetake.groovy.ssh.test.os.Fixture.remoteTmpPath
+import static org.hidetake.groovy.ssh.test.os.RemoteFixture.Mkdir.remoteDir
 
 /**
  * Check if file transfer works with OpenSSH.
  *
  * @author Hidetake Iwata
  */
+@Use(FileDivCategory)
 abstract class AbstractFileTransferSpec extends Specification {
 
     Service ssh
@@ -21,186 +27,256 @@ abstract class AbstractFileTransferSpec extends Specification {
     @Rule
     TemporaryFolder temporaryFolder
 
+    @Rule
+    RemoteFixture remoteFixture
+
     def setup() {
         ssh = Ssh.newService()
         createRemotes(ssh)
     }
 
-    def 'should put, compute and get files'() {
-        given:
-        def x = randomInt()
-        def y = randomInt()
+    def newRemoteTemporaryFolder() {
+        def folder = remoteTmpPath()
+        ssh.run {
+            session(ssh.remotes.Default) {
+                execute("mkdir -vp $folder")
+            }
+        }
+        folder
+    }
 
-        def localX = temporaryFolder.newFile() << x
-        def localY = temporaryFolder.newFile() << y
-        def localA = temporaryFolder.newFile()
-        def localB = temporaryFolder.newFile()
-        def remoteX = remoteTmpPath()
-        def remoteY = remoteTmpPath()
-        def remoteA = remoteTmpPath()
-        def remoteB = remoteTmpPath()
+    def getRemoteContent(String path) {
+        ssh.run {
+            session(ssh.remotes.Default) {
+                get from: path
+            }
+        }
+    }
+
+
+    //
+    // [PUT] file transfer
+    //
+
+    def "put(file) should create a file if destination is a non-existent file in a directory"() {
+        given:
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+        def destinationDir = remoteFixture.newFolder()
+        def destinationFile = destinationDir / 'file1'
 
         when:
         ssh.run {
             session(ssh.remotes.Default) {
-                put from: localX, into: remoteX
-                put from: localY, into: remoteY
-                execute "expr `cat $remoteX` + `cat $remoteY` > $remoteA"
-                execute "expr `cat $remoteX` - `cat $remoteY` > $remoteB"
-                get from: remoteA, into: localA
-                get from: remoteB, into: localB
+                put from: sourceFile.path, into: destinationFile.path
             }
         }
 
         then:
-        localA.text as int == (x + y)
-        localB.text as int == (x - y)
+        destinationFile.text == 'Source Content'
     }
 
-    def 'should put contents and compute'() {
+    def "put(file) should create a file if destination is an existent directory"() {
         given:
-        def x = randomInt()
-        def y = randomInt()
-
-        def remoteX = remoteTmpPath()
-        def remoteY = remoteTmpPath()
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+        def destinationDir = remoteFixture.newFolder()
+        destinationDir / (sourceFile.name) << 'Destination Content 1'
+        destinationDir / 'file2' << 'Destination Content 2'
 
         when:
-        def result = ssh.run {
+        ssh.run {
             session(ssh.remotes.Default) {
-                put text: x, into: remoteX
-                put bytes: y.toString().bytes, into: remoteY
-                [a: execute("expr `cat $remoteX` + `cat $remoteY`"),
-                 b: execute("expr `cat $remoteX` - `cat $remoteY`")]
+                put from: sourceFile, into: destinationDir
+            }
+        }
+
+        then: 'destination should be overwrote'
+        (destinationDir / sourceFile.name).text == 'Source Content'
+
+        and: 'destination should be kept as-is'
+        (destinationDir / 'file2').text == 'Destination Content 2'
+    }
+
+    def "put(file) should overwrite a file if destination is an existent file"() {
+        given:
+        def sourceFile = temporaryFolder.newFile('file1') << 'Source Content'
+        def destinationDir = remoteFixture.newFolder()
+        destinationDir / 'file1' << 'Destination Content'
+
+        when:
+        ssh.run {
+            session(ssh.remotes.Default) {
+                put from: sourceFile.path, into: "$destinationDir/file1"
             }
         }
 
         then:
-        result.a as int == (x + y)
-        result.b as int == (x - y)
+        (destinationDir / 'file1').text == 'Source Content'
     }
 
-    def 'should merge and overwrite a directory recursively on put'() {
+    def "put(file) should throw IOException if destination and its parent do not exist"() {
         given:
-        def x = randomInt()
-        def y = randomInt()
-        def z = randomInt()
-
-        and: 'prepare the local folder'
-        def localFolder = temporaryFolder.newFolder()
-        new File(localFolder, 'Y/Z').mkdirs()
-        new File(localFolder, 'xfile') << x
-        new File(localFolder, 'Y/yfile') << y
-        new File(localFolder, 'Y/Z/zfile') << z
-
-        and: 'prepare the remote folder'
-        def remoteFolder = remoteTmpPath()
-        ssh.run {
-            session(ssh.remotes.Default) {
-                execute "mkdir -vp        $remoteFolder/${localFolder.name}/Y"
-                execute "echo -n dummy1 > $remoteFolder/${localFolder.name}/Y/yfile"
-                execute "echo -n dummy2 > $remoteFolder/${localFolder.name}/Y/yfile2"
-            }
-        }
+        def sourceFile = temporaryFolder.newFile() << 'Source Content'
+        def destinationFile = remoteFixture.newFolder() / 'dir1' / 'file1'
 
         when:
         ssh.run {
             session(ssh.remotes.Default) {
-                put from: localFolder, into: remoteFolder
+                put from: sourceFile, into: destinationFile.path
             }
         }
+
+        then:
+        IOException e = thrown()
+        e.message.contains(destinationFile.path)
+    }
+
+
+
+    //
+    // [PUT] directory transfer
+    //
+
+    def "put(dir) should create a directory if destination is an existent directory"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
+
+        def destinationDir = remoteFixture.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.Default) {
+                put from: sourceDir, into: destinationDir.path
+            }
+        }
+
+        then:
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
+    }
+
+    def "put(dir) should create a directory even if source is empty"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        def destinationDir = remoteFixture.newFolder()
+
+        when:
+        ssh.run {
+            session(ssh.remotes.Default) {
+                put from: sourceDir, into: destinationDir.path
+            }
+        }
+
+        then:
+        (destinationDir / sourceDir.name).list() == []
+    }
+
+    def "put(dir) should overwrite a directory if destination already exists"() {
+        given:
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         and:
-        def result = ssh.run {
+        def destinationDir = remoteFixture.newFolder()
+        destinationDir / sourceDir.name / remoteDir
+        destinationDir / sourceDir.name / 'file1' << 'Destination Content 1'
+        destinationDir / sourceDir.name / 'dir2' / remoteDir
+        destinationDir / sourceDir.name / 'dir2' / 'file2' << 'Destination Content 2'
+        destinationDir / sourceDir.name / 'dir2' / 'dir3' / remoteDir
+
+        when:
+        ssh.run {
             session(ssh.remotes.Default) {
-                [x:  get(from: "$remoteFolder/${localFolder.name}/xfile"),
-                 y:  get(from: "$remoteFolder/${localFolder.name}/Y/yfile"),
-                 y2: get(from: "$remoteFolder/${localFolder.name}/Y/yfile2"),
-                 z:  get(from: "$remoteFolder/${localFolder.name}/Y/Z/zfile")]
+                put from: sourceDir, into: destinationDir.path
             }
         }
 
         then:
-        result.x as int == x
-        result.y as int == y
-        result.y2 == 'dummy2'
-        result.z as int == z
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3').list() == []
     }
 
-    def 'should merge and overwrite a directory recursively on get'() {
+    //FIXME: put into SftpSpec due to bug of Apache SSHD
+    //def "put(dir) should throw IOException if destination does not exist"() {
+
+    def "put(dir) should put a directory recursively"() {
         given:
-        def x = randomInt()
-        def y = randomInt()
-        def z = randomInt()
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / DIRECTORIES
 
-        and: 'prepare the local folder'
-        def localFolder = temporaryFolder.newFolder()
-        new File(localFolder, 'X/Y').mkdirs()
-        new File(localFolder, 'X/Y/yfile') << 'dummy1'
-        new File(localFolder, 'X/Y/yfile2') << 'dummy2'
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / 'file3' << 'Source Content 3'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'file4' << 'Source Content 4'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5' << 'Source Content 5'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6' << 'Source Content 6'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7' << 'Source Content 7'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8' << 'Source Content 8'
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9' << 'Source Content 9'
 
-        and: 'prepare the remote folder'
-        def remoteFolder = remoteTmpPath()
-        ssh.run {
-            session(ssh.remotes.Default) {
-                execute "mkdir -vp $remoteFolder/X/Y/Z"
-                execute "echo $x > $remoteFolder/X/xfile"
-                execute "echo $y > $remoteFolder/X/Y/yfile"
-                execute "echo $z > $remoteFolder/X/Y/Z/zfile"
-            }
-        }
+        def destinationDir = remoteFixture.newFolder()
 
         when:
         ssh.run {
             session(ssh.remotes.Default) {
-                get from: "$remoteFolder/X", into: localFolder
+                put from: sourceDir.path, into: destinationDir
             }
         }
 
         then:
-        new File(localFolder, 'X/xfile').text as int == x
-        new File(localFolder, 'X/Y/yfile').text as int == y
-        new File(localFolder, 'X/Y/yfile2').text == 'dummy2'
-        new File(localFolder, 'X/Y/Z/zfile').text as int == z
-
-        when:
-        def filesInLocalFolder = []
-        localFolder.traverse(type: FileType.FILES) { filesInLocalFolder << it }
-
-        then:
-        filesInLocalFolder.size() == 4
+        (destinationDir / sourceDir.name / 'file1').text == 'Source Content 1'
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').text == 'Source Content 2'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'file3').text == 'Source Content 3'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'file4').text == 'Source Content 4'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'file5').text == 'Source Content 5'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'file6').text == 'Source Content 6'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'file7').text == 'Source Content 7'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'file8').text == 'Source Content 8'
+        (destinationDir / sourceDir.name / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / 'file9').text == 'Source Content 9'
     }
 
-    def 'should get a large file and put it back'() {
+    @Unroll
+    def "put(dir) should put filtered files with regex #regex"() {
         given:
-        def sizeKB = 1024 * 8
+        def sourceDir = temporaryFolder.newFolder()
+        sourceDir / 'file1' << 'Source Content 1'
+        sourceDir / 'dir2' / DIRECTORY
+        sourceDir / 'dir2' / 'file2' << 'Source Content 2'
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
-        def localX = temporaryFolder.newFile()
-        def remoteX = remoteTmpPath()
-        def remoteY = remoteTmpPath()
+        def destinationDir = remoteFixture.newFolder()
 
         when:
         ssh.run {
             session(ssh.remotes.Default) {
-                execute "dd if=/dev/zero of=$remoteX bs=1024 count=$sizeKB"
-                get from: remoteX, into: localX
-                remove remoteX
+                put from: sourceDir, into: destinationDir.path, filter: { it.name =~ regex }
             }
         }
 
         then:
-        localX.size() == 1024 * sizeKB
+        (destinationDir / sourceDir.name).exists() == d1
+        (destinationDir / sourceDir.name / 'file1').exists() == f1
+        (destinationDir / sourceDir.name / 'dir2').exists() == d2
+        (destinationDir / sourceDir.name / 'dir2' / 'file2').exists() == f2
 
-        when:
-        def actualSize = ssh.run {
-            session(ssh.remotes.Default) {
-                put from: localX, into: remoteY
-                execute("wc -c < $remoteY") as int
-            }
-        }
+        and: 'empty directory should not be put'
+        !(destinationDir / sourceDir.name / 'dir2' / 'dir3').exists()
 
-        then:
-        actualSize == 1024 * sizeKB
+        where:
+        regex | d1    | f1     | d2    | f2
+        /0$/  | false | false | false | false
+        /1$/  | true  | true  | false | false
+        /2$/  | true  | false | true  | true
     }
+
+
 
 }
