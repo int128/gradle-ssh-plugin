@@ -1,100 +1,116 @@
 
-task('should execute the command') << {
-    def x = randomInt()
-    def y = randomInt()
-    assert ssh.run {
-        session(remotes.testServer) {
-            execute "expr $x + $y"
-        }
-    } as int == (x + y)
+task('should execute the command') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        assert ssh.run {
+            session(remotes.testServer) {
+                execute "expr $x + $y"
+            }
+        } as int == (x + y)
+    }
 }
 
-task('should execute the command with console logging with slf4j') << {
-    def x = randomInt()
-    def y = randomInt()
-    assert ssh.run {
-        session(remotes.testServer) {
-            execute "expr $x + $y", logging: 'slf4j'
-        }
-    } as int == (x + y)
+task('should execute the command with console logging with slf4j') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        assert ssh.run {
+            session(remotes.testServer) {
+                execute "expr $x + $y", logging: 'slf4j'
+            }
+        } as int == (x + y)
+    }
 }
 
-task('should execute commands by multi-line string') << {
-    def x = randomInt()
-    def y = randomInt()
+task('should execute commands by multi-line string') {
     def a
     def b
-    ssh.run {
-        session(remotes.testServer) {
-            execute """
-mkdir -vp $remoteWorkDir
-expr $x + $y > $remoteWorkDir/A
-expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
-"""
-            a = get from: "$remoteWorkDir/A"
-            b = get from: "$remoteWorkDir/B"
-        }
-    }
-    assert a as int == (x + y)
-    assert b as int == (x + x + y)
-}
-
-task('should execute the command with the PTY allocation') << {
-    ssh.run {
-        session(remotes.testServer) {
-            execute "env | grep -v SSH_TTY"
-            execute "env | grep SSH_TTY", pty: true
-        }
-    }
-}
-
-task('should throw an exception due to the error exit status') << {
-    try {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
         ssh.run {
             session(remotes.testServer) {
-                execute 'exit 1'
+                execute """
+                mkdir -vp $remoteWorkDir
+                expr $x + $y > $remoteWorkDir/A
+                expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B
+                """
+                a = get from: "$remoteWorkDir/A"
+                b = get from: "$remoteWorkDir/B"
             }
         }
-        assert false, 'an exception should be thrown'
-    } catch(RuntimeException e) {
-        assert e.localizedMessage.contains('status 1')
+        assert a as int == (x + y)
+        assert b as int == (x + x + y)
     }
 }
 
-task('should write output of the command to the file') << {
-    def x = randomInt()
-    def y = randomInt()
-    localWorkDir.mkdirs()
-    def resultFile = file("$localWorkDir/result")
-    resultFile.withOutputStream { stream ->
+task('should execute the command with the PTY allocation') {
+    doLast {
         ssh.run {
             session(remotes.testServer) {
-                execute "expr $x + $y", outputStream: stream
+                execute "env | grep -v SSH_TTY"
+                execute "env | grep SSH_TTY", pty: true
             }
         }
     }
-    assert resultFile.text as int == (x + y)
 }
 
-task('should write output of the command to the standard output') << {
-    def x = randomInt()
-    def y = randomInt()
-    ssh.run {
-        session(remotes.testServer) {
-            execute "expr $x + $y", outputStream: System.out
+task('should throw an exception due to the error exit status') {
+    doLast {
+        try {
+            ssh.run {
+                session(remotes.testServer) {
+                    execute 'exit 1'
+                }
+            }
+            assert false, 'an exception should be thrown'
+        } catch(RuntimeException e) {
+            assert e.localizedMessage.contains('status 1')
         }
     }
 }
 
-task('should write error of the command to the file') << {
-    localWorkDir.mkdirs()
-    def resultFile = file("$localWorkDir/result")
-    resultFile.withOutputStream { stream ->
+task('should write output of the command to the file') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        localWorkDir.mkdirs()
+        def resultFile = file("$localWorkDir/result")
+        resultFile.withOutputStream { stream ->
+            ssh.run {
+                session(remotes.testServer) {
+                    execute "expr $x + $y", outputStream: stream
+                }
+            }
+        }
+        assert resultFile.text as int == (x + y)
+    }
+}
+
+task('should write output of the command to the standard output') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
         ssh.run {
             session(remotes.testServer) {
-                execute "cat hoge", ignoreError: true, errorStream: stream
+                execute "expr $x + $y", outputStream: System.out
             }
         }
     }
-    assert resultFile.text.contains('hoge')
+}
+
+task('should write error of the command to the file') {
+    doLast {
+        localWorkDir.mkdirs()
+        def resultFile = file("$localWorkDir/result")
+        resultFile.withOutputStream { stream ->
+            ssh.run {
+                session(remotes.testServer) {
+                    execute "cat hoge", ignoreError: true, errorStream: stream
+                }
+            }
+        }
+        assert resultFile.text.contains('hoge')
+    }
 }

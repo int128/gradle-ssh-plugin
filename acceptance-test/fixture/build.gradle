@@ -28,25 +28,29 @@ remotes {
 ext.localWorkDirBase = file("$buildDir/tmp")
 ext.remoteWorkDirBase = '/tmp/gradle-ssh-plugin.acceptance-test'
 
-task setup << {
-    println "Gradle: ${gradle.gradleVersion}"
-    println "Java: ${System.getProperty('java.home')}"
-    println "Target: ${ssh.version}"
-    delete localWorkDirBase
-    localWorkDirBase.mkdirs()
-    ssh.run {
-        session(remotes.testServer) {
-            remove remoteWorkDirBase
-            execute "mkdir -vp $remoteWorkDirBase"
+task setup {
+    doLast {
+        println "Gradle: ${gradle.gradleVersion}"
+        println "Java: ${System.getProperty('java.home')}"
+        println "Target: ${ssh.version}"
+        delete localWorkDirBase
+        localWorkDirBase.mkdirs()
+        ssh.run {
+            session(remotes.testServer) {
+                remove remoteWorkDirBase
+                execute "mkdir -vp $remoteWorkDirBase"
+            }
         }
     }
 }
 
-task cleanup << {
-    delete localWorkDirBase
-    ssh.run {
-        session(remotes.testServer) {
-            remove remoteWorkDirBase
+task cleanup {
+    doLast {
+        delete localWorkDirBase
+        ssh.run {
+            session(remotes.testServer) {
+                remove remoteWorkDirBase
+            }
         }
     }
 }

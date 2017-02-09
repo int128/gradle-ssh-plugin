@@ -1,21 +1,23 @@
 
-task('should apply the remote file extension') << {
-    ssh.run {
-        settings {
-            extensions.add eachFile: { String directory, Closure closure ->
-                sftp {
-                    ls(directory).each(closure)
+task('should apply the remote file extension') {
+    doLast {
+        ssh.run {
+            settings {
+                extensions.add eachFile: { String directory, Closure closure ->
+                    sftp {
+                        ls(directory).each(closure)
+                    }
                 }
             }
-        }
-        session(remotes.testServer) {
-            execute "mkdir -vp $remoteWorkDir"
-            put text: 1, into: "$remoteWorkDir/a"
-            put text: 2, into: "$remoteWorkDir/b"
-            put text: 3, into: "$remoteWorkDir/c"
+            session(remotes.testServer) {
+                execute "mkdir -vp $remoteWorkDir"
+                put text: 1, into: "$remoteWorkDir/a"
+                put text: 2, into: "$remoteWorkDir/b"
+                put text: 3, into: "$remoteWorkDir/c"
 
-            eachFile(remoteWorkDir) {
-                println it.filename
+                eachFile(remoteWorkDir) {
+                    println it.filename
+                }
             }
         }
     }
@@ -32,23 +34,25 @@ dependencies {
     groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
 }
 
-task('should apply the extension which accesses to the project') << {
-    assert ssh.run {
-        settings {
-            extensions << [executeGroovyScript: { String script ->
-                def temporaryPath = "/tmp/${UUID.randomUUID()}"
-                try {
-                    execute "mkdir -vp $temporaryPath"
-                    put from: project.configurations.groovyRuntime, into: temporaryPath
-                    put text: script, into: "$temporaryPath/script.groovy"
-                    execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
-                } finally {
-                    execute "rm -vfr $temporaryPath"
-                }
-            }]
-        }
-        session(remotes.testServer) {
-            executeGroovyScript 'println GroovySystem.version'
-        }
-    } == '2.3.9'
+task('should apply the extension which accesses to the project') {
+    doLast {
+        assert ssh.run {
+            settings {
+                extensions << [executeGroovyScript: { String script ->
+                    def temporaryPath = "/tmp/${UUID.randomUUID()}"
+                    try {
+                        execute "mkdir -vp $temporaryPath"
+                        put from: project.configurations.groovyRuntime, into: temporaryPath
+                        put text: script, into: "$temporaryPath/script.groovy"
+                        execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
+                    } finally {
+                        execute "rm -vfr $temporaryPath"
+                    }
+                }]
+            }
+            session(remotes.testServer) {
+                executeGroovyScript 'println GroovySystem.version'
+            }
+        } == '2.3.9'
+    }
 }

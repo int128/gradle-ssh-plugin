@@ -10,32 +10,38 @@ remotes {
 }
 
 
-task('should execute the command on multiple remotes specified by brace list') << {
-    def x = randomInt()
-    def y = randomInt()
-    assert ssh.run {
-        session([remotes.testServer, remotes.yetAnotherServer]) {
-            execute "expr $x + $y"
-        }
-    }.every { it as int == (x + y) }
+task('should execute the command on multiple remotes specified by brace list') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        assert ssh.run {
+            session([remotes.testServer, remotes.yetAnotherServer]) {
+                execute "expr $x + $y"
+            }
+        }.every { it as int == (x + y) }
+    }
 }
 
-task('should execute the command on multiple remotes specified by arguments') << {
-    def x = randomInt()
-    def y = randomInt()
-    assert ssh.run {
-        session(remotes.testServer, remotes.yetAnotherServer) {
-            execute "expr $x + $y"
-        }
-    }.every { it as int == (x + y) }
+task('should execute the command on multiple remotes specified by arguments') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        assert ssh.run {
+            session(remotes.testServer, remotes.yetAnotherServer) {
+                execute "expr $x + $y"
+            }
+        }.every { it as int == (x + y) }
+    }
 }
 
-task('should execute the command on multiple remotes specified by the role') << {
-    def x = randomInt()
-    def y = randomInt()
-    assert ssh.run {
-        session(remotes.role('testServers')) {
-            execute "expr $x + $y"
-        }
-    }.every { it as int == (x + y) }
+task('should execute the command on multiple remotes specified by the role') {
+    doLast {
+        def x = randomInt()
+        def y = randomInt()
+        assert ssh.run {
+            session(remotes.role('testServers')) {
+                execute "expr $x + $y"
+            }
+        }.every { it as int == (x + y) }
+    }
 }
