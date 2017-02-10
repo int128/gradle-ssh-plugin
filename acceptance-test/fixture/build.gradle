@@ -1,3 +1,6 @@
+import static java.lang.System.getProperty
+import static java.lang.System.getenv
+
 buildscript {
     repositories {
         mavenLocal()
@@ -17,9 +20,9 @@ apply plugin: 'org.hidetake.ssh'
 remotes {
     testServer {
         role 'testServers'
-        host = 'sandbox.127.0.0.1.xip.io'
-        port = 8022
-        user = 'tester'
+        host = 'localhost'
+        port = getenv('DOCKER_SSH_PORT') as Integer ?: 22
+        user = getenv('DOCKER_SSH_USER') ?: getProperty('user.name')
         identity = file("$buildDir/.ssh/id_rsa")
         knownHosts = addHostKey(file("$buildDir/.ssh/known_hosts"))
     }
@@ -31,7 +34,7 @@ ext.remoteWorkDirBase = '/tmp/gradle-ssh-plugin.acceptance-test'
 task setup {
     doLast {
         println "Gradle: ${gradle.gradleVersion}"
-        println "Java: ${System.getProperty('java.home')}"
+        println "Java: ${getProperty('java.home')}"
         println "Target: ${ssh.version}"
         delete localWorkDirBase
         localWorkDirBase.mkdirs()
