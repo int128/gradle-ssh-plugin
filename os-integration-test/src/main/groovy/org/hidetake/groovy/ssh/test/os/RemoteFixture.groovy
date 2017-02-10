@@ -43,6 +43,10 @@ class RemoteFixture extends ExternalResource {
             this
         }
 
+        String getName() {
+            path.substring(path.lastIndexOf('/'))
+        }
+
         String getText() {
             ssh.run {
                 session(ssh.remotes.Default) {
@@ -97,12 +101,9 @@ class RemoteFixture extends ExternalResource {
         path
     }
 
-    String content(String... pathElements) {
-        ssh.run {
-            session(ssh.remotes.Default) {
-                get from: pathElements.join('/')
-            }
-        }
+    RemotePath newFile() {
+        def folder = newFolder()
+        folder / "${UUID.randomUUID()}"
     }
 
 }
