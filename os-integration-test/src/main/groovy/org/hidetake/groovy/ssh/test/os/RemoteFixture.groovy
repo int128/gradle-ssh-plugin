@@ -21,10 +21,6 @@ class RemoteFixture extends ExternalResource {
     protected void after() {
     }
 
-    static enum Mkdir {
-        remoteDir
-    }
-
     @Canonical
     static class RemotePath {
         Service ssh
@@ -34,11 +30,26 @@ class RemoteFixture extends ExternalResource {
             new RemotePath(ssh, "$path/$child")
         }
 
-        RemotePath div(Mkdir ignore) {
-            ssh.run {
-                session(ssh.remotes.Default) {
-                    execute("mkdir $path")
-                }
+        RemotePath div(MkdirType type) {
+            switch (type) {
+                case MkdirType.DIRECTORY:
+                    ssh.run {
+                        session(ssh.remotes.Default) {
+                            execute("mkdir $path")
+                        }
+                    }
+                    break
+
+                case MkdirType.DIRECTORIES:
+                    ssh.run {
+                        session(ssh.remotes.Default) {
+                            execute("mkdir -p $path")
+                        }
+                    }
+                    break
+
+                default:
+                    throw new IllegalArgumentException("Unknown mkdir type: $type")
             }
             this
         }
@@ -97,7 +108,7 @@ class RemoteFixture extends ExternalResource {
 
     RemotePath newFolder() {
         def path = new RemotePath(ssh, Fixture.remoteTmpPath())
-        path / Mkdir.remoteDir
+        path / MkdirType.DIRECTORY
         path
     }
 

@@ -7,25 +7,20 @@ class FileDivCategory {
         new File(this as File, child)
     }
 
-    File div(DirectoryType type) {
+    File div(MkdirType type) {
         switch (type) {
-            case DirectoryType.DIRECTORY:
+            case MkdirType.DIRECTORY:
                 assert mkdir()
                 break
 
-            case DirectoryType.DIRECTORIES:
+            case MkdirType.DIRECTORIES:
                 assert mkdirs()
                 break
 
             default:
-                throw new IllegalArgumentException("Unknown directory type: $type")
+                throw new IllegalArgumentException("Unknown mkdir type: $type")
         }
         this
-    }
-
-    static enum DirectoryType {
-        DIRECTORY,
-        DIRECTORIES
     }
 
 }

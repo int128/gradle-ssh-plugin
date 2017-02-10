@@ -8,11 +8,10 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.mop.Use
 
-import static org.hidetake.groovy.ssh.test.os.FileDivCategory.DirectoryType.DIRECTORIES
-import static org.hidetake.groovy.ssh.test.os.FileDivCategory.DirectoryType.DIRECTORY
 import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
 import static org.hidetake.groovy.ssh.test.os.Fixture.remoteTmpPath
-import static org.hidetake.groovy.ssh.test.os.RemoteFixture.Mkdir.remoteDir
+import static org.hidetake.groovy.ssh.test.os.MkdirType.DIRECTORIES
+import static org.hidetake.groovy.ssh.test.os.MkdirType.DIRECTORY
 
 /**
  * Check if file transfer works with OpenSSH.
@@ -185,11 +184,11 @@ abstract class AbstractFileTransferSpec extends Specification {
 
         and:
         def destinationDir = remoteFixture.newFolder()
-        destinationDir / sourceDir.name / remoteDir
+        destinationDir / sourceDir.name / DIRECTORY
         destinationDir / sourceDir.name / 'file1' << 'Destination Content 1'
-        destinationDir / sourceDir.name / 'dir2' / remoteDir
+        destinationDir / sourceDir.name / 'dir2' / DIRECTORY
         destinationDir / sourceDir.name / 'dir2' / 'file2' << 'Destination Content 2'
-        destinationDir / sourceDir.name / 'dir2' / 'dir3' / remoteDir
+        destinationDir / sourceDir.name / 'dir2' / 'dir3' / DIRECTORY
 
         when:
         ssh.run {
@@ -365,9 +364,9 @@ abstract class AbstractFileTransferSpec extends Specification {
         given:
         def sourceDir = remoteFixture.newFolder()
         sourceDir / 'file1' << 'Source Content 1'
-        sourceDir / 'dir2' / remoteDir
+        sourceDir / 'dir2' / DIRECTORY
         sourceDir / 'dir2' / 'file2' << 'Source Content 2'
-        sourceDir / 'dir2' / 'dir3' / remoteDir
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         def destinationDir = temporaryFolder.newFolder()
 
@@ -404,9 +403,9 @@ abstract class AbstractFileTransferSpec extends Specification {
         given:
         def sourceDir = remoteFixture.newFolder()
         sourceDir / 'file1' << 'Source Content 1'
-        sourceDir / 'dir2' / remoteDir
+        sourceDir / 'dir2' / DIRECTORY
         sourceDir / 'dir2' / 'file2' << 'Source Content 2'
-        sourceDir / 'dir2' / 'dir3' / remoteDir
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         and:
         def destinationDir = temporaryFolder.newFolder()
@@ -450,7 +449,7 @@ abstract class AbstractFileTransferSpec extends Specification {
     def "get(dir) should get a directory recursively"() {
         given:
         def sourceDir = remoteFixture.newFolder()
-        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / remoteDir
+        sourceDir / 'dir2' / 'dir3' / 'dir4' / 'dir5' / 'dir6' / 'dir7' / 'dir8' / 'dir9' / DIRECTORIES
 
         sourceDir / 'file1' << 'Source Content 1'
         sourceDir / 'dir2' / 'file2' << 'Source Content 2'
@@ -488,9 +487,9 @@ abstract class AbstractFileTransferSpec extends Specification {
         given:
         def sourceDir = remoteFixture.newFolder()
         sourceDir / 'file1' << 'Source Content 1'
-        sourceDir / 'dir2' / remoteDir
+        sourceDir / 'dir2' / DIRECTORY
         sourceDir / 'dir2' / 'file2' << 'Source Content 2'
-        sourceDir / 'dir2' / 'dir3' / remoteDir
+        sourceDir / 'dir2' / 'dir3' / DIRECTORY
 
         def destinationDir = temporaryFolder.newFolder()
 
