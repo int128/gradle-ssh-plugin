@@ -2,6 +2,9 @@ package org.hidetake.groovy.ssh.test.os
 
 import org.hidetake.groovy.ssh.core.Service
 
+import static java.lang.System.getProperty
+import static java.lang.System.getenv
+
 class Fixture {
 
     static randomInt(int max = 10000) {
@@ -16,32 +19,37 @@ class Fixture {
         final buildDir = 'build'
         service.remotes {
             Default {
-                host = 'sandbox.127.0.0.1.xip.io'
-                port = 8022
-                user = 'tester'
+                host = 'localhost'
+                port = getenv('DOCKER_SSH_PORT') as Integer ?: 22
+                user = getenv('DOCKER_SSH_USER') ?: getProperty('user.name')
                 identity = new File("$buildDir/.ssh/id_rsa")
                 knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
             }
+        }
+        service.remotes {
             DefaultWithPassphrase {
-                host = 'sandbox.127.0.0.1.xip.io'
-                port = 8022
-                user = 'tester'
+                host = service.remotes.Default.host
+                port = service.remotes.Default.port
+                user = service.remotes.Default.user
+                knownHosts = service.remotes.Default.knownHosts
+
                 identity = new File("$buildDir/.ssh/id_rsa_passphrase")
                 passphrase = 'pass1234'
-                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
             }
             DefaultWithOpenSSHKnownHosts {
-                host = 'sandbox.127.0.0.1.xip.io'
-                port = 8022
-                user = 'tester'
-                identity = new File("$buildDir/.ssh/id_rsa")
+                host = service.remotes.Default.host
+                port = service.remotes.Default.port
+                user = service.remotes.Default.user
+                identity = service.remotes.Default.identity
+
                 knownHosts = new File("$buildDir/.ssh/known_hosts_openssh")
             }
             DefaultWithAgent {
-                host = 'sandbox.127.0.0.1.xip.io'
-                port = 8022
-                user = 'tester'
-                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
+                host = service.remotes.Default.host
+                port = service.remotes.Default.port
+                user = service.remotes.Default.user
+                knownHosts = service.remotes.Default.knownHosts
+
                 agent = true
             }
         }

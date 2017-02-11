@@ -1,6 +1,6 @@
 ssh.remotes {
     tester {
-        host = 'sandbox.127.0.0.1.xip.io'
+        host = 'localhost'
         port = 8022
         user = 'tester'
         identity = new File('.ssh/id_rsa')
@@ -18,5 +18,5 @@ ssh.run {
 }
 
 assert new File('.ssh/known_hosts').readLines().any { line ->
-    line.startsWith('[sandbox.127.0.0.1.xip.io]:8022 ssh-rsa')
+    line.startsWith('[localhost]:8022 ssh-rsa')
 }
