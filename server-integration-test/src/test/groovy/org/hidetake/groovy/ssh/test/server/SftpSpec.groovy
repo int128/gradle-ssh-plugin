@@ -6,7 +6,7 @@ import org.hidetake.groovy.ssh.operation.SftpException
 
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
-class SftpSpec extends AbstractFileTransferSpecification {
+class SftpSpec extends AbstractFileTransferSpec {
 
     def setupSpec() {
         server.subsystemFactories = [new SftpSubsystemFactory()]
@@ -14,7 +14,7 @@ class SftpSpec extends AbstractFileTransferSpecification {
     }
 
 
-    //FIXME: should be in AbstractFileTransferSpecification but put here due to bug of Apache SSHD
+    //FIXME: should be in AbstractFileTransferSpec but put here due to bug of Apache SSHD
     def "put(dir) should throw IOException if destination does not exist"() {
         given:
         def sourceDir = temporaryFolder.newFolder('source')
