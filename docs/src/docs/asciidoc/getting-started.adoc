@@ -122,26 +122,28 @@ Call `ssh.run` method with one or more sessions as follows.
 .build.gradle
 [source,groovy]
 ----
-task checkWebServers << {
-  ssh.run {
-    session(remotes.web01) {
-      // Execute a command
-      def result = execute 'sudo service httpd status'
+task checkWebServers {
+  doLast {
+    ssh.run {
+      session(remotes.web01) {
+        // Execute a command
+        def result = execute 'sudo service httpd status'
 
-      // Any Gradle methods or properties are available in a session closure
-      copy {
-        from "src/main/resources/example"
-        into "$buildDir/tmp"
+        // Any Gradle methods or properties are available in a session closure
+        copy {
+          from "src/main/resources/example"
+          into "$buildDir/tmp"
+        }
+
+        // Also Groovy methods or properties are available in a session closure
+        println result
       }
+      session(remotes.web02) {
+        def result = execute 'sudo service httpd status'
 
-      // Also Groovy methods or properties are available in a session closure
-      println result
-    }
-    session(remotes.web02) {
-      def result = execute 'sudo service httpd status'
-
-      // Also Groovy style assertion is available in a session closure
-      assert result.contains('running')
+        // Also Groovy style assertion is available in a session closure
+        assert result.contains('running')
+      }
     }
   }
 }
@@ -178,10 +180,12 @@ remotes {
   }
 }
 
-task reload << {
-  ssh.run {
-    session(remotes.role('webServers')) {
-      execute 'sudo service tomcat restart'
+task reload {
+  doLast {
+    ssh.run {
+      session(remotes.role('webServers')) {
+        execute 'sudo service tomcat restart'
+      }
     }
   }
 }
