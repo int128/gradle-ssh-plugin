@@ -18,13 +18,15 @@ remotes {
   }
 }
 
-task reload << {
-  ssh.run {  //<3>
-    settings {  //<4>
-      pty = true
-    }
-    session(remotes.web01) {  //<5>
-      execute 'sudo service tomcat restart'  //<6>
+task reload {
+  doLast {
+    ssh.run {  //<3>
+      settings {  //<4>
+        pty = true
+      }
+      session(remotes.web01) {  //<5>
+        execute 'sudo service tomcat restart'  //<6>
+      }
     }
   }
 }
@@ -476,12 +478,14 @@ The following shows how to set a proxy server on a particular method.
 
 [source,groovy]
 ----
-task jarSearch << {
-  ssh.run {
-    settings {
-      proxy = proxies.http01
+task jarSearch {
+  doLast {
+    ssh.run {
+      settings {
+        proxy = proxies.http01
+      }
+      session(remotes.role('mavenRepo')) { ... }
     }
-    session(remotes.role('mavenRepo')) { ... }
   }
 }
 ----
@@ -493,24 +497,28 @@ A remote host can be added by calling `remotes.create(name)`.
 
 [source,groovy]
 ----
-task setupRemote << {
-  ssh.run {
-    session(remotes.web01) {
-      def targetHost = execute 'cat settings/hostname'
-      def targetUser = execute 'cat settings/username'
-      // Create and add a remote host
-      remotes.create('db01') {
-        host = targetHost
-        user = targetUser
+task setupRemote {
+  doLast {
+    ssh.run {
+      session(remotes.web01) {
+        def targetHost = execute 'cat settings/hostname'
+        def targetUser = execute 'cat settings/username'
+        // Create and add a remote host
+        remotes.create('db01') {
+          host = targetHost
+          user = targetUser
+        }
       }
     }
   }
 }
 
-task something(dependsOn: setupRemote) << {
-  ssh.run {
-    session(remotes.db01) {
-      //execute ...
+task something(dependsOn: setupRemote) {
+  doLast {
+    ssh.run {
+      session(remotes.db01) {
+        //execute ...
+      }
     }
   }
 }
@@ -630,17 +638,19 @@ We can use the method to retrieve a result of remote command.
 
 [source,groovy]
 ----
-task syncKernelParam << {
-  def paramKey = 'net.core.wmem_max'
-  def paramValue = ssh.run {
-    session(remotes.web01) {
-      execute("sysctl '$paramKey' | sed -e 's/ //g'")
+task syncKernelParam {
+  doLast {
+    def paramKey = 'net.core.wmem_max'
+    def paramValue = ssh.run {
+      session(remotes.web01) {
+        execute("sysctl '$paramKey' | sed -e 's/ //g'")
+      }
     }
-  }
-  assert paramValue.contains(paramKey)
-  ssh.run {
-    session(remotes.web02) {
-      execute("sysctl -w '$paramValue'")
+    assert paramValue.contains(paramKey)
+    ssh.run {
+      session(remotes.web02) {
+        execute("sysctl -w '$paramValue'")
+      }
     }
   }
 }
@@ -1656,11 +1666,13 @@ ssh.settings {
   }
 }
 
-task example << {
-  ssh.run {
-    session(remotes.webServer) {
-      // Execute a script on the remote host
-      executeGroovyScript 'println GroovySystem.version'
+task example {
+  doLast {
+    ssh.run {
+      session(remotes.webServer) {
+        // Execute a script on the remote host
+        executeGroovyScript 'println GroovySystem.version'
+      }
     }
   }
 }
