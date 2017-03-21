@@ -152,6 +152,18 @@ class SftpOperations {
         }
     }
 
+    /**
+     * Rename a remote item.
+     *
+     * @param oldPath
+     * @param newPath
+     */
+    void rename(String oldPath, String newPath) {
+        tryCatchSftpException("SFTP RENAME: $remote.name:$oldPath -> $remote.name:$newPath") {
+            channel.rename(oldPath, newPath)
+        }
+    }        
+
     private static <T> T tryCatchSftpException(String operationMessage, Closure<T> closure) {
         log.debug("Requesting $operationMessage")
         try {
