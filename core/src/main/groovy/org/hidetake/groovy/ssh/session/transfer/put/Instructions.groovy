@@ -1,5 +1,7 @@
 package org.hidetake.groovy.ssh.session.transfer.put
 
+import groovy.io.FileType
+
 /**
  * Represents a collection of SCP PUT instructions
  * such as {@link File}, {@link StreamContent}, {@link EnterDirectory} or {@link LeaveDirectory}.
@@ -50,7 +52,7 @@ class Instructions implements Iterable {
         if (path.directory) {
             def children = []
             children.add(new EnterDirectory(path.name))
-            path.eachFile { file -> children.addAll(forFileRecursive(file)) }
+            path.eachFile(FileType.FILES) { file -> children.addAll(forFileRecursive(file)) }
             path.eachDir { dir -> children.addAll(forFileRecursive(dir)) }
             children.add(LeaveDirectory.instance)
             children
@@ -74,7 +76,7 @@ class Instructions implements Iterable {
     private static Collection forFileWithFilterRecursive(File path, Closure<Boolean> filter) {
         if (path.directory) {
             def children = new ArrayDeque()
-            path.eachFile { file -> children.addAll(forFileWithFilterRecursive(file, filter)) }
+            path.eachFile(FileType.FILES) { file -> children.addAll(forFileWithFilterRecursive(file, filter)) }
             path.eachDir { dir -> children.addAll(forFileWithFilterRecursive(dir, filter)) }
             if (!children.empty) {
                 children.addFirst(new EnterDirectory(path.name))
