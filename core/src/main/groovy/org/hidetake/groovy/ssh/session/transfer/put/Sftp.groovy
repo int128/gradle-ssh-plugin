@@ -25,7 +25,7 @@ class Sftp implements Provider {
     }
 
     void put(Instructions instructions) {
-        def directoryStack = [instructions.base]
+        def directoryStack = [instructions.base] as ArrayDeque
         operations.sftp(mergedSettings) {
             instructions.each { instruction ->
                 def remotePath = directoryStack.join('/')
@@ -57,11 +57,11 @@ class Sftp implements Provider {
                                 throw e
                             }
                         }
-                        directoryStack.push(directory.name)
+                        directoryStack.addLast(directory.name)
                         break
 
                     case LeaveDirectory:
-                        directoryStack.pop()
+                        directoryStack.removeLast()
                         break
 
                     default:
