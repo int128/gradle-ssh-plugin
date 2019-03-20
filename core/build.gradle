@@ -1,27 +1,25 @@
 plugins {
     id 'groovy'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.4'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
-configure([compileJava, compileGroovy]) {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
-    if (System.getenv('JAVA_HOME_7')) {
-        options.bootClasspath = "${System.getenv('JAVA_HOME_7')}/jre/lib/rt.jar"
-    }
+tasks.withType(JavaCompile) {
+    options.compilerArgs.addAll(['--release', '8'])
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+    compile 'org.codehaus.groovy:groovy-all:2.4.16'
     compile 'org.slf4j:slf4j-api:1.7.7'
     compile 'com.jcraft:jsch:0.1.53'
     compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.9'
     compile 'com.jcraft:jsch.agentproxy.jsch:0.0.9'
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testRuntime 'cglib:cglib-nodep:3.2.1'
-    testRuntime 'org.objenesis:objenesis:2.2'
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy', module:'groovy-all'
+    }
+    testRuntime 'cglib:cglib-nodep:3.2.10'
+    testRuntime 'org.objenesis:objenesis:3.0.1'
 
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }

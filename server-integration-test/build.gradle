@@ -10,9 +10,9 @@ dependencies {
 
     testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testRuntime 'cglib:cglib-nodep:3.2.1'
-    testRuntime 'org.objenesis:objenesis:2.2'
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    testRuntime 'cglib:cglib-nodep:3.2.10'
+    testRuntime 'org.objenesis:objenesis:3.0.1'
 
     testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }

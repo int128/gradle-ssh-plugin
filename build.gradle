@@ -8,22 +8,10 @@ allprojects {
 
     afterEvaluate {
         tasks.withType(Test) {
-            maxHeapSize = '1g'
-            minHeapSize = '1g'
-
             finalizedBy ':testReport'
             testReport.reportOn binResultsDir
             reports.html.enabled = false
             reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
-        }
-    }
-}
-
-task resolveDependencies {
-    doLast {
-        allprojects.each { project ->
-            project.buildscript.configurations*.resolve()
-            project.configurations*.resolve()
         }
     }
 }
