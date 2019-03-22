@@ -2,9 +2,6 @@ package org.hidetake.groovy.ssh.test.os
 
 import org.hidetake.groovy.ssh.core.Service
 
-import static java.lang.System.getProperty
-import static java.lang.System.getenv
-
 class Fixture {
 
     static randomInt(int max = 10000) {
@@ -16,25 +13,31 @@ class Fixture {
     }
 
     static createRemotes(Service service) {
-        final buildDir = 'build'
         service.remotes {
             Default {
                 host = 'localhost'
-                port = getenv('DOCKER_SSH_PORT') as Integer ?: 22
-                user = getenv('DOCKER_SSH_USER') ?: getProperty('user.name')
-                identity = new File("$buildDir/.ssh/id_rsa")
-                knownHosts = addHostKey(new File("$buildDir/.ssh/known_hosts"))
+                port = 22
+                user = 'tester'
+                identity = new File("etc/ssh/id_rsa")
+                knownHosts = addHostKey(new File("build/known_hosts"))
             }
         }
         service.remotes {
+            DefaultWithECDSAKey {
+                host = service.remotes.Default.host
+                port = service.remotes.Default.port
+                user = service.remotes.Default.user
+                identity = new File("etc/ssh/id_ecdsa")
+                knownHosts = service.remotes.Default.knownHosts
+            }
             DefaultWithPassphrase {
                 host = service.remotes.Default.host
                 port = service.remotes.Default.port
                 user = service.remotes.Default.user
                 knownHosts = service.remotes.Default.knownHosts
 
-                identity = new File("$buildDir/.ssh/id_rsa_passphrase")
-                passphrase = 'pass1234'
+                identity = new File("etc/ssh/id_rsa_pass")
+                passphrase = 'gradle'
             }
             DefaultWithOpenSSHKnownHosts {
                 host = service.remotes.Default.host
@@ -42,7 +45,7 @@ class Fixture {
                 user = service.remotes.Default.user
                 identity = service.remotes.Default.identity
 
-                knownHosts = new File("$buildDir/.ssh/known_hosts_openssh")
+                knownHosts = new File("etc/ssh/known_hosts")
             }
             DefaultWithAgent {
                 host = service.remotes.Default.host

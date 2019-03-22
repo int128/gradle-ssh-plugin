@@ -1,22 +1,19 @@
 ssh.remotes {
     tester {
         host = 'localhost'
-        port = 8022
+        port = 22
         user = 'tester'
-        identity = new File('.ssh/id_rsa')
-        knownHosts = addHostKey(new File('.ssh/known_hosts'))
+        identity = new File('os-integration-test/etc/ssh/id_rsa')
+        knownHosts = addHostKey(new File('cli/build/known_hosts'))
     }
 }
 
 ssh.run {
     session(ssh.remotes.tester) {
-        put from: ssh.runtime.jar, into: '.'
-        execute 'java -jar gssh.jar --version'
-        execute 'java -jar gssh.jar --help'
-        remove 'gssh.jar'
+        execute 'uname -a'
     }
 }
 
-assert new File('.ssh/known_hosts').readLines().any { line ->
-    line.startsWith('[localhost]:8022 ssh-rsa')
+assert new File('cli/build/known_hosts').readLines().any { line ->
+    line.startsWith('localhost ssh-rsa')
 }

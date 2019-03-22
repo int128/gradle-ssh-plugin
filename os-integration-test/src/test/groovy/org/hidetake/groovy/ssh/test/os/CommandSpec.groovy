@@ -46,12 +46,12 @@ class CommandSpec extends Specification {
         when:
         def r = ssh.run {
             session(ssh.remotes.Default) {
-                execute(['perl', '-e', /print 'current: ', time, "\n"/])
+                execute(['echo', /foo 'bar' "baz"/])
             }
         }
 
         then:
-        r =~ /current: \d+/
+        r =~ /foo 'bar' "baz"/
     }
 
     def 'should execute commands by multi-line string'() {

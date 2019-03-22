@@ -7,9 +7,9 @@ trait UserManagementExtension implements SessionExtension {
     void recreateUser(String user) {
         execute """
             if id "$user"; then
-                sudo userdel -r $user
+                sudo deluser --remove-home $user
             fi
-            sudo useradd -m $user
+            sudo adduser -D $user
         """, pty: true
     }
 

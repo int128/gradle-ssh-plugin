@@ -4,6 +4,7 @@ import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import static org.hidetake.groovy.ssh.test.os.Fixture.createRemotes
@@ -33,6 +34,8 @@ class GatewaySpec extends Specification {
         }
     }
 
+    //FIXME: at this time no way to test multi-hop on CircleCI
+    @Ignore
     def "it should connect to target server via gateway server"() {
         given:
         def knownHostsFile = temporaryFolder.newFile()

@@ -41,7 +41,7 @@ shadowJar {
 
 runShadow {
     args "$projectDir/gssh-example.groovy"
-    workingDir project(':os-integration-test').buildDir
+    workingDir rootDir
 }
 
 check.dependsOn runShadow
