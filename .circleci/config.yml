@@ -80,6 +80,11 @@ jobs:
             -----END OPENSSH PRIVATE KEY-----
     working_directory: ~/groovy-ssh
     steps:
+      - run: |
+          mkdir -p $HOME/bin
+          curl -L -o $HOME/bin/ghcp https://github.com/int128/ghcp/releases/download/v1.3.0/ghcp_linux_amd64
+          chmod +x $HOME/bin/ghcp
+          echo 'export PATH="$HOME/bin:$PATH"' >> $BASH_ENV
       - checkout
       - restore_cache:
           keys:
@@ -94,3 +99,7 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
+      - run: |
+          if [ "$CIRCLE_BRANCH" = "master" ]; then
+            ./.circleci/release-docs.sh
+          fi
