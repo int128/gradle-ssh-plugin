@@ -1,15 +1,11 @@
 plugins {
     id 'groovy'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
-configure([compileJava, compileGroovy]) {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
-    if (System.getenv('JAVA_HOME_7')) {
-        options.bootClasspath = "${System.getenv('JAVA_HOME_7')}/jre/lib/rt.jar"
-    }
+tasks.withType(JavaCompile) {
+    options.compilerArgs.addAll(['--release', '8'])
 }
 
 mainClassName = 'org.hidetake.groovy.ssh.Main'
@@ -24,9 +20,9 @@ dependencies {
 
     testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testRuntime 'cglib:cglib-nodep:3.2.1'
-    testRuntime 'org.objenesis:objenesis:2.2'
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    testRuntime 'cglib:cglib-nodep:3.2.10'
+    testRuntime 'org.objenesis:objenesis:3.0.1'
 }
 
 test {
@@ -45,7 +41,7 @@ shadowJar {
 
 runShadow {
     args "$projectDir/gssh-example.groovy"
-    workingDir project(':os-integration-test').buildDir
+    workingDir rootDir
 }
 
 check.dependsOn runShadow

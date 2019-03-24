@@ -17,6 +17,7 @@ class SshAgent extends ExternalResource {
     }
 
     void add(String keyPath) {
+        ['chmod', '600', keyPath].execute().waitForProcessOutput(System.out, System.err)
         log.info("Adding key to ssh-agent: $keyPath")
         ['ssh-add', keyPath].execute().waitForProcessOutput(System.out, System.err)
     }

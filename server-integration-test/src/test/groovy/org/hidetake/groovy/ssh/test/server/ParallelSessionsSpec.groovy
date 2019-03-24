@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.command.CommandFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.ParallelSessionsException
 import org.hidetake.groovy.ssh.core.Service

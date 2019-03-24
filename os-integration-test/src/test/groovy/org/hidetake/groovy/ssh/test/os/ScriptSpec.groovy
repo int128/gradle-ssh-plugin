@@ -20,7 +20,7 @@ class ScriptSpec extends Specification {
         when:
         def actual = ssh.run {
             session(ssh.remotes.Default) {
-                executeScript '''#!/bin/bash -xe
+                executeScript '''#!/bin/sh -xe
 echo 1
 echo 2
 '''

@@ -42,13 +42,13 @@ We can run the integration test of CLI as follows:
 
 ### OS integration test
 
-We can run the OS integration test using OpenSSH server as follows:
+We can run the OS integration tests using [int128/sshd](https://github.com/int128/docker-sshd) image as follows:
 
 ```sh
-# Setup SSH server on Docker
-./os-integration-test/setup-ssh.sh
+# Run a sshd container
+./os-integration-test/run-sshd.sh
 
-# Run test
+# Run the tests
 ./gradlew :os-integration-test:check
 ```
 
