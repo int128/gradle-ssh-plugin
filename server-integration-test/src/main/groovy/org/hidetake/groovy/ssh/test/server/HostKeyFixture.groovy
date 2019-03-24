@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.common.util.SecurityUtils
+import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider
 
 class HostKeyFixture {
 
@@ -17,7 +17,7 @@ class HostKeyFixture {
     }
 
     static keyPairProvider(List<String> keyTypes) {
-        def keyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider()
+        def keyPairProvider = new ClassLoadableResourceKeyPairProvider()
         keyPairProvider.resourceLoader = HostKeyFixture.classLoader
         keyPairProvider.resources = keyTypes.collect { "hostkey_$it".toString() }
         keyPairProvider

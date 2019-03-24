@@ -37,7 +37,7 @@ class PortForwardingSpec extends Specification {
         sshServer.passwordAuthenticator = Mock(PasswordAuthenticator) {
             authenticate("someUser", "somePassword", _) >> true
         }
-        sshServer.tcpipForwardingFilter = Mock(ForwardingFilter) {
+        sshServer.forwardingFilter = Mock(ForwardingFilter) {
             canConnect(_, _, _) >> true
             canListen(_, _) >> true
         }

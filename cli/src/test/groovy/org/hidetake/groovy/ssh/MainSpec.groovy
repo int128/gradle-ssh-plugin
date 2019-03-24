@@ -1,12 +1,11 @@
 package org.hidetake.groovy.ssh
 
 import ch.qos.logback.classic.Level
-import org.apache.sshd.common.util.SecurityUtils
-import org.apache.sshd.server.CommandFactory
+import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.command.CommandFactory
 import org.hidetake.groovy.ssh.operation.Command
-import org.hidetake.groovy.ssh.test.server.FilenameUtils
 import org.hidetake.groovy.ssh.test.server.SshServerMock
 import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
@@ -18,8 +17,8 @@ import spock.lang.Unroll
 import spock.util.concurrent.PollingConditions
 import spock.util.mop.ConfineMetaClassChanges
 
-import static FilenameUtils.toUnixPath
 import static org.hidetake.groovy.ssh.test.server.CommandHelper.command
+import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
 class MainSpec extends Specification {
 
@@ -33,7 +32,7 @@ class MainSpec extends Specification {
     TemporaryFolder temporaryFolder
 
     def setupSpec() {
-        def keyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider()
+        def keyPairProvider = new ClassLoadableResourceKeyPairProvider()
         keyPairProvider.resourceLoader = MainSpec.classLoader
         keyPairProvider.resources = ['hostkey_dsa']
 

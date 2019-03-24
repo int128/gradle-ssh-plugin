@@ -54,7 +54,7 @@ class GatewaySpec extends Specification {
         [targetServer, gateway1Server, gateway2Server].each { server ->
             server.passwordAuthenticator = Mock(PasswordAuthenticator)
             server.shellFactory = Mock(Factory)
-            server.tcpipForwardingFilter = Mock(ForwardingFilter)
+            server.forwardingFilter = Mock(ForwardingFilter)
         }
     }
 
@@ -94,7 +94,7 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
+        then: 1 * gateway1Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -137,7 +137,7 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
+        then: (1.._) * gateway1Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -188,9 +188,9 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: 1 * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
+        then: 1 * gateway1Server.forwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
-        then: 1 * gateway2Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
+        then: 1 * gateway2Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 
@@ -241,9 +241,9 @@ class GatewaySpec extends Specification {
         }
 
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
-        then: (1.._) * gateway1Server.tcpipForwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
+        then: (1.._) * gateway1Server.forwardingFilter.canConnect(_, addressOf(gateway2Server), _) >> true
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
-        then: (1.._) * gateway2Server.tcpipForwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
+        then: (1.._) * gateway2Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
         then: 1 * targetServer.shellFactory.create() >> command(0)
 

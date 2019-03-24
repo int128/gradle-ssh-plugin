@@ -2,9 +2,9 @@ package org.hidetake.groovy.ssh.test.server
 
 import com.jcraft.jsch.JSchException
 import org.apache.sshd.common.Factory
-import org.apache.sshd.server.CommandFactory
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.command.CommandFactory
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service

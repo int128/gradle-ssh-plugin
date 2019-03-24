@@ -1,9 +1,9 @@
 package org.hidetake.groovy.ssh.test.server
 
 import groovy.util.logging.Slf4j
-import org.apache.sshd.server.Command
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.ExitCallback
+import org.apache.sshd.server.command.Command
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
 

@@ -11,7 +11,7 @@ tasks.withType(JavaCompile) {
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.16'
     compile 'org.slf4j:slf4j-api:1.7.7'
-    compile 'com.jcraft:jsch:0.1.53'
+    compile 'com.jcraft:jsch:0.1.55'
     compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.9'
     compile 'com.jcraft:jsch.agentproxy.jsch:0.0.9'
 
