@@ -56,10 +56,11 @@ class HostKeyRepository {
     }
 
     static boolean compare(HostKey hostKey, String host, int port) {
-        if (port == 22) {
-            hostKey.host == host || compareHashed(hostKey, host)
+        String hostAndPort = port == 22 ? host : "[$host]:$port"
+        if ( hostKey.host.startsWith( '|' ) ) {
+            return compareHashed( hostKey, hostAndPort )
         } else {
-            hostKey.host == "[$host]:$port" as String || compareHashed(hostKey, "[$host]:$port")
+            return hostKey.host.split( ',' ).contains( hostAndPort )
         }
     }
 
