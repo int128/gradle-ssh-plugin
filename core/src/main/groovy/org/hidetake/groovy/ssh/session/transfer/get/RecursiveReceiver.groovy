@@ -8,7 +8,7 @@ class RecursiveReceiver {
     final File destination
 
     private final Closure<Boolean> filter
-    private final List<File> directoryStack
+    private final ArrayDeque<File> directoryStack
 
     def RecursiveReceiver(File destination1, Closure<Boolean> filter1) {
         destination = destination1
@@ -24,7 +24,7 @@ class RecursiveReceiver {
      * @return file
      */
     File createFile(String name) {
-        def directory = directoryStack.last()
+        def directory = directoryStack.getLast()
         def file = new File(directory, name)
         if (!filter || filter.call(file)) {
             if (!directory.exists()) {
@@ -45,8 +45,8 @@ class RecursiveReceiver {
      * @param name
      */
     void enterDirectory(String name) {
-        def directory = new File(directoryStack.last(), name)
-        directoryStack.push(directory)
+        def directory = new File(directoryStack.getLast(), name)
+        directoryStack.addLast(directory)
         if (!filter) {
             directory.mkdirs()
         }
@@ -56,7 +56,7 @@ class RecursiveReceiver {
      * Called when it left from the remote directory.
      */
     void leaveDirectory() {
-        directoryStack.pop()
+        directoryStack.removeLast()
     }
 
 }

@@ -9,13 +9,13 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.16'
+    compile 'org.codehaus.groovy:groovy-all:2.5.6'
     compile 'org.slf4j:slf4j-api:1.7.7'
     compile 'com.jcraft:jsch:0.1.55'
     compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.9'
     compile 'com.jcraft:jsch.agentproxy.jsch:0.0.9'
 
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
         exclude group: 'org.codehaus.groovy', module:'groovy-all'
     }
     testRuntime 'cglib:cglib-nodep:3.2.10'
