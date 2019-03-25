@@ -24,7 +24,7 @@ class Utility {
      * @return curried closure
      */
     static <T> Closure<T> currySelf(Closure<T> closure) {
-        final curried
+        def curried
         curried = closure.curry {
             closure.call(curried)
         }

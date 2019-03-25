@@ -1645,7 +1645,7 @@ configurations {
 }
 
 dependencies {
-  groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
+  groovyRuntime 'org.codehaus.groovy:groovy-all:2.5.6'
 }
 
 ssh.settings {
