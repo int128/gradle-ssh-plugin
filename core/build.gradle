@@ -14,7 +14,7 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile('org.hidetake:groovy-ssh:2.9.0') {
+    compile('org.hidetake:groovy-ssh:2.10.0') {
         exclude module: 'groovy-all'
     }
     testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
