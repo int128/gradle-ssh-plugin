@@ -1,18 +1,12 @@
-
 task('should execute the shell') {
     doLast {
         ssh.run {
             session(remotes.testServer) {
                 shell(interaction: {
-                    when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                    when(line: _, from: standardOutput) {
                         standardInput << 'uname -a' << '\n'
-
-                        when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                            standardInput << 'exit 0' << '\n'
-                        }
-                        when(line: _, from: standardOutput) {}
+                        standardInput << 'exit 0' << '\n'
                     }
-                    when(line: _, from: standardOutput) {}
                 })
             }
         }
@@ -41,15 +35,10 @@ task('should write output of the shell to the standard output') {
         ssh.run {
             session(remotes.testServer) {
                 shell outputStream: System.out, interaction: {
-                    when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
+                    when(line: _, from: standardOutput) {
                         standardInput << 'uname -a' << '\n'
-
-                        when(partial: ~/.*[$%#]\W*/, from: standardOutput) {
-                            standardInput << 'exit 0' << '\n'
-                        }
-                        when(line: _, from: standardOutput) {}
+                        standardInput << 'exit 0' << '\n'
                     }
-                    when(line: _, from: standardOutput) {}
                 }
             }
         }

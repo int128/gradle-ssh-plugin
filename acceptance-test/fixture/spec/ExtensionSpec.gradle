@@ -1,4 +1,3 @@
-
 task('should apply the remote file extension') {
     doLast {
         ssh.run {
@@ -23,36 +22,17 @@ task('should apply the remote file extension') {
     }
 }
 
-// dependency which the extension needs
-repositories {
-    jcenter()
-}
-configurations {
-    groovyRuntime
-}
-dependencies {
-    groovyRuntime 'org.codehaus.groovy:groovy-all:2.3.9'
-}
-
 task('should apply the extension which accesses to the project') {
     doLast {
         assert ssh.run {
             settings {
-                extensions << [executeGroovyScript: { String script ->
-                    def temporaryPath = "/tmp/${UUID.randomUUID()}"
-                    try {
-                        execute "mkdir -vp $temporaryPath"
-                        put from: project.configurations.groovyRuntime, into: temporaryPath
-                        put text: script, into: "$temporaryPath/script.groovy"
-                        execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
-                    } finally {
-                        execute "rm -vfr $temporaryPath"
-                    }
+                extensions << [echoProjectName: { ->
+                    execute "echo ${project.name}"
                 }]
             }
             session(remotes.testServer) {
-                executeGroovyScript 'println GroovySystem.version'
+                echoProjectName()
             }
-        } == '2.3.9'
+        } == 'spec'
     }
 }

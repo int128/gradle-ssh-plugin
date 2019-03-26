@@ -26,224 +26,150 @@ class DryRunSpec extends Specification {
 
 
     def "dry-run shell should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(remotes.testServer) {
-                            shell(interaction: {})
-                        }
-                    }
+            ssh.run {
+                session(remotes.testServer) {
+                    shell(interaction: {})
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run shell with options should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            shell(logging: 'none')
-                        }
-                    }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    shell(logging: 'none')
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run command should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            execute('ls -l')
-                        }
-                    }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    execute('ls -l')
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run command with callback should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            execute('ls -l') {
-                                project.ext.callbackExecuted = true
-                            }
-                        }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    execute('ls -l') {
+                        project.ext.callbackExecuted = true
                     }
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
     def "dry-run command with options should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            execute('ls -l', pty: true)
-                        }
-                    }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    execute('ls -l', pty: true)
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run command with options and callback should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            execute('ls -l', pty: true) {
-                                project.ext.callbackExecuted = true
-                            }
-                        }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    execute('ls -l', pty: true) {
+                        project.ext.callbackExecuted = true
                     }
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
     def "dry-run command in background should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            executeBackground('ls -l')
-                        }
-                    }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    executeBackground('ls -l')
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run command in background with callback should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            executeBackground('ls -l') {
-                                project.ext.callbackExecuted = true
-                            }
-                        }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    executeBackground('ls -l') {
+                        project.ext.callbackExecuted = true
                     }
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 
     def "dry-run command with options in background should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            executeBackground('ls -l', pty: true)
-                        }
-                    }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    executeBackground('ls -l', pty: true)
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
+        noExceptionThrown()
     }
 
     def "dry-run command with options and callback in background should work without server"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    ssh.run {
-                        session(project.remotes.testServer) {
-                            executeBackground('ls -l', pty: true) {
-                                project.ext.callbackExecuted = true
-                            }
-                        }
+            ssh.run {
+                session(project.remotes.testServer) {
+                    executeBackground('ls -l', pty: true) {
+                        project.ext.callbackExecuted = true
                     }
                 }
             }
         }
 
-        when:
-        project.tasks.testTask.execute()
-
         then:
-        project.tasks.testTask.didWork
         project.ext.callbackExecuted == true
     }
 

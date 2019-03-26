@@ -8,7 +8,7 @@ task('should execute the script') {
         ssh.run {
             session(remotes.testServer) {
                 executeScript """\
-                #!/bin/bash -xe
+                #!/bin/sh -xe
                 mkdir -vp $remoteWorkDir
                 expr $x + $y > $remoteWorkDir/A
                 expr $x + `cat $remoteWorkDir/A` > $remoteWorkDir/B

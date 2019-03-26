@@ -26,21 +26,14 @@ class ExtensionSpec extends Specification {
     }
 
     def "extension should be able to access to the project"() {
-        given:
+        when:
         project.with {
-            task('testTask') {
-                doLast {
-                    project.ext.result = ssh.run {
-                        session(remotes.testServer) {
-                            example()
-                        }
-                    }
+            project.ext.result = ssh.run {
+                session(remotes.testServer) {
+                    example()
                 }
             }
         }
-
-        when:
-        project.tasks.testTask.execute()
 
         then:
         project.result == 'extensionSpec'
