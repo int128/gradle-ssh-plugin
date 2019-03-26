@@ -3,22 +3,18 @@ plugins {
     id 'java-gradle-plugin'
 }
 
+repositories {
+    jcenter()
+}
+
 dependencies {
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
         exclude module: 'groovy-all'
     }
 }
 
-test {
-    mustRunAfter ':core:test'
-    dependsOn ':core:publishToMavenLocal'
+evaluationDependsOn(':core')
 
-    systemProperty 'target.product.versions', project.version
-
-    if (project.hasProperty('target.java.home')) {
-        executable "${project.property('target.java.home')}/bin/java"
-    }
-
-    systemProperty 'target.gradle.versions',
-            project.findProperty('target.gradle.versions') ?: "${gradle.gradleVersion},1.12"
+gradlePlugin {
+    pluginSourceSet project(':core').sourceSets.main
 }

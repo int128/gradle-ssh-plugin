@@ -22,21 +22,25 @@ The document is maintained on the repository of Groovy SSH.
 #### Acceptance Test
 
 We can run the acceptance test to verify behavior of the plugin on Gradle.
-Test condition can be set by system properties as follows:
-
-System Property             | Value                         | Default
-----------------------------|-------------------------------|--------
-`target.gradle.versions`    | List of target Gradle version | current version and 1.12
-`target.java.home`          | Target JVM                    | current JVM
-
-e.g.
 
 ```sh
-# Setup SSH server on Docker
-./acceptance-test/setup-ssh.sh
+# Run sshd
+./acceptance-test/fixture/run-sshd.sh
 
-# Run test
-./gradlew -Ptarget.gradle.versions=3.0,2.0,1.12 :acceptance-test:test
+# Run the test
+./gradlew :acceptance-test:test
+
+# Stop sshd
+docker stop sshd
+```
+
+Note that the test depends on [int128/sshd](https://github.com/int128/docker-sshd) and keys are hardcoded in `.circleci/config.yml`.
+
+You can regenerate keys by the following commands:
+
+```sh
+ssh-keygen -m PEM -t rsa -f keys/id_rsa
+ssh-keygen -A -f keys/
 ```
 
 ### Release

@@ -1,26 +1,10 @@
 allprojects {
-    group = 'org.hidetake'
-    version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
-
-    repositories {
-        jcenter()
-    }
-
     afterEvaluate {
         tasks.withType(Test) {
             finalizedBy ':testReport'
             testReport.reportOn binResultsDir
             reports.html.enabled = false
             reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
-        }
-    }
-}
-
-task resolveDependencies {
-    doLast {
-        allprojects.each { project ->
-            project.buildscript.configurations*.resolve()
-            project.configurations*.resolve()
         }
     }
 }

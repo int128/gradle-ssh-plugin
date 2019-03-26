@@ -2,31 +2,38 @@ package org.hidetake.gradle.ssh.plugin
 
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Specification
+import spock.lang.Timeout
 import spock.lang.Unroll
 
 class AcceptanceSpec extends Specification {
 
-    static matrix = []
+    static final List<String> tasks = []
+
+    // find tasks which starts with `should`
     static {
-        System.getProperty('target.product.versions').split(/,/).each { productVersion ->
-            System.getProperty('target.gradle.versions').split(/,/).each { gradleVersion ->
-                matrix << [productVersion, gradleVersion]
-            }
+        def writer = new StringWriter()
+        GradleRunner.create()
+            .withProjectDir(new File('fixture'))
+            .withPluginClasspath()
+            .withArguments('-s', ':spec:tasks', '--all')
+            .forwardStdOutput(writer)
+            .build()
+        writer.toString().readLines().findAll {
+            it =~ /^should /
+        }.each {
+            tasks << it
         }
     }
 
+    @Timeout(10)
     @Unroll
-    def "specs should be pass on Plugin #productVersion, Gradle #gradleVersion"() {
+    def "spec(#task)"() {
         given:
         def runner = GradleRunner.create()
-                .withProjectDir(new File('fixture'))
-                .withArguments("-Ptarget.product.version=$productVersion", '-s', 'test')
-                .withGradleVersion(gradleVersion)
-
-        and: 'show console on Gradle 2.x'
-        if (gradleVersion =~ /^2\./) {
-            runner.forwardOutput()
-        }
+            .withProjectDir(new File('fixture'))
+            .withPluginClasspath()
+            .withArguments('-s', ":spec:$task")
+            .forwardOutput()
 
         when:
         runner.build()
@@ -35,7 +42,7 @@ class AcceptanceSpec extends Specification {
         noExceptionThrown()
 
         where:
-        [productVersion, gradleVersion] << matrix
+        task << tasks
     }
 
 }
