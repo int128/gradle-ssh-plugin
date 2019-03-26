@@ -97,6 +97,10 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
+      - run: |
+          if [ "$CIRCLE_TAG" ]; then
+            ./gradlew bintrayUpload
+          fi
 
 workflows:
   version: 2

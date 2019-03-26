@@ -1,6 +1,7 @@
 plugins {
     id 'groovy'
-    id 'com.gradle.plugin-publish' version '0.10.1'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
 tasks.withType(JavaCompile) {
@@ -30,16 +31,27 @@ processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
 }
 
-pluginBundle {
-    website = 'https://github.com/int128/gradle-ssh-plugin'
-    vcsUrl = 'https://github.com/int128/gradle-ssh-plugin'
-    description = 'Gradle SSH Plugin'
-    tags = ['ssh']
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId project.group
+            artifactId parent.name
+        }
+    }
+}
 
-    plugins {
-        swaggerPlugin {
-            id = 'org.hidetake.ssh'
-            displayName = 'Gradle SSH Plugin'
+bintray {
+    user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
+    key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
+    publications = ['maven']
+    publish = true
+    pkg {
+        repo = 'maven'
+        name = parent.name
+        version {
+            attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
+            name = project.version
         }
     }
 }
