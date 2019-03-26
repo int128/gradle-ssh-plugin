@@ -103,3 +103,14 @@ jobs:
           if [ "$CIRCLE_BRANCH" = "master" ]; then
             ./.circleci/release-docs.sh
           fi
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: gh-pages
+            tags:
+              only: /.*/
