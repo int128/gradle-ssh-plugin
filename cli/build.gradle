@@ -4,8 +4,9 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs.addAll(['--release', '8'])
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 mainClassName = 'org.hidetake.groovy.ssh.Main'
