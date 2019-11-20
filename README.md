@@ -25,10 +25,10 @@ We can run the acceptance test to verify behavior of the plugin on Gradle.
 
 ```sh
 # Run sshd
-./acceptance-test/fixture/run-sshd.sh
+./gradle-ssh-plugin/acceptance-test/fixture/run-sshd.sh
 
 # Run the test
-./gradlew :acceptance-test:test
+./gradlew :gradle-ssh-plugin:acceptance-test:test
 
 # Stop sshd
 docker stop sshd

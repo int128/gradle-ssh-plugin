@@ -13,8 +13,8 @@ dependencies {
     }
 }
 
-evaluationDependsOn(':core')
+evaluationDependsOn(':gradle-ssh-plugin:core')
 
 gradlePlugin {
-    pluginSourceSet project(':core').sourceSets.main
+    pluginSourceSet project(':gradle-ssh-plugin:core').sourceSets.main
 }
