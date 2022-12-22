@@ -1,3 +1,5 @@
 rootProject.name = 'gradle-ssh-plugin'
 include 'gradle-ssh-plugin:acceptance-test'
 include 'gradle-ssh-plugin:core'
+include 'groovy-ssh'
+project(':groovy-ssh').projectDir = new File(settingsDir, '../groovy-ssh')
