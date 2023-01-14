@@ -1,4 +1,5 @@
 plugins {
+    id 'java-library'
     id 'groovy'
     id 'maven-publish'
 }
@@ -18,14 +19,9 @@ processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
 }
 
-task javadocJar(type: Jar, dependsOn: groovydoc) {
-    from "${buildDir}/docs/groovydoc"
-    classifier = 'javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 description = 'Groovy SSH library'
