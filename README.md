@@ -1,4 +1,4 @@
-Groovy SSH [![CircleCI](https://circleci.com/gh/int128/groovy-ssh.svg?style=shield)](https://circleci.com/gh/int128/groovy-ssh) [![Gradle Status](https://gradleupdate.appspot.com/int128/groovy-ssh/status.svg?branch=master)](https://gradleupdate.appspot.com/int128/groovy-ssh/status)
+Groovy SSH [![build](https://github.com/int128/groovy-ssh/actions/workflows/build.yaml/badge.svg)](https://github.com/int128/groovy-ssh/actions/workflows/build.yaml)
 ==========
 
 Groovy SSH is an automation tool based on DSL providing the remote command execution and file transfer.
@@ -60,8 +60,3 @@ See `plugin-integration/run-plugin-integration-test.sh` for details.
 
 If you are planning to release with specification change breaking backward compatibility,
 create `groovy-ssh-acceptance-test` branch on Gradle SSH Plugin to pass the acceptance test.
-
-
-### Release
-
-Push a versioned tag to GitHub and CI will upload the artifact to Bintray.
