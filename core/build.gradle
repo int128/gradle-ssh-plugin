@@ -25,45 +25,31 @@ java {
 }
 
 description = 'Groovy SSH library'
-ext {
-    license = 'Apache-2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    vcsUrl = 'https://github.com/int128/groovy-ssh.git'
-}
 
 publishing {
-    publications {
-        pluginIntegration(MavenPublication) {
-            from components.java
-            artifactId parent.name
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/int128/groovy-ssh"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
         }
-        release(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
+    }
+
+    publications {
+        maven(MavenPublication) {
             artifactId parent.name
-            pom.withXml {
-                asNode().children().last() + {
-                    resolveStrategy = DELEGATE_FIRST
-                    name parent.name
-                    description project.description
-                    url project.vcsUrl
-                    scm {
-                        url project.vcsUrl
-                        connection "scm:git:$project.vcsUrl"
-                    }
-                    licenses {
-                        license {
-                            name project.license
-                            url project.licenseUrl
-                            distribution 'repo'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id parent.group
-                            name parent.group
-                        }
+            from components.java
+            pom {
+                name = parent.name
+                description = project.description
+                url = 'https://github.com/int128/groovy-ssh'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
             }

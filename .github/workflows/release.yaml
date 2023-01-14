@@ -2,6 +2,11 @@ name: release
 
 on:
   pull_request:
+    paths:
+      - core/**
+      - .github/workflows/release.yaml
+      - gradle/**
+      - '*.gradle'
   release:
     types:
       - created
@@ -20,7 +25,12 @@ jobs:
           java-version: 11
       - uses: gradle/wrapper-validation-action@v1
       - uses: gradle/gradle-build-action@v2
-      - run: ./gradlew publish
+
+      - if: github.event_name != 'release'
+        run: ./gradlew generateMetadataFileForMavenPublication generatePomFileForMavenPublication
+
+      - if: github.event_name == 'release'
+        run: ./gradlew publish
         env:
           VERSION: ${{ github.event.release.tag_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
