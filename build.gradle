@@ -1,6 +1,6 @@
 allprojects {
 	group = 'org.hidetake'
-	version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
+	version = System.getenv('VERSION') ?: 'SNAPSHOT'
 
 	afterEvaluate {
 		tasks.withType(Test) {
