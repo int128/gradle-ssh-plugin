@@ -1,22 +1,27 @@
 allprojects {
-    group = 'org.hidetake'
-    version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
+	group = 'org.hidetake'
+	version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
 
-    repositories {
-        jcenter()
-    }
+	afterEvaluate {
+		tasks.withType(Test) {
+			finalizedBy ':testReport'
+			testReport.reportOn binaryResultsDirectory
+			reports.html.required = false
+			reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
+		}
+	}
 
-    afterEvaluate {
-        tasks.withType(Test) {
-            finalizedBy ':testReport'
-            testReport.reportOn binResultsDir
-            reports.html.enabled = false
-            reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
-        }
-    }
+	plugins.withType(JavaPlugin) {
+		dependencies {
+			implementation 'com.github.mwiede:jsch:0.2.5'
+			implementation 'org.slf4j:slf4j-api:2.0.6'
+			implementation 'junit:junit:4.11'
+			implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+		}
+	}
 }
 
 task testReport(type: TestReport) {
-    description 'Generates test report for all projects'
-    destinationDir = file("$buildDir/reports")
+	description 'Generates test report for all projects'
+	destinationDirectory = file("$buildDir/reports")
 }

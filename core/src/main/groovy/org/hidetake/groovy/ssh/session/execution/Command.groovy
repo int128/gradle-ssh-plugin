@@ -6,12 +6,15 @@ import org.hidetake.groovy.ssh.operation.Operations
 import org.hidetake.groovy.ssh.session.BadExitStatusException
 import org.hidetake.groovy.ssh.session.SessionExtension
 
+import groovy.util.logging.Slf4j
+
 /**
  * Provides the blocking command execution.
  * Each method blocks until channel is closed.
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 trait Command implements SessionExtension {
     void execute(HashMap map = [:], String commandLine, Closure callback) {
         assert callback, 'callback must be given'
@@ -36,7 +39,7 @@ trait Command implements SessionExtension {
         execute(map, Escape.escape(commandLineArgs))
     }
 
-    private static class Helper {
+    static class Helper {
         static execute(Operations operations, CommandSettings settings, String commandLine) {
             def operation = operations.command(settings, commandLine)
 

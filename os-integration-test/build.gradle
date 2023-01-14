@@ -2,12 +2,14 @@ plugins {
     id 'groovy'
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    compile project(':core')
+    implementation project(':core')
 
-    compile 'org.spockframework:spock-core:1.2-groovy-2.5'
-
-    testRuntime 'ch.qos.logback:logback-classic:1.1.2'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
 }
 
 test {

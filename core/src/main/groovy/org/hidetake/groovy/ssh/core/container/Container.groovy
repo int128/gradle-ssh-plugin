@@ -43,7 +43,7 @@ trait Container<T> implements Map<String, T> {
      * @param closure
      * @return item
      */
-    T create(String name, @DelegatesTo(T) Closure closure) {
+    T create(String name, Closure closure) {
         assert name
         assert getContainerElementType() instanceof Class<T>
         T namedObject = getContainerElementType().newInstance(name)

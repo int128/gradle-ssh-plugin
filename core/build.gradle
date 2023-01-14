@@ -1,28 +1,17 @@
 plugins {
     id 'groovy'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.8.4'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.5.6'
-    compile 'org.slf4j:slf4j-api:1.7.7'
-    compile 'com.jcraft:jsch:0.1.55'
-    compile 'com.jcraft:jsch.agentproxy.connector-factory:0.0.9'
-    compile 'com.jcraft:jsch.agentproxy.jsch:0.0.9'
+    testRuntimeOnly 'cglib:cglib-nodep:3.2.10'
+    testRuntimeOnly 'org.objenesis:objenesis:3.0.1'
 
-    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
-        exclude group: 'org.codehaus.groovy', module:'groovy-all'
-    }
-    testRuntime 'cglib:cglib-nodep:3.2.10'
-    testRuntime 'org.objenesis:objenesis:3.0.1'
-
-    testRuntime 'ch.qos.logback:logback-classic:1.1.2'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.1.2'
 }
 
 processResources {
@@ -82,22 +71,6 @@ publishing {
                     }
                 }
             }
-        }
-    }
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
-    key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
-    publications = ['release']
-    publish = true
-    pkg {
-        repo = 'maven'
-        name = parent.name
-        licenses = [project.license]
-        vcsUrl = project.vcsUrl
-        version {
-            name = project.version
         }
     }
 }

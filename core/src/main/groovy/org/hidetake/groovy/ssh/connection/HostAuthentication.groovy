@@ -58,7 +58,7 @@ trait HostAuthentication {
     }
 
     @Slf4j
-    private static class Helper {
+    static class Helper {
         final Session session
         final Remote remote
 

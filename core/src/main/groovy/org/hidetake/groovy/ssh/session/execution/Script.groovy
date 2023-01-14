@@ -30,7 +30,7 @@ trait Script implements Command {
         execute(Helper.createSettings(settings, script), Helper.guessInterpreter(script), callback)
     }
 
-    private static class Helper {
+    static class Helper {
         static HashMap createSettings(HashMap settings, def script) {
             if (settings.inputStream) {
                 throw new IllegalArgumentException("executeScript does not work with inputStream: $settings")

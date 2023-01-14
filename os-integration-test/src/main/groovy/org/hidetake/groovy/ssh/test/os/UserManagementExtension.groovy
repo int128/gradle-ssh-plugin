@@ -17,7 +17,7 @@ trait UserManagementExtension implements SessionExtension {
         execute "sudo passwd $user", pty: true, interaction: Helper.passwordInteraction.curry(password)
     }
 
-    private static class Helper {
+    static class Helper {
         static final passwordInteraction = { password ->
             when(partial: ~/.+[Pp]assword: */) {
                 standardInput << password << '\n'

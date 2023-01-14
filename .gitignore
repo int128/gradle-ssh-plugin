@@ -1,7 +1,7 @@
 .gradle
 build
 
-.settings
+**/.settings
 .classpath
 .project
 
@@ -9,3 +9,4 @@ build
 *.iml
 
 /plugin-integration/gradle-ssh-plugin
+/bin/
