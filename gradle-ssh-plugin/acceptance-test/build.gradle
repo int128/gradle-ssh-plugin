@@ -4,13 +4,11 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
-        exclude module: 'groovy-all'
-    }
+	implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
 }
 
 evaluationDependsOn(':gradle-ssh-plugin:core')

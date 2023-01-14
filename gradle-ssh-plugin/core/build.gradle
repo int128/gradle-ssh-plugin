@@ -1,58 +1,42 @@
 plugins {
-    id 'groovy'
-    id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.8.4'
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+	id 'groovy'
+	id 'groovy-gradle-plugin'
+	id 'maven-publish'
 }
 
 repositories {
-    jcenter()
+	mavenCentral()
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
-    compile('org.hidetake:groovy-ssh:2.10.1') {
+	implementation gradleApi()
+	//TODO: REPLACE WITH CORRECT VERSION NUMBER 
+	//      AND SEE IF WE NEED THE EXCLUDE.
+    implementation('org.hidetake:groovy-ssh:3.0.0') {
         exclude module: 'groovy-all'
     }
-    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
-        exclude module: 'groovy-all'
-    }
-    testCompile 'cglib:cglib-nodep:3.2.10'
+	testImplementation 'junit:junit:4.12'
+	testImplementation('org.spockframework:spock-core:2.3-groovy-3.0')
+	testImplementation 'cglib:cglib-nodep:3.2.10'
+}
+
+test {
+	useJUnitPlatform()
 }
 
 group = 'org.hidetake'
 version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
 
 processResources {
-    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
+	filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-            groupId project.group
-            artifactId parent.name
-        }
-    }
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER') ?: findProperty('bintrayUser')
-    key  = System.getenv('BINTRAY_KEY')  ?: findProperty('bintrayKey')
-    publications = ['maven']
-    publish = true
-    pkg {
-        repo = 'maven'
-        name = parent.name
-        version {
-            attributes = ['gradle-plugin': 'org.hidetake.ssh:org.hidetake:gradle-ssh-plugin']
-            name = project.version
-        }
-    }
+	publications {
+		maven(MavenPublication) {
+			from components.java
+			groupId project.group
+			artifactId parent.name
+		}
+	}
 }
