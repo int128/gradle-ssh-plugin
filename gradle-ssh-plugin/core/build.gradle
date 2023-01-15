@@ -6,15 +6,14 @@ plugins {
 
 repositories {
 	mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/int128/groovy-ssh")
+	}
 }
 
 dependencies {
 	implementation gradleApi()
-	//TODO: REPLACE WITH CORRECT VERSION NUMBER 
-	//      AND SEE IF WE NEED THE EXCLUDE.
-    implementation('org.hidetake:groovy-ssh:3.0.0') {
-        exclude module: 'groovy-all'
-    }
+    implementation('org.hidetake:groovy-ssh:2.8.0')
 	testImplementation 'junit:junit:4.12'
 	testImplementation('org.spockframework:spock-core:2.3-groovy-3.0')
 	testImplementation 'cglib:cglib-nodep:3.2.10'
