@@ -9,7 +9,8 @@ repositories {
 dependencies {
     implementation project(':core')
 
-    testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
+    implementation 'junit:junit:4.11'
+    implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
 }
 
 test {

@@ -1,6 +1,7 @@
 package org.hidetake.groovy.ssh
 
 import ch.qos.logback.classic.Level
+import groovy.cli.commons.CliBuilder
 import groovy.util.logging.Slf4j
 import org.hidetake.groovy.ssh.core.Service
 

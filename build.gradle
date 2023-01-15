@@ -13,10 +13,9 @@ allprojects {
 
 	plugins.withType(JavaPlugin) {
 		dependencies {
-			implementation 'com.github.mwiede:jsch:0.2.5'
-			implementation 'org.slf4j:slf4j-api:2.0.6'
-			implementation 'junit:junit:4.11'
-			implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+			testImplementation 'junit:junit:4.11'
+			testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+		    testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
 		}
 	}
 }

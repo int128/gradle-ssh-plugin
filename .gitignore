@@ -9,4 +9,5 @@ build
 *.iml
 
 /plugin-integration/gradle-ssh-plugin
-/bin/
+
+bin/

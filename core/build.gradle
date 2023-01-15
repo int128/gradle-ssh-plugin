@@ -9,10 +9,12 @@ repositories {
 }
 
 dependencies {
+    api localGroovy()
+    api 'com.github.mwiede:jsch:0.2.5'
+    api 'org.slf4j:slf4j-api:2.0.6'
+
     testRuntimeOnly 'cglib:cglib-nodep:3.2.10'
     testRuntimeOnly 'org.objenesis:objenesis:3.0.1'
-
-    testRuntimeOnly 'ch.qos.logback:logback-classic:1.1.2'
 }
 
 processResources {
