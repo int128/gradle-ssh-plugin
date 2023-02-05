@@ -1,0 +1,31 @@
+name: release
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/release.yaml
+      - gradle/**
+      - '*.gradle'
+  release:
+    types:
+      - created
+
+jobs:
+  gradle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+      - uses: gradle/wrapper-validation-action@v1
+      - uses: gradle/gradle-build-action@v2
+      - run: ./gradlew validatePlugins
+
+      - run: echo '${{ secrets.GRADLE_PROPERTIES_PUBLISH }}' >> ~/.gradle/gradle.properties
+      - if: github.event_name == 'release'
+        run: ./gradlew publishPlugins
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
