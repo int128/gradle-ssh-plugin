@@ -2,6 +2,7 @@ plugins {
 	id 'groovy'
 	id 'groovy-gradle-plugin'
 	id 'maven-publish'
+	id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
 repositories {
@@ -24,18 +25,19 @@ test {
 }
 
 group = 'org.hidetake'
-version = System.getenv('CIRCLE_TAG') ?: 'SNAPSHOT'
+version = System.getenv('VERSION') ?: 'SNAPSHOT'
 
-processResources {
-	filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
-}
+gradlePlugin {
+	website = 'https://github.com/int128/gradle-ssh-plugin'
+	vcsUrl = 'https://github.com/int128/gradle-ssh-plugin'
 
-publishing {
-	publications {
-		maven(MavenPublication) {
-			from components.java
-			groupId project.group
-			artifactId parent.name
+	plugins {
+		ssh {
+			id = 'org.hidetake.ssh'
+			displayName = 'Gradle SSH Plugin'
+			description = 'A plugin for remote command execution and file transfer via SSH'
+			tags.set(['remote', 'ssh', 'deploy'])
+			implementationClass = 'org.hidetake.gradle.ssh.plugin.SshPlugin'
 		}
 	}
 }
