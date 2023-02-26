@@ -31,8 +31,8 @@ class GatewaySpec extends Specification {
     Service ssh
 
     def setupSpec() {
-        targetServer = setUpLocalhostServer(keyPairProvider(SSH_DSS))
-        gateway1Server = setUpLocalhostServer(keyPairProvider(SSH_RSA))
+        targetServer = setUpLocalhostServer(keyPairProvider(ECDSA_SHA2_NISTP256))
+        gateway1Server = setUpLocalhostServer(keyPairProvider(ECDSA_SHA2_NISTP256))
         gateway2Server = setUpLocalhostServer(keyPairProvider(ECDSA_SHA2_NISTP256))
         [targetServer, gateway1Server, gateway2Server].each { server ->
             server.passwordAuthenticator = Mock(PasswordAuthenticator)
@@ -62,8 +62,8 @@ class GatewaySpec extends Specification {
     def "it should connect to target server via gateway server"() {
         given:
         def knownHostsContent = [
-            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
-            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(ECDSA_SHA2_NISTP256)}",
         ].join('')
         def knownHostsFile = temporaryFolder.newFile() << knownHostsContent
 
@@ -106,8 +106,8 @@ class GatewaySpec extends Specification {
         given:
         def knownHostsFile = temporaryFolder.newFile()
         def expectedKnownHosts = [
-            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
-            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(ECDSA_SHA2_NISTP256)}",
         ].join('')
 
         ssh.remotes {
@@ -148,9 +148,9 @@ class GatewaySpec extends Specification {
     def "it should connect to target server via 2 gateway servers"() {
         given:
         def knownHostsContent = [
-            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
             "[$gateway2Server.host]:$gateway2Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
-            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(ECDSA_SHA2_NISTP256)}",
         ].join('')
         def knownHostsFile = temporaryFolder.newFile() << knownHostsContent
 
@@ -202,9 +202,9 @@ class GatewaySpec extends Specification {
         given:
         def knownHostsFile = temporaryFolder.newFile()
         def expectedKnownHosts = [
-            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(SSH_RSA)}",
+            "[$gateway1Server.host]:$gateway1Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
             "[$gateway2Server.host]:$gateway2Server.port ${publicKey(ECDSA_SHA2_NISTP256)}",
-            "[$targetServer.host]:$targetServer.port ${publicKey(SSH_DSS)}",
+            "[$targetServer.host]:$targetServer.port ${publicKey(ECDSA_SHA2_NISTP256)}",
         ].join('')
 
         ssh.remotes {

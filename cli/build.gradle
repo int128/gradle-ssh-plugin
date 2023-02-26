@@ -24,6 +24,10 @@ dependencies {
 //     useJUnitPlatform()
 // }
 
+test {
+    mustRunAfter ':server-integration-test:check'
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'org.hidetake.groovy.ssh.Main'

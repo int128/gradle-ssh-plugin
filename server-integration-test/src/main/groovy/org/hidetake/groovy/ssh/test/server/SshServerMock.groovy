@@ -4,7 +4,7 @@ import groovy.util.logging.Slf4j
 import org.apache.sshd.common.keyprovider.KeyPairProvider
 import org.apache.sshd.server.SshServer
 
-import static org.apache.sshd.common.keyprovider.KeyPairProvider.SSH_DSS
+import static org.apache.sshd.common.keyprovider.KeyPairProvider.ECDSA_SHA2_NISTP256
 import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 
 /**
@@ -15,7 +15,7 @@ import static org.hidetake.groovy.ssh.test.server.HostKeyFixture.keyPairProvider
 @Slf4j
 class SshServerMock {
 
-    static SshServer setUpLocalhostServer(KeyPairProvider provider = keyPairProvider(SSH_DSS)) {
+    static SshServer setUpLocalhostServer(KeyPairProvider provider = keyPairProvider(ECDSA_SHA2_NISTP256)) {
         SshServer.setUpDefaultServer().with {
             host = 'localhost'
             port = pickUpFreePort()

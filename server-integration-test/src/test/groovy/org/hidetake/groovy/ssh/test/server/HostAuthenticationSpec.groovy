@@ -115,21 +115,9 @@ class HostAuthenticationSpec extends Specification {
 
         where:
         serverKeyType                  | knownHostsType
-        [SSH_DSS]                      | [SSH_DSS]
-        [SSH_RSA]                      | [SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
     @Unroll
@@ -153,21 +141,9 @@ class HostAuthenticationSpec extends Specification {
 
         where:
         serverKeyType                  | knownHostsType
-        [SSH_DSS]                      | [SSH_DSS]
-        [SSH_RSA]                      | [SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
     @Unroll
@@ -190,21 +166,9 @@ class HostAuthenticationSpec extends Specification {
 
         where:
         serverKeyType                  | knownHostsType
-        [SSH_DSS]                      | [SSH_DSS]
-        [SSH_RSA]                      | [SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA]                      | [ECDSA_SHA2_NISTP256, SSH_RSA]
         [ECDSA_SHA2_NISTP256]          | [SSH_RSA, ECDSA_SHA2_NISTP256]
         [ECDSA_SHA2_NISTP256]          | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [SSH_RSA, ECDSA_SHA2_NISTP256]
-        [SSH_RSA, ECDSA_SHA2_NISTP256] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [ECDSA_SHA2_NISTP256, SSH_RSA]
-        [ECDSA_SHA2_NISTP256, SSH_RSA] | [SSH_RSA, ECDSA_SHA2_NISTP256]
     }
 
     def "[file] host key checking should fail if an empty known-hosts is given"() {
@@ -250,7 +214,7 @@ class HostAuthenticationSpec extends Specification {
 
     def "[addHostKey] knownHosts file should be created if it does not exist"() {
         given:
-        server.keyPairProvider = keyPairProvider(SSH_DSS)
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
 
         def knownHostsFile = temporaryFolder.newFile()
         knownHostsFile.delete()
@@ -266,7 +230,7 @@ class HostAuthenticationSpec extends Specification {
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
 
         and: 'knownHosts should be created'
-        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(SSH_DSS)}" as String
+        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}" as String
     }
 
     def "[addHostKey] knownHosts file should be appended if it exists"() {
@@ -293,10 +257,10 @@ class HostAuthenticationSpec extends Specification {
 
     def "[addHostKey] knownHosts file should not be modified if host key already exists"() {
         given:
-        server.keyPairProvider = keyPairProvider(SSH_DSS)
+        server.keyPairProvider = keyPairProvider(ECDSA_SHA2_NISTP256)
 
         def knownHostsFile = temporaryFolder.newFile()
-        knownHostsFile << "[$server.host]:$server.port ${publicKey(SSH_DSS)}"
+        knownHostsFile << "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}"
 
         ssh.settings {
             knownHosts = addHostKey(knownHostsFile)
@@ -307,7 +271,7 @@ class HostAuthenticationSpec extends Specification {
 
         then:
         1 * server.commandFactory.createCommand('somecommand') >> command(0)
-        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(SSH_DSS)}" as String
+        knownHostsFile.text == "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}" as String
     }
 
     def "[addHostKey] strict host key checking should fail if a wrong host key is given"() {

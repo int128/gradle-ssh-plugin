@@ -23,11 +23,8 @@ dependencies {
     testRuntimeOnly 'org.objenesis:objenesis:3.0.1'
 }
 
-// test {
-//     useJUnitPlatform()
-// }
-
 test {
+    useJUnitPlatform()
     mustRunAfter ':core:check'
 
     if (System.getProperty('os.name') == 'Linux') {

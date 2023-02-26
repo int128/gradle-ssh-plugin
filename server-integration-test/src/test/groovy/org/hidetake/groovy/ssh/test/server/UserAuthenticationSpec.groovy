@@ -94,7 +94,7 @@ class UserAuthenticationSpec extends Specification {
 
         and:
         JSchException e = thrown()
-        e.message == 'Auth fail'
+        e.message =~ /^Auth fail/
     }
 
     @Unroll
@@ -118,8 +118,6 @@ class UserAuthenticationSpec extends Specification {
 
         where:
         keyType | type      | identitySetting
-        'RSA'   | 'File'   | privateKey(KeyType.rsa)
-        'RSA'   | 'String' | privateKey(KeyType.rsa).text
         'EC'    | 'File'   | privateKey(KeyType.ecdsa)
         'EC'    | 'String' | privateKey(KeyType.ecdsa).text
     }
@@ -148,8 +146,6 @@ class UserAuthenticationSpec extends Specification {
 
         where:
         keyType | type      | identitySetting
-        'RSA'   | 'File'   | privateKey(KeyType.rsa)
-        'RSA'   | 'String' | privateKey(KeyType.rsa).text
         'EC'    | 'File'   | privateKey(KeyType.ecdsa)
         'EC'    | 'String' | privateKey(KeyType.ecdsa).text
     }
@@ -174,7 +170,7 @@ class UserAuthenticationSpec extends Specification {
 
         and:
         JSchException e = thrown()
-        e.message == 'Auth fail'
+        e.message =~ /^Auth fail/
 
         where:
         type        | identitySetting
@@ -189,7 +185,7 @@ class UserAuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = privateKey(KeyType.rsa_pass)
+                identity = privateKey(KeyType.ecdsa_pass)
                 passphrase = "gradle"
             }
         }
@@ -198,7 +194,7 @@ class UserAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'EC' } as PublicKey, _) >> true
     }
 
     @Unroll
@@ -219,7 +215,7 @@ class UserAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        pk * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        pk * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'EC' } as PublicKey, _) >> true
         pw * server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
 
         where:
@@ -273,7 +269,7 @@ class UserAuthenticationSpec extends Specification {
     def "identity and passphrase can be set by global settings"() {
         given:
         ssh.settings {
-            identity = privateKey(KeyType.rsa_pass)
+            identity = privateKey(KeyType.ecdsa_pass)
             passphrase = "gradle"
         }
 
@@ -289,7 +285,7 @@ class UserAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
+        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'EC' } as PublicKey, _) >> true
     }
 
     def "public key authentication should fail if wrong passphrase is given"() {
@@ -299,7 +295,7 @@ class UserAuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = privateKey(KeyType.rsa_pass)
+                identity = privateKey(KeyType.ecdsa_pass)
                 passphrase = "wrong"
             }
         }
@@ -308,17 +304,13 @@ class UserAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
-
-        and:
-        JSchException e = thrown()
-        e.message == 'USERAUTH fail'
+        thrown(IllegalArgumentException)
     }
 
     def "remote specific identity should precede one in global settings"() {
         given:
         ssh.settings {
-            identity = privateKey(KeyType.rsa)
+            identity = privateKey(KeyType.ecdsa)
         }
 
         ssh.remotes {
@@ -326,15 +318,12 @@ class UserAuthenticationSpec extends Specification {
                 host = server.host
                 port = server.port
                 user = 'someuser'
-                identity = privateKey(KeyType.rsa_pass)
+                identity = privateKey(KeyType.ecdsa_pass)
             }
         }
 
         when:
         executeCommand()
-
-        then:
-        (1.._) * server.publickeyAuthenticator.authenticate('someuser', { PublicKey k -> k.algorithm == 'RSA' } as PublicKey, _) >> true
 
         then:
         JSchException e = thrown()

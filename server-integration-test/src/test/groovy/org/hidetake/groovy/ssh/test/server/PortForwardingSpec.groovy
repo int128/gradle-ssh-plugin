@@ -3,8 +3,6 @@ package org.hidetake.groovy.ssh.test.server
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import groovy.util.logging.Slf4j
-import groovyx.net.http.HttpResponseDecorator
-import groovyx.net.http.RESTClient
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
 import org.apache.sshd.server.forward.ForwardingFilter
@@ -70,10 +68,10 @@ class PortForwardingSpec extends Specification {
 
     def "HTTP server should response 200"() {
         when:
-        def response = new RESTClient("http://localhost:$httpServerPort").get(path: '/') as HttpResponseDecorator
+        def response = new URL("http://localhost:$httpServerPort").text
 
         then:
-        response.status == 200
+        response == ''
     }
 
 
@@ -82,12 +80,12 @@ class PortForwardingSpec extends Specification {
         def response = ssh.run {
             session(ssh.remotes.some) {
                 int port = forwardLocalPort(hostPort: httpServerPort)
-                new RESTClient("http://localhost:$port").get(path: '/')
+                new URL("http://localhost:$port").text
             }
         }
 
         then:
-        response.status == 200
+        response == ''
     }
 
     def "specified local port should be forwarded to the HTTP server"() {
@@ -96,12 +94,12 @@ class PortForwardingSpec extends Specification {
             session(ssh.remotes.some) {
                 int port = SshServerMock.pickUpFreePort()
                 forwardLocalPort(port: port, hostPort: httpServerPort)
-                new RESTClient("http://localhost:$port").get(path: '/')
+                new URL("http://localhost:$port").text
             }
         }
 
         then:
-        response.status == 200
+        response == ''
     }
 
     def "specified local port should be forwarded to the HTTP server with addresses"() {
@@ -110,12 +108,12 @@ class PortForwardingSpec extends Specification {
             session(ssh.remotes.some) {
                 int port = SshServerMock.pickUpFreePort()
                 forwardLocalPort(bind: '0.0.0.0', port: port, host: 'localhost', hostPort: httpServerPort)
-                new RESTClient("http://localhost:$port").get(path: '/')
+                new URL("http://localhost:$port").text
             }
         }
 
         then:
-        response.status == 200
+        response == ''
     }
 
 
@@ -125,12 +123,12 @@ class PortForwardingSpec extends Specification {
             session(ssh.remotes.some) {
                 int port = SshServerMock.pickUpFreePort()
                 forwardRemotePort(port: port, hostPort: httpServerPort)
-                new RESTClient("http://localhost:$port").get(path: '/')
+                new URL("http://localhost:$port").text
             }
         }
 
         then:
-        response.status == 200
+        response == ''
     }
 
     def "specified remote port should be forwarded to the HTTP server with addresses"() {
@@ -139,12 +137,12 @@ class PortForwardingSpec extends Specification {
             session(ssh.remotes.some) {
                 int port = SshServerMock.pickUpFreePort()
                 forwardRemotePort(bind: '0.0.0.0', port: port, host: '0.0.0.0', hostPort: httpServerPort)
-                new RESTClient("http://localhost:$port").get(path: '/')
+                new URL("http://localhost:$port").text
             }
         }
 
         then:
-        response.status == 200
+        response == ''
     }
 
 
