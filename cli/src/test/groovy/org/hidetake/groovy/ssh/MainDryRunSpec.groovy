@@ -2,11 +2,13 @@ package org.hidetake.groovy.ssh
 
 import com.jcraft.jsch.JSchException
 import org.hidetake.groovy.ssh.test.server.SshServerMock
-import org.junit.Rule
+import org.junit.ClassRule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath
 
 class MainDryRunSpec extends Specification {
 
@@ -17,18 +19,25 @@ class MainDryRunSpec extends Specification {
 
     PrintStream stdout
 
-    @Rule
+    @Shared @ClassRule
     TemporaryFolder temporaryFolder
 
     def setupSpec() {
         int port = SshServerMock.pickUpFreePort()
-        script = "ssh.run {" +
-                "session(host: 'localhost'," +
-                " port: $port," +
-                " user: 'someuser'," +
-                " password: 'somepassword')" +
-                "{ execute('somecommand') { println 'Q6zLyqR1MKANtYJ4' } }" +
-                "}"
+        def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${port} dummy"
+        script = """\
+ssh.run {
+    session(
+        host: 'localhost',
+        port: ${port},
+        knownHosts: new File('${toUnixPath(knownHostsFile.path)}'),
+        user: 'someuser',
+        password: 'somepassword'
+    ) {
+        execute('somecommand') { println 'Q6zLyqR1MKANtYJ4' }
+    }
+}
+"""
     }
 
     def setup() {

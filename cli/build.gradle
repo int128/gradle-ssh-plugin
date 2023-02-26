@@ -20,12 +20,9 @@ dependencies {
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
 }
 
-// test {
-//     useJUnitPlatform()
-// }
-
 test {
     mustRunAfter ':server-integration-test:check'
+    useJUnitPlatform()
 }
 
 jar {
