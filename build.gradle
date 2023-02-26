@@ -1,26 +1,4 @@
 allprojects {
 	group = 'org.hidetake'
 	version = System.getenv('VERSION') ?: 'SNAPSHOT'
-
-	afterEvaluate {
-		tasks.withType(Test) {
-			finalizedBy ':testReport'
-			testReport.reportOn binaryResultsDirectory
-			reports.html.required = false
-			reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
-		}
-	}
-
-	plugins.withType(JavaPlugin) {
-		dependencies {
-			testImplementation 'junit:junit:4.11'
-			testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
-		    testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
-		}
-	}
-}
-
-task testReport(type: TestReport) {
-	description 'Generates test report for all projects'
-	destinationDirectory = file("$buildDir/reports")
 }
