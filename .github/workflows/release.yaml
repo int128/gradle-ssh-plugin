@@ -17,9 +17,9 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -44,7 +44,9 @@ jobs:
 
   cli:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -55,3 +57,8 @@ jobs:
       - uses: gradle/gradle-build-action@v2
       - run: ./gradlew shadowJar
       - run: java -jar cli/build/libs/gssh.jar
+      - run: sha256sum -b cli/build/libs/gssh.jar > cli/build/libs/gssh.jar.sha256
+      - if: github.event_name == 'release'
+        run: gh release upload '${{ github.event.release.tag_name }}' cli/build/libs/gssh.jar cli/build/libs/gssh.jar.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
