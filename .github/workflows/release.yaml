@@ -11,6 +11,9 @@ on:
     types:
       - created
 
+env:
+  GROOVY_SSH_VERSION: ${{ github.event.release.tag_name }}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -26,14 +29,18 @@ jobs:
       - uses: gradle/wrapper-validation-action@v1
       - uses: gradle/gradle-build-action@v2
 
-      - if: github.event_name != 'release'
-        run: ./gradlew generateMetadataFileForMavenPublication generatePomFileForMavenPublication
+      - run: ./gradlew sign
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - if: github.event_name == 'release'
         run: ./gradlew publish
         env:
-          VERSION: ${{ github.event.release.tag_name }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
 
   cli:
     runs-on: ubuntu-latest

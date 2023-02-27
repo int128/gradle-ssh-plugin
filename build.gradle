@@ -1,4 +1,4 @@
 allprojects {
 	group = 'org.hidetake'
-	version = System.getenv('VERSION') ?: 'SNAPSHOT'
+	version = System.getenv('GROOVY_SSH_VERSION') ?: '0.0.0'
 }
