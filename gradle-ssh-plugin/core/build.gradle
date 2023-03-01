@@ -14,7 +14,7 @@ dependencies {
 	implementation 'org.hidetake:groovy-ssh:2.11.2'
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
-	testImplementation 'cglib:cglib-nodep:3.2.10'
+	testImplementation 'cglib:cglib-nodep:3.3.0'
 }
 
 test {
