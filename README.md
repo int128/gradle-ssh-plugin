@@ -23,4 +23,4 @@ TODO: fix it
 ### Release
 
 Create a new release in GitHub Releases.
-GitHub Actions will publish an artifact to Maven Central.
+GitHub Actions will publish an artifact to Gradle Plugin Portal.
