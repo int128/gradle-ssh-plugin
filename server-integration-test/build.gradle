@@ -20,7 +20,7 @@ dependencies {
     testImplementation "org.spockframework:spock-junit4"
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.5'
     testRuntimeOnly 'cglib:cglib-nodep:3.3.0'
-    testRuntimeOnly 'org.objenesis:objenesis:3.0.1'
+    testRuntimeOnly 'org.objenesis:objenesis:3.3'
 }
 
 test {
