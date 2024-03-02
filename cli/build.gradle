@@ -32,7 +32,7 @@ jar {
 }
 
 shadowJar {
-    baseName = 'gssh'
+    archiveBaseName = 'gssh'
+    archiveVersion = ''
     classifier = ''
-    version = ''
 }
