@@ -34,5 +34,5 @@ jar {
 shadowJar {
     archiveBaseName = 'gssh'
     archiveVersion = ''
-    classifier = ''
+    archiveClassifier = ''
 }
