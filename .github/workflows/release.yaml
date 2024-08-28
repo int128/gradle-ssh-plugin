@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: 11
       - uses: gradle/wrapper-validation-action@v1
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@v3
       - run: ./gradlew validatePlugins
 
       - run: echo '${{ secrets.GRADLE_PROPERTIES_PUBLISH }}' >> ~/.gradle/gradle.properties
