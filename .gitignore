@@ -5,6 +5,7 @@ build
 **/bin
 .classpath
 .project
+.vscode/
 
 /.idea
 /out
