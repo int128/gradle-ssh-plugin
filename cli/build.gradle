@@ -10,7 +10,7 @@ repositories {
 dependencies {
     implementation project(':core')
     implementation 'ch.qos.logback:logback-classic:1.5.17'
-    implementation 'org.codehaus.groovy:groovy-cli-commons:3.0.23'
+    implementation 'org.codehaus.groovy:groovy-cli-commons:3.0.24'
 
     testImplementation project(':server-integration-test')
     testImplementation 'org.apache.sshd:sshd-core:2.2.0'
