@@ -26,8 +26,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/wrapper-validation-action@v3
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/actions/wrapper-validation@v4
+      - uses: gradle/actions/setup-gradle@v4
 
       - run: ./gradlew sign
         env:
@@ -53,8 +53,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/wrapper-validation-action@v3
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/actions/wrapper-validation@v4
+      - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew shadowJar
       - run: java -jar cli/build/libs/gssh.jar
       - run: sha256sum -b cli/build/libs/gssh.jar > cli/build/libs/gssh.jar.sha256
