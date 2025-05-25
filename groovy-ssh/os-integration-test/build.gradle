@@ -7,14 +7,14 @@ repositories {
 }
 
 dependencies {
-    implementation project(':core')
+    implementation project(':groovy-ssh:core')
 
     implementation 'junit:junit:4.13.2'
     implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
 }
 
 test {
-    mustRunAfter ':server-integration-test:check'
+    mustRunAfter ':groovy-ssh:server-integration-test:check'
 }
 
 task startSshAgent(type: Exec) {

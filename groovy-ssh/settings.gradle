@@ -1,7 +1,0 @@
-rootProject.name = 'groovy-ssh'
-
-include 'core'
-include 'cli'
-include 'server-integration-test'
-include 'os-integration-test'
-include 'docs'

@@ -22,6 +22,10 @@ dependencies {
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.18'
 }
 
+description = 'Groovy SSH library'
+group = 'org.hidetake'
+version = System.getenv('VERSION') ?: 'SNAPSHOT'
+
 test {
     useJUnitPlatform()
 }
@@ -34,8 +38,6 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
-
-description = 'Groovy SSH library'
 
 publishing {
     repositories {

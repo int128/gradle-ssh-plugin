@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':core')
+    implementation project(':groovy-ssh:core')
     implementation 'org.apache.sshd:sshd-core:2.2.0'
     implementation 'org.apache.sshd:sshd-sftp:2.2.0'
     implementation 'org.apache.sshd:sshd-scp:2.2.0'
@@ -25,7 +25,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    mustRunAfter ':core:check'
+    mustRunAfter ':groovy-ssh:core:check'
 
     if (System.getProperty('os.name') == 'Linux') {
         systemProperty 'java.security.egd', 'file:/dev/./urandom'
