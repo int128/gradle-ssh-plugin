@@ -35,11 +35,6 @@ processResources {
     filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['version': project.version])
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.DEFAULT)
     signAllPublications()
