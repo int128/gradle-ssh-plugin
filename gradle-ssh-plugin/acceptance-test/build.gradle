@@ -11,8 +11,8 @@ dependencies {
 	implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
 }
 
-evaluationDependsOn(':gradle-ssh-plugin:core')
+evaluationDependsOn(':gradle-ssh-plugin:plugin')
 
 gradlePlugin {
-    pluginSourceSet project(':gradle-ssh-plugin:core').sourceSets.main
+    pluginSourceSet project(':gradle-ssh-plugin:plugin').sourceSets.main
 }
