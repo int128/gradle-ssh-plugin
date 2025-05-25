@@ -47,13 +47,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew sign
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.event.release.tag_name || '0.0.0' }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
 
       - # if: github.event_name == 'release'
         run: ./gradlew publishToMavenCentral
         env:
-          VERSION: ${{ github.sha }}-SNAPSHOT # ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.event.release.tag_name || '0.0.0' }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
