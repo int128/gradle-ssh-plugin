@@ -1,8 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'java-library'
     id 'groovy'
-    id 'maven-publish'
-    id 'signing'
+    id "com.vanniktech.maven.publish" version "0.32.0"
 }
 
 repositories {
@@ -39,50 +40,29 @@ java {
     withSourcesJar()
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.DEFAULT)
+    signAllPublications()
+    pom {
+        name = parent.name
+        description = project.description
+        url = 'https://github.com/int128/gradle-ssh-plugin'
+        licenses {
+            license {
+                name = 'Apache-2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
             }
         }
-    }
-
-    publications {
-        maven(MavenPublication) {
-            // https://central.sonatype.org/publish/requirements/
-            artifactId parent.name
-            from components.java
-            pom {
-                name = parent.name
-                description = project.description
-                url = 'https://github.com/int128/groovy-ssh'
-                licenses {
-                    license {
-                        name = 'Apache-2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'int128'
-                        name = 'Hidetake Iwata'
-                        email = 'int128@gmail.com'
-                    }
-                }
-                scm {
-                    url = 'https://github.com/int128/groovy-ssh'
-                    connection = 'scm:git:https://github.com/int128/groovy-ssh'
-                }
+        developers {
+            developer {
+                id = 'int128'
+                name = 'Hidetake Iwata'
+                url = 'https://github.com/int128'
             }
         }
+        scm {
+            url = 'https://github.com/int128/gradle-ssh-plugin'
+            connection = 'scm:git:https://github.com/int128/gradle-ssh-plugin'
+        }
     }
-}
-
-signing {
-    useInMemoryPgpKeys(System.getenv("SIGNING_KEY"), System.getenv("SIGNING_PASSWORD"))
-    sign publishing.publications
 }
