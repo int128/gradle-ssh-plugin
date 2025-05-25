@@ -1,0 +1,12 @@
+= Introduction
+
+== What is Gradle SSH Plugin
+
+Gradle SSH Plugin is a https://gradle.org/[Gradle] plugin which provides SSH facilities such as command execution or file transfer for continuous delivery.
+It internally uses the library of Groovy SSH.
+
+
+== What is Groovy SSH
+
+Groovy SSH is an automation tool which provides SSH facilities such as command execution or file transfer.
+It is provided as the executable JAR `gssh.jar` and the library `groovy-ssh-{groovy-ssh-version}.jar`.

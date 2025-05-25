@@ -1,0 +1,1714 @@
+= User Guide
+
+== Overview
+
+Let's take a look overview of DSL.
+
+[source,groovy,subs="+attributes"]
+----
+ssh.settings {  //<1>
+  dryRun = project.hasProperty('dryRun')
+}
+
+remotes {
+  web01 {  //<2>
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+}
+
+task reload {
+  doLast {
+    ssh.run {  //<3>
+      settings {  //<4>
+        pty = true
+      }
+      session(remotes.web01) {  //<5>
+        execute 'sudo service tomcat restart'  //<6>
+      }
+    }
+  }
+}
+----
+
+<1> Configure global settings.
+<2> Add a remote host with per-remote settings.
+<3> Run sessions.
+<4> Configure per-`ssh.run` settings.
+<5> Add a session to the remote host.
+<6> Perform operations with per-method settings.
+
+
+=== Settings inheritance
+
+Settings can be set in global and overridden by each `ssh.run` method, remote host or method.
+
+.List of settings
+[options="header,autowidth"]
+|===
+|Settings                           | Global | Per `ssh.run`  | Per remote  | Per method
+|Session settings                   | x      | x              | x           | -
+|Connection settings                | x      | x              | x           | -
+|Command settings                   | x      | x              | x           | x
+|Shell settings                     | x      | x              | x           | x
+|Sudo settings                      | x      | x              | x           | x
+|File transfer settings             | x      | x              | x           | -
+|Remote settings                    | -      | -              | x           | -
+|Proxy settings                     | -      | -              | x           | -
+|Local port forwarding settings     | -      | -              | -           | x
+|Remote port forwarding settings    | -      | -              | -           | x
+|===
+
+Some settings can be set in global as follows.
+
+[source,groovy]
+----
+ssh.settings {
+  knownHosts = allowAnyHosts
+  dryRun = true
+}
+----
+
+Some settings can be overridden in a `ssh.run` method as follows.
+
+[source,groovy]
+----
+ssh.run {
+  settings {
+    // overrides global settings
+    pty = true
+  }
+  session(remotes.role('webServers')) {
+    execute('sudo service httpd reload')
+  }
+}
+----
+
+Some settings can be overridden in a remote host closure.
+
+[source,groovy]
+----
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa_jenkins')
+    // overrides global settings
+    agentForwarding = true
+  }
+}
+----
+
+Some settings can be overridden on an operation method.
+
+[source,groovy]
+----
+execute('sudo service httpd reload', pty: false)
+execute('sudo service httpd reload', logging: false)
+----
+
+
+== Remote hosts
+
+The remote hosts container named as `remotes` is automatically added to the project.
+
+Following code adds a remote host to the remote hosts container:
+
+[source,groovy]
+----
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+  }
+}
+----
+
+
+=== Associate with roles
+
+Call `role` method to associate the host with one or more roles.
+
+[source,groovy]
+----
+remotes {
+  web01 {
+    role('webServers')
+    role('servers')
+    host = '192.168.1.101'
+    user = 'jenkins'
+  }
+}
+----
+
+We can specify one or mote roles on a session.
+
+[source,groovy]
+----
+// remote hosts associated to servers
+session(remotes.role('servers')) {
+}
+
+// remote hosts associated to webServer OR appServer
+session(remotes.role('webServer', 'appServer')) {
+}
+
+// remote hosts associated to webServer AND appServer
+session(remotes.allRoles('webServer', 'appServer')) {
+}
+----
+
+
+=== Connection settings
+
+Following settings can be set in a remote closure.
+
+.Remote settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`host`
+|`String`, Mandatory
+|Hostname or IP address of the remote host.
+
+|`port`
+|`int`
+|Port. Defaults to port 22.
+|===
+
+Also following settings can be set in a remote closure.
+
+.Connection settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`user`
+|`String`, Mandatory
+|User name.
+
+|`password`
+|`String`
+|Password for password authentication. Defaults to no password authentication.
+
+|`identity`
+|`File` or `String`
+|Private key for public-key authentication. Defaults to no public-key authentication.
+
+|`passphrase`
+|`String`
+|Pass-phrase of the private key. Defaults to no pass-phrase.
+
+|`authentications`
+|`List<String>`
+|Authentication methods in order. Defaults to `publickey`, `keyboard-interactive` and `password`.
+
+|`proxy`
+|`Proxy`
+|Proxy server. If this is set, the proxy server is used to reach the remote host. Defaults to no proxy.
+
+|`gateway`
+|`Remote`
+|Gateway remote host. If this is set, the port-forwarding tunnel is used to reach the remote host. Defaults to no gateway.
+
+|`agent`
+|`boolean`
+|If this is `true`, Putty Agent or ssh-agent is used on authentication. Defaults to `false`.
+
+|`knownHosts`
+|`addHostKey(File)`, `File`, `Collection<File>` or `allowAnyHosts`
+|Known hosts for host key checking.
+ See below section.
+ Defaults to `File("${System.properties['user.home']}/.ssh/known_hosts")`.
+
+|`timeoutSec`
+|`int` (seconds)
+|Connection timeout and socket read timeout. Defaults to 0 (OS default).
+
+|`retryCount`
+|`int`
+|Retry count to establish connection. Defaults to 0 (no retry).
+
+|`retryWaitSec`
+|`int` (seconds)
+|Interval time between each retries. Defaults to 0 (immediately).
+
+|`keepAliveSec`
+|`int` (seconds)
+|Interval time of keep alive messages sent to the remote host. Defaults to 60 seconds.
+|===
+
+These can be set globally in the project as follows.
+
+[source,groovy]
+----
+ssh.settings {
+  timeoutSec = 600
+}
+----
+
+
+==== `identity`: Public key authentication
+
+`identity` should be a `File` or `String`.
+If a `String` is set, it is treated as a content of the private key but not a path.
+
+[source,groovy]
+----
+ssh.settings {
+  // path to the private key
+  identity = new File('id_rsa')
+
+  // content of the private key
+  identity = """\
+    -----BEGIN RSA PRIVATE KEY-----
+    BASE64ENCODEDKEY...
+    ------END RSA PRIVATE KEY-------
+  """.stripIndent()
+}
+----
+
+
+==== `knownHosts`: Host key checking
+
+`knownHosts` should be a `File`, `Collection<File>`, `addHostKey(File)` or `allowAnyHosts`.
+
+If a `File` or `Collection<File>` is set, host key checking is turned on without write access to the file.
+It fails when a host key to connect is different from the file or does not exist in the file.
+
+[source,groovy]
+----
+knownHosts = file('known_hosts')
+
+knownHosts = files('known_hosts', 'known_hosts_additional')
+----
+
+If `addHostKey(File)` is set, host key checking is turned on with write access to the file.
+It fails when a host key to connect is different from the file.
+Any new hosts are automatically appended to the file.
+
+[source,groovy]
+----
+knownHosts = addHostKey(file("$buildDir/known_hosts"))
+----
+
+If `allowAnyHosts` is set, host key checking is turned off.
+It is vulnerable to man-in-the-middle attacks and not recommended for production.
+
+[source,groovy]
+----
+knownHosts = allowAnyHosts
+----
+
+
+=== Gateway access
+
+A remote host can be connected through one or more gateway servers.
+Gateway access is achieved by the port forwarding tunnel.
+
+Following code connects through a gateway server:
+
+[source,groovy]
+----
+remotes {
+  Gateway {
+    host = '10.2.3.4'
+    user = 'gwuser'
+  }
+  Target {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    gateway = remotes.Gateway
+  }
+}
+----
+
+When the code runs,
+
+. It connects to Gateway (`10.2.3.4`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:X`) to Target (`192.168.1.101`).
+. It connects to the tunnelled port (`127.0.0.1:X`) and performs operations.
+
+If host key checking is turned on,
+
+. `knownHosts` of Gateway should contain `10.2.3.4` with the host key of Gateway.
+. `knownHosts` of Target should contain `192.168.1.101` with the host key of Target.
+  It is actually translated to the tunnelled port (`127.0.0.1:X`) in host key checking.
+
+If host key checking is turned on with `addHostKey()`,
+
+. The host key of Gateway is stored to the `knownHosts` as `10.2.3.4`.
+. The host key of Target is stored to the `knownHosts` as `192.168.1.101`, translated from the tunnelled port (`127.0.0.1:X`).
+
+
+Let's see also the example for more gateway servers.
+
+Following code connects through two gateway servers:
+
+[source,groovy]
+----
+remotes {
+  FrontGateway {
+    host = '10.2.3.4'
+    user = 'frontgwuser'
+  }
+  MidGateway {
+    host = '172.16.1.2'
+    user = 'gwuser'
+    gateway = remotes.FrontGateway
+  }
+  Target {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    gateway = remotes.MidGateway
+  }
+}
+----
+
+When the code runs,
+
+. It connects to FrontGateway (`10.2.3.4`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:X`) to MidGateway (`172.16.1.2`).
+. It connects to the tunnelled port (`127.0.0.1:X`) and establishes a tunnel from an auto-allocated port (`127.0.0.1:Y`) to Target (`192.168.1.101`).
+. It connects to the tunnelled port (`127.0.0.1:Y`) and performs operations.
+
+
+=== Proxy access
+
+A remote host can specify that connections should be made through a proxy server.
+Individual proxy server connections are configured in the `proxies` container provided by the plugin.
+
+The following code adds a proxy server to the `proxies` container:
+
+[source,groovy]
+----
+proxies {
+  socks01 {
+    host = '192.168.1.112'
+    port = 1080
+    type = SOCKS
+  }
+}
+----
+
+The following settings are used to configure how a proxied connection is established within a proxy closure.
+
+.Proxy settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`host`
+|`String`, Mandatory
+|Hostname or IP address of the proxy server.
+
+|`port`
+|`int`, Mandatory
+|Port of the proxy server.
+
+|`type`
+|`String` or `ProxyType`, Mandatory
+|Type of the proxy server: `SOCKS` or `HTTP`.
+
+|`user`
+|`String`
+|User name of the proxy server.
+
+|`password`
+|`String`
+|Password of the proxy server.
+
+|`socksVersion`
+|`int`
+|Protocol version when using `SOCKS`: 4 or 5. Defaults to 5.
+|===
+
+Once a proxy server is defined in the `proxies` container,
+it can be referenced per-remote, per-method or globally.
+Unless the remote's proxy property is set in a higher scope, connections made to that host will not be proxied.
+
+The following code shows how remote hosts can use different proxy servers.
+
+[source,groovy]
+----
+proxies {
+  socks {
+    host = '192.168.1.112'
+    port = 1080
+    user = 'admin'
+    password = '0t1s'
+    type = SOCKS
+    socksVersion = 5
+  }
+
+  http {
+    host = '192.168.1.113'
+    port = 8080
+    type = HTTP
+  }
+}
+
+remotes {
+  web01 {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    proxy = proxies.http
+  }
+
+  web02 {
+    host = '192.168.1.102'
+    user = 'jenkins'
+    proxy = proxies.socks
+  }
+}
+----
+
+The following shows how to set a global proxy server.
+
+[source,groovy]
+----
+ssh.settings {
+  // All remotes will use this proxy by default.
+  // Each remote can override this configuration.
+  proxy = proxies.socks01
+}
+----
+
+The following shows how to set a proxy server on a particular method.
+
+[source,groovy]
+----
+task jarSearch {
+  doLast {
+    ssh.run {
+      settings {
+        proxy = proxies.http01
+      }
+      session(remotes.role('mavenRepo')) { ... }
+    }
+  }
+}
+----
+
+
+=== More about remote host container
+
+A remote host can be added by calling `remotes.create(name)`.
+
+[source,groovy]
+----
+task setupRemote {
+  doLast {
+    ssh.run {
+      session(remotes.web01) {
+        def targetHost = execute 'cat settings/hostname'
+        def targetUser = execute 'cat settings/username'
+        // Create and add a remote host
+        remotes.create('db01') {
+          host = targetHost
+          user = targetUser
+        }
+      }
+    }
+  }
+}
+
+task something(dependsOn: setupRemote) {
+  doLast {
+    ssh.run {
+      session(remotes.db01) {
+        //execute ...
+      }
+    }
+  }
+}
+----
+
+Implementation of the remote hosts container is different between Gradle SSH Plugin and Groovy SSH.
+
+Gradle SSH plugin::
+The remote hosts container is a http://www.gradle.org/docs/current/javadoc/org/gradle/api/NamedDomainObjectContainer.html[NamedDomainObjectContainer] provided by Gradle API.
+It also has role filter methods.
+
+Groovy SSH::
+The remote hosts container is a `Map<String, Remote>`.
+It also has some of `Collection` methods and role filter methods.
+
+The remote hosts container supports following methods and almost code should work on both Gradle SSH Plugin and Groovy SSH.
+
+* `add(Remote)`
+* `addAll(Collection<Remote>)`
+* `create(String, Closure)`
+* `role(String...)`
+* `allRoles(String...)`
+
+
+== Sessions
+
+We provides 2 methods to run sessions.
+
+- `ssh.run` - Run sessions in parallel (i.e. out of order).
+- `ssh.runInOrder` - Run sessions in serial (i.e. in order).
+
+`run` method runs sessions in parallel.
+In following example, the method runs 2 sessions in parallel.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'command1'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'command2'  //<1>
+  }
+}
+----
+<1> `command1` and `command2` are executed in parallel.
+
+`runInOrder` method runs sessions in order.
+In following example, the method runs 2 sessions in order.
+
+[source,groovy]
+----
+ssh.runInOrder {
+  session(remotes.web01) {
+    execute 'command1'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'command2'  //<2>
+  }
+}
+----
+<1> `command1` is executed.
+<2> `command2` is executed after `command1` is finished.
+
+Note that behavior of `run` method and `runInOrder` method is exactly same if 1 or less session is given.
+
+
+=== Return value
+
+Behavior of return value is same between `run` method and `runInOrder` method.
+
+`run` method and `runInOrder` method returns a value depending on count of sessions given.
+
+.Return value of `run` method and `runInOrder` method
+[options="header,autowidth"]
+|===
+|Given |Return value
+
+|no session
+|always `null`
+
+|1 session
+|the result of session
+
+|2 or more sessions
+|a list of results
+|===
+
+It returns a result of the session if a session is given.
+
+[source,groovy]
+----
+def result = ssh.run {
+  session(remotes.web01) {
+    'result1'
+  }
+}
+assert result == 'result1'
+----
+
+It returns a list of result if 2 or more sessions are given.
+
+[source,groovy]
+----
+def results = ssh.run {
+  session(remotes.web01) {
+    'result1'
+  }
+  session(remotes.web02) {
+    'result2'
+  }
+}
+assert results == ['result1', 'result2']
+----
+
+We can use the method to retrieve a result of remote command.
+
+[source,groovy]
+----
+task syncKernelParam {
+  doLast {
+    def paramKey = 'net.core.wmem_max'
+    def paramValue = ssh.run {
+      session(remotes.web01) {
+        execute("sysctl '$paramKey' | sed -e 's/ //g'")
+      }
+    }
+    assert paramValue.contains(paramKey)
+    ssh.run {
+      session(remotes.web02) {
+        execute("sysctl -w '$paramValue'")
+      }
+    }
+  }
+}
+----
+
+
+=== Exception handling
+
+Behavior of exception handling is different between `run` method and `runInOrder` method.
+
+.Behavior of `run` method and `runInOrder` method if exception(s) occurred
+[options="header,autowidth"]
+|===
+|Given |`run` method |`runInOrder` method
+
+|1 session
+|executes the session and throws the exception occurred
+|<-
+
+|2 or more sessions
+|executes *all* sessions and throws `ParallelSessionsException` which contains exception(s)
+|executes session(s) *until* the exception occurred and throws it
+|===
+
+`run` method throws the exception as-is if the session throws an exception.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'false'
+  }
+} //<1>
+----
+<1> The method throws `BadExitStatusException`.
+
+`run` method aggregates 1 or more exceptions as a `ParallelSessionsException`.
+
+[source,groovy]
+----
+ssh.run {
+  session(remotes.web01) {
+    execute 'false'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'true'  //<2>
+  }
+} //<3>
+----
+<1> `false` command is executed but causes an error.
+<2> `true` command is executed.
+<3> The method throws `ParallelSessionsException` that contains a `BadExitStatusException` caused by `false`.
+
+`runInOrder` method throws the exception first caused.
+It does not aggregate exceptions.
+
+[source,groovy]
+----
+ssh.runInOrder {
+  session(remotes.web01) {
+    execute 'false'  //<1>
+  }
+  session(remotes.web02) {
+    execute 'true'  //<2>
+  }
+} //<3>
+----
+<1> `false` command causes an error.
+<2> `true` command is never executed due to the error.
+<3> The method throws `BadExitStatusException` caused by `false`.
+
+
+=== Session settings
+
+Following settings can be set in global:
+
+.Session settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`dryRun`
+|`boolean`
+|If this is `true`, no actual connection or operation is performed. Defaults to `false`.
+
+|`jschLog`
+|`boolean`
+|If this is `true`, JSch verbose log is shown. Defaults to `false`.
+
+|`extensions`
+|`List` of `Trait` or `Map`
+|DSL extensions. Defaults to an empty list.
+|===
+
+
+=== Session for remote host
+
+A session consists of a remote host to connect and a closure to operate.
+Following code declares a session which connects to _web01_ and executes a command.
+
+[source,groovy]
+----
+session(remotes.web01) {
+  //execute ...
+}
+----
+
+If 2 or more remote hosts are given, the method expands to sessions.
+For instance, followings are all equivalent.
+
+[source,groovy]
+----
+// give a list of remote hosts
+session([remotes.web01, remotes.web02]) {
+}
+
+// give remote hosts as arguments
+session(remotes.web01, remotes.web02) {
+}
+
+// enumerate sessions
+session(remotes.web01) {
+}
+session(remotes.web02) {
+}
+----
+
+The method also accepts a map of settings for a remote host without defining in the `remotes` block.
+
+[source,groovy]
+----
+session(name: 'web01', host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
+}
+
+// If name is not given, auto-generated name such as Remote1 is shown in console log
+session(host: '192.168.1.101', user: 'jenkins', identity: file('id_rsa')) {
+}
+----
+
+
+== Operations
+
+Following methods are available in a session closure.
+
+* `execute` - Execute a command.
+* `executeSudo` - Execute a command with sudo prompt support.
+* `shell` - Execute a shell.
+* `put` - Put a file or directory into the remote host.
+* `get` - Get a file or directory from the remote host.
+* `remove` - Remove a file or directory on the remote host.
+
+
+=== Execute a command
+
+Call the `execute` method with a command to execute.
+
+[source,groovy]
+----
+execute 'sudo service httpd reload'
+
+// with settings
+execute 'sudo service httpd reload', pty: true
+----
+
+The method escapes command arguments if a list of strings is given.
+
+[source,groovy]
+----
+execute(['perl', '-e', /print 'current: ', time, "\n"/])
+----
+
+The method waits until the command is completed and returns a result from standard output of the command.
+Line separators are converted to the platform native.
+
+[source,groovy]
+----
+def result = execute 'uname -a'
+println result
+----
+
+A result can be retrieved as an argument if a closure is given.
+
+[source,groovy]
+----
+execute('uname -a') { result ->
+  println result
+}
+----
+
+The method accepts following settings:
+
+.Command settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`ignoreError`
+|`boolean`
+|If this is `true`, an exit status of the command or shell is ignored. Defaults to `false`.
+
+|`pty`
+|`boolean`
+|If this is `true`, a PTY (pseudo-terminal) is allocated on the command execution. Defaults to `false`.
+
+|`agentForwarding`
+|`boolean`
+|If this is `true`, the agent forwarding is requested on the command execution. Defaults to `false`.
+
+|`logging`
+|`String` or `LoggingMethod`
+|If this is `slf4j`, console log of the remote command is sent to Gradle logger.
+ If this is `stdout`, it is sent to standard output and error.
+ If this is `none`, console logging is turned off.
+ Defaults to `slf4j`.
+
+|`inputStream`
+|`InputStream`, `byte[]`, `String` or `File`
+|An input data to sent to the standard input of remote command. Defaults to null.
+
+|`outputStream`
+|`OutputStream`
+|An output stream to receive from the standard output of remote command. Defaults to null.
+
+|`errorStream`
+|`OutputStream`
+|An output stream to receive from the standard error of remote command. Defaults to null.
+
+|`encoding`
+|`String`
+|Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+
+|`interaction`
+|`Closure`
+|Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the command channel to be connected. Defaults to 0 (default).
+|===
+
+The method throws an exception if an exit status of the command was not zero. It can be ignored if the `ignoreError` setting is given as follow:
+
+[source,groovy]
+----
+execute 'exit 1', ignoreError: true
+----
+
+
+=== Execute a command with the sudo prompt support
+
+Call the `executeSudo` method with a command to execute with the sudo support.
+The method prepends `sudo -S -p` to the command and will provide the password for sudo prompt.
+
+[source,groovy]
+----
+executeSudo 'service httpd reload'
+
+// also can be called with settings
+executeSudo 'service httpd reload', pty: true
+----
+
+The method waits until the command is completed and returns a result from standard output of the command, excluding sudo interactions.
+Line separators are converted to the platform native.
+
+[source,groovy]
+----
+def result = executeSudo 'service httpd status'
+println result
+----
+
+The method escapes command arguments if a list of strings is given.
+
+[source,groovy]
+----
+executeSudo(['perl', '-e', /print 'current: ', time, "\n"/])
+----
+
+A result can be retrieved as an argument if a closure is given.
+
+[source,groovy]
+----
+executeSudo('service httpd status') { result ->
+  println result
+}
+----
+
+The method accepts following settings and settings same as `execute` method.
+
+.Sudo settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`sudoPassword`
+|String
+|Password provided for the sudo prompt. Defaults to `password` of the remote host.
+
+|`sudoPath`
+|String
+|Path to sudo executable. Defaults to `sudo`.
+|===
+
+The method throws an exception if an exit status of the command was not zero, including the sudo authentication failure. Also the `ignoreError` setting is supported.
+
+The sudo support is achieved by the stream interaction support. So the method does not accept an `interaction` setting.
+
+
+=== Execute a shell
+
+Call the `shell` method to execute a shell.
+The method is useful for a limited environment which supports only a shell such as Cisco IOS.
+
+An `interaction` setting should be given in order to exit the shell.
+
+[source,groovy]
+----
+session(remotes.web01) {
+  shell interaction: {
+    when(partial: ~/.*$/) {
+      standardInput << 'exit 0' << '\n'
+    }
+  }
+}
+----
+
+The method accepts following settings:
+
+.Shell settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`ignoreError`
+|`boolean`
+|If this is `true`, an exit status of the command or shell is ignored. Defaults to `false`.
+
+|`pty`
+|`boolean`
+|If this is `true`, a PTY (pseudo-terminal) is allocated on the command execution. Defaults to `false`.
+
+|`agentForwarding`
+|`boolean`
+|If this is `true`, the agent forwarding is requested on the command execution. Defaults to `false`.
+
+|`logging`
+|`String` or `LoggingMethod`
+|If this is `slf4j`, console log of the remote command is sent to Gradle logger.
+ If this is `stdout`, it is sent to standard output and error.
+ If this is `none`, console logging is turned off.
+ Defaults to `slf4j`.
+
+|`inputStream`
+|`InputStream`, `byte[]`, `String` or `File`
+|An input data to sent to the standard input of remote command. Defaults to null.
+
+|`outputStream`
+|`OutputStream`
+|An output stream to receive from the standard output of remote command. Defaults to null.
+
+|`encoding`
+|`String`
+|Encoding of input and output on the command or shell execution. Defaults to `UTF-8`.
+
+|`interaction`
+|`Closure`
+|Closure of interaction with the stream on the command or shell execution. Defaults to no interaction.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the shell channel to be connected. Defaults to 0 (default).
+|===
+
+The method throws an exception if an exit status of the shell was not zero. It can be ignored if the `ignoreError` setting is given as follow:
+
+[source,groovy]
+----
+shell ignoreError: true, interaction: {...}
+----
+
+
+=== Execute a script
+
+Call the `executeScript` method to execute a script.
+The method executes the shell and gives the script through the standard input.
+The shell is guessed from shebang `#!` of the script and defaults to `/bin/sh`.
+
+[source,groovy]
+----
+// execute a script
+executeScript '''#!/bin/sh
+echo "Hello World!"
+'''
+
+// execute a script from local file
+executeScript file('deploy.sh')
+
+// execute a script with settings
+executeScript '''#!/bin/sh
+echo "Hello World!"
+''', pty: true
+----
+
+The method waits until the command is completed and returns a result from standard output of the command.
+Line separators are converted to the platform native.
+
+[source,groovy]
+----
+def result = executeScript '''#!/bin/sh
+echo "Hello World!"
+'''
+println result
+----
+
+A result can be retrieved as an argument if a closure is given.
+
+[source,groovy]
+----
+executeScript('''#!/bin/sh
+echo "Hello World!"
+''') { result ->
+  println result
+}
+----
+
+The method throws an exception if it is called with the `inputStream` setting,
+because the script execution is achieved by using the standard input.
+
+
+=== Transfer a file or directory
+
+Call the `get` method to get a file or directory from the remote host.
+
+[source,groovy]
+----
+// get a file or directory
+get from: '/remote/file', into: 'local_file'
+get from: '/remote/file', into: buildDir
+
+// get files by a file filter
+get from: '/remote/folder', into: buildDir, filter: { it.name =~ /\.xml$/ }
+
+// get content as an output stream
+file.withOutputStream { stream ->
+  get from: '/remote/file', into: stream
+}
+
+// get content as a string
+def text = get from: '/remote/file'
+----
+
+.Behavior of `get` method
+[options="header,autowidth"]
+|===
+|Source (remote) |Destination (local) |Behavior
+
+|File
+|File
+|Overwrite the destination file.
+
+|File
+|Directory
+|Create a file in the destination directory.
+ Overwrite if it already exists.
+
+|File
+|Non-existent file in a directory
+|Create a file as the destination path.
+
+|File
+|Non-existent directory
+|Throw `IOException`.
+
+|Directory
+|Directory
+|Create a directory in the destination.
+ Overwrite if it already exists.
+
+|Directory
+|Non-existent directory
+|Throw `IOException`.
+
+|Non-existent file or directory
+|-
+|Throw `IOException`.
+|===
+
+Call the `put` method to put a file or directory into the remote host.
+It also accepts content such as a string or byte array.
+
+[source,groovy]
+----
+// put a file or directory
+put from: 'local_file', into: '/remote/file'
+put from: file('fixture.dat'), into: '/remote/folder'
+put from: buildDir, into: '/remote/folder'
+
+// put files
+put from: files('local_file1', 'local_file2'), into: '/remote/folder'
+
+// put content from an input stream
+file.withInputStream { stream ->
+  put from: stream, into: '/remote/file.txt'
+}
+
+// put content from a string
+put text: '''#!/bin/sh
+echo 'hello world'
+''', into: '/remote/script.sh'
+
+// put content from a byte array
+put bytes: [0xff, 0xff], into: '/remote/fixture.dat'
+
+// put files by a file filter
+put from: buildDir, into: '/remote/folder', filter: { it.name =~ /\.xml$/ }
+----
+
+.Behavior of `put` method
+[options="header,autowidth"]
+|===
+|Source (local) |Destination (remote) |Behavior
+
+|File
+|File
+|Overwrite the destination file.
+
+|File
+|Directory
+|Create a file in the destination directory.
+ Overwrite if it already exists.
+
+|File
+|Non-existent file in a directory
+|Create a file as the destination path.
+
+|File
+|Non-existent directory
+|Throw `IOException`.
+
+|Directory
+|Directory
+|Create a directory in the destination.
+ Overwrite if it already exists.
+
+|Directory
+|Non-existent directory
+|Throw `IOException`.
+
+|Non-existent file or directory
+|-
+|Throw `FileNotFoundException`.
+|===
+
+These methods throw an exception if an error occurred while the file transfer.
+
+Following settings can be set in global, per-method or per-remote.
+
+.File transfer settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`fileTransfer`
+|`String` or `FileTransferMethod`
+|File transfer method, that is `sftp` or `scp`. Defaults to `sftp`.
+
+|`timeoutSec`
+|`int` (seconds)
+|Timeout for the SFTP or command channel to be connected. Defaults to 0 (default).
+|===
+
+If a filter closure is given, it will be called with an each file.
+A filter closure should return boolean to determine to transfer or not.
+
+[NOTE]
+.Difference of handling empty directories if a filter closure is given or not
+====
+If a file filter is given, only matched files excluding empty directories will be transferred.
+Otherwise, all files including empty directories will be transferred.
+
+Let's see the example.
+It assumes the local host have following files and directories.
+
+----
+/dir1
+  /dir2
+    /file2.txt
+    /dir3
+      /file3.xml
+      /dir4
+----
+
+If no filter is given, all files and directories (same as above) will be transferred.
+
+If the filter `{ it.name =~ /\.txt$/ }` is given, following files and directories will be transferred.
+
+----
+/dir1
+  /dir2
+    /file2.txt
+----
+
+If the filter `{ it.name =~ /\.xml$/ }` is given, following files and directories will be transferred.
+
+----
+/dir1
+  /dir2
+    /dir3
+      /file3.xml
+----
+
+If the filter `{ it.name =~ /\.dat$/ }` is given, nothing will be transferred.
+
+====
+
+
+=== Remove a file or directory
+
+Call the `remove` method to remove a file or directory on the remote host.
+It accepts 2 or more paths.
+
+[source,groovy]
+----
+// specify a file
+remove '/remote/file'
+
+// specify a directory to remove recursively
+remove '/remote/directory'
+
+// specify more paths
+remove '/remote/file', '/remote/directory'
+----
+
+The method returns `true` if anything is removed, `false` if nothing is removed.
+It throws an exception if an error occurred.
+
+
+=== Enable the port forwarding
+
+Call the `forwardLocalPort` method to forward a local port to a remote port.
+
+[source,groovy]
+----
+// Forward localhost:18080 to remote:8080
+forwardLocalPort port: 18080, hostPort: 8080
+
+// Forward localhost:(allocated port) to remote:8080
+int port = forwardLocalPort hostPort: 8080
+
+// Forward localhost:18080 to 172.16.1.1:8080
+forwardLocalPort port: 18080, host: '172.16.1.1', hostPort: 8080
+
+// Forward *:18080 (listen to all) to 172.16.1.1:8080
+forwardLocalPort bind: '0.0.0.0', port: 18080, host: '172.16.1.1', hostPort: 8080
+----
+
+The method accepts following settings:
+
+.Local port forwarding settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`port`
+|`int`
+|Local port to bind. Defaults to 0 (automatically allocated a free port).
+
+|`bind`
+|`String`
+|Local address to bind. Defaults to `localhost`.
+
+|`hostPort`
+|`int`, Mandatory
+|Remote port to connect.
+
+|`host`
+|`String`
+|Remote address to connect. Default to `localhost` of the remote host.
+|===
+
+
+Call the `forwardRemotePort` method to forward a local port to a remote port.
+
+[source,groovy]
+----
+// Forward remote:30000 to localhost:8080
+forwardRemotePort port: 30000, hostPort: 8080
+
+// Forward remote:30000 to 192.168.1.5:8080
+forwardRemotePort port: 30000, host: '192.168.1.5', hostPort: 8080
+
+// Forward remote:30000 (listen to all) to 192.168.1.5:8080
+forwardRemotePort bind: '0.0.0.0', port: 30000, host: '192.168.1.5', hostPort: 8080
+----
+
+The method accepts following settings:
+
+.Remote port forwarding settings
+[options="header,autowidth"]
+|===
+|Key |Type |Description
+
+|`port`
+|`int`, Mandatory
+|Remote port to bind.
+
+|`bind`
+|`String`
+|Remote address to bind. Defaults to `localhost` of the remote host.
+
+|`hostPort`
+|`int`, Mandatory
+|Local port to connect.
+
+|`host`
+|`String`
+|Local address to connect. Default to `localhost`.
+|===
+
+The port forwarding is valid until all sessions are finished.
+So we can connect to a server via a tunnel in the `ssh.run` method.
+
+[source,groovy]
+----
+import groovyx.net.http.RESTClient
+
+ssh.run {
+  session(remotes.web01) {
+    forwardLocalPort port: 8080, hostPort: 8080
+
+    // access to the HTTP server via the tunnel
+    new RESTClient('http://localhost:8080').get(path: '/')
+  }
+}
+----
+
+
+=== Stream interaction support
+
+The execute method can interact with the stream of command executed on the remote host.
+The shell method can do same.
+This feature is useful for providing a password or yes/no answer.
+
+
+==== Declare interaction rules
+
+Call the execute or shell method with an `interaction` setting which contains one or more interaction rules.
+Interaction rules will be evaluated in order.
+If any rule has been matched, others are not evaluated more.
+
+The following example declares 2 rules.
+
+[source,groovy]
+----
+interaction: {
+  when(/* pattern match A */) {
+    /* action closure A */
+  }
+
+  when(/* pattern match B */) {
+    /* action closure B */
+  }
+}
+----
+
+If the pattern A is matched, the closure A is executed.
+If the pattern A is not matched and the pattern B is matched, the closure B is executed.
+If neither the pattern A nor B are matched, nothing is done.
+
+
+==== An interaction rule is
+
+An interaction rule consists of a pattern match and an action closure.
+The action closure will be executed if the pattern match is satisfied.
+
+
+===== Pattern match
+
+A pattern match is one of the following.
+
+* `when(partial: pattern, from: stream)`
+  Declares if a string received from the stream is matched to the pattern.
+* `when(line: pattern, from: stream)`
+  Declares if a line received from the stream is matched to the pattern.
+
+The pattern is one of the following.
+
+* If the pattern is a string, it performs exact match.
+* If the pattern is a regular expression, it performs regular expression match. Groovy provides pretty notation such as `~/pattern/`.
+* If the pattern is `_`, it matches to any line even if empty.
+
+The stream is one of the following.
+
+* `standardOutput` - Standard output of the command.
+* `standardError` - Standard error of the command.
+* `_` - Any.
+* If the stream is omitted, it means any.
+
+
+===== Action closure
+
+An action closure is a generic Groovy closure executed if the pattern match is satisfied.
+It can write a string to the `standardInput`.
+
+[source,groovy]
+----
+interaction: {
+  when(partial: ~/.*#/) {
+    standardInput << 'exit' << '\n'
+  }
+}
+----
+
+An action closure can get the match result by the first argument.
+
+* If the pattern is a string, a string is passed.
+* If the pattern is a regular expression, a `java.util.regex.Matcher` is passed.
+* If the pattern is `_`, a string is passed.
+
+Following example shows all lines of the standard error.
+
+[source,groovy]
+----
+interaction: {
+  when(line: _, from: standardError) { line ->
+    println line
+  }
+}
+----
+
+An action closure can contain one or more interaction rules.
+If so, surrounding rules are discarded and inner rules are activated.
+
+[source,groovy]
+----
+interaction: {
+  when(/* rule A */) {
+    when(/* rule C */) {
+    }
+  }
+  when(/* rule B */) {
+  }
+}
+----
+
+In the above example, at first, rule A and B are active.
+If rule A has been matched, rule A and B are discarded and rule C is active now.
+
+
+==== Context stack
+
+Interaction rules are stored into the context stack for nesting.
+
+If an action closure contains no `when()`, the stack is kept as-is.
+If an action closure contains one or more `when()`s, the stack is pushed and inner rules are active.
+If an action closure contains `popContext()`, the stack is popped and outer rules are active.
+
+Let's see the example.
+
+[source,groovy]
+----
+interaction: {
+  when(/* rule A */) {
+    when(/* rule C */) {
+      when(/* rule E */) {
+        popContext()
+      }
+      when(/* rule F */) {
+      }
+    }
+    when(/* rule D */) {
+    }
+  }
+  when(/* rule B */) {
+  }
+}
+----
+
+At first, the stack is following.
+
+----
+[ruleA, ruleB]      <- stack top
+----
+
+If rule A is matched, rule C and D are pushed into the stack.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
+If rule C is matched, rule E and F are pushed into the stack.
+
+----
+[ruleE, ruleF]      <- stack top
+[ruleC, ruleD]
+[ruleA, ruleB]
+----
+
+If rule E is matched, the stack is popped and rule C and D are active.
+
+----
+[ruleC, ruleD]      <- stack top
+[ruleA, ruleB]
+----
+
+
+==== Example: handle the prompt
+
+Let's take a look at the following example.
+
+[source,groovy]
+----
+shell interaction: {  //<1>
+  when(partial: ~/.*$/) {  //<2>
+    standardInput << 'exit 0' << '\n'  //<3>
+  }
+}
+----
+
+<1> Execute a shell with the interaction support
+<2> Declare a rule if the stream gives a string terminated with `$`
+<3> If the rule is matched, provides the exit to the shell
+
+It executes a shell and provides `exit 0` if the prompt appears.
+
+
+==== Example: handle more prompts
+
+This example executes `passwd` command to change the password of login user.
+
+[source,groovy]
+----
+execute('passwd', pty: true, interaction: {  //<1>
+  when(partial: ~/.+[Pp]assowrd: */) {  //<2>
+    standardInput << oldPassword << '\n'  //<3>
+    when(partial: ~/.+[Pp]assowrd: */) {  //<4>
+      standardInput << newPassword << '\n'  //<5>
+    }
+  }
+  when(line: _) { line ->  //<6>
+    throw new IllegalStateException("passwd command returned error: $line")
+  }
+})
+----
+
+<1> Execute `passwd` command with the stream interaction.
+<2> If the first password prompt is received,
+<3> Provide the old password.
+<4> If the second or more password prompt is received,
+<5> Provide the new password.
+<6> If the command did not return the password prompt, throw an exception.
+
+
+== DSL extension system
+
+We can extend DSL vocabulary using the extension system.
+This feature is still experimental and may be improved in the future.
+
+=== Start from a simple extension
+
+Add a map to `extension` of the global settings.
+Following example adds the method `restartAppServer` and it is available in the session closure.
+
+[source,groovy]
+----
+ssh.settings {
+  extensions.add restartAppServer: {
+    execute 'sudo service tomcat restart'
+  }
+}
+
+ssh.run {
+  session(ssh.remotes.testServer) {
+    restartAppServer()
+  }
+}
+----
+
+=== Use Gradle feature in an extension
+
+We can use project properties such as configurations and dependencies from the extension.
+Following example transfers the `groovy-all` jar and execute a script on the remote host.
+
+[source,groovy]
+----
+repositories {
+  jcenter()
+}
+
+configurations {
+  groovyRuntime
+}
+
+dependencies {
+  groovyRuntime 'org.codehaus.groovy:groovy-all:2.5.6'
+}
+
+ssh.settings {
+  /**
+   * Execute a Groovy script on the remote host.
+   * Groovy dependency must be set as the configuration groovyRuntime.
+   */
+  extensions.add executeGroovyScript: { String script ->
+    def temporaryPath = "/tmp/${UUID.randomUUID()}"
+    try {
+      execute "mkdir -vp $temporaryPath"
+      put from: project.configurations.groovyRuntime, into: temporaryPath
+      put text: script, into: "$temporaryPath/script.groovy"
+      execute "java -jar $temporaryPath/groovy-all-*.jar $temporaryPath/script.groovy"
+    } finally {
+      execute "rm -vfr $temporaryPath"
+    }
+  }
+}
+
+task example {
+  doLast {
+    ssh.run {
+      session(remotes.webServer) {
+        // Execute a script on the remote host
+        executeGroovyScript 'println GroovySystem.version'
+      }
+    }
+  }
+}
+----
+
+=== Alternative: Trait based extension
+
+Create an extension trait in the `buildSrc/src/main/groovy` directory.
+
+[source,groovy]
+----
+// buildSrc/src/main/groovy/extensions.groovy
+trait RemoteFileExtension {
+  void eachFile(String directory, Closure closure) {
+    sftp {
+      ls(directory).each(closure)
+    }
+  }
+}
+----
+
+Properties and methods in the trait are available in the session closure.
+
+[source,groovy]
+----
+// build.gradle
+ssh.run {
+  settings {
+    extensions.add RemoteFileExtension
+  }
+  session(remotes.localhost) {
+    eachFile('/webapps') {
+      println it.filename
+    }
+  }
+}
+----
+
+An extension trait must be placed in the `buildSrc/src/main/groovy` directory.

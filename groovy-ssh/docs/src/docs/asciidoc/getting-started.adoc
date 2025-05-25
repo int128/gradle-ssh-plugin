@@ -1,0 +1,316 @@
+= Getting Started
+
+== Gradle SSH Plugin
+
+=== Requirement
+
+Gradle SSH Plugin requires following:
+
+* Java 7 or later
+* Gradle 2.0 or later (Gradle 1.x is also supported with the backport library)
+
+
+=== Create a project
+
+==== Clone the template project
+
+Get the https://github.com/gradle-ssh-plugin/template[Gradle SSH Plugin Template Project] for quick start.
+The project contains Gradle wrapper, so Gradle installation is not needed.
+
+We can clone the template project as follows:
+
+[source,sh]
+----
+git clone https://github.com/gradle-ssh-plugin/template.git awesome-ssh
+cd awesome-ssh
+./gradlew tasks --all
+----
+
+We can open the project with an IDE such as IntelliJ IDEA.
+
+
+==== Use an existent project
+
+Of course we can add the plugin to an existent project.
+
+
+=== Add the plugin dependency
+
+The plugin is available on the Gradle plugin registry.
+Gradle will fetch the plugin from Internet.
+
+Add the plugin to your script as follows:
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+plugins {
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
+}
+----
+
+Gradle 2.0 style:
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.hidetake:gradle-ssh-plugin:{gradle-ssh-version}'
+  }
+}
+
+apply plugin: 'org.hidetake.ssh'
+----
+
+The plugin also supports Gradle 1.x with the backport library:
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.hidetake:gradle-ssh-plugin:{gradle-ssh-version}'
+    classpath 'org.codehaus.groovy:groovy-backports-compat23:2.4.6'
+  }
+}
+
+apply plugin: 'org.hidetake.ssh'
+----
+
+
+=== Add a remote host
+
+The plugin adds a container of remote hosts to the project.
+One or more remote hosts can be added in the `remotes` closure.
+A remote host can be associated with one or more roles.
+
+Following code adds remote hosts to the remote hosts container:
+
+.build.gradle
+[source,groovy]
+----
+remotes {
+  web01 {
+    role 'masterNode'
+    host = '192.168.1.101'
+    user = 'jenkins'
+  }
+  web02 {
+    host = '192.168.1.102'
+    user = 'jenkins'
+  }
+}
+----
+
+We can specify each remote host by `remotes.web01` or `remotes.web02`.
+Also we can specify the remote host _web01_ by a role such as `remotes.role('masterNode')`.
+
+All settings of a remote host are available on link:#add-a-remote-host[the user guide].
+
+
+=== Describe SSH sessions
+
+Call `ssh.run` method with one or more sessions as follows.
+
+.build.gradle
+[source,groovy]
+----
+task checkWebServers {
+  doLast {
+    ssh.run {
+      session(remotes.web01) {
+        // Execute a command
+        def result = execute 'sudo service httpd status'
+
+        // Any Gradle methods or properties are available in a session closure
+        copy {
+          from "src/main/resources/example"
+          into "$buildDir/tmp"
+        }
+
+        // Also Groovy methods or properties are available in a session closure
+        println result
+      }
+      session(remotes.web02) {
+        def result = execute 'sudo service httpd status'
+
+        // Also Groovy style assertion is available in a session closure
+        assert result.contains('running')
+      }
+    }
+  }
+}
+----
+
+
+=== Run the script
+
+Now the script is ready.
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+plugins {
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
+}
+
+ssh.settings {
+  dryRun = project.hasProperty('dryRun')
+}
+
+remotes {
+  web01 {
+    role 'webServers'
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+  web02 {
+    role 'webServers'
+    host = '192.168.1.102'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+}
+
+task reload {
+  doLast {
+    ssh.run {
+      session(remotes.role('webServers')) {
+        execute 'sudo service tomcat restart'
+      }
+    }
+  }
+}
+----
+
+Invoke the task to run.
+
+[source,sh]
+----
+./gradlew reload
+----
+
+
+==== Dry run the script
+
+We can run the script without any actual connections.
+
+Above script has already dry-run switch,
+so invoke the task with `dryRun` property to perform dry-run.
+
+[source,sh]
+----
+./gradlew -PdryRun -i reload
+----
+
+
+== Groovy SSH
+
+Groovy SSH is provided as the executable JAR and the library.
+There are following ways to use.
+
+1. Run the executable JAR on command line
+2. Use the library in a script
+3. Use the library in an application
+
+
+=== Run on command line
+
+Download the latest `gssh.jar` from https://github.com/int128/groovy-ssh/releases[GitHub Releases] and run it.
+
+[source,sh]
+----
+java -jar gssh.jar deploy.groovy
+----
+
+`ssh` is implicitly available in a script as follows.
+
+.deploy.gradle
+[source,groovy,subs="+attributes"]
+----
+ssh.remotes {...}
+ssh.run {...}
+----
+
+We provides easy way to get path to self by `ssh.runtime.jar`.
+
+.deploy.gradle
+[source,groovy]
+----
+ssh.run {
+  session(ssh.remotes.tester) {
+    // Put and execute gssh.jar on the remote server
+    put from: ssh.runtime.jar, into: '.'
+    execute 'java -jar gssh.jar'
+  }
+}
+----
+
+
+=== Use the library in a script
+
+We can embed the Groovy SSH library in a Groovy script using http://groovy.codehaus.org/Grape[Grape],
+
+.deploy.gradle
+[source,groovy,subs="+attributes"]
+----
+@Grab('org.hidetake:groovy-ssh:{groovy-ssh-version}')
+@Grab('ch.qos.logback:logback-classic:1.1.2')
+def ssh = org.hidetake.groovy.ssh.Ssh.newService()
+ssh.remotes {...}
+ssh.run {...}
+----
+
+and run the script.
+
+[source,sh]
+----
+groovy deploy.groovy
+----
+
+We provides easy way to configure logback as follows:
+
+.deploy.gradle
+[source,groovy]
+----
+ssh.runtime.logback level: 'DEBUG'
+----
+
+
+=== Use the library in an application
+
+We can use the Groovy SSH library in a Groovy application.
+
+The library is available
+on http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.hidetake%22%20AND%20a%3A%22groovy-ssh%22[Maven Central]
+and https://bintray.com/int128/maven/groovy-ssh[Bintray].
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+compile 'org.hidetake:groovy-ssh:{groovy-ssh-version}'
+----
+
+Instantiate a Service by `Ssh#newService()` as follows.
+
+.App.groovy
+[source,groovy]
+----
+import org.hidetake.groovy.ssh.Ssh
+
+class App {
+  static void main(String[] args) {
+    def ssh = Ssh.newService()
+    ssh.remotes {...}
+    ssh.run {...}
+  }
+}
+----
