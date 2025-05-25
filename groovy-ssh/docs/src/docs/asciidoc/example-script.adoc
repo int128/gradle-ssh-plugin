@@ -1,0 +1,35 @@
+= Example
+:doctype: article
+:source-highlighter: coderay
+
+
+include::version-loader.adoc[]
+
+
+[source,groovy,subs="+attributes"]
+----
+// build.gradle
+
+plugins {
+  id 'org.hidetake.ssh' version '{gradle-ssh-version}'
+}
+
+remotes {
+  webServer {
+    host = '192.168.1.101'
+    user = 'jenkins'
+    identity = file('id_rsa')
+  }
+}
+
+task deploy {
+  doLast {
+    ssh.run {
+      session(remotes.webServer) {
+        put from: 'example.war', into: '/webapps'
+        execute 'sudo service tomcat restart'
+      }
+    }
+  }
+}
+----

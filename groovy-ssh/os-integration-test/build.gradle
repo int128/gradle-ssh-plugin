@@ -1,0 +1,36 @@
+plugins {
+    id 'groovy'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+
+    implementation 'junit:junit:4.13.2'
+    implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+}
+
+test {
+    mustRunAfter ':server-integration-test:check'
+}
+
+task startSshAgent(type: Exec) {
+    commandLine 'ssh-agent'
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+        standardOutput.toString().eachMatch(~/(.+?)=(.+?);/) { all, k, v ->
+            assert k in ['SSH_AGENT_PID', 'SSH_AUTH_SOCK']
+            [test, stopSshAgent]*.environment(k, v)
+        }
+    }
+}
+
+task stopSshAgent(type: Exec) {
+    commandLine 'ssh-agent', '-k'
+}
+
+test.dependsOn startSshAgent
+test.finalizedBy stopSshAgent

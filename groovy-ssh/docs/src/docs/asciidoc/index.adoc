@@ -1,0 +1,28 @@
+= Gradle SSH Plugin Document
+Hidetake Iwata <https://github.com/int128>
+:doctype: book
+:source-highlighter: coderay
+:toc: right
+:sectnums:
+:sectanchors:
+:icons: font
+
+
+include::version-loader.adoc[]
+
+
+This document explains Gradle SSH Plugin {gradle-ssh-version} and Groovy SSH {groovy-ssh-version}.
+
+
+include::introduction.adoc[]
+
+include::getting-started.adoc[]
+
+include::user-guide.adoc[]
+
+include::migration-guide.adoc[]
+
+
+++++
+<script src="/public/site.js"></script>
+++++

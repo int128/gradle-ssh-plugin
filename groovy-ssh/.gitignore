@@ -1,0 +1,14 @@
+.gradle
+build
+
+**/.settings
+.classpath
+.project
+
+.idea
+*.iml
+.vscode/
+
+/plugin-integration/gradle-ssh-plugin
+
+bin/

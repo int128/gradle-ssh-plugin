@@ -1,0 +1,33 @@
+plugins {
+    id 'groovy'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+    implementation 'org.apache.sshd:sshd-core:2.2.0'
+    implementation 'org.apache.sshd:sshd-sftp:2.2.0'
+    implementation 'org.apache.sshd:sshd-scp:2.2.0'
+
+    runtimeOnly 'org.bouncycastle:bcpkix-jdk15on:1.70'
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
+    testImplementation "org.spockframework:spock-core"
+    testImplementation "org.spockframework:spock-junit4"
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.18'
+    testRuntimeOnly 'cglib:cglib-nodep:3.3.0'
+    testRuntimeOnly 'org.objenesis:objenesis:3.4'
+}
+
+test {
+    useJUnitPlatform()
+    mustRunAfter ':core:check'
+
+    if (System.getProperty('os.name') == 'Linux') {
+        systemProperty 'java.security.egd', 'file:/dev/./urandom'
+    }
+}

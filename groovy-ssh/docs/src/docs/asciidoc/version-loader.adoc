@@ -1,0 +1,15 @@
+:groovy-ssh-version: pass:[<span class="int128-groovy-ssh">x.y.z</span>]
+:gradle-ssh-version: pass:[<span class="int128-gradle-ssh-plugin">x.y.z</span>]
+
+++++
+<script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
+<script>
+$(function () {
+  ['int128/groovy-ssh', 'int128/gradle-ssh-plugin'].forEach(function (repo) {
+    $.get('https://api.github.com/repos/' + repo + '/releases/latest').then(function (data) {
+      $('.' + repo.replace('/', '-')).text(data.name);
+    });
+  });
+});
+</script>
+++++
