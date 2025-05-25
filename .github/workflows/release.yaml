@@ -45,7 +45,7 @@ jobs:
           java-version: 11
       - uses: gradle/actions/wrapper-validation@v4
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew signMavenPublication
+      - run: ./gradlew sign
         env:
           VERSION: ${{ github.event.release.tag_name }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
