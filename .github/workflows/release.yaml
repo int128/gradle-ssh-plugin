@@ -32,7 +32,7 @@ jobs:
         env:
           VERSION: ${{ github.event.release.tag_name }}
 
-  publish:
+  maven:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
