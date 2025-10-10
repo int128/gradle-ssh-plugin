@@ -20,8 +20,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/actions/wrapper-validation@v4
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew validatePlugins
 
       - run: echo "$GRADLE_PROPERTIES_PUBLISH" >> ~/.gradle/gradle.properties
@@ -43,8 +43,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/actions/wrapper-validation@v4
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew sign
         env:
           VERSION: ${{ github.event.release.tag_name }}
@@ -69,8 +69,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/actions/wrapper-validation@v4
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew shadowJar
       - run: java -jar groovy-ssh/cli/build/libs/gssh.jar
       - run: sha256sum -b groovy-ssh/cli/build/libs/gssh.jar > groovy-ssh/cli/build/libs/gssh.jar.sha256
