@@ -16,6 +16,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-      - uses: gradle/actions/wrapper-validation@v4
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew build --warning-mode all
