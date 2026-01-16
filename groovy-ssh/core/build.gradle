@@ -15,7 +15,7 @@ dependencies {
     api 'com.github.mwiede:jsch:2.27.4'
     api 'org.slf4j:slf4j-api:2.0.17'
 
-    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
+    testImplementation platform("org.spockframework:spock-bom:2.4-groovy-5.0")
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
     testRuntimeOnly 'cglib:cglib-nodep:3.3.0'
