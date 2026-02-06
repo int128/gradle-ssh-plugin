@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     implementation project(':groovy-ssh:core')
-    implementation 'ch.qos.logback:logback-classic:1.5.25'
+    implementation 'ch.qos.logback:logback-classic:1.5.27'
     implementation 'org.codehaus.groovy:groovy-cli-commons:3.0.25'
 
     testImplementation project(':groovy-ssh:server-integration-test')
@@ -17,7 +17,7 @@ dependencies {
     testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
-    testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.25'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.27'
 }
 
 test {
