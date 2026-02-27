@@ -9,7 +9,7 @@ repositories {
 dependencies {
     implementation project(':groovy-ssh:core')
     implementation 'org.apache.sshd:sshd-core:2.2.0'
-    implementation 'org.apache.sshd:sshd-sftp:2.2.0'
+    implementation 'org.apache.sshd:sshd-sftp:2.17.1'
     implementation 'org.apache.sshd:sshd-scp:2.2.0'
 
     runtimeOnly 'org.bouncycastle:bcpkix-jdk15on:1.70'
