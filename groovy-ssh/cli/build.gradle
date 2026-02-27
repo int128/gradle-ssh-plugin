@@ -13,7 +13,7 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy-cli-commons:3.0.25'
 
     testImplementation project(':groovy-ssh:server-integration-test')
-    testImplementation 'org.apache.sshd:sshd-core:2.2.0'
+    testImplementation 'org.apache.sshd:sshd-core:2.17.1'
     testImplementation platform("org.spockframework:spock-bom:2.3-groovy-3.0")
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
