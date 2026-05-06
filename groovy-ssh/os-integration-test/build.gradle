@@ -11,9 +11,11 @@ dependencies {
 
     implementation 'junit:junit:4.13.2'
     implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
+    // TODO: useJUnitPlatform()
     mustRunAfter ':groovy-ssh:server-integration-test:check'
 }
 
