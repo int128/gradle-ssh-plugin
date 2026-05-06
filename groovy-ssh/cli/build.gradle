@@ -18,6 +18,7 @@ dependencies {
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.32'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {

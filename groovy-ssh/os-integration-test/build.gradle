@@ -11,10 +11,14 @@ dependencies {
 
     implementation 'junit:junit:4.13.2'
     implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.0'
 }
 
 test {
+    useJUnitPlatform()
     mustRunAfter ':groovy-ssh:server-integration-test:check'
+    // OS integration tests require a running SSH server
+    onlyIf { project.hasProperty('osIntegrationTest') }
 }
 
 task startSshAgent(type: Exec) {
