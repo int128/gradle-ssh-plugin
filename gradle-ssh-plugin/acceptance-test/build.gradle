@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
 	implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 evaluationDependsOn(':gradle-ssh-plugin:plugin')
