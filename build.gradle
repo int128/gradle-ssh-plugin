@@ -2,14 +2,14 @@ allprojects {
     afterEvaluate {
 		tasks.withType(Test) {
 			finalizedBy ':testReport'
-			testReport.reportOn binaryResultsDirectory
+			testReport.testResults.from(binaryResultsDirectory)
 			reports.html.required = false
-			reports.junitXml.destination = file("${rootProject.buildDir}/test-results")
+			reports.junitXml.outputLocation = file("${rootProject.buildDir}/test-results")
 		}
 	}
 }
 
 task testReport(type: TestReport) {
-	description 'Generates test report for all projects'
+	description = 'Generates test report for all projects'
 	destinationDirectory = file("$buildDir/reports")
 }
