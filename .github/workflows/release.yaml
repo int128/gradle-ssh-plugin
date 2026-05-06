@@ -6,14 +6,23 @@ on:
       - .github/workflows/release.yaml
       - gradle/**
       - '**/*.gradle'
-  release:
-    types:
-      - created
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/release.yaml
+      - gradle/**
+      - '**/*.gradle'
+    tags:
+      - '*'
 
 jobs:
   plugin:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
     permissions:
       contents: read
     steps:
@@ -29,14 +38,17 @@ jobs:
       - run: echo "$GRADLE_PROPERTIES_PUBLISH" >> ~/.gradle/gradle.properties
         env:
           GRADLE_PROPERTIES_PUBLISH: ${{ secrets.GRADLE_PROPERTIES_PUBLISH }}
-      - if: github.event_name == 'release'
+      - if: github.ref_type == 'tag'
         run: ./gradlew publishPlugins
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
 
   maven:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
     permissions:
       contents: read
     steps:
@@ -49,13 +61,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
       - run: ./gradlew sign
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
 
-      - if: github.event_name == 'release'
+      - if: github.ref_type == 'tag'
         run: ./gradlew publishToMavenCentral
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -63,6 +75,9 @@ jobs:
   cli:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
     permissions:
       contents: write
     steps:
@@ -76,8 +91,8 @@ jobs:
       - run: ./gradlew shadowJar
       - run: java -jar groovy-ssh/cli/build/libs/gssh.jar
       - run: sha256sum -b groovy-ssh/cli/build/libs/gssh.jar > groovy-ssh/cli/build/libs/gssh.jar.sha256
-      - if: github.event_name == 'release'
-        run: gh release upload "$VERSION" groovy-ssh/cli/build/libs/gssh.jar groovy-ssh/cli/build/libs/gssh.jar.sha256
+      - if: github.ref_type == 'tag'
+        run: gh release create "$VERSION" --generate-notes --target "$VERSION" groovy-ssh/cli/build/libs/gssh.jar groovy-ssh/cli/build/libs/gssh.jar.sha256
         env:
-          VERSION: ${{ github.event.release.tag_name }}
+          VERSION: ${{ github.ref_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
