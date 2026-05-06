@@ -23,6 +23,4 @@ pluginUnderTestMetadata {
 
 test {
     useJUnitPlatform()
-    // acceptance tests require a running SSH server (see fixture/run-sshd.sh)
-    onlyIf { project.hasProperty('acceptanceTest') }
 }

@@ -17,8 +17,6 @@ dependencies {
 test {
     useJUnitPlatform()
     mustRunAfter ':groovy-ssh:server-integration-test:check'
-    // OS integration tests require a running SSH server
-    onlyIf { project.hasProperty('osIntegrationTest') }
 }
 
 task startSshAgent(type: Exec) {
