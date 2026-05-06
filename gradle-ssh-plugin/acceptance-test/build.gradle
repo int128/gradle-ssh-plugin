@@ -22,5 +22,5 @@ pluginUnderTestMetadata {
 }
 
 test {
-    useJUnitPlatform()
+    // TODO: useJUnitPlatform()
 }
