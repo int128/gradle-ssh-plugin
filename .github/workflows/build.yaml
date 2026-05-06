@@ -10,6 +10,9 @@ jobs:
   gradle:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     permissions:
       contents: read
     steps:
