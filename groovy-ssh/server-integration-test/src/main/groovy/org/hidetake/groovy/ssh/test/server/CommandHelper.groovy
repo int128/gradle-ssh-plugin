@@ -37,9 +37,9 @@ class CommandHelper {
               context.environment = env
               Thread.start {
                   log.debug("[ssh-server-mock] Started interaction thread")
-                 try {
-                     callWithDelegate(interaction, context)
-                     context.exitCallback.onExit(status)
+                  try {
+                      callWithDelegate(interaction, context)
+                      context.exitCallback.onExit(status)
                  } catch (Throwable t) {
                      log.error("[ssh-server-mock] Error occurred on interaction thread", t)
                      context.exitCallback.onExit(-1, t.message)
