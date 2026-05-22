@@ -1,6 +1,6 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
+import org.apache.sshd.sftp.server.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.operation.SftpException
 
 import static org.hidetake.groovy.ssh.test.server.FilenameUtils.toUnixPath

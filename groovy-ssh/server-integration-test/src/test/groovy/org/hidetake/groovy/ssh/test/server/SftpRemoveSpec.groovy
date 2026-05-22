@@ -2,7 +2,7 @@ package org.hidetake.groovy.ssh.test.server
 
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
-import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory
+import org.apache.sshd.sftp.server.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.ClassRule
