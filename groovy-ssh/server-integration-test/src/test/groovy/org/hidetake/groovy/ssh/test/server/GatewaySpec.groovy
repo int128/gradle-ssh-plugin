@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.common.Factory
 import org.apache.sshd.common.util.net.SshdSocketAddress
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
 import org.apache.sshd.server.forward.ForwardingFilter
+import org.apache.sshd.server.shell.ShellFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.junit.ClassRule
@@ -53,7 +53,7 @@ class GatewaySpec extends Specification {
         ssh = Ssh.newService()
         [targetServer, gateway1Server, gateway2Server].each { server ->
             server.passwordAuthenticator = Mock(PasswordAuthenticator)
-            server.shellFactory = Mock(Factory)
+            server.shellFactory = Mock(ShellFactory)
             server.forwardingFilter = Mock(ForwardingFilter)
         }
     }
@@ -96,7 +96,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
         then: 1 * gateway1Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
-        then: 1 * targetServer.shellFactory.create() >> command(0)
+        then: 1 * targetServer.shellFactory.createShell(_) >> command(0)
 
         then:
         knownHostsFile.text == knownHostsContent
@@ -139,7 +139,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway1Server.passwordAuthenticator.authenticate("gateway1User", "gateway1Password", _) >> true
         then: (1.._) * gateway1Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
-        then: 1 * targetServer.shellFactory.create() >> command(0)
+        then: 1 * targetServer.shellFactory.createShell(_) >> command(0)
 
         then:
         knownHostsFile.text == expectedKnownHosts
@@ -192,7 +192,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
         then: 1 * gateway2Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
-        then: 1 * targetServer.shellFactory.create() >> command(0)
+        then: 1 * targetServer.shellFactory.createShell(_) >> command(0)
 
         then:
         knownHostsFile.text == knownHostsContent
@@ -245,7 +245,7 @@ class GatewaySpec extends Specification {
         then: (1.._) * gateway2Server.passwordAuthenticator.authenticate("gateway2User", "gateway2Password", _) >> true
         then: (1.._) * gateway2Server.forwardingFilter.canConnect(_, addressOf(targetServer), _) >> true
         then: (1.._) * targetServer.passwordAuthenticator.authenticate("targetUser", "targetPassword", _) >> true
-        then: 1 * targetServer.shellFactory.create() >> command(0)
+        then: 1 * targetServer.shellFactory.createShell(_) >> command(0)
 
         then:
         knownHostsFile.text == expectedKnownHosts

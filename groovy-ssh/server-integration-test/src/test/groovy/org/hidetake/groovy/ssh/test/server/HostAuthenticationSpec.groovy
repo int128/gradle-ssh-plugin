@@ -72,7 +72,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
     }
 
     def "[allowAnyHosts] host key checking should be turned off by per-remote settings"() {
@@ -91,7 +91,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
     }
 
     @Unroll
@@ -111,7 +111,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType
@@ -137,7 +137,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType
@@ -162,7 +162,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
 
         where:
         serverKeyType                  | knownHostsType
@@ -183,7 +183,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        0 * server.commandFactory.createCommand('somecommand')
+        0 * server.commandFactory.createCommand(_, 'somecommand')
 
         then:
         JSchException e = thrown()
@@ -205,7 +205,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        0 * server.commandFactory.createCommand('somecommand')
+        0 * server.commandFactory.createCommand(_, 'somecommand')
 
         then:
         JSchException e = thrown()
@@ -227,7 +227,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
 
         and: 'knownHosts should be created'
         knownHostsFile.text == "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}" as String
@@ -248,7 +248,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
 
         and: 'knownHosts should be appended'
         knownHostsFile.text ==
@@ -270,7 +270,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0)
         knownHostsFile.text == "[$server.host]:$server.port ${publicKey(ECDSA_SHA2_NISTP256)}" as String
     }
 
@@ -289,7 +289,7 @@ class HostAuthenticationSpec extends Specification {
         executeCommand()
 
         then:
-        0 * server.commandFactory.createCommand('somecommand')
+        0 * server.commandFactory.createCommand(_, 'somecommand')
 
         then:
         JSchException e = thrown()

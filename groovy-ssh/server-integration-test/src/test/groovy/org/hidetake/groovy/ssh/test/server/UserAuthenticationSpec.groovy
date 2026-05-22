@@ -28,7 +28,7 @@ class UserAuthenticationSpec extends Specification {
     def setupSpec() {
         server = SshServerMock.setUpLocalhostServer()
         server.commandFactory = Mock(CommandFactory) {
-            createCommand('ls') >> command(0)
+            createCommand(_, 'ls') >> command(0)
         }
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.publickeyAuthenticator = Mock(PublickeyAuthenticator)

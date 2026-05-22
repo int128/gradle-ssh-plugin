@@ -63,7 +63,7 @@ class ScriptSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('/bin/sh') >> command(0) {
+        1 * server.commandFactory.createCommand(_, '/bin/sh') >> command(0) {
             outputStream << 'something'
             actualScript << inputStream
         }
@@ -85,7 +85,7 @@ class ScriptSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('/bin/sh') >> command(1) {
+        1 * server.commandFactory.createCommand(_, '/bin/sh') >> command(1) {
             outputStream << 'something'
             actualScript << inputStream
         }
@@ -110,7 +110,7 @@ class ScriptSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('/bin/sh') >> command(0) {
+        1 * server.commandFactory.createCommand(_, '/bin/sh') >> command(0) {
             outputStream << 'something'
             actualScript << inputStream
         }
@@ -135,7 +135,7 @@ class ScriptSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('/bin/sh') >> command(1) {
+        1 * server.commandFactory.createCommand(_, '/bin/sh') >> command(1) {
             outputStream << 'something'
             actualScript << inputStream
         }

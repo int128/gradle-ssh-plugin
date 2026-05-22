@@ -75,9 +75,9 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('somecommand1') >> command(0)
-        then: 1 * server.commandFactory.createCommand('somecommand2') >> command(0)
-        then: 1 * server.commandFactory.createCommand('somecommand3') >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, 'somecommand1') >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, 'somecommand2') >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, 'somecommand3') >> command(0)
     }
 
     def "execute should throw an exception if the command exits with non zero status"() {
@@ -89,7 +89,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(1)
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(1)
 
         then:
         BadExitStatusException e = thrown()
@@ -105,7 +105,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(1) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(1) {
             outputStream << 'something output'
         }
 
@@ -121,7 +121,7 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(/'this '\''should'\'' be escaped'/) >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, /'this '\''should'\'' be escaped'/) >> command(0)
     }
 
     @Unroll
@@ -134,7 +134,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << outputValue
         }
 
@@ -164,7 +164,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'something output'
         }
 
@@ -185,7 +185,7 @@ class CommandSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
+        then: 1 * server.commandFactory.createCommand(_, /'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
             outputStream << 'something output'
         }
 
@@ -207,7 +207,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'something output'
         }
 
@@ -229,7 +229,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(/'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
+        1 * server.commandFactory.createCommand(_, /'echo' 'this '\''should'\'' be escaped'/) >> command(0) {
             outputStream << 'something output'
         }
 
@@ -253,7 +253,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << outputValue
         }
 
@@ -291,7 +291,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'some message'
             errorStream << 'error'
         }
@@ -332,7 +332,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'some message'
             errorStream << 'error'
         }
@@ -357,7 +357,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'some message'
             errorStream << 'error'
         }
@@ -379,7 +379,7 @@ class CommandSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand') >> command(0) {
+        1 * server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             actual << inputStream
         }
 

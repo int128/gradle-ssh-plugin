@@ -1,8 +1,8 @@
 package org.hidetake.groovy.ssh.test.server
 
-import org.apache.sshd.common.Factory
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
+import org.apache.sshd.server.shell.ShellFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
 import org.hidetake.groovy.ssh.core.settings.LoggingMethod
@@ -47,7 +47,7 @@ class ShellSpec extends Specification {
     }
 
     def setup() {
-        server.shellFactory = Mock(Factory)
+        server.shellFactory = Mock(ShellFactory)
 
         ssh = Ssh.newService()
         ssh.settings {
@@ -73,7 +73,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0)
+        1 * server.shellFactory.createShell(_) >> command(0)
     }
 
     def "shell should throw an exception if the shell exits with non zero status"() {
@@ -85,7 +85,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(1)
+        1 * server.shellFactory.createShell(_) >> command(1)
 
         then:
         BadExitStatusException e = thrown()
@@ -101,7 +101,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(1)
+        1 * server.shellFactory.createShell(_) >> command(1)
     }
 
     @Unroll
@@ -120,7 +120,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0) {
+        1 * server.shellFactory.createShell(_) >> command(0) {
             outputStream << outputValue
         }
 
@@ -156,7 +156,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0) {
+        1 * server.shellFactory.createShell(_) >> command(0) {
             outputStream << 'some message'
         }
 
@@ -188,7 +188,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0) {
+        1 * server.shellFactory.createShell(_) >> command(0) {
             outputStream << 'some message'
         }
 
@@ -205,7 +205,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0) {
+        1 * server.shellFactory.createShell(_) >> command(0) {
             outputStream << 'some message'
         }
     }
@@ -223,7 +223,7 @@ class ShellSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> command(0) {
+        1 * server.shellFactory.createShell(_) >> command(0) {
             actual << inputStream
         }
 

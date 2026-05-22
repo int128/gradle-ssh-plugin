@@ -94,13 +94,13 @@ class SudoSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        then: 1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand1', 'somepassword')
         }
-        then: 1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        then: 1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand2', 'somepassword')
         }
-        then: 1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        then: 1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand3', 'somepassword')
         }
     }
@@ -114,7 +114,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 1, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << 'Sorry, try again.' << '\n'
                 outputStream.flush()
@@ -138,7 +138,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 1, 'sudo', 'somecommand', 'somepassword')
         }
 
@@ -156,7 +156,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 1, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -175,7 +175,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', /'this '\''should'\'' be escaped'/, 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -194,7 +194,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand1', 'anotherpassword')
         }
     }
@@ -208,7 +208,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand1', 'passwordForTestServerSudo')
         }
     }
@@ -221,7 +221,7 @@ class SudoSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        then: 1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, '/usr/local/bin/sudo', 'somecommand1', 'somepassword')
         }
     }
@@ -235,7 +235,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, '/usr/local/bin/sudo', 'somecommand1', 'somepassword')
         }
     }
@@ -250,7 +250,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << outputValue
             }
@@ -278,7 +278,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', lectureMessage) {
                 outputStream << 'something\noutput'
             }
@@ -305,7 +305,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -329,7 +329,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -353,7 +353,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -377,7 +377,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', /'echo' 'this '\''should'\'' be escaped'/, 'somepassword', null) {
                 outputStream << 'something output'
             }
@@ -403,7 +403,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
                 outputStream << outputValue
             }
@@ -435,7 +435,7 @@ class SudoSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand(_) >> { String commandLine ->
+        1 * server.commandFactory.createCommand(_, _) >> { _, String commandLine ->
             sudoCommand(commandLine, 0, 'sudo', 'somecommand', 'somepassword', null) {
                 log.debug("[sudo] Reading output of the command: $commandLine")
                 actual << inputStream

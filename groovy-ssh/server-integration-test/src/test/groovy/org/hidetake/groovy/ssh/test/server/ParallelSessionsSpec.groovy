@@ -70,9 +70,9 @@ class ParallelSessionsSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('commandA') >> command(exitA)
-        1 * server.commandFactory.createCommand('commandB') >> command(exitB)
-        1 * server.commandFactory.createCommand('commandC') >> command(exitC)
+        1 * server.commandFactory.createCommand(_, 'commandA') >> command(exitA)
+        1 * server.commandFactory.createCommand(_, 'commandB') >> command(exitB)
+        1 * server.commandFactory.createCommand(_, 'commandC') >> command(exitC)
 
         then:
         ParallelSessionsException e = thrown()
@@ -108,9 +108,9 @@ class ParallelSessionsSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('commandA') >> command(0)
-        1 * server.commandFactory.createCommand('commandB') >> command(0)
-        1 * server.commandFactory.createCommand('commandC') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'commandA') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'commandB') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'commandC') >> command(0)
 
         then:
         ParallelSessionsException e = thrown()
@@ -134,9 +134,9 @@ class ParallelSessionsSpec extends Specification {
             }
         }
 
-        then: tA * server.commandFactory.createCommand('commandA') >> command(exitA)
-        then: tB * server.commandFactory.createCommand('commandB') >> command(exitB)
-        then: tC * server.commandFactory.createCommand('commandC') >> command(exitC)
+        then: tA * server.commandFactory.createCommand(_, 'commandA') >> command(exitA)
+        then: tB * server.commandFactory.createCommand(_, 'commandB') >> command(exitB)
+        then: tC * server.commandFactory.createCommand(_, 'commandC') >> command(exitC)
 
         then:
         BadExitStatusException e = thrown()
@@ -169,9 +169,9 @@ class ParallelSessionsSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('commandA') >> command(0)
-        1 * server.commandFactory.createCommand('commandB') >> command(0)
-        0 * server.commandFactory.createCommand('commandC') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'commandA') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'commandB') >> command(0)
+        0 * server.commandFactory.createCommand(_, 'commandC') >> command(0)
 
         then:
         IllegalStateException e = thrown()

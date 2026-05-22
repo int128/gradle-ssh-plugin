@@ -3,6 +3,7 @@ package org.hidetake.groovy.ssh.test.server
 import groovy.util.logging.Slf4j
 import org.apache.sshd.server.Environment
 import org.apache.sshd.server.ExitCallback
+import org.apache.sshd.server.channel.ChannelSession
 import org.apache.sshd.server.command.Command
 
 import static org.hidetake.groovy.ssh.util.Utility.callWithDelegate
@@ -32,10 +33,10 @@ class CommandHelper {
          setExitCallback: { ExitCallback callback ->
              context.exitCallback = callback
          },
-         start: { Environment env ->
-             context.environment = env
-             Thread.start {
-                 log.debug("[ssh-server-mock] Started interaction thread")
+         start: { ChannelSession session, Environment env ->
+              context.environment = env
+              Thread.start {
+                  log.debug("[ssh-server-mock] Started interaction thread")
                  try {
                      callWithDelegate(interaction, context)
                      context.exitCallback.onExit(status)
@@ -46,8 +47,8 @@ class CommandHelper {
                  log.debug("[ssh-server-mock] Terminated interaction thread")
              }
          },
-         destroy: { ->
-         }] as Command
+         destroy: { ChannelSession session ->
+          }] as Command
     }
 
 }

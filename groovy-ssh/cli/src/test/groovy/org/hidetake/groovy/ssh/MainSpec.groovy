@@ -34,20 +34,20 @@ class MainSpec extends Specification {
     def setupSpec() {
         def keyPairProvider = new ClassLoadableResourceKeyPairProvider()
         keyPairProvider.resourceLoader = MainSpec.classLoader
-        keyPairProvider.resources = ['hostkey_dsa']
+        keyPairProvider.resources = ['hostkey_ecdsa-sha2-nistp256']
 
         server = SshServerMock.setUpLocalhostServer(keyPairProvider)
         server.passwordAuthenticator = Mock(PasswordAuthenticator)
         server.passwordAuthenticator.authenticate('someuser', 'somepassword', _) >> true
         server.commandFactory = Mock(CommandFactory)
-        server.commandFactory.createCommand('somecommand') >> command(0) {
+        server.commandFactory.createCommand(_, 'somecommand') >> command(0) {
             outputStream << 'some message'
             errorStream << 'error'
         }
         server.start()
         server
 
-        def publicKey = MainSpec.getResourceAsStream('/hostkey_dsa.pub').text
+        def publicKey = MainSpec.getResourceAsStream('/hostkey_ecdsa-sha2-nistp256.pub').text
         def knownHostsFile = temporaryFolder.newFile() << "[localhost]:${server.port} ${publicKey}"
         script = """\
 ssh.run {

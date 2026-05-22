@@ -1,10 +1,10 @@
 package org.hidetake.groovy.ssh.test.server
 
 import com.jcraft.jsch.JSchException
-import org.apache.sshd.common.Factory
 import org.apache.sshd.server.SshServer
 import org.apache.sshd.server.auth.password.PasswordAuthenticator
 import org.apache.sshd.server.command.CommandFactory
+import org.apache.sshd.server.shell.ShellFactory
 import org.apache.sshd.sftp.server.SftpSubsystemFactory
 import org.hidetake.groovy.ssh.Ssh
 import org.hidetake.groovy.ssh.core.Service
@@ -41,7 +41,7 @@ class TimeoutSpec extends Specification {
             authenticate('someuser', 'somepassword', _) >> true
         }
         server.commandFactory = Mock(CommandFactory) {
-            createCommand('somecommand1') >> command(0)
+            createCommand(_, 'somecommand1') >> command(0)
         }
 
         ssh = Ssh.newService()
@@ -99,7 +99,7 @@ class TimeoutSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand1') >> {
+        1 * server.commandFactory.createCommand(_, 'somecommand1') >> {
             Thread.sleep(2000L)
             command(0)
         }
@@ -111,7 +111,7 @@ class TimeoutSpec extends Specification {
 
     def 'should reach channel timeout set by timeoutSec on shell()'() {
         given:
-        server.shellFactory = Mock(Factory)
+        server.shellFactory = Mock(ShellFactory)
         ssh.settings {
             timeoutSec = 1
         }
@@ -124,7 +124,7 @@ class TimeoutSpec extends Specification {
         }
 
         then:
-        1 * server.shellFactory.create() >> {
+        1 * server.shellFactory.createShell(_) >> {
             Thread.sleep(2000L)
             command(0)
         }
@@ -150,9 +150,9 @@ class TimeoutSpec extends Specification {
 
         then:
         server.subsystemFactories[0].getName() >> 'sftp'
-        server.subsystemFactories[0].create() >> {
+        server.subsystemFactories[0].createSubsystem(_) >> { channelSession ->
             Thread.sleep(2000L)
-            new SftpSubsystemFactory().create()
+            new SftpSubsystemFactory().createSubsystem(channelSession)
         }
 
         then:
@@ -175,7 +175,7 @@ class TimeoutSpec extends Specification {
         }
 
         then:
-        1 * server.commandFactory.createCommand('somecommand1') >> command(0)
+        1 * server.commandFactory.createCommand(_, 'somecommand1') >> command(0)
     }
 
 }

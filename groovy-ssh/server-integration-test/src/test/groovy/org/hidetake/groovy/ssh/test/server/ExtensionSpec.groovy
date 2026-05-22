@@ -65,7 +65,7 @@ class ExtensionSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, 'sudo service tomcat restart') >> command(0)
     }
 
     def "adding map to settings.extensions should extends DSL"() {
@@ -81,7 +81,7 @@ class ExtensionSpec extends Specification {
             }
         }
 
-        then: 1 * server.commandFactory.createCommand('sudo service tomcat restart') >> command(0)
+        then: 1 * server.commandFactory.createCommand(_, 'sudo service tomcat restart') >> command(0)
     }
 
 }
