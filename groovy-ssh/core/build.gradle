@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     api localGroovy()
-    api 'com.github.mwiede:jsch:2.27.4'
+    api 'com.github.mwiede:jsch:2.28.3'
     api 'org.slf4j:slf4j-api:2.0.18'
 
     testImplementation platform("org.spockframework:spock-bom:2.4-groovy-3.0")
