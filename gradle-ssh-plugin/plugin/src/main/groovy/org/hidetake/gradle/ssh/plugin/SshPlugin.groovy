@@ -1,7 +1,6 @@
 package org.hidetake.gradle.ssh.plugin
 
 import groovy.util.logging.Slf4j
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.hidetake.groovy.ssh.Ssh
@@ -15,11 +14,15 @@ import org.hidetake.groovy.ssh.core.Remote
  */
 @Slf4j
 class SshPlugin implements Plugin<Project> {
+
     @Override
     void apply(Project project) {
+        def registry = project.gradle.sharedServices
+            .registerIfAbsent('sshRegistry', SshRegistryService) {}
+
         project.extensions.ssh = Ssh.newService()
-        project.extensions.remotes = createRemoteContainer(project)
-        project.extensions.proxies = createProxyContainer(project)
+        project.extensions.remotes = createRemoteContainer(project, registry)
+        project.extensions.proxies = createProxyContainer(project, registry)
 
         project.ssh.settings.logging = 'stdout'
 
@@ -38,22 +41,22 @@ class SshPlugin implements Plugin<Project> {
         }
     }
 
-    private static createRemoteContainer(Project project) {
+    private static createRemoteContainer(Project project, def registry) {
         def remotes = project.container(Remote)
         remotes.metaClass.mixin(RemoteContainerExtension)
-        def parentRemotes = project.parent?.extensions?.findByName('remotes')
-        if (parentRemotes instanceof NamedDomainObjectContainer<Remote>) {
-            remotes.addAll(parentRemotes)
+        remotes.addAll(registry.get().allRemotes())
+        remotes.whenObjectAdded { Remote remote ->
+            registry.get().registerRemote(remote)
         }
         remotes
     }
 
-    private static createProxyContainer(Project project) {
-		def proxies = project.container(Proxy)
-		def parentProxies = project.parent?.extensions?.findByName('proxies')
-		if (parentProxies instanceof NamedDomainObjectContainer<Proxy>) {
-			proxies.addAll(parentProxies)
-		}
-		proxies
+    private static createProxyContainer(Project project, def registry) {
+        def proxies = project.container(Proxy)
+        proxies.addAll(registry.get().allProxies())
+        proxies.whenObjectAdded { Proxy proxy ->
+            registry.get().registerProxy(proxy)
+        }
+        proxies
     }
 }
