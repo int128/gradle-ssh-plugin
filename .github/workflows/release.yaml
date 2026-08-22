@@ -33,8 +33,8 @@ jobs:
         with:
           distribution: temurin
           java-version-file: .sdkmanrc
-      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
       - run: ./gradlew validatePlugins
 
       - run: echo "$GRADLE_PROPERTIES_PUBLISH" >> ~/.gradle/gradle.properties
@@ -59,8 +59,8 @@ jobs:
         with:
           distribution: temurin
           java-version-file: .sdkmanrc
-      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
       - run: ./gradlew sign
         env:
           VERSION: ${{ github.ref_name }}
@@ -88,8 +88,8 @@ jobs:
         with:
           distribution: temurin
           java-version-file: .sdkmanrc
-      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
-      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
       - run: ./gradlew shadowJar
       - run: java -jar groovy-ssh/cli/build/libs/gssh.jar
       - run: sha256sum -b groovy-ssh/cli/build/libs/gssh.jar > groovy-ssh/cli/build/libs/gssh.jar.sha256
