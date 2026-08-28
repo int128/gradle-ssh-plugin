@@ -19,7 +19,7 @@ dependencies {
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.6.3'
-    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.11'
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.12'
     testRuntimeOnly 'org.objenesis:objenesis:3.6'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
