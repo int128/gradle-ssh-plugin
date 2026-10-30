@@ -14,7 +14,7 @@ dependencies {
 	implementation project(':groovy-ssh:core')
 	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'org.spockframework:spock-core:2.5-groovy-6.0'
-    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.15'
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.16-jdk5'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

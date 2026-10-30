@@ -16,7 +16,7 @@ dependencies {
     testImplementation platform("org.spockframework:spock-bom:2.5-groovy-6.0")
     testImplementation "org.spockframework:spock-core"
     testImplementation "org.spockframework:spock-junit4"
-    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.15'
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.18.16-jdk5'
     testRuntimeOnly 'org.objenesis:objenesis:3.6'
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.6.5'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
